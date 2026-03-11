@@ -1,0 +1,25 @@
+{
+  "name": "@funkai/example-prompts-basic",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "prompts:generate": "funkai prompts generate --out .prompts/client --roots src/agents"
+  },
+  "dependencies": {
+    "@funkai/agents": "workspace:*",
+    "@funkai/prompts": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@funkai/cli": "workspace:*",
+    "@pkg/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

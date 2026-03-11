@@ -1,0 +1,25 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "prompts:generate": {
+      "dependsOn": ["^build"],
+      "outputs": [".prompts/client/**"]
+    },
+    "build": {
+      "dependsOn": ["prompts:generate"]
+    },
+    "typecheck": {
+      "dependsOn": ["prompts:generate"]
+    },
+    "dev": {
+      "dependsOn": ["prompts:generate"],
+      "cache": false,
+      "persistent": true
+    },
+    "cli": {
+      "dependsOn": ["build"],
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 160">
+  <defs>
+    <style>
+      .text { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; }
+      .brand { fill: #a78bfa; }
+      .dim { fill: #6c7086; }
+    </style>
+  </defs>
+
+  <g transform="translate(24, 20)">
+    <text class="text brand" font-size="13" y="0" xml:space="preserve">██████╗ ██████╗  ██████╗ ███╗   ███╗██████╗ ████████╗███████╗</text>
+    <text class="text brand" font-size="13" y="16" xml:space="preserve">██╔══██╗██╔══██╗██╔═══██╗████╗ ████║██╔══██╗╚══██╔══╝██╔════╝</text>
+    <text class="text brand" font-size="13" y="32" xml:space="preserve">██████╔╝██████╔╝██║   ██║██╔████╔██║██████╔╝   ██║   ███████╗</text>
+    <text class="text brand" font-size="13" y="48" xml:space="preserve">██╔═══╝ ██╔══██╗██║   ██║██║╚██╔╝██║██╔═══╝    ██║   ╚════██║</text>
+    <text class="text brand" font-size="13" y="64" xml:space="preserve">██║     ██║  ██║╚██████╔╝██║ ╚═╝ ██║██║        ██║   ███████║</text>
+    <text class="text brand" font-size="13" y="80" xml:space="preserve">╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝        ╚═╝   ╚══════╝</text>
+
+    <text class="text dim" font-size="12" y="112" x="0">prompt sdk with liquidjs templating and zod validation</text>
+  </g>
+</svg>

@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 838 480">
+  <defs>
+    <style>
+      .text { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; }
+      .code { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
+      .ln { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #45475a; text-anchor: end; }
+      .tab { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #cdd6f4; }
+      .brand { fill: #cba6f7; }
+      .dim { fill: #6c7086; }
+      .kw { fill: #cba6f7; }
+      .fn { fill: #89b4fa; }
+      .st { fill: #a6e3a1; }
+      .pr { fill: #94e2d5; }
+      .vr { fill: #fab387; }
+      .tx { fill: #cdd6f4; }
+      .op { fill: #9399b2; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="838" height="480" rx="10" ry="10" fill="#1e1e2e" />
+  <rect width="838" height="36" rx="10" ry="10" fill="#181825" />
+  <rect y="26" width="838" height="10" fill="#181825" />
+  <circle cx="20" cy="18" r="6" fill="#f38ba8" />
+  <circle cx="40" cy="18" r="6" fill="#f9e2af" />
+  <circle cx="60" cy="18" r="6" fill="#a6e3a1" />
+  <text class="text dim" font-size="12" x="419" y="22" text-anchor="middle">funkai</text>
+
+  <!-- FUNKAI logo -->
+  <g transform="translate(419, 0)">
+    <text class="text brand" font-size="14" y="56" text-anchor="middle" xml:space="preserve">███████╗██╗   ██╗███╗   ██╗██╗  ██╗ █████╗ ██╗</text>
+    <text class="text brand" font-size="14" y="72" text-anchor="middle" xml:space="preserve">██╔════╝██║   ██║████╗  ██║██║ ██╔╝██╔══██╗██║</text>
+    <text class="text brand" font-size="14" y="88" text-anchor="middle" xml:space="preserve">█████╗  ██║   ██║██╔██╗ ██║█████╔╝ ███████║██║</text>
+    <text class="text brand" font-size="14" y="104" text-anchor="middle" xml:space="preserve">██╔══╝  ██║   ██║██║╚██╗██║██╔═██╗ ██╔══██║██║</text>
+    <text class="text brand" font-size="14" y="120" text-anchor="middle" xml:space="preserve">██║     ╚██████╔╝██║ ╚████║██║  ██╗██║  ██║██║</text>
+    <text class="text brand" font-size="14" y="136" text-anchor="middle" xml:space="preserve">╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝</text>
+  </g>
+
+  <!-- Tagline -->
+  <text class="text dim" font-size="11" x="419" y="160" text-anchor="middle">A composable AI microframework built on ai-sdk, curried with funk-tional programming flair.</text>
+
+  <!-- Dividers -->
+  <line x1="16" y1="174" x2="822" y2="174" stroke="#313244" stroke-width="1" />
+  <line x1="419" y1="174" x2="419" y2="474" stroke="#313244" stroke-width="1" />
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- Left panel: index.ts                       -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <rect x="4" y="182" width="82" height="24" rx="4" ry="4" fill="#181825" />
+  <text class="tab" x="18" y="198">index.ts</text>
+  <line x1="52" y1="210" x2="52" y2="474" stroke="#313244" stroke-width="1" />
+
+  <!-- 1  import { agent, flowAgent } from '@funkai/agents' -->
+  <text class="ln" x="46" y="226">1</text>
+  <text class="code" x="62" y="226"><tspan class="kw">import</tspan><tspan class="op"> { </tspan><tspan class="fn">agent</tspan><tspan class="op">, </tspan><tspan class="fn">flowAgent</tspan><tspan class="op"> } </tspan><tspan class="kw">from</tspan><tspan class="st"> '@funkai/agents'</tspan></text>
+
+  <!-- 2  (blank) -->
+  <text class="ln" x="46" y="242">2</text>
+
+  <!-- 3  const writer = agent({ -->
+  <text class="ln" x="46" y="258">3</text>
+  <text class="code" x="62" y="258"><tspan class="kw">const </tspan><tspan class="vr">writer</tspan><tspan class="op"> = </tspan><tspan class="fn">agent</tspan><tspan class="op">({</tspan></text>
+
+  <!-- 4    name: 'writer', -->
+  <text class="ln" x="46" y="274">4</text>
+  <text class="code" x="62" y="274" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">name</tspan><tspan class="op">: </tspan><tspan class="st">'writer'</tspan><tspan class="op">,</tspan></text>
+
+  <!-- 5    model: 'openai/gpt-4.1', -->
+  <text class="ln" x="46" y="290">5</text>
+  <text class="code" x="62" y="290" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">model</tspan><tspan class="op">: </tspan><tspan class="st">'openai/gpt-4.1'</tspan><tspan class="op">,</tspan></text>
+
+  <!-- 6    system: prompts('writer'), -->
+  <text class="ln" x="46" y="306">6</text>
+  <text class="code" x="62" y="306" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">system</tspan><tspan class="op">: </tspan><tspan class="fn">prompts</tspan><tspan class="op">(</tspan><tspan class="st">'writer'</tspan><tspan class="op">),</tspan></text>
+
+  <!-- 7  }) -->
+  <text class="ln" x="46" y="322">7</text>
+  <text class="code" x="62" y="322"><tspan class="op">})</tspan></text>
+
+  <!-- 8  (blank) -->
+  <text class="ln" x="46" y="338">8</text>
+
+  <!-- 9  const pipeline = flowAgent(config, -->
+  <text class="ln" x="46" y="354">9</text>
+  <text class="code" x="62" y="354"><tspan class="kw">const </tspan><tspan class="vr">pipeline</tspan><tspan class="op"> = </tspan><tspan class="fn">flowAgent</tspan><tspan class="op">(</tspan><tspan class="vr">config</tspan><tspan class="op">,</tspan></text>
+
+  <!-- 10   async ({ input, $ }) => { -->
+  <text class="ln" x="46" y="370">10</text>
+  <text class="code" x="62" y="370" xml:space="preserve"><tspan class="op">  </tspan><tspan class="kw">async </tspan><tspan class="op">({ </tspan><tspan class="vr">input</tspan><tspan class="op">, </tspan><tspan class="vr">$</tspan><tspan class="op"> }) => {</tspan></text>
+
+  <!-- 11     const prData = await $.step({ -->
+  <text class="ln" x="46" y="386">11</text>
+  <text class="code" x="62" y="386" xml:space="preserve"><tspan class="op">    </tspan><tspan class="kw">const </tspan><tspan class="vr">prData</tspan><tspan class="op"> = </tspan><tspan class="kw">await </tspan><tspan class="vr">$</tspan><tspan class="op">.</tspan><tspan class="fn">step</tspan><tspan class="op">({</tspan></text>
+
+  <!-- 12       id: 'fetch-github-pr-data', -->
+  <text class="ln" x="46" y="402">12</text>
+  <text class="code" x="62" y="402" xml:space="preserve"><tspan class="op">      </tspan><tspan class="pr">id</tspan><tspan class="op">: </tspan><tspan class="st">'fetch-github-pr-data'</tspan><tspan class="op">,</tspan></text>
+
+  <!-- 13       ... -->
+  <text class="ln" x="46" y="418">13</text>
+  <text class="code" x="62" y="418" xml:space="preserve"><tspan class="op">      </tspan><tspan class="dim">...</tspan></text>
+
+  <!-- 14     }) -->
+  <text class="ln" x="46" y="434">14</text>
+  <text class="code" x="62" y="434" xml:space="preserve"><tspan class="op">    })</tspan></text>
+
+  <!-- 15     ... -->
+  <text class="ln" x="46" y="450">15</text>
+  <text class="code" x="62" y="450" xml:space="preserve"><tspan class="op">    </tspan><tspan class="dim">...</tspan></text>
+
+  <!-- 16   }) -->
+  <text class="ln" x="46" y="466">16</text>
+  <text class="code" x="62" y="466" xml:space="preserve"><tspan class="op">  })</tspan></text>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- Right panel: writer.prompt                 -->
+  <!-- ═══════════════════════════════════════════ -->
+
+  <rect x="423" y="182" width="120" height="24" rx="4" ry="4" fill="#181825" />
+  <text class="tab" x="437" y="198">writer.prompt</text>
+  <line x1="471" y1="210" x2="471" y2="474" stroke="#313244" stroke-width="1" />
+
+  <!-- 1  frontmatter open -->
+  <text class="ln" x="465" y="226">1</text>
+  <text class="code" x="481" y="226"><tspan class="dim">---</tspan></text>
+
+  <!-- 2  name: writer -->
+  <text class="ln" x="465" y="242">2</text>
+  <text class="code" x="481" y="242"><tspan class="pr">name</tspan><tspan class="op">: </tspan><tspan class="st">writer</tspan></text>
+
+  <!-- 3  schema: -->
+  <text class="ln" x="465" y="258">3</text>
+  <text class="code" x="481" y="258"><tspan class="pr">schema</tspan><tspan class="op">:</tspan></text>
+
+  <!-- 4    tone: string -->
+  <text class="ln" x="465" y="274">4</text>
+  <text class="code" x="481" y="274" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">tone</tspan><tspan class="op">: </tspan><tspan class="st">string</tspan></text>
+
+  <!-- 5    context: -->
+  <text class="ln" x="465" y="290">5</text>
+  <text class="code" x="481" y="290" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">context</tspan><tspan class="op">:</tspan></text>
+
+  <!-- 6      type: string -->
+  <text class="ln" x="465" y="306">6</text>
+  <text class="code" x="481" y="306" xml:space="preserve"><tspan class="op">    </tspan><tspan class="pr">type</tspan><tspan class="op">: </tspan><tspan class="st">string</tspan></text>
+
+  <!-- 7      required: false -->
+  <text class="ln" x="465" y="322">7</text>
+  <text class="code" x="481" y="322" xml:space="preserve"><tspan class="op">    </tspan><tspan class="pr">required</tspan><tspan class="op">: </tspan><tspan class="kw">false</tspan></text>
+
+  <!-- 8  frontmatter close -->
+  <text class="ln" x="465" y="338">8</text>
+  <text class="code" x="481" y="338"><tspan class="dim">---</tspan></text>
+
+  <!-- 9  (blank) -->
+  <text class="ln" x="465" y="354">9</text>
+
+  <!-- 10 You are a {{ tone }} writer. -->
+  <text class="ln" x="465" y="370">10</text>
+  <text class="code" x="481" y="370"><tspan class="tx">You are a </tspan><tspan class="vr">{{ tone }}</tspan><tspan class="tx"> writer.</tspan></text>
+
+  <!-- 11 {% if context %} -->
+  <text class="ln" x="465" y="386">11</text>
+  <text class="code" x="481" y="386"><tspan class="kw">{% if context %}</tspan></text>
+
+  <!-- 12 {{ context }} -->
+  <text class="ln" x="465" y="402">12</text>
+  <text class="code" x="481" y="402"><tspan class="vr">{{ context }}</tspan></text>
+
+  <!-- 13 {% endif %} -->
+  <text class="ln" x="465" y="418">13</text>
+  <text class="code" x="481" y="418"><tspan class="kw">{% endif %}</tspan></text>
+
+</svg>

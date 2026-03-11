@@ -1,0 +1,16 @@
+{
+  "types": [
+    "feat",
+    "fix",
+    "docs",
+    "refactor",
+    "test",
+    "chore",
+    "perf",
+    "style",
+    "ci",
+    "deps",
+    "revert"
+  ],
+  "scopes": ["packages/agents", "packages/prompts", "workspace", "tooling"]
+}

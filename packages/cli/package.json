@@ -1,0 +1,54 @@
+{
+  "name": "@funkai/cli",
+  "version": "0.1.0",
+  "private": false,
+  "description": "CLI for the funkai AI SDK framework",
+  "keywords": [
+    "ai",
+    "cli",
+    "codegen",
+    "funkai",
+    "prompts",
+    "typescript"
+  ],
+  "homepage": "https://github.com/joggrdocs/funkai/tree/main/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/joggrdocs/funkai/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joggrdocs/funkai.git",
+    "directory": "packages/cli"
+  },
+  "bin": {
+    "funkai": "./bin/funkai.mjs"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "kidd dev",
+    "build": "kidd build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@funkai/prompts": "workspace:*",
+    "@kidd-cli/core": "^0.4.0",
+    "liquidjs": "^10.25.0",
+    "ts-pattern": "catalog:",
+    "yaml": "^2.8.2",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@kidd-cli/cli": "^0.2.0",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

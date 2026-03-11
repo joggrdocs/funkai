@@ -1,0 +1,31 @@
+{
+  "name": "funkai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "typecheck": "turbo typecheck",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "pnpm build && changeset publish",
+    "docs": "zpress dev",
+    "docs:build": "zpress build",
+    "docs:serve": "zpress serve"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0",
+    "@zpress/kit": "^0.1.6",
+    "oxfmt": "^0.40.0",
+    "turbo": "^2.8.16"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

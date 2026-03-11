@@ -1,0 +1,22 @@
+{
+  "name": "@funkai/example-basic-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@funkai/agents": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@pkg/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

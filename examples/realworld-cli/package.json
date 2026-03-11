@@ -1,0 +1,45 @@
+{
+  "name": "@funkai/example-realworld-cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start:api": "tsx api/index.ts",
+    "start:cli": "tsx cli/index.ts",
+    "dev": "nodemon",
+    "cli": "node dist/cli/index.mjs",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "prompts:generate": "funkai prompts generate --out .prompts/client --roots api/agents"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "@funkai/agents": "workspace:*",
+    "@funkai/prompts": "workspace:*",
+    "@hono/node-server": "^1.14.0",
+    "dotenv": "^16.5.0",
+    "hono": "^4.7.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@funkai/cli": "workspace:*",
+    "@pkg/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "nodemon": "^3.1.0",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  },
+  "nodemonConfig": {
+    "exec": "tsdown && node dist/api/index.mjs",
+    "ext": "ts,mts",
+    "ignore": [
+      "dist/**"
+    ],
+    "watch": [
+      "api",
+      "shared",
+      ".prompts/client"
+    ]
+  }
+}

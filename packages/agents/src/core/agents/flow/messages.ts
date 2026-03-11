@@ -1,0 +1,141 @@
+import type { Message } from "@/core/agents/base/types.js";
+import { safeStringify } from "@/utils/error.js";
+
+/**
+ * Build the `toolCallId` for a step.
+ *
+ * Combines the step id with the global step index to produce a unique
+ * identifier that correlates tool-call and tool-result messages.
+ *
+ * @param stepId - The step's user-provided id.
+ * @param index - The step's global index within the flow.
+ * @returns A unique tool call identifier.
+ */
+export function buildToolCallId(stepId: string, index: number): string {
+  return `${stepId}-${index}`;
+}
+
+/**
+ * Create an assistant message containing a synthetic tool-call part.
+ *
+ * Emitted when a `$` step starts execution. The `input` field captures
+ * the step's input snapshot (or `{}` when no input is available).
+ *
+ * @param toolCallId - Unique tool call identifier.
+ * @param toolName - The step id used as the tool name.
+ * @param args - The step's input snapshot.
+ * @returns A `Message` with role `assistant` and a `tool-call` content part.
+ */
+export function createToolCallMessage(
+  toolCallId: string,
+  toolName: string,
+  args: unknown,
+): Message {
+  return {
+    role: "assistant",
+    content: [
+      {
+        type: "tool-call",
+        toolCallId,
+        toolName,
+        input: args ?? {},
+      },
+    ],
+  };
+}
+
+/**
+ * Create a tool message containing a synthetic tool-result part.
+ *
+ * Emitted when a `$` step finishes execution. The `result` field captures
+ * the step's output. When `isError` is true, the result represents an
+ * error message.
+ *
+ * @param toolCallId - Unique tool call identifier (must match the paired tool-call).
+ * @param toolName - The step id used as the tool name.
+ * @param result - The step's output snapshot.
+ * @param isError - Whether this result represents an error.
+ * @returns A `Message` with role `tool` and a `tool-result` content part.
+ */
+export function createToolResultMessage(
+  toolCallId: string,
+  toolName: string,
+  result: unknown,
+  isError?: boolean,
+): Message {
+  // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
+  return {
+    role: "tool",
+    content: [
+      {
+        type: "tool-result",
+        toolCallId,
+        toolName,
+        output: result ?? {},
+        ...(isError ? { isError: true } : {}),
+      },
+    ],
+  } as Message;
+}
+
+/**
+ * Safely serialize a value to a string for message content.
+ *
+ * Returns the value as-is when it's already a string. Otherwise
+ * delegates to {@link safeStringify} which handles circular refs,
+ * Maps, Sets, bigints, and other non-JSON-serializable types.
+ *
+ * @param value - The value to serialize.
+ * @returns A string representation of the value.
+ */
+function serializeMessageContent(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return safeStringify(value ?? null);
+}
+
+/**
+ * Create a user message from flow agent input.
+ *
+ * This is the first message in the flow's message array, representing
+ * the input passed to `flowAgent.generate()` or `flowAgent.stream()`.
+ *
+ * @param input - The flow agent input.
+ * @returns A `Message` with role `user`.
+ */
+export function createUserMessage(input: unknown): Message {
+  return { role: "user", content: serializeMessageContent(input) };
+}
+
+/**
+ * Create a final assistant message from flow agent output.
+ *
+ * This is the last message in the flow's message array, representing
+ * the validated output returned by the handler.
+ *
+ * @param output - The flow agent output.
+ * @returns A `Message` with role `assistant`.
+ */
+export function createAssistantMessage(output: unknown): Message {
+  return { role: "assistant", content: serializeMessageContent(output) };
+}
+
+/**
+ * Collect text content from assistant messages in the message array.
+ *
+ * Used for flow agents without an output schema — the output is
+ * the concatenated text from sub-agent responses. Only considers
+ * messages with string content (tool-call messages have array content
+ * and are skipped).
+ *
+ * @param messages - The flow's message array.
+ * @returns The concatenated assistant text, trimmed.
+ */
+export function collectTextFromMessages(messages: readonly Message[]): string {
+  return messages
+    .filter((m) => m.role === "assistant" && typeof m.content === "string")
+    .map((m) => m.content as string)
+    .join("\n")
+    .trim();
+}

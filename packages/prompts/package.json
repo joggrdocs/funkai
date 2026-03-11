@@ -1,0 +1,53 @@
+{
+  "name": "@funkai/prompts",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Prompt SDK with LiquidJS templating and Zod validation",
+  "keywords": [
+    "ai",
+    "codegen",
+    "liquidjs",
+    "prompts",
+    "templates",
+    "typescript",
+    "zod"
+  ],
+  "homepage": "https://github.com/joggrdocs/funkai/tree/main/packages/prompts#readme",
+  "bugs": {
+    "url": "https://github.com/joggrdocs/funkai/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joggrdocs/funkai.git",
+    "directory": "packages/prompts"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.mts",
+      "import": "./dist/lib/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown && cp -r src/prompts dist/prompts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "es-toolkit": "catalog:",
+    "liquidjs": "^10.25.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

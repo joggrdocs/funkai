@@ -1,0 +1,156 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: en-US
+early_access: false
+enable_free_tier: true
+tone_instructions: Be direct and technical. Flag bugs, security issues, and standard violations only. Skip style, subjective suggestions, and pre-existing issues.
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: false
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: true
+  related_issues: true
+  related_prs: true
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
+  enable_prompt_for_ai_agents: true
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+    base_branches:
+      - ".*"
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.turbo/**"
+    - "!**/coverage/**"
+    - "!**/*.generated.*"
+    - "!**/*.d.ts"
+    - "!**/.claude/**"
+    - "!**/fixtures/**"
+    - "!**/.generated/**"
+
+  path_instructions:
+    - path: "**"
+      instructions: |
+        ## Review Standards
+        Search the package docs/ directories for relevant standards and guidelines before reviewing.
+        Key areas to check:
+        - packages/agents/docs/ - Agent SDK documentation
+        - packages/prompts/docs/ - Prompt SDK documentation
+        - CLAUDE.md - Repository rules and conventions
+
+        ## High Signal Only
+        Only flag issues that meet these criteria:
+        - Code will fail or produce wrong results (clear bugs)
+        - Security vulnerabilities with concrete risk
+        - Clear violations of documented standards with exact citations
+        - Breaking changes without proper documentation
+
+        Do NOT flag:
+        - Style/formatting preferences
+        - Subjective improvements or suggestions
+        - Pre-existing issues not introduced in this PR
+        - Issues already handled by linters or type checkers
+
+    - path: "**/package.json"
+      instructions: |
+        ## Dependency Review
+        For dependency changes, verify:
+        - Check changelogs/release notes for breaking changes in major version bumps
+        - Verify peer dependency compatibility
+        - Flag known security vulnerabilities (check npm advisory)
+        - Ensure version ranges are appropriate
+        - Cross-reference with other package.json files in the monorepo for version consistency
+        - Flag if a dependency upgrade requires code changes not included in the PR
+
+    - path: "**/pnpm-lock.yaml"
+      instructions: |
+        ## Lock File Review
+        - Verify lock file changes match package.json changes
+        - Flag unexpected transitive dependency changes
+        - Check for duplicate package versions that could cause issues
+        - Ensure no accidental downgrades of security-patched packages
+
+    - path: "packages/agents/**"
+      instructions: |
+        ## Agent SDK Review
+        Review against packages/agents/docs/ for patterns and conventions:
+        - Verify proper use of the agent/workflow/step/tool abstractions
+        - Check that Result types are used for expected failures
+        - Ensure provider and model configurations are correct
+        - Verify token usage tracking is not bypassed
+        - Check that Zod schemas are used for tool parameter validation
+        - Ensure streaming support is maintained where applicable
+
+    - path: "packages/prompts/**"
+      instructions: |
+        ## Prompt SDK Review
+        Review against packages/prompts/docs/ for patterns and conventions:
+        - Verify .prompt file format compliance (Liquid + YAML frontmatter)
+        - Check that Zod schemas are used for prompt variable validation
+        - Ensure CLI commands follow established patterns
+        - Verify code generation output is correct
+        - Check that partials are properly registered and referenced
+
+    - path: "**/*.ts"
+      instructions: |
+        ## TypeScript Patterns
+        - Use ts-pattern for conditional logic with 2+ branches instead of switch statements
+        - Prefer exhaustive pattern matching for type safety
+        - Avoid using 'any' type - use 'unknown' and narrow appropriately
+        - Use const exclusively - no let declarations
+        - No classes - use plain objects, factory functions, closures
+        - JSDoc on all exports with @param, @returns, @example
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+    unit_tests:
+      enabled: false
+
+  tools:
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    semgrep:
+      enabled: true
+    markdownlint:
+      enabled: true
+    languagetool:
+      enabled: true
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  pull_requests:
+    scope: auto

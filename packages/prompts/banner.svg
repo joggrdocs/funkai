@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 838 432">
+  <defs>
+    <style>
+      .text { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; }
+      .code { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 12px; }
+      .ln { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #45475a; text-anchor: end; }
+      .tab { font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace; font-size: 11px; fill: #cdd6f4; }
+      .brand { fill: #a78bfa; }
+      .dim { fill: #6c7086; }
+      .kw { fill: #cba6f7; }
+      .fn { fill: #89b4fa; }
+      .st { fill: #a6e3a1; }
+      .pr { fill: #94e2d5; }
+      .vr { fill: #fab387; }
+      .tx { fill: #cdd6f4; }
+      .op { fill: #9399b2; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="838" height="432" rx="10" ry="10" fill="#1e1e2e" />
+
+  <!-- Title bar -->
+  <rect width="838" height="36" rx="10" ry="10" fill="#181825" />
+  <rect y="26" width="838" height="10" fill="#181825" />
+
+  <!-- Traffic lights -->
+  <circle cx="20" cy="18" r="6" fill="#f38ba8" />
+  <circle cx="40" cy="18" r="6" fill="#f9e2af" />
+  <circle cx="60" cy="18" r="6" fill="#a6e3a1" />
+
+  <!-- Title bar text -->
+  <text class="text dim" font-size="12" x="419" y="22" text-anchor="middle">prompts-sdk</text>
+
+  <!-- ASCII art logo (centered) -->
+  <g transform="translate(170, 0)">
+    <text class="text brand" font-size="13" y="68" xml:space="preserve">██████╗ ██████╗  ██████╗ ███╗   ███╗██████╗ ████████╗███████╗</text>
+    <text class="text brand" font-size="13" y="84" xml:space="preserve">██╔══██╗██╔══██╗██╔═══██╗████╗ ████║██╔══██╗╚══██╔══╝██╔════╝</text>
+    <text class="text brand" font-size="13" y="100" xml:space="preserve">██████╔╝██████╔╝██║   ██║██╔████╔██║██████╔╝   ██║   ███████╗</text>
+    <text class="text brand" font-size="13" y="116" xml:space="preserve">██╔═══╝ ██╔══██╗██║   ██║██║╚██╔╝██║██╔═══╝    ██║   ╚════██║</text>
+    <text class="text brand" font-size="13" y="132" xml:space="preserve">██║     ██║  ██║╚██████╔╝██║ ╚═╝ ██║██║        ██║   ███████║</text>
+    <text class="text brand" font-size="13" y="148" xml:space="preserve">╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝        ╚═╝   ╚══════╝</text>
+  </g>
+
+  <!-- Tagline -->
+  <text class="text dim" font-size="12" x="419" y="172" text-anchor="middle">prompt sdk with liquidjs templating and zod validation</text>
+
+  <!-- Separator -->
+  <line x1="16" y1="188" x2="822" y2="188" stroke="#313244" stroke-width="1" />
+
+  <!-- Split pane divider -->
+  <line x1="419" y1="188" x2="419" y2="352" stroke="#313244" stroke-width="1" />
+
+  <!-- LEFT PANE: greeting.prompt -->
+  <rect x="4" y="192" width="128" height="24" rx="4" ry="4" fill="#181825" />
+  <text class="tab" x="18" y="208">greeting.prompt</text>
+
+  <line x1="38" y1="220" x2="38" y2="352" stroke="#313244" stroke-width="1" />
+
+  <text class="ln" x="30" y="236">1</text>
+  <text class="ln" x="30" y="252">2</text>
+  <text class="ln" x="30" y="268">3</text>
+  <text class="ln" x="30" y="284">4</text>
+  <text class="ln" x="30" y="300">5</text>
+  <text class="ln" x="30" y="316">6</text>
+  <text class="ln" x="30" y="332">7</text>
+
+  <text class="code dim" x="48" y="236" xml:space="preserve">---</text>
+  <text class="code" x="48" y="252" xml:space="preserve"><tspan class="pr">name</tspan><tspan class="op">: </tspan><tspan class="st">greeting</tspan></text>
+  <text class="code" x="48" y="268" xml:space="preserve"><tspan class="pr">schema</tspan><tspan class="op">:</tspan></text>
+  <text class="code" x="48" y="284" xml:space="preserve"><tspan class="op">  </tspan><tspan class="pr">name</tspan><tspan class="op">: </tspan><tspan class="st">string</tspan></text>
+  <text class="code dim" x="48" y="300" xml:space="preserve">---</text>
+  <!-- Line 6: (empty) -->
+  <text class="code" x="48" y="332" xml:space="preserve"><tspan class="tx">Hello </tspan><tspan class="vr">{{ name }}</tspan><tspan class="tx">, welcome!</tspan></text>
+
+  <!-- RIGHT PANE: app.ts -->
+  <rect x="423" y="192" width="64" height="24" rx="4" ry="4" fill="#181825" />
+  <text class="tab" x="437" y="208">app.ts</text>
+
+  <line x1="457" y1="220" x2="457" y2="352" stroke="#313244" stroke-width="1" />
+
+  <text class="ln" x="449" y="236">1</text>
+  <text class="ln" x="449" y="252">2</text>
+  <text class="ln" x="449" y="268">3</text>
+  <text class="ln" x="449" y="284">4</text>
+
+  <text class="code" x="467" y="236" xml:space="preserve"><tspan class="kw">import</tspan><tspan class="op"> { </tspan><tspan class="fn">prompts</tspan><tspan class="op"> } </tspan><tspan class="kw">from</tspan><tspan class="st"> '~prompts'</tspan></text>
+  <!-- Line 2: (empty) -->
+  <text class="code" x="467" y="268" xml:space="preserve"><tspan class="kw">const</tspan><tspan class="tx"> msg </tspan><tspan class="op">= </tspan><tspan class="fn">prompts</tspan><tspan class="op">(</tspan><tspan class="st">'greeting'</tspan><tspan class="op">)</tspan></text>
+  <text class="code" x="467" y="284" xml:space="preserve"><tspan class="op">  .</tspan><tspan class="fn">render</tspan><tspan class="op">({ </tspan><tspan class="pr">name</tspan><tspan class="op">: </tspan><tspan class="st">'World'</tspan><tspan class="op"> })</tspan></text>
+
+  <!-- Separator 2 -->
+  <line x1="16" y1="352" x2="822" y2="352" stroke="#313244" stroke-width="1" />
+
+  <!-- Terminal -->
+  <rect x="4" y="356" width="80" height="24" rx="4" ry="4" fill="#181825" />
+  <text class="tab" x="18" y="372">terminal</text>
+
+  <text class="code" x="18" y="400" xml:space="preserve"><tspan class="st">$</tspan><tspan class="tx"> prompts generate </tspan><tspan class="pr">--out</tspan><tspan class="vr"> .prompts </tspan><tspan class="pr">--roots</tspan><tspan class="vr"> src/agents</tspan></text>
+</svg>
