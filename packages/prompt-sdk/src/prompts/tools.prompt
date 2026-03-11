@@ -1,0 +1,14 @@
+<tools>
+You have access to the following tools:
+{% if tools %}
+{% for tool in tools %}
+**{{ tool.name }}** -- {{ tool.description }}
+{% for param in tool.params %}
+- `{{ param.name }}` ({{ param.type }}{% if param.required %}, required{% endif %}) -- {{ param.description }}
+{% endfor %}
+
+{% endfor %}
+{% else %}
+No tools are configured for this agent.
+{% endif %}
+</tools>

@@ -1,0 +1,39 @@
+{
+  "name": "@pkg/agent-sdk",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Lightweight workflow and agent handle orchestration framework",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "generate:models": "tsx scripts/generate-models.ts",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --typecheck",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@openrouter/ai-sdk-provider": "^2.2.3",
+    "ai": "catalog:",
+    "es-toolkit": "1.45.0",
+    "ts-pattern": "catalog:",
+    "type-fest": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@ai-sdk/devtools": "^0.0.15",
+    "@openrouter/sdk": "^0.9.11",
+    "@pkg/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "^4.0.18",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

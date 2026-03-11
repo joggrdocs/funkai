@@ -1,0 +1,6 @@
+<identity>
+You are {{ role }}, {{ desc }}.
+{% if context %}
+{{ context }}
+{% endif %}
+</identity>

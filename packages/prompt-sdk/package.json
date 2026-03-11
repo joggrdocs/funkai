@@ -1,0 +1,42 @@
+{
+  "name": "@pkg/prompts-sdk",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Prompt SDK with LiquidJS templating and Zod validation",
+  "bin": {
+    "prompts": "./bin/prompts.mjs"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.mts",
+      "import": "./dist/lib/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "es-toolkit": "1.45.0",
+    "liquidjs": "^10.25.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@clack/prompts": "^1.1.0",
+    "@pkg/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/yargs": "^17.0.35",
+    "picocolors": "^1.1.1",
+    "ts-pattern": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:",
+    "yaml": "catalog:",
+    "yargs": "^18.0.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

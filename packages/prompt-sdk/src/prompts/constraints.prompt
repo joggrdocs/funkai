@@ -1,0 +1,20 @@
+<constraints>
+{% if in_scope %}
+## In Scope
+{% for item in in_scope %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+{% if out_of_scope %}
+## Out of Scope
+{% for item in out_of_scope %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+{% if rules %}
+## Rules
+{% for rule in rules %}
+- {{ rule }}
+{% endfor %}
+{% endif %}
+</constraints>
