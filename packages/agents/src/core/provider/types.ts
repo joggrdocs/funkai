@@ -88,18 +88,6 @@ export interface AgentTokenUsage extends TokenUsage {
 }
 
 /**
- * Final workflow-level usage — per-agent breakdown.
- *
- * Produced by `workflowUsage()` at the end of a workflow's execution.
- *
- * @deprecated Use `FlowAgentTokenUsage` instead.
- */
-export interface WorkflowTokenUsage {
-  /** Per-agent usage entries. */
-  readonly usages: readonly AgentTokenUsage[]
-}
-
-/**
  * Final flow agent-level usage — per-agent breakdown.
  *
  * Produced by `flowAgentUsage()` at the end of a flow agent's execution.

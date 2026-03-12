@@ -1,15 +1,13 @@
 export { tool } from '@/core/tool.js'
-export { agent } from '@/core/agent/agent.js'
-export { resolveOutput } from '@/core/agent/output.js'
-export { flowAgent } from '@/core/flow-agent/flow-agent.js'
-export { createFlowEngine } from '@/core/flow-agent/engine.js'
-export { workflow } from '@/core/workflows/workflow.js'
-export { createWorkflowEngine } from '@/core/workflows/engine.js'
+export { agent } from '@/core/agents/base/agent.js'
+export { resolveOutput } from '@/core/agents/base/output.js'
+export { flowAgent } from '@/core/agents/flow/flow-agent.js'
+export { createFlowEngine } from '@/core/agents/flow/engine.js'
 export { createDefaultLogger } from '@/core/logger.js'
 export { model, tryModel, models } from '@/core/models/index.js'
 export { createOpenRouter, openrouter } from '@/core/provider/provider.js'
-export { agentUsage, flowAgentUsage, workflowUsage, sumTokenUsage } from '@/core/provider/usage.js'
-export { createStepBuilder } from '@/core/workflows/steps/factory.js'
+export { agentUsage, flowAgentUsage, sumTokenUsage } from '@/core/provider/usage.js'
+export { createStepBuilder } from '@/core/agents/flow/steps/factory.js'
 
 export type { Runnable, Model, ModelRef } from '@/core/types.js'
 export { toError, safeStringify, safeStringifyJSON } from '@/utils/error.js'
@@ -18,7 +16,7 @@ export type { Result, ResultError } from '@/utils/result.js'
 export type { Logger } from '@/core/logger.js'
 export type { Tool, ToolConfig } from '@/core/tool.js'
 
-export type { OutputSpec, OutputParam } from '@/core/agent/output.js'
+export type { OutputSpec, OutputParam } from '@/core/agents/base/output.js'
 
 export type {
   SubAgents,
@@ -28,7 +26,7 @@ export type {
   AgentOverrides,
   GenerateResult,
   StreamResult,
-} from '@/core/agent/types.js'
+} from '@/core/agents/base/types.js'
 
 export type {
   FlowAgent,
@@ -37,7 +35,8 @@ export type {
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,
-} from '@/core/flow-agent/types.js'
+  StepInfo,
+} from '@/core/agents/flow/types.js'
 
 export type {
   FlowFactory,
@@ -45,39 +44,19 @@ export type {
   CustomStepDefinitions as FlowCustomStepDefinitions,
   CustomStepFactory as FlowCustomStepFactory,
   TypedCustomSteps as FlowTypedCustomSteps,
-} from '@/core/flow-agent/engine.js'
+} from '@/core/agents/flow/engine.js'
 
-export type {
-  Workflow,
-  WorkflowConfig,
-  WorkflowOverrides,
-  WorkflowResult,
-  WorkflowStreamResult,
-  WorkflowHandler,
-  WorkflowParams,
-} from '@/core/workflows/workflow.js'
-
-export type { StepInfo, StepEvent } from '@/core/workflows/types.js'
-
-export type { StepBuilderOptions } from '@/core/workflows/steps/factory.js'
-export type { StepResult, StepError } from '@/core/workflows/steps/result.js'
-export type { StepBuilder } from '@/core/workflows/steps/builder.js'
-export type { StepConfig } from '@/core/workflows/steps/step.js'
-export type { AgentStepConfig } from '@/core/workflows/steps/agent.js'
-export type { MapConfig } from '@/core/workflows/steps/map.js'
-export type { EachConfig } from '@/core/workflows/steps/each.js'
-export type { ReduceConfig } from '@/core/workflows/steps/reduce.js'
-export type { WhileConfig } from '@/core/workflows/steps/while.js'
-export type { AllConfig, EntryFactory } from '@/core/workflows/steps/all.js'
-export type { RaceConfig } from '@/core/workflows/steps/race.js'
-
-export type {
-  EngineConfig,
-  CustomStepDefinitions,
-  CustomStepFactory,
-  TypedCustomSteps,
-  WorkflowFactory,
-} from '@/core/workflows/engine.js'
+export type { StepBuilderOptions } from '@/core/agents/flow/steps/factory.js'
+export type { StepResult, StepError } from '@/core/agents/flow/steps/result.js'
+export type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
+export type { StepConfig } from '@/core/agents/flow/steps/step.js'
+export type { AgentStepConfig } from '@/core/agents/flow/steps/agent.js'
+export type { MapConfig } from '@/core/agents/flow/steps/map.js'
+export type { EachConfig } from '@/core/agents/flow/steps/each.js'
+export type { ReduceConfig } from '@/core/agents/flow/steps/reduce.js'
+export type { WhileConfig } from '@/core/agents/flow/steps/while.js'
+export type { AllConfig, EntryFactory } from '@/core/agents/flow/steps/all.js'
+export type { RaceConfig } from '@/core/agents/flow/steps/race.js'
 
 export type {
   OpenRouterLanguageModelId,
@@ -93,7 +72,6 @@ export type {
   TokenUsageRecord,
   AgentTokenUsage,
   FlowAgentTokenUsage,
-  WorkflowTokenUsage,
 } from '@/core/provider/types.js'
 
 export type { Output } from 'ai'

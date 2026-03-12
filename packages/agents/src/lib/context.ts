@@ -1,4 +1,4 @@
-import type { Message } from '@/core/agent/types.js'
+import type { Message } from '@/core/agents/base/types.js'
 import type { Logger } from '@/core/logger.js'
 import type { TraceEntry } from '@/lib/trace.js'
 

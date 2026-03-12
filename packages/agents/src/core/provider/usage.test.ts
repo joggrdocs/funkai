@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { TokenUsage, TokenUsageRecord } from '@/core/provider/types.js'
-import { agentUsage, sumTokenUsage, workflowUsage } from '@/core/provider/usage.js'
+import { agentUsage, sumTokenUsage, flowAgentUsage } from '@/core/provider/usage.js'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -104,11 +104,12 @@ describe('agentUsage()', () => {
 })
 
 // ---------------------------------------------------------------------------
-// workflowUsage()
+// flowAgentUsage()
 // ---------------------------------------------------------------------------
 
-describe('workflowUsage()', () => {
+describe('flowAgentUsage()', () => {
   it('groups records by source.agentId and returns per-agent usage', () => {
+
     const records: TokenUsageRecord[] = [
       createRecord({
         inputTokens: 100,
@@ -130,7 +131,7 @@ describe('workflowUsage()', () => {
       }),
     ]
 
-    const result = workflowUsage(records)
+    const result = flowAgentUsage(records)
 
     expect(result.usages).toHaveLength(2)
 
@@ -157,7 +158,7 @@ describe('workflowUsage()', () => {
       createRecord({ inputTokens: 50 }),
     ]
 
-    const result = workflowUsage(records)
+    const result = flowAgentUsage(records)
 
     expect(result.usages).toHaveLength(1)
     const unknown = result.usages[0]
@@ -176,7 +177,7 @@ describe('workflowUsage()', () => {
       }),
     ]
 
-    const result = workflowUsage(records)
+    const result = flowAgentUsage(records)
 
     expect(result.usages).toHaveLength(1)
     const unknown = result.usages[0]
@@ -187,7 +188,7 @@ describe('workflowUsage()', () => {
   })
 
   it('returns empty usages array for empty records', () => {
-    const result = workflowUsage([])
+    const result = flowAgentUsage([])
 
     expect(result.usages).toEqual([])
   })
@@ -204,7 +205,7 @@ describe('workflowUsage()', () => {
       }),
     ]
 
-    const result = workflowUsage(records)
+    const result = flowAgentUsage(records)
 
     expect(result.usages).toHaveLength(1)
     const agentX = result.usages[0]
