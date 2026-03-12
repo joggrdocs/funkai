@@ -1,32 +1,34 @@
 {
-  "name": "@funkai/prompts",
+  "name": "@funkai/cli",
   "version": "0.4.0",
   "private": false,
   "license": "MIT",
-  "description": "Prompt SDK with LiquidJS templating and Zod validation",
+  "description": "CLI for the funkai prompt SDK",
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
-    "directory": "packages/prompts"
+    "directory": "packages/cli"
+  },
+  "bin": {
+    "prompts": "./bin/prompts.mjs"
   },
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/lib/index.d.mts",
-      "import": "./dist/lib/index.mjs"
-    }
-  },
   "scripts": {
-    "build": "tsdown && cp -r src/prompts dist/prompts",
+    "dev": "kidd dev",
+    "build": "kidd build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
-    "es-toolkit": "^1.45.1",
+    "@funkai/prompts": "workspace:*",
+    "@kidd-cli/core": "^0.4.0",
     "liquidjs": "^10.25.0",
+    "ts-pattern": "^5.9.0",
+    "yaml": "^2.8.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@kidd-cli/cli": "^0.2.0",
     "@types/node": "^25.4.0",
     "tsdown": "^0.21.2",
     "typescript": "^5.9.3",

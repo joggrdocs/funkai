@@ -2,9 +2,9 @@ import { resolve } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import { flattenPartials } from '@/cli/lib/flatten.js'
+import { flattenPartials } from '@/lib/flatten.js'
 
-const PARTIALS_DIR = resolve(import.meta.dirname, '../../../prompts')
+const PARTIALS_DIR = resolve(import.meta.dirname, '../../../../prompts/src/prompts')
 
 describe('flattenPartials', () => {
   describe('param parsing', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseFrontmatter } from '@/cli/lib/frontmatter.js'
+import { parseFrontmatter } from '@/lib/frontmatter.js'
 
 describe('parseFrontmatter', () => {
   it('parses name from frontmatter', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { extractVariables } from '@/cli/lib/extract-variables.js'
+import { extractVariables } from '@/lib/extract-variables.js'
 
 describe('extractVariables', () => {
   it('extracts simple variables', () => {

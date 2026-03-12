@@ -54,19 +54,24 @@ flowchart LR
 ## Package Structure
 
 ```
-📁 packages/prompts-sdk/
+📁 packages/prompts/
 ├── 📁 src/
-│   ├── 📁 cli/
-│   │   ├── 📁 commands/       # generate, lint, create, setup
-│   │   └── 📁 lib/            # codegen, frontmatter, flatten, lint, paths
 │   ├── 📁 prompts/            # Built-in partials (identity, constraints, tools)
 │   ├── 📄 engine.ts           # LiquidJS engine factory
 │   ├── 📄 registry.ts         # Typed prompt registry
 │   ├── 📄 clean.ts            # Frontmatter stripping pipeline
+│   ├── 📄 partials-dir.ts     # PARTIALS_DIR export for CLI/consumers
 │   ├── 📄 types.ts            # PromptModule, PromptNamespace, PromptRegistry types
 │   └── 📄 index.ts            # Public exports
 └── 📁 docs/
+
+📁 packages/cli/               # @funkai/cli — CLI binary (see @funkai/cli README)
+├── 📁 commands/               # generate, lint, create, setup
+├── 📁 src/lib/                # codegen, frontmatter, flatten, lint, paths
+└── 📄 index.ts                # CLI entry point (kidd-cli)
 ```
+
+> **Note:** The CLI was extracted to `@funkai/cli`. Install it separately for the `prompts` binary.
 
 ## Dual Surface
 

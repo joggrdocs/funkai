@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { hasLintErrors, lintPrompt } from '@/cli/lib/lint.js'
+import { hasLintErrors, lintPrompt } from '@/lib/lint.js'
 
 describe('lintPrompt', () => {
   it('returns no diagnostics when vars match schema', () => {
