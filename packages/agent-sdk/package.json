@@ -1,8 +1,14 @@
 {
-  "name": "@pkg/agent-sdk",
+  "name": "@funkai/agents",
   "version": "0.4.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
   "description": "Lightweight workflow and agent handle orchestration framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joggrdocs/funkai.git",
+    "directory": "packages/agent-sdk"
+  },
   "type": "module",
   "exports": {
     ".": {
@@ -18,22 +24,21 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.2.3",
-    "ai": "catalog:",
-    "es-toolkit": "1.45.0",
-    "ts-pattern": "catalog:",
-    "type-fest": "catalog:",
-    "zod": "catalog:"
+    "@openrouter/ai-sdk-provider": "^2.3.0",
+    "ai": "^6.0.116",
+    "es-toolkit": "^1.45.1",
+    "ts-pattern": "^5.9.0",
+    "type-fest": "^5.4.4",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@ai-sdk/devtools": "^0.0.15",
     "@openrouter/sdk": "^0.9.11",
-    "@pkg/tsconfig": "workspace:*",
-    "@types/node": "catalog:",
+    "@types/node": "^25.4.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "tsdown": "catalog:",
-    "tsx": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "tsdown": "^0.21.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
