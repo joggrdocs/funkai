@@ -4,7 +4,6 @@ import {
   createToolCallMessage,
   createToolResultMessage,
 } from "@/core/agents/flow/messages.js";
-import type { StepInfo } from "@/core/agents/flow/types.js";
 import type { AgentStepConfig } from "@/core/agents/flow/steps/agent.js";
 import type { AllConfig } from "@/core/agents/flow/steps/all.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
@@ -15,6 +14,7 @@ import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
 import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
+import type { StepInfo } from "@/core/agents/flow/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";

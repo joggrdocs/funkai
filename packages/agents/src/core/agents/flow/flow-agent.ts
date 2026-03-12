@@ -2,6 +2,8 @@ import type { AsyncIterableStream } from "ai";
 
 import type { Message, StreamPart } from "@/core/agents/base/types.js";
 import { createAssistantMessage, createUserMessage } from "@/core/agents/flow/messages.js";
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
+import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
 import type {
   FlowAgent,
   FlowAgentConfig,
@@ -13,8 +15,6 @@ import type {
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import { sumTokenUsage } from "@/core/provider/usage.js";
-import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
-import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";

@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { clean, PARTIALS_DIR } from "@funkai/prompts";
 import { command } from "@kidd-cli/core";
 import { match } from "ts-pattern";
 import { z } from "zod";
 
-import { clean, PARTIALS_DIR } from "@funkai/prompts";
 import { extractVariables } from "@/lib/extract-variables.js";
 import { flattenPartials } from "@/lib/flatten.js";
 import { parseFrontmatter } from "@/lib/frontmatter.js";
