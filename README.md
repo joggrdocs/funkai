@@ -39,6 +39,43 @@ schema:
 You are a {{ tone }} writer.
 ```
 
+### Define a prompt with schema
+
+```
+---
+name: reviewer
+group: agents/reviewer
+schema:
+  language: string
+  strict:
+    type: string
+    required: false
+---
+
+You are a {{ language }} code reviewer.
+{% if strict %}
+Apply strict standards: {{ strict }}
+{% endif %}
+```
+
+### Use prompts with agents
+
+```ts
+import { agent } from '@funkai/agents'
+import { prompts } from '~prompts'
+
+const reviewer = agent({
+  name: 'reviewer',
+  model: 'openai/gpt-4.1',
+  system: prompts.agents.reviewer.render({
+    language: 'TypeScript',
+    strict: 'no any, no mutations',
+  }),
+})
+
+const result = await reviewer.generate('Review this pull request')
+```
+
 ### Generate typed prompts
 
 ```bash
