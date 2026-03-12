@@ -98,7 +98,7 @@
   <text class="tab" x="391" y="202">writer.prompt</text>
   <line x1="425" y1="214" x2="425" y2="494" stroke="#313244" stroke-width="1" />
 
-  <!-- 1  --- -->
+  <!-- 1  frontmatter open -->
   <text class="ln" x="419" y="234">1</text>
   <text class="code" x="435" y="234"><tspan class="dim">---</tspan></text>
 
@@ -126,7 +126,7 @@
   <text class="ln" x="419" y="330">7</text>
   <text class="code" x="435" y="330" xml:space="preserve"><tspan class="op">    </tspan><tspan class="pr">required</tspan><tspan class="op">: </tspan><tspan class="kw">false</tspan></text>
 
-  <!-- 8  --- -->
+  <!-- 8  frontmatter close -->
   <text class="ln" x="419" y="346">8</text>
   <text class="code" x="435" y="346"><tspan class="dim">---</tspan></text>
 
