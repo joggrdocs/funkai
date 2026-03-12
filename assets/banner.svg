@@ -89,13 +89,13 @@
   <text class="ln" x="46" y="370">10</text>
   <text class="code" x="62" y="370" xml:space="preserve"><tspan class="op">  </tspan><tspan class="kw">async </tspan><tspan class="op">({ </tspan><tspan class="vr">input</tspan><tspan class="op">, </tspan><tspan class="vr">$</tspan><tspan class="op"> }) => {</tspan></text>
 
-  <!-- 11     await $.agent({ -->
+  <!-- 11     const prData = await $.step({ -->
   <text class="ln" x="46" y="386">11</text>
-  <text class="code" x="62" y="386" xml:space="preserve"><tspan class="op">    </tspan><tspan class="kw">await </tspan><tspan class="vr">$</tspan><tspan class="op">.</tspan><tspan class="fn">agent</tspan><tspan class="op">({</tspan></text>
+  <text class="code" x="62" y="386" xml:space="preserve"><tspan class="op">    </tspan><tspan class="kw">const </tspan><tspan class="vr">prData</tspan><tspan class="op"> = </tspan><tspan class="kw">await </tspan><tspan class="vr">$</tspan><tspan class="op">.</tspan><tspan class="fn">step</tspan><tspan class="op">({</tspan></text>
 
-  <!-- 12       id: 'draft', agent: writer, -->
+  <!-- 12       id: 'fetch-github-pr-data', -->
   <text class="ln" x="46" y="402">12</text>
-  <text class="code" x="62" y="402" xml:space="preserve"><tspan class="op">      </tspan><tspan class="pr">id</tspan><tspan class="op">: </tspan><tspan class="st">'draft'</tspan><tspan class="op">, </tspan><tspan class="pr">agent</tspan><tspan class="op">: </tspan><tspan class="vr">writer</tspan><tspan class="op">,</tspan></text>
+  <text class="code" x="62" y="402" xml:space="preserve"><tspan class="op">      </tspan><tspan class="pr">id</tspan><tspan class="op">: </tspan><tspan class="st">'fetch-github-pr-data'</tspan><tspan class="op">,</tspan></text>
 
   <!-- 13       ... -->
   <text class="ln" x="46" y="418">13</text>
@@ -105,9 +105,9 @@
   <text class="ln" x="46" y="434">14</text>
   <text class="code" x="62" y="434" xml:space="preserve"><tspan class="op">    })</tspan></text>
 
-  <!-- 15     await $.step({ id: 'fetch-github-pr-data', ... }) -->
+  <!-- 15     ... -->
   <text class="ln" x="46" y="450">15</text>
-  <text class="code" x="62" y="450" xml:space="preserve"><tspan class="op">    </tspan><tspan class="kw">await </tspan><tspan class="vr">$</tspan><tspan class="op">.</tspan><tspan class="fn">step</tspan><tspan class="op">({ </tspan><tspan class="pr">id</tspan><tspan class="op">: </tspan><tspan class="st">'fetch-github-pr-data'</tspan><tspan class="op">, </tspan><tspan class="dim">...</tspan><tspan class="op"> })</tspan></text>
+  <text class="code" x="62" y="450" xml:space="preserve"><tspan class="op">    </tspan><tspan class="dim">...</tspan></text>
 
   <!-- 16   }) -->
   <text class="ln" x="46" y="466">16</text>
