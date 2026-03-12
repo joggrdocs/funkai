@@ -1,14 +1,14 @@
-import { match } from 'ts-pattern'
+import { match } from "ts-pattern";
 
-import type { Logger } from '@/core/logger.js'
+import type { Logger } from "@/core/logger.js";
 
 const formatHookError = (err: unknown): string =>
   match(err)
     .when(
       (e): e is Error => e instanceof Error,
-      (e) => e.message
+      (e) => e.message,
     )
-    .otherwise((e) => String(e))
+    .otherwise((e) => String(e));
 
 /**
  * Run hook callbacks sequentially, logging errors at warn level.
@@ -27,12 +27,12 @@ export async function fireHooks(
     if (h != null) {
       try {
         // oxlint-disable-next-line no-await-in-loop - sequential by design
-        await h()
+        await h();
       } catch (err) {
-        const errorMessage = formatHookError(err)
-        log.warn('hook error', {
+        const errorMessage = formatHookError(err);
+        log.warn("hook error", {
           error: errorMessage,
-        })
+        });
       }
     }
   }

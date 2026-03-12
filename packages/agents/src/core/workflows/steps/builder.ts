@@ -1,13 +1,13 @@
-import type { GenerateResult } from '@/core/agent/types.js'
-import type { AgentStepConfig } from '@/core/workflows/steps/agent.js'
-import type { AllConfig } from '@/core/workflows/steps/all.js'
-import type { EachConfig } from '@/core/workflows/steps/each.js'
-import type { MapConfig } from '@/core/workflows/steps/map.js'
-import type { RaceConfig } from '@/core/workflows/steps/race.js'
-import type { ReduceConfig } from '@/core/workflows/steps/reduce.js'
-import type { StepResult } from '@/core/workflows/steps/result.js'
-import type { StepConfig } from '@/core/workflows/steps/step.js'
-import type { WhileConfig } from '@/core/workflows/steps/while.js'
+import type { GenerateResult } from "@/core/agent/types.js";
+import type { AgentStepConfig } from "@/core/workflows/steps/agent.js";
+import type { AllConfig } from "@/core/workflows/steps/all.js";
+import type { EachConfig } from "@/core/workflows/steps/each.js";
+import type { MapConfig } from "@/core/workflows/steps/map.js";
+import type { RaceConfig } from "@/core/workflows/steps/race.js";
+import type { ReduceConfig } from "@/core/workflows/steps/reduce.js";
+import type { StepResult } from "@/core/workflows/steps/result.js";
+import type { StepConfig } from "@/core/workflows/steps/step.js";
+import type { WhileConfig } from "@/core/workflows/steps/while.js";
 
 /**
  * The `$` object — composable workflow step utilities.
@@ -29,7 +29,7 @@ export interface StepBuilder {
    * @returns A `StepResult` with `.value` containing the step's
    *   return value on success, or a `StepError` on failure.
    */
-  step<T>(config: StepConfig<T>): Promise<StepResult<T>>
+  step<T>(config: StepConfig<T>): Promise<StepResult<T>>;
 
   /**
    * Execute an agent call as a tracked operation.
@@ -44,7 +44,7 @@ export interface StepBuilder {
    *   optional overrides, and optional hooks.
    * @returns A `StepResult` wrapping the agent's `GenerateResult`.
    */
-  agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>
+  agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>;
 
   /**
    * Parallel map — each item is a tracked operation.
@@ -58,7 +58,7 @@ export interface StepBuilder {
    *   function, optional concurrency, and optional hooks.
    * @returns A `StepResult` wrapping the array of results in input order.
    */
-  map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>
+  map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>;
 
   /**
    * Sequential side effects — runs one item at a time.
@@ -70,7 +70,7 @@ export interface StepBuilder {
    *   function, and optional hooks.
    * @returns A `StepResult` wrapping void when all items are processed.
    */
-  each<T>(config: EachConfig<T>): Promise<StepResult<void>>
+  each<T>(config: EachConfig<T>): Promise<StepResult<void>>;
 
   /**
    * Sequential accumulation — each step depends on the previous result.
@@ -81,7 +81,7 @@ export interface StepBuilder {
    *   value, execute function, and optional hooks.
    * @returns A `StepResult` wrapping the final accumulated value.
    */
-  reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>
+  reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>;
 
   /**
    * Conditional loop — runs while a condition holds.
@@ -94,7 +94,7 @@ export interface StepBuilder {
    *   function, and optional hooks.
    * @returns A `StepResult` wrapping the last iteration's value, or `undefined`.
    */
-  while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>
+  while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>;
 
   /**
    * Run heterogeneous operations concurrently — like `Promise.all`.
@@ -107,7 +107,7 @@ export interface StepBuilder {
    *   and optional hooks.
    * @returns A `StepResult` wrapping the array of results in entry order.
    */
-  all(config: AllConfig): Promise<StepResult<unknown[]>>
+  all(config: AllConfig): Promise<StepResult<unknown[]>>;
 
   /**
    * Run operations concurrently — first to finish wins.
@@ -120,5 +120,5 @@ export interface StepBuilder {
    *   and optional hooks.
    * @returns A `StepResult` wrapping the first resolved value.
    */
-  race(config: RaceConfig): Promise<StepResult<unknown>>
+  race(config: RaceConfig): Promise<StepResult<unknown>>;
 }

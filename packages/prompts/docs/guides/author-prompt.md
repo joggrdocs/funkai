@@ -38,9 +38,9 @@ prompts generate --out .prompts/client --roots src/agents
 7. Import and use:
 
 ```ts
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
-const text = prompts('my-agent').render({ scope: 'full' })
+const text = prompts.myAgent.render({ scope: "full" });
 ```
 
 ## Verification

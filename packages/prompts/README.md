@@ -84,72 +84,11 @@ The `.prompts` directory is your prompt workspace:
 
 ## CLI
 
-### `prompts generate`
-
-Generate typed TypeScript modules from `.prompt` files.
+The CLI has been extracted to [`@funkai/cli`](../cli/README.md). Install it for the `prompts` binary:
 
 ```bash
-prompts generate --out .prompts/client --roots prompts src/agents src/workflows
+pnpm add @funkai/cli --workspace
 ```
-
-| Flag       | Alias | Required | Description                                         |
-| ---------- | ----- | -------- | --------------------------------------------------- |
-| `--out`    | `-o`  | Yes      | Output directory for generated files                |
-| `--roots`  | `-r`  | Yes      | Directories to scan recursively for `.prompt` files |
-| `--silent` | —     | No       | Suppress output except errors                       |
-
-Custom partials are auto-discovered from the sibling `partials/` directory (relative to `--out`).
-
-Runs lint validation automatically. Exits with code 1 on lint errors.
-
-### `prompts lint`
-
-Validate `.prompt` files without generating output.
-
-```bash
-prompts lint --roots prompts src/agents
-```
-
-| Flag         | Alias | Required | Description                                              |
-| ------------ | ----- | -------- | -------------------------------------------------------- |
-| `--roots`    | `-r`  | Yes      | Directories to scan                                      |
-| `--partials` | `-p`  | No       | Custom partials directory (default: `.prompts/partials`) |
-| `--silent`   | —     | No       | Suppress output except errors                            |
-
-Reports:
-
-- **Error** — template variable not declared in schema (undefined var)
-- **Warn** — schema variable not used in template (unused var)
-
-### `prompts create`
-
-Scaffold a new `.prompt` file.
-
-```bash
-prompts create my-agent
-prompts create my-agent --out src/agents/my-agent
-```
-
-| Arg/Flag    | Required | Description                                                   |
-| ----------- | -------- | ------------------------------------------------------------- |
-| `<name>`    | Yes      | Prompt name (kebab-case)                                      |
-| `--out`     | No       | Output directory (defaults to cwd)                            |
-| `--partial` | No       | Create as a partial in `.prompts/partials/` (ignores `--out`) |
-
-### `prompts setup`
-
-Interactive project configuration for `.prompt` file development.
-
-```bash
-prompts setup
-```
-
-Prompts to configure:
-
-1. VSCode file association (`*.prompt` → Markdown)
-2. VSCode Liquid extension recommendation
-3. `.gitignore` entry for generated `.prompts/client/` directory
-4. `tsconfig.json` path alias (`~prompts` → `./.prompts/client/index.ts`)
 
 ## Usage
 
@@ -170,26 +109,43 @@ Add the `~prompts` alias to your `tsconfig.json` (or run `prompts setup`):
 Import and use:
 
 ```typescript
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
 // Render a prompt (validates variables via Zod)
-const instructions = prompts('coverage-assessor').render({ scope: 'full' })
+const instructions = prompts.agents.coverageAssessor.coverageAssessor.render({ scope: "full" });
 
 // Access the schema
-const schema = prompts('coverage-assessor').schema
+const schema = prompts.agents.coverageAssessor.coverageAssessor.schema;
 
 // Validate without rendering
-const vars = prompts('coverage-assessor').validate({ scope: 'full' })
+const vars = prompts.agents.coverageAssessor.coverageAssessor.validate({ scope: "full" });
+```
+
+### Nesting with Groups
+
+Prompts are organized by their `group` field. Each `/`-separated segment becomes a nesting level, with all names converted to camelCase:
+
+```typescript
+import { prompts } from "~prompts";
+
+// No group — top-level access
+prompts.greeting.render();
+
+// group: agents
+prompts.agents.coverageAssessor.render({ scope: "full" });
+
+// group: agents/specialized
+prompts.agents.specialized.deepAnalyzer.render({ target: "api" });
 ```
 
 ### Types
 
-The generated registry exports `PromptName`, `Prompt<K>`, and the `prompts()` function:
+The generated registry exports a `prompts` const object. Use `typeof prompts` for type-level access:
 
 ```typescript
-import { prompts, type Prompt, type PromptName } from '~prompts'
+import { prompts } from "~prompts";
 
-type CoveragePrompt = Prompt<'coverage-assessor'>
+type AllPrompts = typeof prompts;
 ```
 
 Prompts with no schema variables accept `render()` with no arguments.

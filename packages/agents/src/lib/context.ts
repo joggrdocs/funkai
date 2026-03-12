@@ -1,5 +1,5 @@
-import type { Logger } from '@/core/logger.js'
-import type { TraceEntry } from '@/lib/trace.js'
+import type { Logger } from "@/core/logger.js";
+import type { TraceEntry } from "@/lib/trace.js";
 
 /**
  * Public execution context for custom step factories.
@@ -9,8 +9,8 @@ import type { TraceEntry } from '@/lib/trace.js'
  * The mutable trace is internal-only.
  */
 export interface ExecutionContext {
-  readonly signal: AbortSignal
-  readonly log: Logger
+  readonly signal: AbortSignal;
+  readonly log: Logger;
 }
 
 /**
@@ -31,5 +31,5 @@ export interface Context extends ExecutionContext {
    * The framework appends entries as `$` operations start and complete.
    * Read this after workflow completion to inspect the full execution graph.
    */
-  readonly trace: TraceEntry[]
+  readonly trace: TraceEntry[];
 }

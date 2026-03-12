@@ -16,7 +16,7 @@ Tracked issues discovered during code review. Each issue is tagged with severity
 `executeStep` constructs the success result as:
 
 ```typescript
-return { ok: true, ...(value as T), step: stepInfo, duration } as StepResult<T>
+return { ok: true, ...(value as T), step: stepInfo, duration } as StepResult<T>;
 ```
 
 Spreading a primitive (`string`, `number`, `boolean`) produces garbage at runtime. `..."hello"` yields `{0:'h',1:'e',...}`. The `StepResult<T>` type definition (`T & { ok: true; ... }`) is also unsound for primitives since `string & { ok: true }` is effectively `never`.
@@ -49,7 +49,7 @@ const agentConfig = {
   ...config.config,
   logger: ctx.log.child({ stepId: config.id }),
   // Missing: signal: ctx.signal
-}
+};
 ```
 
 If the workflow is cancelled via abort signal, agents running inside `$.agent()` steps continue until completion.
@@ -75,9 +75,9 @@ If the workflow is cancelled via abort signal, agents running inside `$.agent()`
 The `stream()` method fully drains `aiResult.textStream` before returning:
 
 ```typescript
-const chunks: string[] = []
+const chunks: string[] = [];
 for await (const chunk of aiResult.textStream) {
-  chunks.push(chunk)
+  chunks.push(chunk);
 }
 ```
 
@@ -105,14 +105,14 @@ Then creates a "replay stream" from collected chunks. The caller cannot consume 
 In `stream()`, the output is always set to raw text:
 
 ```typescript
-const finalText = await aiResult.text
-const finalOutput = finalText
+const finalText = await aiResult.text;
+const finalOutput = finalText;
 ```
 
 Compare with `generate()` which correctly branches:
 
 ```typescript
-output: (output ? aiResult.output : aiResult.text) as TOutput
+output: (output ? aiResult.output : aiResult.text) as TOutput;
 ```
 
 When an agent has structured output (e.g. `Output.object({ schema })`), `stream()` returns a raw string instead of the parsed object. The `TOutput` type assertion masks this at compile time.
@@ -215,8 +215,8 @@ Both `generate()` and `stream()` pass the AI SDK's `event.finishReason` as the `
 
 ```typescript
 onStepFinish: async (event) => {
-  config.onStepFinish!({ stepId: event.finishReason })
-}
+  config.onStepFinish!({ stepId: event.finishReason });
+};
 ```
 
 `finishReason` is `"stop"`, `"length"`, `"tool-calls"`, etc. — not a step identifier. Consumers expecting a unique step ID will get the finish reason instead.
@@ -261,7 +261,7 @@ When devtools is disabled (production) and no user middleware is provided, the f
 JSDoc says "Additional middleware to apply **after** defaults" but the implementation puts user middleware first:
 
 ```typescript
-;[...options.middleware, ...defaultMiddleware]
+[...options.middleware, ...defaultMiddleware];
 ```
 
 User middleware is outermost (wraps around devtools), contradicting "after defaults."
@@ -441,7 +441,7 @@ If a user provides `input` schema but omits `prompt` (or vice versa), the code s
 ### Description
 
 ```typescript
-export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: 'v3' }>
+export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: "v3" }>;
 ```
 
 This rejects models using future spec versions (v4, etc.). When the AI SDK introduces a new version, models using it won't be assignable. Forward-incompatible.
@@ -504,7 +504,7 @@ The code accesses `(output as unknown as Record<string, unknown>)._zod` to extra
 ### Description
 
 ```typescript
-const signal = overrides?.signal ?? new AbortController().signal
+const signal = overrides?.signal ?? new AbortController().signal;
 ```
 
 When no signal is provided, a new `AbortController` is created but its reference is immediately discarded. The signal can never fire. Harmless but wasteful.
@@ -527,7 +527,7 @@ When no signal is provided, a new `AbortController` is created but its reference
 ### Description
 
 ```typescript
-;async (acc, h) => [...(await acc), await attemptAsync<T, E>(async () => h())]
+async (acc, h) => [...(await acc), await attemptAsync<T, E>(async () => h())];
 ```
 
 Each reduce iteration creates a new array via spread. For N handlers, this is O(N^2) element copies. N is typically 1-2 so the impact is negligible, but the pattern is unnecessarily wasteful.

@@ -1,6 +1,6 @@
-import { flow } from 'es-toolkit'
+import { flow } from "es-toolkit";
 
-const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/
+const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
 
 /**
  * Remove YAML frontmatter from the beginning of a string.
@@ -9,10 +9,10 @@ const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/
  * If no frontmatter is present, the string is returned unchanged.
  */
 function stripFrontmatter(text: string): string {
-  return text.replace(FRONTMATTER_RE, '')
+  return text.replace(FRONTMATTER_RE, "");
 }
 
-const pipeline = flow(stripFrontmatter)
+const pipeline = flow(stripFrontmatter);
 
 /**
  * Clean a raw `.prompt` file into a render-ready template.
@@ -21,5 +21,5 @@ const pipeline = flow(stripFrontmatter)
  * strips frontmatter, with more steps added over time.
  */
 export function clean(text: string): string {
-  return pipeline(text)
+  return pipeline(text);
 }

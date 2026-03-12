@@ -33,13 +33,13 @@ source?: {
 `agentUsage()` aggregates token counts from one or more raw records into a flat `AgentTokenUsage` object.
 
 ```ts
-import { agentUsage } from '@pkg/agent-sdk'
+import { agentUsage } from "@pkg/agent-sdk";
 
-const usage = agentUsage('my-agent', records)
-console.log(usage.agentId) // 'my-agent'
-console.log(usage.inputTokens) // resolved number (0 if undefined)
-console.log(usage.outputTokens)
-console.log(usage.totalTokens)
+const usage = agentUsage("my-agent", records);
+console.log(usage.agentId); // 'my-agent'
+console.log(usage.inputTokens); // resolved number (0 if undefined)
+console.log(usage.outputTokens);
+console.log(usage.totalTokens);
 ```
 
 ## Workflow Usage
@@ -47,11 +47,11 @@ console.log(usage.totalTokens)
 `workflowUsage()` groups records by `source.agentId` and computes per-agent usage.
 
 ```ts
-import { workflowUsage } from '@pkg/agent-sdk'
+import { workflowUsage } from "@pkg/agent-sdk";
 
-const usage = workflowUsage(allRecords)
+const usage = workflowUsage(allRecords);
 for (const entry of usage.usages) {
-  console.log(`${entry.agentId}: ${entry.totalTokens} tokens`)
+  console.log(`${entry.agentId}: ${entry.totalTokens} tokens`);
 }
 ```
 
@@ -75,9 +75,9 @@ The aggregated output type. All fields are resolved `number` (0 when the raw rec
 Sum multiple `TokenUsage` objects into a new one. Pure function, does not mutate inputs.
 
 ```ts
-import { sumTokenUsage } from '@pkg/agent-sdk'
+import { sumTokenUsage } from "@pkg/agent-sdk";
 
-const total = sumTokenUsage([usageA, usageB, usageC])
+const total = sumTokenUsage([usageA, usageB, usageC]);
 ```
 
 ### `collectUsages()`
@@ -85,12 +85,12 @@ const total = sumTokenUsage([usageA, usageB, usageC])
 Walk a `TraceEntry[]` tree and collect all `usage` values into a flat array (recursively including children). Compose with `sumTokenUsage()` to aggregate usage across all `$.agent()` calls.
 
 ```ts
-import { collectUsages, sumTokenUsage } from '@pkg/agent-sdk'
+import { collectUsages, sumTokenUsage } from "@pkg/agent-sdk";
 
-const result = await myWorkflow.generate(input)
+const result = await myWorkflow.generate(input);
 if (result.ok) {
   // result.usage is already computed, but you can also derive it from the trace:
-  const usage = sumTokenUsage(collectUsages(result.trace))
+  const usage = sumTokenUsage(collectUsages(result.trace));
 }
 ```
 

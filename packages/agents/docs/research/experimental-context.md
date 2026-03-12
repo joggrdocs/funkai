@@ -40,29 +40,29 @@ generateText({ experimental_context: initialState })
 
 ```typescript
 const result = await generateText({
-  model: openrouter('anthropic/claude-sonnet-4'),
+  model: openrouter("anthropic/claude-sonnet-4"),
   tools: {
     fetchData: tool({
-      description: 'Fetch data from the API',
+      description: "Fetch data from the API",
       inputSchema: z.object({ endpoint: z.string() }),
       execute: async (input, { experimental_context: ctx }) => {
-        const typed = ctx as { authToken: string }
+        const typed = ctx as { authToken: string };
         const res = await fetch(input.endpoint, {
           headers: { Authorization: `Bearer ${typed.authToken}` },
-        })
-        return res.json()
+        });
+        return res.json();
       },
     }),
   },
-  experimental_context: { authToken: 'sk-...' },
+  experimental_context: { authToken: "sk-..." },
   prepareStep: async ({ experimental_context, stepNumber }) => {
     // Evolve context between steps
-    const ctx = experimental_context as { authToken: string; stepCount: number }
+    const ctx = experimental_context as { authToken: string; stepCount: number };
     return {
       experimental_context: { ...ctx, stepCount: stepNumber },
-    }
+    };
   },
-})
+});
 ```
 
 ## Current SDK State
@@ -82,7 +82,7 @@ The AI SDK passes a second `options` argument to `execute` containing `{ experim
 
 ```typescript
 // tool.ts:65
-execute: (input: TInput) => Promise<TOutput>
+execute: (input: TInput) => Promise<TOutput>;
 ```
 
 The execute signature only accepts `input`. There is no options parameter.
@@ -110,7 +110,7 @@ These are complementary, not competing. `ExecutionContext` is framework infrastr
 
 ```typescript
 interface ToolConfig<TInput, TOutput> {
-  execute: (input: TInput, options?: { context?: unknown }) => Promise<TOutput>
+  execute: (input: TInput, options?: { context?: unknown }) => Promise<TOutput>;
 }
 ```
 
@@ -128,12 +128,12 @@ execute: async (data: TInput, options) => config.execute(data, {
 ```typescript
 interface AgentConfig<TInput, TOutput, TTools, TSubAgents> {
   // ...existing fields
-  context?: unknown
+  context?: unknown;
 }
 
 interface AgentOverrides<TTools, TSubAgents> {
   // ...existing fields
-  context?: unknown
+  context?: unknown;
 }
 ```
 
@@ -143,7 +143,7 @@ interface AgentOverrides<TTools, TSubAgents> {
 const aiResult = await generateText({
   // ...existing params
   experimental_context: overrideContext ?? config.context,
-})
+});
 ```
 
 ### 4. Combine with `prepareStep`

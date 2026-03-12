@@ -1,14 +1,14 @@
-import { Liquid } from 'liquidjs'
-import { match } from 'ts-pattern'
+import { Liquid } from "liquidjs";
+import { match } from "ts-pattern";
 
 // oxlint-disable-next-line security/detect-unsafe-regex -- template parsing, not adversarial input
-const RENDER_TAG_RE = /\{%-?\s*render\s+'([^']+)'(?:\s*,\s*(.*?))?\s*-?%\}/g
-const LITERAL_PARAM_RE = /(\w+)\s*:\s*'([^']*)'/g
+const RENDER_TAG_RE = /\{%-?\s*render\s+'([^']+)'(?:\s*,\s*(.*?))?\s*-?%\}/g;
+const LITERAL_PARAM_RE = /(\w+)\s*:\s*'([^']*)'/g;
 
 interface RenderTag {
-  fullMatch: string
-  partialName: string
-  params: Record<string, string>
+  fullMatch: string;
+  partialName: string;
+  params: Record<string, string>;
 }
 
 /**
@@ -18,46 +18,46 @@ interface RenderTag {
  * Throws if a parameter value is a variable reference.
  */
 function parseParams(raw: string, partialName: string): Record<string, string> {
-  const params: Record<string, string> = {}
-  const literalMatches = [...raw.matchAll(LITERAL_PARAM_RE)]
+  const params: Record<string, string> = {};
+  const literalMatches = [...raw.matchAll(LITERAL_PARAM_RE)];
 
-  const allParamNames = [...raw.matchAll(/(\w+)\s*:/g)].map((m) => m[1])
+  const allParamNames = [...raw.matchAll(/(\w+)\s*:/g)].map((m) => m[1]);
 
   for (const name of allParamNames) {
-    const literal = literalMatches.find((m) => m[1] === name)
+    const literal = literalMatches.find((m) => m[1] === name);
     if (!literal) {
       throw new Error(
         `Cannot flatten {% render '${partialName}' %}: parameter "${name}" uses a variable reference. ` +
-          'Only literal string values are supported at codegen time.'
-      )
+          "Only literal string values are supported at codegen time.",
+      );
     }
     // oxlint-disable-next-line security/detect-object-injection -- safe: name extracted from regex match on template literal
-    params[name] = literal[2]
+    params[name] = literal[2];
   }
 
-  return params
+  return params;
 }
 
 /**
  * Find all `{% render %}` tags in a template string.
  */
 function parseRenderTags(template: string): RenderTag[] {
-  const tags: RenderTag[] = []
+  const tags: RenderTag[] = [];
 
   for (const m of template.matchAll(RENDER_TAG_RE)) {
-    const fullMatch = m[0]
-    const partialName = m[1]
+    const fullMatch = m[0];
+    const partialName = m[1];
     const rawParams = match(m[2] != null)
       .with(true, () => m[2].trim())
-      .otherwise(() => '')
+      .otherwise(() => "");
     const params = match(rawParams.length > 0)
       .with(true, () => parseParams(rawParams, partialName))
-      .otherwise(() => ({}))
+      .otherwise(() => ({}));
 
-    tags.push({ fullMatch, partialName, params })
+    tags.push({ fullMatch, partialName, params });
   }
 
-  return tags
+  return tags;
 }
 
 /**
@@ -75,26 +75,26 @@ function parseRenderTags(template: string): RenderTag[] {
  * @returns Flattened template with all render tags resolved.
  */
 export function flattenPartials(template: string, partialsDirs: string[]): string {
-  const tags = parseRenderTags(template)
+  const tags = parseRenderTags(template);
   if (tags.length === 0) {
-    return template
+    return template;
   }
 
   const engine = new Liquid({
     root: partialsDirs,
     partials: partialsDirs,
-    extname: '.prompt',
-  })
+    extname: ".prompt",
+  });
 
   const result = tags.reduce((acc, tag) => {
     const rendered = engine.parseAndRenderSync(
       `{% render '${tag.partialName}' ${Object.entries(tag.params)
         .map(([k, v]) => `${k}: '${v}'`)
-        .join(', ')} %}`
-    )
+        .join(", ")} %}`,
+    );
 
-    return acc.replace(tag.fullMatch, rendered)
-  }, template)
+    return acc.replace(tag.fullMatch, rendered);
+  }, template);
 
-  return result
+  return result;
 }

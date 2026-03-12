@@ -10,19 +10,19 @@
 // Update: pnpm --filter=@pkg/agent-sdk generate:models
 // ──────────────────────────────────────────────────────────────
 
-import { match } from 'ts-pattern'
+import { match } from "ts-pattern";
 
-import { MODELS as GENERATED_MODELS } from './providers/index.js'
+import { MODELS as GENERATED_MODELS } from "./providers/index.js";
 
 /**
  * Supported OpenRouter model identifiers, derived from the generated {@link MODELS} array.
  */
-export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]['id']
+export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]["id"];
 
 /**
  * Model category for classification and filtering.
  */
-export type ModelCategory = 'chat' | 'coding' | 'reasoning'
+export type ModelCategory = "chat" | "coding" | "reasoning";
 
 /**
  * Per-model pricing in USD per token.
@@ -33,31 +33,31 @@ export type ModelCategory = 'chat' | 'coding' | 'reasoning'
  */
 export interface ModelPricing {
   /** Cost per input (prompt) token. */
-  prompt: number
+  prompt: number;
 
   /** Cost per output (completion) token. */
-  completion: number
+  completion: number;
 
   /** Cost per cached input token (read). */
-  inputCacheRead?: number
+  inputCacheRead?: number;
 
   /** Cost per cached input token (write). */
-  inputCacheWrite?: number
+  inputCacheWrite?: number;
 
   /** Cost per web search request. */
-  webSearch?: number
+  webSearch?: number;
 
   /** Cost per internal reasoning token. */
-  internalReasoning?: number
+  internalReasoning?: number;
 
   /** Cost per image input token. */
-  image?: number
+  image?: number;
 
   /** Cost per audio input second. */
-  audio?: number
+  audio?: number;
 
   /** Cost per audio output second. */
-  audioOutput?: number
+  audioOutput?: number;
 }
 
 /**
@@ -65,19 +65,19 @@ export interface ModelPricing {
  */
 export interface ModelDefinition {
   /** OpenRouter model identifier (e.g. `"openai/gpt-5.2-codex"`). */
-  id: string
+  id: string;
 
   /** Model category for classification. */
-  category: ModelCategory
+  category: ModelCategory;
 
   /** Token pricing rates. */
-  pricing: ModelPricing
+  pricing: ModelPricing;
 }
 
 /**
  * Supported OpenRouter models with pricing data.
  */
-export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[]
+export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
 /**
  * Look up a model definition by its identifier.
@@ -94,11 +94,11 @@ export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[]
  * ```
  */
 export function model(id: OpenRouterLanguageModelId): ModelDefinition {
-  const found = MODELS.find((m) => m.id === id)
+  const found = MODELS.find((m) => m.id === id);
   if (!found) {
-    throw new Error(`Unknown model: ${id}`)
+    throw new Error(`Unknown model: ${id}`);
   }
-  return found
+  return found;
 }
 
 /**
@@ -117,7 +117,7 @@ export function models(filter?: (m: ModelDefinition) => boolean): readonly Model
   return match(filter)
     .when(
       (f): f is (m: ModelDefinition) => boolean => f != null,
-      (f) => MODELS.filter(f)
+      (f) => MODELS.filter(f),
     )
-    .otherwise(() => MODELS)
+    .otherwise(() => MODELS);
 }

@@ -1,15 +1,15 @@
-import type { ModelMessage } from 'ai'
-import type { ZodType } from 'zod'
+import type { ModelMessage } from "ai";
+import type { ZodType } from "zod";
 
-import type { OutputParam } from '@/core/agent/output.js'
-import type { Logger } from '@/core/logger.js'
-import type { TokenUsage } from '@/core/provider/types.js'
-import type { Tool } from '@/core/tool.js'
-import type { Model } from '@/core/types.js'
-import type { Result } from '@/utils/result.js'
+import type { OutputParam } from "@/core/agent/output.js";
+import type { Logger } from "@/core/logger.js";
+import type { TokenUsage } from "@/core/provider/types.js";
+import type { Tool } from "@/core/tool.js";
+import type { Model } from "@/core/types.js";
+import type { Result } from "@/utils/result.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SubAgents = Record<string, Agent<any, any, any, any>>
+export type SubAgents = Record<string, Agent<any, any, any, any>>;
 
 /**
  * Chat message type.
@@ -17,7 +17,7 @@ export type SubAgents = Record<string, Agent<any, any, any, any>>
  * Re-exported from the Vercel AI SDK (`ModelMessage`). Used for
  * multi-turn conversations, message arrays, and tool-call history.
  */
-export type Message = ModelMessage
+export type Message = ModelMessage;
 
 /**
  * Result of a completed agent generation.
@@ -41,7 +41,7 @@ export interface GenerateResult<TOutput = string> {
    * - `T[]` when using `Output.array<T>({ element })`.
    * - One of the option strings when using `Output.choice()`.
    */
-  output: TOutput
+  output: TOutput;
 
   /**
    * Full message history including tool calls.
@@ -50,7 +50,7 @@ export interface GenerateResult<TOutput = string> {
    * including system messages, user prompts, assistant responses,
    * and tool call/result pairs.
    */
-  messages: Message[]
+  messages: Message[];
 
   /**
    * Aggregated token usage across all tool-loop steps.
@@ -59,7 +59,7 @@ export interface GenerateResult<TOutput = string> {
    * All fields are resolved numbers (0 when the provider does not
    * report a given field).
    */
-  usage: TokenUsage
+  usage: TokenUsage;
 
   /**
    * The reason the model stopped generating.
@@ -67,7 +67,7 @@ export interface GenerateResult<TOutput = string> {
    * Common values: `"stop"`, `"length"`, `"content-filter"`,
    * `"tool-calls"`, `"error"`, `"other"`.
    */
-  finishReason: string
+  finishReason: string;
 }
 
 /**
@@ -86,7 +86,7 @@ export interface StreamResult<TOutput = string> {
    * Resolves after the stream completes. Same typing rules as
    * `GenerateResult.output`.
    */
-  output: Promise<TOutput>
+  output: Promise<TOutput>;
 
   /**
    * Full message history.
@@ -94,7 +94,7 @@ export interface StreamResult<TOutput = string> {
    * Resolves after the stream completes. Contains the complete
    * conversation including tool calls.
    */
-  messages: Promise<Message[]>
+  messages: Promise<Message[]>;
 
   /**
    * Aggregated token usage across all tool-loop steps.
@@ -102,7 +102,7 @@ export interface StreamResult<TOutput = string> {
    * Resolves after the stream completes. Includes input, output,
    * cache, and reasoning token counts.
    */
-  usage: Promise<TokenUsage>
+  usage: Promise<TokenUsage>;
 
   /**
    * The reason the model stopped generating.
@@ -110,7 +110,7 @@ export interface StreamResult<TOutput = string> {
    * Resolves after the stream completes. Common values: `"stop"`,
    * `"length"`, `"content-filter"`, `"tool-calls"`, `"error"`, `"other"`.
    */
-  finishReason: Promise<string>
+  finishReason: Promise<string>;
 
   /**
    * The readable stream of text deltas.
@@ -118,7 +118,7 @@ export interface StreamResult<TOutput = string> {
    * Consume this to receive output incrementally as the model
    * generates it. The stream closes when generation is complete.
    */
-  stream: ReadableStream<string>
+  stream: ReadableStream<string>;
 }
 
 /**
@@ -142,21 +142,21 @@ export interface AgentOverrides<
    * framework passes the step's scoped logger so agent logs include
    * workflow and step context bindings.
    */
-  logger?: Logger
+  logger?: Logger;
 
   /**
    * Abort signal for cancellation.
    *
    * When fired, the agent should stop generation and clean up.
    */
-  signal?: AbortSignal
+  signal?: AbortSignal;
 
   /**
    * Override the model for this call.
    *
    * Accepts a string model ID or an AI SDK `LanguageModel` instance.
    */
-  model?: Model
+  model?: Model;
 
   /**
    * Override the system prompt for this call.
@@ -164,7 +164,7 @@ export interface AgentOverrides<
    * Can be a static string or a function that receives the input
    * and returns the system prompt.
    */
-  system?: string | ((params: { input: unknown }) => string)
+  system?: string | ((params: { input: unknown }) => string);
 
   /**
    * Override or extend tools for this call.
@@ -172,14 +172,14 @@ export interface AgentOverrides<
    * Merged with the agent's base tools. Use `Partial<TTools>` to
    * replace specific tools, or add new ones via the index signature.
    */
-  tools?: Partial<TTools> & Record<string, Tool>
+  tools?: Partial<TTools> & Record<string, Tool>;
 
   /**
    * Override or extend subagents for this call.
    *
    * Merged with the agent's base subagents.
    */
-  agents?: Partial<TSubAgents> & Record<string, Agent>
+  agents?: Partial<TSubAgents> & Record<string, Agent>;
 
   /**
    * Override max tool-loop steps for this call.
@@ -187,7 +187,7 @@ export interface AgentOverrides<
    * Controls how many tool-loop iterations the agent will run
    * before stopping.
    */
-  maxSteps?: number
+  maxSteps?: number;
 
   /**
    * Override or set the output type for this call.
@@ -197,7 +197,7 @@ export interface AgentOverrides<
    * - `z.object({ ... })` → auto-wrapped as `Output.object({ schema })`
    * - `z.array(z.object({ ... }))` → auto-wrapped as `Output.array({ element })`
    */
-  output?: OutputParam
+  output?: OutputParam;
 
   /**
    * Per-call hook — fires after base `onStart`.
@@ -205,7 +205,7 @@ export interface AgentOverrides<
    * @param event - Event containing the input.
    * @param event.input - The input passed to `.generate()` or `.stream()`.
    */
-  onStart?: (event: { input: unknown }) => void | Promise<void>
+  onStart?: (event: { input: unknown }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onFinish`.
@@ -216,10 +216,10 @@ export interface AgentOverrides<
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
-    input: unknown
-    result: GenerateResult
-    duration: number
-  }) => void | Promise<void>
+    input: unknown;
+    result: GenerateResult;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onError`.
@@ -228,7 +228,7 @@ export interface AgentOverrides<
    * @param event.input - The input passed to `.generate()` or `.stream()`.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>
+  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onStepFinish`.
@@ -237,11 +237,11 @@ export interface AgentOverrides<
    * @param event.stepId - The ID of the tool-loop step that completed.
    */
   onStepFinish?: (event: {
-    stepId: string
-    toolCalls: readonly { toolName: string; argsTextLength: number }[]
-    toolResults: readonly { toolName: string; resultTextLength: number }[]
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number }
-  }) => void | Promise<void>
+    stepId: string;
+    toolCalls: readonly { toolName: string; argsTextLength: number }[];
+    toolResults: readonly { toolName: string; resultTextLength: number }[];
+    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
+  }) => void | Promise<void>;
 }
 
 /**
@@ -270,7 +270,7 @@ export interface AgentConfig<
    *
    * Used in logging, trace entries, and hook events.
    */
-  name: string
+  name: string;
 
   /**
    * Model to use for generation.
@@ -280,7 +280,7 @@ export interface AgentConfig<
    *
    * @see {@link Model}
    */
-  model: Model
+  model: Model;
 
   /**
    * Zod schema for the agent's typed input.
@@ -291,7 +291,7 @@ export interface AgentConfig<
    * When omitted, `.generate()` accepts a raw `string` or `Message[]`
    * instead (simple mode).
    */
-  input?: ZodType<TInput>
+  input?: ZodType<TInput>;
 
   /**
    * Map typed input to the prompt sent to the model.
@@ -303,7 +303,7 @@ export interface AgentConfig<
    * @param params.input - The validated input value.
    * @returns The prompt string or message array to send to the model.
    */
-  prompt?: (params: { input: TInput }) => string | Message[]
+  prompt?: (params: { input: TInput }) => string | Message[];
 
   /**
    * System prompt.
@@ -311,7 +311,7 @@ export interface AgentConfig<
    * Can be a static string or a function that receives the validated
    * input and returns the system prompt dynamically.
    */
-  system?: string | ((params: { input: TInput }) => string)
+  system?: string | ((params: { input: TInput }) => string);
 
   /**
    * Tools available to this agent for function calling.
@@ -319,7 +319,7 @@ export interface AgentConfig<
    * Each tool is exposed to the model in the tool-loop. The model
    * can call these tools to gather information or perform actions.
    */
-  tools?: TTools
+  tools?: TTools;
 
   /**
    * Subagents — automatically wrapped as tools the agent can delegate to.
@@ -327,7 +327,7 @@ export interface AgentConfig<
    * Each subagent becomes a callable tool that the parent agent can
    * invoke. Abort signals propagate automatically from parent to child.
    */
-  agents?: TSubAgents
+  agents?: TSubAgents;
 
   /**
    * Maximum tool-loop iterations.
@@ -337,7 +337,7 @@ export interface AgentConfig<
    *
    * @default 20
    */
-  maxSteps?: number
+  maxSteps?: number;
 
   /**
    * Output type strategy.
@@ -353,7 +353,7 @@ export interface AgentConfig<
    *
    * @default Output.text()
    */
-  output?: OutputParam
+  output?: OutputParam;
 
   /**
    * Pino-compatible logger.
@@ -362,7 +362,7 @@ export interface AgentConfig<
    * level. The framework automatically creates scoped child loggers
    * with contextual bindings (`agentId`).
    */
-  logger?: Logger
+  logger?: Logger;
 
   /**
    * Hook: fires when the agent starts execution.
@@ -370,7 +370,7 @@ export interface AgentConfig<
    * @param event - Event containing the input.
    * @param event.input - The validated input value.
    */
-  onStart?: (event: { input: TInput }) => void | Promise<void>
+  onStart?: (event: { input: TInput }) => void | Promise<void>;
 
   /**
    * Hook: fires when the agent finishes successfully.
@@ -381,10 +381,10 @@ export interface AgentConfig<
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
-    input: TInput
-    result: GenerateResult<TOutput>
-    duration: number
-  }) => void | Promise<void>
+    input: TInput;
+    result: GenerateResult<TOutput>;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Hook: fires when the agent encounters an error.
@@ -393,7 +393,7 @@ export interface AgentConfig<
    * @param event.input - The validated input value.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>
+  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
 
   /**
    * Hook: fires after each tool-loop step completes.
@@ -402,11 +402,11 @@ export interface AgentConfig<
    * @param event.stepId - The ID of the completed tool-loop step.
    */
   onStepFinish?: (event: {
-    stepId: string
-    toolCalls: readonly { toolName: string; argsTextLength: number }[]
-    toolResults: readonly { toolName: string; resultTextLength: number }[]
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number }
-  }) => void | Promise<void>
+    stepId: string;
+    toolCalls: readonly { toolName: string; argsTextLength: number }[];
+    toolResults: readonly { toolName: string; resultTextLength: number }[];
+    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
+  }) => void | Promise<void>;
 }
 
 /**
@@ -443,8 +443,8 @@ export interface Agent<
    */
   generate(
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<Result<GenerateResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<Result<GenerateResult<TOutput>>>;
 
   /**
    * Run the agent with streaming output.
@@ -462,8 +462,8 @@ export interface Agent<
    */
   stream(
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<Result<StreamResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<Result<StreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.
@@ -481,6 +481,6 @@ export interface Agent<
    */
   fn(): (
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ) => Promise<Result<GenerateResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ) => Promise<Result<GenerateResult<TOutput>>>;
 }

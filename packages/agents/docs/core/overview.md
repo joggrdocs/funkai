@@ -5,22 +5,22 @@ The core module provides the fundamental building blocks: `agent()`, `workflow()
 ## Result Type
 
 ```ts
-type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError }
+type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 ```
 
 Success fields are **flat on the object** -- no `.value` wrapper. Callers pattern-match on `ok`:
 
 ```ts
-const result = await myAgent.generate('hello')
+const result = await myAgent.generate("hello");
 
 if (!result.ok) {
-  console.error(result.error.code, result.error.message)
-  return
+  console.error(result.error.code, result.error.message);
+  return;
 }
 
 // Success -- all fields from T are directly on result
-console.log(result.output)
-console.log(result.messages)
+console.log(result.output);
+console.log(result.messages);
 ```
 
 `ResultError` has `code` (machine-readable), `message` (human-readable), and optional `cause` (original thrown error).
@@ -33,8 +33,8 @@ The framework creates an internal `Context` for each workflow execution. Users n
 
 ```ts
 interface ExecutionContext {
-  readonly signal: AbortSignal
-  readonly log: Logger
+  readonly signal: AbortSignal;
+  readonly log: Logger;
 }
 ```
 
@@ -46,11 +46,11 @@ Pino-compatible leveled logger with `child()` support for scoped bindings.
 
 ```ts
 interface Logger {
-  debug(msg: string, meta?: Record<string, unknown>): void
-  info(msg: string, meta?: Record<string, unknown>): void
-  warn(msg: string, meta?: Record<string, unknown>): void
-  error(msg: string, meta?: Record<string, unknown>): void
-  child(bindings: Record<string, unknown>): Logger
+  debug(msg: string, meta?: Record<string, unknown>): void;
+  info(msg: string, meta?: Record<string, unknown>): void;
+  warn(msg: string, meta?: Record<string, unknown>): void;
+  error(msg: string, meta?: Record<string, unknown>): void;
+  child(bindings: Record<string, unknown>): Logger;
 }
 ```
 
@@ -64,15 +64,15 @@ Every tracked `$` operation produces a `TraceEntry`. Nested operations appear as
 
 ```ts
 interface TraceEntry {
-  id: string // from the $ config's `id` field
-  type: OperationType // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
-  input?: unknown // captured when the operation starts
-  output?: unknown // captured on success
-  startedAt: number // Unix ms
-  finishedAt?: number // Unix ms (undefined while running)
-  error?: Error // set on failure
-  usage?: TokenUsage // token usage (populated for successful agent steps)
-  children?: TraceEntry[]
+  id: string; // from the $ config's `id` field
+  type: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
+  input?: unknown; // captured when the operation starts
+  output?: unknown; // captured on success
+  startedAt: number; // Unix ms
+  finishedAt?: number; // Unix ms (undefined while running)
+  error?: Error; // set on failure
+  usage?: TokenUsage; // token usage (populated for successful agent steps)
+  children?: TraceEntry[];
 }
 ```
 

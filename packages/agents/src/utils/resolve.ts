@@ -1,4 +1,4 @@
-import { isFunction } from 'es-toolkit'
+import { isFunction } from "es-toolkit";
 
 /**
  * A value that is either static or dynamically resolved from context.
@@ -21,7 +21,7 @@ import { isFunction } from 'es-toolkit'
  * instructions: async (ctx) => fetchPrompt(ctx.input.repoName)
  * ```
  */
-export type ResolveParam<T, TCtx> = T | ((ctx: TCtx) => T | Promise<T>)
+export type ResolveParam<T, TCtx> = T | ((ctx: TCtx) => T | Promise<T>);
 
 /**
  * Resolve a {@link ResolveParam} value — if it's a function, call it with ctx.
@@ -32,10 +32,10 @@ export type ResolveParam<T, TCtx> = T | ((ctx: TCtx) => T | Promise<T>)
  */
 export async function resolve<T, TCtx>(
   value: ResolveParam<T, TCtx> | undefined,
-  ctx: TCtx
+  ctx: TCtx,
 ): Promise<T | undefined> {
   if (isFunction(value)) {
-    return value(ctx)
+    return value(ctx);
   }
-  return value
+  return value;
 }

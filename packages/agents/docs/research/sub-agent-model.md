@@ -16,11 +16,11 @@ Sub-agents are declared in `AgentConfig.agents` and auto-wrapped into AI SDK too
 
 ```typescript
 const parent = agent({
-  name: 'orchestrator',
-  model: 'anthropic/claude-sonnet-4',
+  name: "orchestrator",
+  model: "anthropic/claude-sonnet-4",
   tools: { search, readFile },
   agents: { researcher, coder }, // auto-wrapped as callable tools
-})
+});
 ```
 
 Under the hood, each sub-agent becomes a tool:
@@ -31,22 +31,22 @@ tool({
   description: `Delegate to ${toolName}`,
   inputSchema: meta.inputSchema,
   execute: async (input, { abortSignal }) => {
-    const r = await runnable.generate(input, { signal: abortSignal })
-    if (!r.ok) throw new Error(r.error.message)
-    return r.output
+    const r = await runnable.generate(input, { signal: abortSignal });
+    if (!r.ok) throw new Error(r.error.message);
+    return r.output;
   },
-})
+});
 
 // For untyped sub-agents (simple mode):
 tool({
   description: `Delegate to ${toolName}`,
   inputSchema: z.object({ prompt: z.string() }),
   execute: async ({ prompt }, { abortSignal }) => {
-    const r = await runnable.generate(prompt, { signal: abortSignal })
-    if (!r.ok) throw new Error(r.error.message)
-    return r.output
+    const r = await runnable.generate(prompt, { signal: abortSignal });
+    if (!r.ok) throw new Error(r.error.message);
+    return r.output;
   },
-})
+});
 ```
 
 ### Signal Propagation
@@ -63,11 +63,11 @@ The `$.agent()` step provides tracked sub-agent invocation within workflows:
 
 ```typescript
 const result = await $.agent({
-  id: 'analyze',
+  id: "analyze",
   agent: analyzerAgent,
-  input: { filePath: '...' },
+  input: { filePath: "..." },
   config: { tools: extraTools },
-})
+});
 ```
 
 This records the agent call in the execution trace with input/output/usage.
@@ -89,15 +89,15 @@ This records the agent call in the execution trace with input/output/usage.
 ```typescript
 // Conceptual — context-aware sub-agent wrapper
 execute: async (input, { abortSignal, experimental_context }) => {
-  const ctx = experimental_context as ParentContext
+  const ctx = experimental_context as ParentContext;
   const r = await runnable.generate(input, {
     signal: abortSignal,
     system: buildChildSystem(ctx), // inject parent context as system prompt
     context: ctx, // or forward context directly
-  })
-  if (!r.ok) throw new Error(r.error.message)
-  return r.output
-}
+  });
+  if (!r.ok) throw new Error(r.error.message);
+  return r.output;
+};
 ```
 
 ### Gap 2: No Result-to-Context Feedback
@@ -110,19 +110,19 @@ execute: async (input, { abortSignal, experimental_context }) => {
 
 ```typescript
 prepareStep: async ({ steps, experimental_context }) => {
-  const ctx = experimental_context as AgentContext
-  const lastStep = steps.at(-1)
+  const ctx = experimental_context as AgentContext;
+  const lastStep = steps.at(-1);
   const subAgentResults = (lastStep?.toolResults ?? [])
     .filter((tr) => isSubAgentTool(tr.toolName))
-    .map((tr) => ({ agent: tr.toolName, result: tr.result }))
+    .map((tr) => ({ agent: tr.toolName, result: tr.result }));
 
   return {
     experimental_context: {
       ...ctx,
       findings: [...ctx.findings, ...subAgentResults],
     },
-  }
-}
+  };
+};
 ```
 
 ### Gap 3: No Dynamic Sub-Agent Spawning
@@ -135,16 +135,16 @@ prepareStep: async ({ steps, experimental_context }) => {
 
 ```typescript
 prepareStep: async ({ steps, experimental_context }) => {
-  const ctx = experimental_context as OrchestratorContext
+  const ctx = experimental_context as OrchestratorContext;
   // Spawn a code reviewer sub-agent only after code has been written
   if (ctx.codeWritten && !ctx.reviewerSpawned) {
     return {
-      activeTools: [...defaultTools, 'code-reviewer'],
+      activeTools: [...defaultTools, "code-reviewer"],
       experimental_context: { ...ctx, reviewerSpawned: true },
-    }
+    };
   }
-  return {}
-}
+  return {};
+};
 ```
 
 This requires `prepareStep` support (see [prepareStep research](./prepare-step-and-active-tools.md)).
@@ -190,9 +190,9 @@ execute: async (input, { abortSignal }) => {
   const r = await runnable.generate(input, {
     signal: abortSignal,
     maxSteps: delegationConfig.maxSteps,
-  })
+  });
   // ...
-}
+};
 ```
 
 ## Architecture: Full Sub-Agent Model

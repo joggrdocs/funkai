@@ -1,8 +1,8 @@
-import { tool as aiTool, zodSchema } from 'ai'
-import { isFunction, isNil } from 'es-toolkit'
-import { has, isObject } from 'es-toolkit/compat'
-import { P, match } from 'ts-pattern'
-import type { ZodType } from 'zod'
+import { tool as aiTool, zodSchema } from "ai";
+import { isFunction, isNil } from "es-toolkit";
+import { has, isObject } from "es-toolkit/compat";
+import { P, match } from "ts-pattern";
+import type { ZodType } from "zod";
 
 /**
  * Configuration for creating a tool.
@@ -17,14 +17,14 @@ export interface ToolConfig<TInput, TOutput> {
    * Shown to the model alongside the tool name. A good description
    * helps the model decide when and how to call the tool.
    */
-  description: string
+  description: string;
 
   /**
    * Display title for the tool.
    *
    * Optional human-readable title shown in UIs and logs.
    */
-  title?: string
+  title?: string;
 
   /**
    * Zod schema for validating and typing tool input.
@@ -33,7 +33,7 @@ export interface ToolConfig<TInput, TOutput> {
    * Input from the model is validated against it before `execute`
    * is called.
    */
-  inputSchema: ZodType<TInput>
+  inputSchema: ZodType<TInput>;
 
   /**
    * Zod schema for validating tool output.
@@ -41,7 +41,7 @@ export interface ToolConfig<TInput, TOutput> {
    * When provided, the return value of `execute` is validated
    * against this schema before being sent back to the model.
    */
-  outputSchema?: ZodType<TOutput>
+  outputSchema?: ZodType<TOutput>;
 
   /**
    * Example inputs to guide the model.
@@ -51,7 +51,7 @@ export interface ToolConfig<TInput, TOutput> {
    * `addToolInputExamplesMiddleware` to inject examples into the
    * tool description.
    */
-  inputExamples?: Array<{ input: TInput }>
+  inputExamples?: Array<{ input: TInput }>;
 
   /**
    * Execute the tool with validated input.
@@ -62,7 +62,7 @@ export interface ToolConfig<TInput, TOutput> {
    * @param input - The validated tool input.
    * @returns The tool output returned to the model.
    */
-  execute: (input: TInput) => Promise<TOutput>
+  execute: (input: TInput) => Promise<TOutput>;
 }
 
 /**
@@ -71,7 +71,7 @@ export interface ToolConfig<TInput, TOutput> {
  * @typeParam TInput - Tool input type.
  * @typeParam TOutput - Tool output type.
  */
-export type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput, TOutput>>
+export type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput, TOutput>>;
 
 /**
  * Create a tool for AI agent function calling.
@@ -101,7 +101,7 @@ export type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool
  * ```
  */
 export function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool<TInput, TOutput> {
-  const resolvedOutputSchema = resolveOutputSchema(config.outputSchema)
+  const resolvedOutputSchema = resolveOutputSchema(config.outputSchema);
   const result = {
     description: config.description,
     title: config.title,
@@ -109,9 +109,9 @@ export function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool
     outputSchema: resolvedOutputSchema,
     inputExamples: config.inputExamples,
     execute: async (data: TInput) => config.execute(data),
-  }
-  assertTool<TInput, TOutput>(result)
-  return aiTool(result)
+  };
+  assertTool<TInput, TOutput>(result);
+  return aiTool(result);
 }
 
 /**
@@ -120,11 +120,11 @@ export function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool
  * @private
  */
 function resolveOutputSchema<TOutput>(
-  schema: ZodType<TOutput> | undefined
+  schema: ZodType<TOutput> | undefined,
 ): ReturnType<typeof zodSchema> | undefined {
   return match(schema)
     .with(P.nullish, () => undefined)
-    .otherwise((value) => zodSchema(value))
+    .otherwise((value) => zodSchema(value));
 }
 
 /**
@@ -144,14 +144,14 @@ function resolveOutputSchema<TOutput>(
  */
 function assertTool<TInput, TOutput>(value: unknown): asserts value is Tool<TInput, TOutput> {
   if (isNil(value) || !isObject(value)) {
-    throw new TypeError('Expected tool to be an object')
+    throw new TypeError("Expected tool to be an object");
   }
 
-  if (!has(value, 'inputSchema')) {
-    throw new TypeError('Tool is missing required property: inputSchema')
+  if (!has(value, "inputSchema")) {
+    throw new TypeError("Tool is missing required property: inputSchema");
   }
 
-  if (!has(value, 'execute') || !isFunction(value.execute)) {
-    throw new TypeError('Tool is missing required property: execute')
+  if (!has(value, "execute") || !isFunction(value.execute)) {
+    throw new TypeError("Tool is missing required property: execute");
   }
 }

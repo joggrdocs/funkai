@@ -11,16 +11,16 @@ All `$` methods return `Promise<StepResult<T>>`:
 ```ts
 type StepResult<T> =
   | { ok: true; value: T; step: StepInfo; duration: number }
-  | { ok: false; error: StepError; step: StepInfo; duration: number }
+  | { ok: false; error: StepError; step: StepInfo; duration: number };
 ```
 
 `StepInfo` identifies the step:
 
 ```ts
 interface StepInfo {
-  id: string // from the $ config's `id` field
-  index: number // auto-incrementing within the workflow
-  type: OperationType // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
+  id: string; // from the $ config's `id` field
+  index: number; // auto-incrementing within the workflow
+  type: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
 }
 ```
 
@@ -44,14 +44,14 @@ $.step<T>(config: StepConfig<T>): Promise<StepResult<T>>
 
 ```ts
 const data = await $.step({
-  id: 'fetch-data',
+  id: "fetch-data",
   execute: async () => {
-    return await fetchData()
+    return await fetchData();
   },
-})
+});
 
 if (data.ok) {
-  console.log(data.value) // T
+  console.log(data.value); // T
 }
 ```
 
@@ -77,14 +77,14 @@ The framework automatically passes the abort signal and a scoped logger to the a
 
 ```ts
 const result = await $.agent({
-  id: 'analyze',
+  id: "analyze",
   agent: analyzerAgent,
-  input: { files: ['src/main.ts'] },
-})
+  input: { files: ["src/main.ts"] },
+});
 
 if (result.ok) {
-  console.log(result.value.output) // the agent's output
-  console.log(result.value.messages) // full message history
+  console.log(result.value.output); // the agent's output
+  console.log(result.value.messages); // full message history
 }
 ```
 
@@ -108,13 +108,13 @@ $.map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>
 
 ```ts
 const results = await $.map({
-  id: 'process-files',
+  id: "process-files",
   input: files,
   concurrency: 5,
   execute: async ({ item, index }) => {
-    return await processFile(item)
+    return await processFile(item);
   },
-})
+});
 ```
 
 ## $.each
@@ -136,12 +136,12 @@ $.each<T>(config: EachConfig<T>): Promise<StepResult<void>>
 
 ```ts
 await $.each({
-  id: 'notify-users',
+  id: "notify-users",
   input: users,
   execute: async ({ item }) => {
-    await sendNotification(item.email)
+    await sendNotification(item.email);
   },
-})
+});
 ```
 
 ## $.reduce
@@ -164,13 +164,13 @@ $.reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>
 
 ```ts
 const total = await $.reduce({
-  id: 'sum-scores',
+  id: "sum-scores",
   input: items,
   initial: 0,
   execute: async ({ item, accumulator }) => {
-    return accumulator + item.score
+    return accumulator + item.score;
   },
-})
+});
 ```
 
 ## $.while
@@ -194,13 +194,13 @@ The `condition` receives the last iteration's value (or `undefined` before the f
 
 ```ts
 const result = await $.while({
-  id: 'poll-status',
-  condition: ({ value, index }) => index < 10 && value !== 'complete',
+  id: "poll-status",
+  condition: ({ value, index }) => index < 10 && value !== "complete",
   execute: async ({ index }) => {
-    await sleep(1000)
-    return await checkStatus()
+    await sleep(1000);
+    return await checkStatus();
   },
-})
+});
 ```
 
 ## $.all
@@ -223,9 +223,9 @@ Where `EntryFactory = (signal: AbortSignal) => Promise<any>`.
 
 ```ts
 const [users, repos] = await $.all({
-  id: 'fetch-data',
+  id: "fetch-data",
   entries: [(signal) => fetchUsers(signal), (signal) => fetchRepos(signal)],
-})
+});
 ```
 
 ## $.race
@@ -246,12 +246,12 @@ $.race(config: RaceConfig): Promise<StepResult<unknown>>
 
 ```ts
 const result = await $.race({
-  id: 'fastest-provider',
+  id: "fastest-provider",
   entries: [(signal) => fetchFromProviderA(signal), (signal) => fetchFromProviderB(signal)],
-})
+});
 
 if (result.ok) {
-  const fastest = result.value
+  const fastest = result.value;
 }
 ```
 
@@ -261,15 +261,15 @@ if (result.ok) {
 
 ```ts
 const result = await $.step({
-  id: 'outer',
+  id: "outer",
   execute: async ({ $ }) => {
     const inner = await $.step({
-      id: 'inner',
-      execute: async () => 'nested value',
-    })
-    return inner.ok ? inner.value : 'fallback'
+      id: "inner",
+      execute: async () => "nested value",
+    });
+    return inner.ok ? inner.value : "fallback";
   },
-})
+});
 ```
 
 ## References

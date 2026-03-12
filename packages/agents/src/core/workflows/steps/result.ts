@@ -1,5 +1,5 @@
-import type { StepInfo } from '@/core/workflows/types.js'
-import type { ResultError } from '@/utils/result.js'
+import type { StepInfo } from "@/core/workflows/types.js";
+import type { ResultError } from "@/utils/result.js";
 
 /**
  * Error information for a failed step.
@@ -11,7 +11,7 @@ export interface StepError extends ResultError {
   /**
    * The `id` from the step config that failed.
    */
-  stepId: string
+  stepId: string;
 }
 
 /**
@@ -24,4 +24,4 @@ export interface StepError extends ResultError {
  */
 export type StepResult<T> =
   | { ok: true; value: T; step: StepInfo; duration: number }
-  | { ok: false; error: StepError; step: StepInfo; duration: number }
+  | { ok: false; error: StepError; step: StepInfo; duration: number };

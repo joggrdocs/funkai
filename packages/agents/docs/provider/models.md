@@ -35,14 +35,14 @@ Three functions:
 - `models(filter?)` -- Returns model definitions, optionally filtered by a predicate.
 
 ```ts
-import { model, tryModel, models } from '@pkg/agent-sdk'
+import { model, tryModel, models } from "@pkg/agent-sdk";
 
-const m = model('openai/gpt-4.1')
-console.log(m.pricing.prompt) // cost per input token
-console.log(m.category) // 'chat'
+const m = model("openai/gpt-4.1");
+console.log(m.pricing.prompt); // cost per input token
+console.log(m.category); // 'chat'
 
-const all = models()
-const reasoning = models((m) => m.category === 'reasoning')
+const all = models();
+const reasoning = models((m) => m.category === "reasoning");
 ```
 
 ## Adding a Model

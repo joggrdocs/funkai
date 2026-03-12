@@ -56,7 +56,7 @@ const aiResult = await generateText({
   onStepFinish: async (step) => {
     /* observability only */
   },
-})
+});
 ```
 
 No `prepareStep` or `activeTools` parameters are passed.
@@ -79,10 +79,10 @@ prepareStep: async ({ messages, stepNumber }) => {
   if (messages.length > 50) {
     return {
       messages: [messages[0], ...messages.slice(-20)],
-    }
+    };
   }
-  return {}
-}
+  return {};
+};
 ```
 
 ### Dynamic Tool Activation
@@ -91,36 +91,36 @@ prepareStep: async ({ messages, stepNumber }) => {
 prepareStep: async ({ stepNumber }) => {
   // Phase 1: research only
   if (stepNumber < 3) {
-    return { activeTools: ['search', 'readFile'] }
+    return { activeTools: ["search", "readFile"] };
   }
   // Phase 2: editing
-  return { activeTools: ['editFile', 'writeFile'] }
-}
+  return { activeTools: ["editFile", "writeFile"] };
+};
 ```
 
 ### Model Switching
 
 ```typescript
 prepareStep: async ({ steps }) => {
-  const lastStep = steps.at(-1)
+  const lastStep = steps.at(-1);
   // Switch to a more capable model if the task is complex
   if (lastStep?.toolCalls.length > 3) {
-    return { model: openrouter('anthropic/claude-sonnet-4') }
+    return { model: openrouter("anthropic/claude-sonnet-4") };
   }
-  return {}
-}
+  return {};
+};
 ```
 
 ### System Prompt Adaptation
 
 ```typescript
 prepareStep: async ({ steps }) => {
-  const completedTools = steps.flatMap((s) => s.toolCalls.map((tc) => tc.toolName))
-  if (completedTools.includes('analyzeCode')) {
-    return { system: 'You have analyzed the code. Now focus on generating the fix.' }
+  const completedTools = steps.flatMap((s) => s.toolCalls.map((tc) => tc.toolName));
+  if (completedTools.includes("analyzeCode")) {
+    return { system: "You have analyzed the code. Now focus on generating the fix." };
   }
-  return {}
-}
+  return {};
+};
 ```
 
 ## Implementation Path

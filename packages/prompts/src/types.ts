@@ -1,19 +1,19 @@
-import type { Liquid, LiquidOptions } from 'liquidjs'
-import type { ZodType } from 'zod'
+import type { Liquid, LiquidOptions } from "liquidjs";
+import type { ZodType } from "zod";
 
 /**
  * Options for creating a custom LiquidJS engine.
  */
 export type CreateEngineOptions = Pick<
   LiquidOptions,
-  | 'root'
-  | 'partials'
-  | 'extname'
-  | 'cache'
-  | 'strictFilters'
-  | 'strictVariables'
-  | 'ownPropertyOnly'
->
+  | "root"
+  | "partials"
+  | "extname"
+  | "cache"
+  | "strictFilters"
+  | "strictVariables"
+  | "ownPropertyOnly"
+>;
 
 /**
  * A single prompt module produced by codegen.
@@ -22,36 +22,42 @@ export type CreateEngineOptions = Pick<
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic default type parameter for PromptModule
 export interface PromptModule<T = any> {
-  readonly name: string
-  readonly group: string | undefined
-  readonly schema: ZodType<T>
-  render(variables: T): string
-  validate(variables: unknown): T
+  readonly name: string;
+  readonly group: string | undefined;
+  readonly schema: ZodType<T>;
+  render(variables: T): string;
+  validate(variables: unknown): T;
 }
 
 /**
- * A typed prompt registry created by `createPromptRegistry()`.
+ * A nested namespace node in the prompt tree.
+ * Values are either PromptModule leaves or further nested namespaces.
  */
-export interface PromptRegistry<T extends Record<string, PromptModule>> {
-  /**
-   * Retrieve a prompt module by name.
-   *
-   * @throws Error if the prompt name is not registered.
-   */
-  get<K extends keyof T & string>(name: K): T[K]
+export type PromptNamespace = {
+  readonly [key: string]: PromptModule | PromptNamespace;
+};
 
-  /**
-   * Check whether a prompt name is registered.
-   */
-  has(name: string): boolean
-
-  /**
-   * Return all registered prompt names.
-   */
-  names(): string[]
-}
+/**
+ * Deep-readonly version of a prompt tree.
+ * Prevents reassignment at any nesting level.
+ *
+ * @example
+ * ```ts
+ * type MyRegistry = PromptRegistry<{
+ *   agents: { coverageAssessor: PromptModule }
+ *   greeting: PromptModule
+ * }>
+ * ```
+ */
+export type PromptRegistry<T extends PromptNamespace> = {
+  readonly [K in keyof T]: T[K] extends PromptModule
+    ? T[K]
+    : T[K] extends PromptNamespace
+      ? PromptRegistry<T[K]>
+      : T[K];
+};
 
 /**
  * Re-export the Liquid type for consumers that need to type the engine.
  */
-export type { Liquid }
+export type { Liquid };

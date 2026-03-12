@@ -1,6 +1,6 @@
-import { vi } from 'vitest'
+import { vi } from "vitest";
 
-import type { Logger } from '@/core/logger.js'
+import type { Logger } from "@/core/logger.js";
 
 /**
  * Create a mock {@link Logger} backed by `vi.fn()` stubs.
@@ -15,5 +15,5 @@ export function createMockLogger(): Logger {
     warn: vi.fn(),
     error: vi.fn(),
     child: vi.fn(() => createMockLogger()),
-  } as unknown as Logger
+  } as unknown as Logger;
 }

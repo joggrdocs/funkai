@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/workflows/steps/builder.js'
+import type { StepBuilder } from "@/core/workflows/steps/builder.js";
 
 /**
  * Configuration for `$.reduce()` — sequential accumulation.
@@ -15,7 +15,7 @@ export interface ReduceConfig<T, R> {
    *
    * Appears in the execution trace.
    */
-  id: string
+  id: string;
 
   /**
    * Array of items to reduce over.
@@ -23,14 +23,14 @@ export interface ReduceConfig<T, R> {
    * Each item is passed to the `execute` callback along with the
    * current accumulator value.
    */
-  input: readonly T[]
+  input: readonly T[];
 
   /**
    * Initial accumulator value.
    *
    * Used as the `accumulator` parameter for the first `execute` call.
    */
-  initial: R
+  initial: R;
 
   /**
    * Reduce function — processes one item and returns the new accumulator.
@@ -42,7 +42,7 @@ export interface ReduceConfig<T, R> {
    * @param params.$ - The step builder for nesting further operations.
    * @returns The updated accumulator value.
    */
-  execute: (params: { item: T; accumulator: R; index: number; $: StepBuilder }) => Promise<R>
+  execute: (params: { item: T; accumulator: R; index: number; $: StepBuilder }) => Promise<R>;
 
   /**
    * Hook: fires when the reduce operation starts.
@@ -50,7 +50,7 @@ export interface ReduceConfig<T, R> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when all items are reduced.
@@ -60,7 +60,7 @@ export interface ReduceConfig<T, R> {
    * @param event.result - The final accumulated value.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { id: string; result: R; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; result: R; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires if the reduce operation encounters an error.
@@ -69,5 +69,5 @@ export interface ReduceConfig<T, R> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

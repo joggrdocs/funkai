@@ -1,6 +1,6 @@
-import type { LanguageModel } from 'ai'
+import type { LanguageModel } from "ai";
 
-import type { Result } from '@/utils/result.js'
+import type { Result } from "@/utils/result.js";
 
 /**
  * A model reference.
@@ -41,10 +41,10 @@ import type { Result } from '@/utils/result.js'
  * })
  * ```
  */
-export type Model = string | LanguageModel
+export type Model = string | LanguageModel;
 
 /** @deprecated Use `Model` instead. */
-export type ModelRef = Model
+export type ModelRef = Model;
 
 /**
  * A value that can be generated against — the shared contract
@@ -55,11 +55,11 @@ export type ModelRef = Model
  */
 /* eslint-disable @typescript-eslint/no-explicit-any -- Runnable config accepts implementation-specific options that cannot be narrowed at the interface level */
 export interface Runnable<TInput = unknown, TOutput = unknown> {
-  generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>
+  generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>;
   stream(
     input: TInput,
-    config?: any
-  ): Promise<Result<{ output: Promise<TOutput>; stream: ReadableStream<string> }>>
-  fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>
+    config?: any,
+  ): Promise<Result<{ output: Promise<TOutput>; stream: ReadableStream<string> }>>;
+  fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

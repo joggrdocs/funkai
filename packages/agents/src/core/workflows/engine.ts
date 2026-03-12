@@ -1,11 +1,11 @@
-import type { Logger } from '@/core/logger.js'
-import { createDefaultLogger } from '@/core/logger.js'
-import type { StepBuilder } from '@/core/workflows/steps/builder.js'
-import type { StepInfo } from '@/core/workflows/types.js'
-import type { Workflow, WorkflowConfig } from '@/core/workflows/workflow.js'
-import { workflow } from '@/core/workflows/workflow.js'
-import type { ExecutionContext } from '@/lib/context.js'
-import { fireHooks } from '@/lib/hooks.js'
+import type { Logger } from "@/core/logger.js";
+import { createDefaultLogger } from "@/core/logger.js";
+import type { StepBuilder } from "@/core/workflows/steps/builder.js";
+import type { StepInfo } from "@/core/workflows/types.js";
+import type { Workflow, WorkflowConfig } from "@/core/workflows/workflow.js";
+import { workflow } from "@/core/workflows/workflow.js";
+import type { ExecutionContext } from "@/lib/context.js";
+import { fireHooks } from "@/lib/hooks.js";
 
 /**
  * Factory function for a custom step type.
@@ -24,15 +24,15 @@ export type CustomStepFactory<TConfig, TResult> = (params: {
    * step implementations to integrate with the framework's
    * cancellation and logging.
    */
-  ctx: ExecutionContext
+  ctx: ExecutionContext;
 
   /**
    * The config object the user passed to the custom step.
    *
    * Shape is defined by the custom step type's `TConfig` parameter.
    */
-  config: TConfig
-}) => Promise<TResult>
+  config: TConfig;
+}) => Promise<TResult>;
 
 /**
  * Map of custom step names to their factory functions.
@@ -42,7 +42,7 @@ export type CustomStepFactory<TConfig, TResult> = (params: {
  * parameter and return types.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>
+export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>;
 
 /**
  * Derive typed custom step methods from a definitions map.
@@ -56,8 +56,8 @@ export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>
 export type TypedCustomSteps<T extends CustomStepDefinitions> = {
   [K in keyof T]: T[K] extends CustomStepFactory<infer TConfig, infer TResult>
     ? (config: TConfig) => Promise<TResult>
-    : never
-}
+    : never;
+};
 
 /**
  * Configuration for creating a custom workflow engine.
@@ -74,7 +74,7 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * Each key-value pair defines a new method on the `$` step builder.
    * The key is the method name, the value is the factory function.
    */
-  $?: TCustomSteps
+  $?: TCustomSteps;
 
   /**
    * Default hook: fires when any workflow starts.
@@ -85,7 +85,7 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * @param event - Event containing the input.
    * @param event.input - The workflow input.
    */
-  onStart?: (event: { input: unknown }) => void | Promise<void>
+  onStart?: (event: { input: unknown }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any workflow finishes.
@@ -95,7 +95,7 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * @param event.output - The workflow output.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { input: unknown; output: unknown; duration: number }) => void | Promise<void>
+  onFinish?: (event: { input: unknown; output: unknown; duration: number }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any workflow errors.
@@ -104,7 +104,7 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * @param event.input - The workflow input.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>
+  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any step starts.
@@ -112,7 +112,7 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * @param event - Event containing step info.
    * @param event.step - Information about the step that started.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any step finishes.
@@ -123,10 +123,10 @@ export interface EngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onStepFinish?: (event: {
-    step: StepInfo
-    result: unknown
-    duration: number
-  }) => void | Promise<void>
+    step: StepInfo;
+    result: unknown;
+    duration: number;
+  }) => void | Promise<void>;
 }
 
 /**
@@ -147,14 +147,14 @@ export type WorkflowFactory<TCustomSteps extends CustomStepDefinitions> = <TInpu
     /**
      * Validated input.
      */
-    input: TInput
+    input: TInput;
 
     /**
      * Step builder with both built-in and custom steps.
      */
-    $: StepBuilder & TypedCustomSteps<TCustomSteps>
-  }) => Promise<TOutput>
-) => Workflow<TInput, TOutput>
+    $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+  }) => Promise<TOutput>,
+) => Workflow<TInput, TOutput>;
 
 // ---------------------------------------------------------------------------
 // createHookCaller (internal helper)
@@ -169,12 +169,12 @@ export type WorkflowFactory<TCustomSteps extends CustomStepDefinitions> = <TInpu
 function createHookCaller(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hook: ((event: any) => void | Promise<void>) | undefined,
-  event: unknown
+  event: unknown,
 ): (() => void | Promise<void>) | undefined {
   if (hook) {
-    return () => hook(event)
+    return () => hook(event);
   }
-  return undefined
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,18 +196,18 @@ function createHookCaller(
 function buildMergedHook<THook extends (event: any) => void | Promise<void>>(
   log: Logger,
   engineHook: THook | undefined,
-  workflowHook: THook | undefined
+  workflowHook: THook | undefined,
 ): THook | undefined {
   if (!engineHook && !workflowHook) {
-    return undefined
+    return undefined;
   }
 
   const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(engineHook, event)
-    const workflowFn = createHookCaller(workflowHook, event)
-    await fireHooks(log, engineFn, workflowFn)
-  }
-  return merged as unknown as THook
+    const engineFn = createHookCaller(engineHook, event);
+    const workflowFn = createHookCaller(workflowHook, event);
+    await fireHooks(log, engineFn, workflowFn);
+  };
+  return merged as unknown as THook;
 }
 
 // ---------------------------------------------------------------------------
@@ -270,25 +270,25 @@ export function createWorkflowEngine<
   return function engineCreateWorkflow<TInput, TOutput>(
     workflowConfig: WorkflowConfig<TInput, TOutput>,
     handler: (params: {
-      input: TInput
-      $: StepBuilder & TypedCustomSteps<TCustomSteps>
-    }) => Promise<TOutput>
+      input: TInput;
+      $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+    }) => Promise<TOutput>,
   ): Workflow<TInput, TOutput> {
     // Engine hooks fire FIRST, workflow hooks fire SECOND.
     // fireHooks handles undefined entries as no-ops, so we just
     // wrap both in a single function when either is present.
-    const hookLog = (workflowConfig.logger ?? createDefaultLogger()).child({ source: 'engine' })
+    const hookLog = (workflowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
 
-    const { onStart: engineOnStart } = engineConfig
-    const { onStart: wfOnStart } = workflowConfig
-    const { onFinish: engineOnFinish } = engineConfig
-    const { onFinish: wfOnFinish } = workflowConfig
-    const { onError: engineOnError } = engineConfig
-    const { onError: wfOnError } = workflowConfig
-    const { onStepStart: engineOnStepStart } = engineConfig
-    const { onStepStart: wfOnStepStart } = workflowConfig
-    const { onStepFinish: engineOnStepFinish } = engineConfig
-    const { onStepFinish: wfOnStepFinish } = workflowConfig
+    const { onStart: engineOnStart } = engineConfig;
+    const { onStart: wfOnStart } = workflowConfig;
+    const { onFinish: engineOnFinish } = engineConfig;
+    const { onFinish: wfOnFinish } = workflowConfig;
+    const { onError: engineOnError } = engineConfig;
+    const { onError: wfOnError } = workflowConfig;
+    const { onStepStart: engineOnStepStart } = engineConfig;
+    const { onStepStart: wfOnStepStart } = workflowConfig;
+    const { onStepFinish: engineOnStepFinish } = engineConfig;
+    const { onStepFinish: wfOnStepFinish } = workflowConfig;
 
     const mergedConfig: WorkflowConfig<TInput, TOutput> = {
       ...workflowConfig,
@@ -297,26 +297,26 @@ export function createWorkflowEngine<
       onError: buildMergedHook(hookLog, engineOnError, wfOnError),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, wfOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, wfOnStepFinish),
-    }
+    };
 
     const wrappedHandler = async (params: { input: TInput; $: StepBuilder }): Promise<TOutput> => {
       // $ is already augmented by _internal.augment$ at this point
       return handler({
         input: params.input,
         $: params.$ as StepBuilder & TypedCustomSteps<TCustomSteps>,
-      })
-    }
+      });
+    };
 
     return workflow(mergedConfig, wrappedHandler, {
       augment$: ($, ctx) => {
-        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {}
+        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
         for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
           // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
           customSteps[name] = (config: unknown) =>
-            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config })
+            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config });
         }
-        return Object.assign($, customSteps) as StepBuilder
+        return Object.assign($, customSteps) as StepBuilder;
       },
-    })
-  }
+    });
+  };
 }

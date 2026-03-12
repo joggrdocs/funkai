@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/workflows/steps/builder.js'
+import type { StepBuilder } from "@/core/workflows/steps/builder.js";
 
 /**
  * Configuration for `$.step()` — execute and register a unit of work.
@@ -11,7 +11,7 @@ export interface StepConfig<T> {
    *
    * Appears in the execution trace, hook events, and error messages.
    */
-  id: string
+  id: string;
 
   /**
    * Execute the step's logic.
@@ -20,7 +20,7 @@ export interface StepConfig<T> {
    * @param params.$ - The step builder for nesting further operations.
    * @returns The step result.
    */
-  execute: (params: { $: StepBuilder }) => Promise<T>
+  execute: (params: { $: StepBuilder }) => Promise<T>;
 
   /**
    * Hook: fires when this step starts.
@@ -28,7 +28,7 @@ export interface StepConfig<T> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when this step finishes successfully.
@@ -38,7 +38,7 @@ export interface StepConfig<T> {
    * @param event.result - The value returned by `execute`.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { id: string; result: T; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; result: T; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires when this step encounters an error.
@@ -47,5 +47,5 @@ export interface StepConfig<T> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }
