@@ -63,7 +63,7 @@ flowchart LR
 │   ├── 📄 engine.ts           # LiquidJS engine factory
 │   ├── 📄 registry.ts         # Typed prompt registry
 │   ├── 📄 clean.ts            # Frontmatter stripping pipeline
-│   ├── 📄 types.ts            # PromptModule, PromptRegistry interfaces
+│   ├── 📄 types.ts            # PromptModule, PromptNamespace, PromptRegistry types
 │   └── 📄 index.ts            # Public exports
 └── 📁 docs/
 ```

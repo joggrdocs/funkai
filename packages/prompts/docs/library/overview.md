@@ -16,7 +16,8 @@ The library surface provides the runtime engine and registry used by generated c
 | Type                  | Description                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `PromptModule`        | Interface: `name`, `group`, `schema` (ZodType), `render(vars)`, `validate(vars)`                                          |
-| `PromptRegistry`      | Interface: `get(name)`, `has(name)`, `names()`                                                                            |
+| `PromptNamespace`     | A nested namespace node — values are `PromptModule` leaves or further nested namespaces                                   |
+| `PromptRegistry`      | Deep-readonly mapped type over a `PromptNamespace` tree                                                                   |
 | `CreateEngineOptions` | Options for `createEngine`: `root`, `partials`, `extname`, `cache`, `strictFilters`, `strictVariables`, `ownPropertyOnly` |
 | `Liquid`              | Re-exported LiquidJS engine type                                                                                          |
 
@@ -28,25 +29,34 @@ The shared `engine` instance is configured with `ownPropertyOnly: true` and `str
 
 ## Registry
 
-`createPromptRegistry` accepts a record of `PromptModule` objects keyed by name. It returns a `PromptRegistry` with three methods:
+`createPromptRegistry` accepts a (possibly nested) record of `PromptModule` objects and namespace nodes. It returns a deep-frozen `PromptRegistry` with direct property access:
 
-| Method      | Returns        | Behavior                                                        |
-| ----------- | -------------- | --------------------------------------------------------------- |
-| `get(name)` | `PromptModule` | Returns the module. Throws `Unknown prompt: "name"` if missing. |
-| `has(name)` | `boolean`      | Existence check.                                                |
-| `names()`   | `string[]`     | All registered prompt names.                                    |
+```ts
+const prompts = createPromptRegistry({
+  agents: { coverageAssessor },
+  greeting,
+})
+prompts.agents.coverageAssessor.render({ scope: 'full' })
+prompts.greeting.render()
+```
+
+Nesting is driven by the `group` field in frontmatter. Each `/`-separated segment becomes a nesting level, with all names converted to camelCase. The registry is frozen at creation time to prevent mutation.
 
 ## Consumer Pattern
 
-The generated `index.ts` calls `createPromptRegistry` with all prompt modules and exports a typed `prompts()` accessor. Consumers import via the `~prompts` tsconfig alias:
+The generated `index.ts` calls `createPromptRegistry` with all prompt modules organized by group and exports a `prompts` const object. Consumers import via the `~prompts` tsconfig alias:
 
 ```ts
 import { prompts } from '~prompts'
 
-const text = prompts('coverage-assessor').render({ scope: 'full' })
+// Flat (no group)
+const text = prompts.greeting.render()
+
+// Nested (group: agents)
+const text = prompts.agents.coverageAssessor.render({ scope: 'full' })
 ```
 
-The return type of `prompts(name)` is narrowed to the specific module, giving full type safety on `render` and `validate` arguments.
+Types are inferred from the object structure, giving full type safety on `render` and `validate` arguments at every nesting level.
 
 ## References
 

@@ -30,25 +30,31 @@ export interface PromptModule<T = any> {
 }
 
 /**
- * A typed prompt registry created by `createPromptRegistry()`.
+ * A nested namespace node in the prompt tree.
+ * Values are either PromptModule leaves or further nested namespaces.
  */
-export interface PromptRegistry<T extends Record<string, PromptModule>> {
-  /**
-   * Retrieve a prompt module by name.
-   *
-   * @throws Error if the prompt name is not registered.
-   */
-  get<K extends keyof T & string>(name: K): T[K]
+export type PromptNamespace = {
+  readonly [key: string]: PromptModule | PromptNamespace
+}
 
-  /**
-   * Check whether a prompt name is registered.
-   */
-  has(name: string): boolean
-
-  /**
-   * Return all registered prompt names.
-   */
-  names(): string[]
+/**
+ * Deep-readonly version of a prompt tree.
+ * Prevents reassignment at any nesting level.
+ *
+ * @example
+ * ```ts
+ * type MyRegistry = PromptRegistry<{
+ *   agents: { coverageAssessor: PromptModule }
+ *   greeting: PromptModule
+ * }>
+ * ```
+ */
+export type PromptRegistry<T extends PromptNamespace> = {
+  readonly [K in keyof T]: T[K] extends PromptModule
+    ? T[K]
+    : T[K] extends PromptNamespace
+      ? PromptRegistry<T[K]>
+      : T[K]
 }
 
 /**

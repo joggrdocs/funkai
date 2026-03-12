@@ -1,33 +1,58 @@
-import type { PromptModule, PromptRegistry } from './types.js'
+import type { PromptNamespace, PromptRegistry } from './types.js'
 
 /**
- * Create a typed prompt registry from a map of prompt modules.
+ * Check whether a value looks like a PromptModule leaf.
+ * Leaves have `name`, `schema`, and `render` — namespaces do not.
+ */
+function isPromptModule(value: unknown): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'render' in value &&
+    'schema' in value &&
+    'name' in value
+  )
+}
+
+/**
+ * Recursively freeze a prompt namespace tree.
+ * Only recurses into plain namespace nodes — PromptModule leaves
+ * (which contain Zod schemas) are frozen shallowly.
+ *
+ * @param obj - The namespace object to freeze.
+ * @returns The frozen object cast to its deep-readonly type.
+ */
+function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
+  Object.freeze(obj)
+  for (const value of Object.values(obj)) {
+    if (typeof value === 'object' && value !== null && !Object.isFrozen(value) && !isPromptModule(value)) {
+      deepFreeze(value as PromptNamespace)
+    }
+  }
+  return obj as PromptRegistry<T>
+}
+
+/**
+ * Create a typed, frozen prompt registry from a (possibly nested) map of prompt modules.
  *
  * The registry is typically created by generated code — the CLI produces
  * an `index.ts` that calls `createPromptRegistry()` with all discovered
- * prompt modules.
+ * prompt modules keyed by camelCase name, nested by group.
  *
- * @param initial - Record mapping prompt names to their modules.
- * @returns A typed registry with `get`, `has`, and `names` methods.
+ * @param modules - Record mapping camelCase prompt names (or group namespaces) to their modules.
+ * @returns A deep-frozen, typed record with direct property access.
+ *
+ * @example
+ * ```ts
+ * const prompts = createPromptRegistry({
+ *   agents: { coverageAssessor },
+ *   greeting,
+ * })
+ * prompts.agents.coverageAssessor.render({ scope: 'full' })
+ * ```
  */
-export function createPromptRegistry<T extends Record<string, PromptModule>>(
-  initial: T
+export function createPromptRegistry<T extends PromptNamespace>(
+  modules: T
 ): PromptRegistry<T> {
-  const store = new Map<string, PromptModule>(Object.entries(initial))
-
-  return {
-    get<K extends keyof T & string>(name: K): T[K] {
-      const mod = store.get(name)
-      if (!mod) {
-        throw new Error(`Unknown prompt: "${name}"`)
-      }
-      return mod as T[K]
-    },
-    has(name: string): boolean {
-      return store.has(name)
-    },
-    names(): string[] {
-      return [...store.keys()]
-    },
-  }
+  return deepFreeze({ ...modules })
 }

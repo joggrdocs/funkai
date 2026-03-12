@@ -68,11 +68,9 @@ Each module exports a default object conforming to `PromptModule`:
 
 Aggregates all per-prompt modules into a single entry point:
 
-| Export          | Type                  | Description                                     |
-| --------------- | --------------------- | ----------------------------------------------- |
-| `prompts(name)` | `<K>(K) => Prompt<K>` | Typed accessor backed by `createPromptRegistry` |
-| `PromptName`    | Union type            | All registered prompt names                     |
-| `Prompt<K>`     | Generic type          | Module type for a given prompt name             |
+| Export    | Type                    | Description                                                              |
+| --------- | ----------------------- | ------------------------------------------------------------------------ |
+| `prompts` | `PromptRegistry<...>`   | Deep-frozen const object with dot-access, nested by group. Use `typeof prompts` for type-level access. |
 
 ## Output Directory
 

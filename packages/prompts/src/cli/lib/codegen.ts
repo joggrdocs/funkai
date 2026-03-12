@@ -121,8 +121,87 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
 }
 
 /**
+ * A tree node used during registry code generation.
+ * Leaves hold the camelCase import name; branches hold nested nodes.
+ */
+type TreeNode = {
+  readonly [key: string]: string | TreeNode
+}
+
+/**
+ * Build a nested tree from sorted prompts, grouped by their `group` field.
+ *
+ * @param prompts - Sorted parsed prompts.
+ * @returns A tree where leaves are import names and branches are group namespaces.
+ * @throws If a prompt name collides with a group namespace at the same level.
+ */
+function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
+  const root: Record<string, unknown> = {}
+
+  for (const prompt of prompts) {
+    const importName = toCamelCase(prompt.name)
+    const segments = prompt.group
+      ? prompt.group.split('/').map(toCamelCase)
+      : []
+
+    let current = root
+    for (const segment of segments) {
+      const existing = current[segment]
+      if (typeof existing === 'string') {
+        throw new Error(
+          `Collision: prompt "${existing}" and group namespace "${segment}" ` +
+            'share the same key at the same level.'
+        )
+      }
+      if (existing == null) {
+        current[segment] = {}
+      }
+      current = current[segment] as Record<string, unknown>
+    }
+
+    if (typeof current[importName] === 'object' && current[importName] !== null) {
+      throw new Error(
+        `Collision: prompt "${importName}" conflicts with existing group namespace ` +
+          `"${importName}" at the same level.`
+      )
+    }
+
+    current[importName] = importName
+  }
+
+  return root as TreeNode
+}
+
+/**
+ * Serialize a tree node into indented object literal lines.
+ *
+ * @param node - The tree node to serialize.
+ * @param indent - Current indentation level.
+ * @returns Array of source lines forming the object literal body.
+ */
+function serializeTree(node: TreeNode, indent: number): string[] {
+  const pad = '  '.repeat(indent)
+  const lines: string[] = []
+
+  for (const [key, value] of Object.entries(node)) {
+    if (typeof value === 'string') {
+      lines.push(`${pad}${key},`)
+    } else {
+      lines.push(`${pad}${key}: {`)
+      lines.push(...serializeTree(value, indent + 1))
+      lines.push(`${pad}},`)
+    }
+  }
+
+  return lines
+}
+
+/**
  * Generate the registry `index.ts` that wires all prompt modules
  * together via `createPromptRegistry()`.
+ *
+ * Prompts are organized into a nested object structure based on their
+ * `group` field, with each `/`-separated segment becoming a nesting level.
  */
 export function generateRegistry(prompts: ParsedPrompt[]): string {
   const sorted = [...prompts].toSorted((a, b) => a.name.localeCompare(b.name))
@@ -131,11 +210,8 @@ export function generateRegistry(prompts: ParsedPrompt[]): string {
     .map((p) => `import ${toCamelCase(p.name)} from './${p.name}.js'`)
     .join('\n')
 
-  const registryEntries = sorted.map((p) => `  '${p.name}': ${toCamelCase(p.name)},`).join('\n')
-
-  const promptMapEntries = sorted
-    .map((p) => `  '${p.name}': typeof ${toCamelCase(p.name)}`)
-    .join('\n')
+  const tree = buildTree(sorted)
+  const treeLines = serializeTree(tree, 1)
 
   const lines: string[] = [
     HEADER,
@@ -143,21 +219,9 @@ export function generateRegistry(prompts: ParsedPrompt[]): string {
     "import { createPromptRegistry } from '@pkg/prompts-sdk'",
     imports,
     '',
-    'const registry = createPromptRegistry({',
-    registryEntries,
+    'export const prompts = createPromptRegistry({',
+    ...treeLines,
     '})',
-    '',
-    'interface PromptMap {',
-    promptMapEntries,
-    '}',
-    '',
-    'export type PromptName = keyof PromptMap',
-    '',
-    'export type Prompt<K extends PromptName> = PromptMap[K]',
-    '',
-    'export function prompts<K extends PromptName>(name: K): Prompt<K> {',
-    '  return registry.get(name)',
-    '}',
     '',
   ]
 

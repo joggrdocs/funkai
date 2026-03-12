@@ -66,7 +66,19 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
   }
 
   const group = match(typeof parsed.group === 'string')
-    .with(true, () => parsed.group as string)
+    .with(true, () => {
+      const g = parsed.group as string
+      const segments = g.split('/')
+      for (const segment of segments) {
+        if (!NAME_RE.test(segment)) {
+          throw new Error(
+            `Invalid group segment "${segment}" in ${filePath}. ` +
+              'Group segments must be lowercase alphanumeric with hyphens only.'
+          )
+        }
+      }
+      return g
+    })
     .otherwise(() => undefined)
   const version = match(parsed.version != null)
     .with(true, () => String(parsed.version))

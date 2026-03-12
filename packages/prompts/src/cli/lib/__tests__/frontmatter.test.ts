@@ -73,4 +73,17 @@ describe('parseFrontmatter', () => {
     const result = parseFrontmatter(content, 'test.prompt')
     expect(result.group).toBeUndefined()
   })
+
+  it('should throw on invalid group segment', () => {
+    const content = '---\nname: test\ngroup: agents/INVALID\n---\nBody'
+    expect(() => parseFrontmatter(content, 'test.prompt')).toThrow(
+      'Invalid group segment "INVALID"'
+    )
+  })
+
+  it('should accept valid multi-segment group', () => {
+    const content = '---\nname: test\ngroup: agents/specialized\n---\nBody'
+    const result = parseFrontmatter(content, 'test.prompt')
+    expect(result.group).toBe('agents/specialized')
+  })
 })
