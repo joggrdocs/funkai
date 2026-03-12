@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node 22
+- Node 24
 - pnpm workspace
 
 ## Steps
@@ -10,7 +10,7 @@
 1. Install:
 
 ```bash
-pnpm add @pkg/prompts-sdk --workspace
+pnpm add @funkai/prompts --workspace
 ```
 
 2. Run interactive setup:
