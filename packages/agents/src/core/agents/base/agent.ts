@@ -112,7 +112,9 @@ function extractProperty(obj: Record<string, unknown>, key: string): unknown {
  * Extract token usage from a step's usage object, defaulting to 0
  * when usage is undefined. Replaces optional chaining on `step.usage`.
  */
-function extractUsage(usage: { inputTokens?: number; outputTokens?: number } | undefined): {
+function extractUsage(
+  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
+): {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
@@ -120,7 +122,7 @@ function extractUsage(usage: { inputTokens?: number; outputTokens?: number } | u
   if (usage !== undefined) {
     const inputTokens = usage.inputTokens ?? 0;
     const outputTokens = usage.outputTokens ?? 0;
-    return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens };
+    return { inputTokens, outputTokens, totalTokens: usage.totalTokens ?? (inputTokens + outputTokens) };
   }
   return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 }
@@ -191,11 +193,12 @@ export function agent<
   const baseLogger = config.logger ?? createDefaultLogger();
 
   async function generate(
-    input: TInput,
+    rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
   ): Promise<import("@/utils/result.js").Result<GenerateResult<TOutput>>> {
+    let input = rawInput;
     if (config.input) {
-      const parsed = config.input.safeParse(input);
+      const parsed = config.input.safeParse(rawInput);
       if (!parsed.success) {
         return {
           ok: false,
@@ -205,6 +208,7 @@ export function agent<
           },
         };
       }
+      input = parsed.data as TInput;
     }
 
     const overrideLogger = readOverride(overrides, "logger");
@@ -325,11 +329,12 @@ export function agent<
   }
 
   async function stream(
-    input: TInput,
+    rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
   ): Promise<import("@/utils/result.js").Result<StreamResult<TOutput>>> {
+    let input = rawInput;
     if (config.input) {
-      const parsed = config.input.safeParse(input);
+      const parsed = config.input.safeParse(rawInput);
       if (!parsed.success) {
         return {
           ok: false,
@@ -339,6 +344,7 @@ export function agent<
           },
         };
       }
+      input = parsed.data as TInput;
     }
 
     const overrideLogger = readOverride(overrides, "logger");
