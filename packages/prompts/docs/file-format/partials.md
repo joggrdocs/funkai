@@ -14,9 +14,9 @@ Only literal string parameters are supported. Variable references (e.g. `key: my
 
 Partials are resolved from two locations, searched in order (first match wins):
 
-| Priority | Location             | Description                                       |
-| -------- | -------------------- | ------------------------------------------------- |
-| 1        | `.prompts/partials/` | Custom project partials (committed to git)        |
+| Priority | Location             | Description                                      |
+| -------- | -------------------- | ------------------------------------------------ |
+| 1        | `.prompts/partials/` | Custom project partials (committed to git)       |
 | 2        | SDK `src/prompts/`   | Built-in partials shipped with `@funkai/prompts` |
 
 Custom partials take precedence — a custom partial with the same name as a built-in overrides it.

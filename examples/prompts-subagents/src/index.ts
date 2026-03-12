@@ -1,6 +1,6 @@
 import { agent, flowAgent, model } from "@funkai/agents";
-import { prompts } from "~prompts";
 import { z } from "zod";
+import { prompts } from "~prompts";
 
 // ---------------------------------------------------------------------------
 // 1. Define agents with typed prompts

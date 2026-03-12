@@ -338,7 +338,10 @@ describe("buildAITools", () => {
     expect(result).toBeDefined();
 
     const tools = result as Record<string, { description: string; execute: Function }>;
-    const output = await tools["agent:sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] });
+    const output = await tools["agent:sub"].execute(
+      { query: "test" },
+      { toolCallId: "tc-1", messages: [] },
+    );
     expect(output).toBe("typed-output");
     expect(mockAgent.generate).toHaveBeenCalledWith({ query: "test" }, { signal: undefined });
   });
