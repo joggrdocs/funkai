@@ -1,0 +1,19 @@
+{
+  "name": "@funkai/example-prompts-subagents",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "prompts:generate": "prompts generate --out .prompts/client --roots src/agents"
+  },
+  "dependencies": {
+    "@funkai/agents": "workspace:*",
+    "@funkai/prompts": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "zod": "^3.25.67"
+  }
+}
