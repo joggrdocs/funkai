@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
-    "directory": "packages/agent-sdk"
+    "directory": "packages/agents"
   },
   "type": "module",
   "exports": {

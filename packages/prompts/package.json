@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
-    "directory": "packages/prompt-sdk"
+    "directory": "packages/prompts"
   },
   "bin": {
     "prompts": "./bin/prompts.mjs"
