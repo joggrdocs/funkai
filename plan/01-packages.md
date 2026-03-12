@@ -15,7 +15,7 @@ funkai (root meta-package)
 @funkai/openrouter   → @openrouter/ai-sdk-provider, @funkai/models
 @funkai/testing      → @funkai/agents (peer dep)
 @funkai/prompts      → (unchanged, standalone)
-funkai               → re-exports all of the above
+funkai               → re-exports @funkai/agents, @funkai/models, @funkai/openrouter, @funkai/prompts (not @funkai/testing)
 ```
 
 ## `@funkai/agents`

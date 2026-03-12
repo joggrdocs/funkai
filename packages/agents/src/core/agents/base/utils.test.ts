@@ -250,10 +250,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
 
     expect(result).toBeDefined();
-    expect(result).toHaveProperty("sub");
+    expect(result).toHaveProperty("agent:sub");
     const tools = result as Record<string, Record<string, unknown>>;
-    expect(tools.sub).toHaveProperty("description");
-    expect(tools.sub).toHaveProperty("execute");
+    expect(tools["agent:sub"]).toHaveProperty("description");
+    expect(tools["agent:sub"]).toHaveProperty("execute");
   });
 
   it("wraps agents with inputSchema using the schema", () => {
@@ -267,11 +267,11 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
 
     expect(result).toBeDefined();
-    expect(result).toHaveProperty("sub");
+    expect(result).toHaveProperty("agent:sub");
     const tools = result as Record<string, { description: string; execute: Function }>;
-    expect(tools.sub).toHaveProperty("description");
+    expect(tools["agent:sub"]).toHaveProperty("description");
     // Description should use meta name
-    expect(tools.sub.description).toContain("custom-name");
+    expect(tools["agent:sub"].description).toContain("custom-name");
   });
 
   it("uses fallback name when agent has no RUNNABLE_META name", () => {
@@ -282,7 +282,7 @@ describe("buildAITools", () => {
 
     expect(result).toBeDefined();
     const tools = result as Record<string, { description: string; execute: Function }>;
-    expect(tools.fallbackKey.description).toContain("fallbackKey");
+    expect(tools["agent:fallbackKey"].description).toContain("fallbackKey");
   });
 
   it("merges tools and agents together", () => {
@@ -294,7 +294,7 @@ describe("buildAITools", () => {
 
     expect(result).toBeDefined();
     expect(result).toHaveProperty("myTool");
-    expect(result).toHaveProperty("sub");
+    expect(result).toHaveProperty("agent:sub");
   });
 
   it("execute calls generate on prompt-based agent and returns output", async () => {
@@ -305,7 +305,7 @@ describe("buildAITools", () => {
     expect(result).toBeDefined();
 
     const tools = result as Record<string, { description: string; execute: Function }>;
-    const output = await tools.sub.execute(
+    const output = await tools["agent:sub"].execute(
       { prompt: "hello" },
       { toolCallId: "tc-1", messages: [] },
     );
@@ -322,7 +322,7 @@ describe("buildAITools", () => {
 
     const tools = result as Record<string, { description: string; execute: Function }>;
     await expect(
-      tools.sub.execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent:sub"].execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("agent failed");
   });
 
@@ -338,7 +338,7 @@ describe("buildAITools", () => {
     expect(result).toBeDefined();
 
     const tools = result as Record<string, { description: string; execute: Function }>;
-    const output = await tools.sub.execute({ query: "test" }, { toolCallId: "tc-1", messages: [] });
+    const output = await tools["agent:sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] });
     expect(output).toBe("typed-output");
     expect(mockAgent.generate).toHaveBeenCalledWith({ query: "test" }, { signal: undefined });
   });
@@ -356,7 +356,7 @@ describe("buildAITools", () => {
 
     const tools = result as Record<string, { description: string; execute: Function }>;
     await expect(
-      tools.sub.execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent:sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("typed failed");
   });
 });

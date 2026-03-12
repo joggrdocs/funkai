@@ -62,9 +62,11 @@ export function buildAITools(
         | undefined;
       const toolName = resolveToolName(meta, name);
 
+      const agentToolName = `agent:${name}`;
+
       if (meta != null && meta.inputSchema != null) {
         // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-        result[name] = tool({
+        result[agentToolName] = tool({
           description: `Delegate to ${toolName}`,
           inputSchema: meta.inputSchema,
           execute: async (input, { abortSignal }) => {
@@ -77,7 +79,7 @@ export function buildAITools(
         });
       } else {
         // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-        result[name] = tool({
+        result[agentToolName] = tool({
           description: `Delegate to ${toolName}`,
           inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
           execute: async (input: { prompt: string }, { abortSignal }) => {

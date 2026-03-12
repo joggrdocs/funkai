@@ -207,7 +207,7 @@ In the next major version:
 
 ### 4.3 File structure (final)
 
-```
+```text
 packages/
   agents/
     src/

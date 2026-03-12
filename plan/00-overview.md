@@ -11,7 +11,7 @@
 
 ## Package Structure (After)
 
-```
+```text
 packages/
   agents/        @funkai/agents     - core: agent(), flowAgent(), tool(), Result, types
   models/        @funkai/models     - model catalog + pricing metadata

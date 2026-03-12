@@ -51,7 +51,6 @@ const engine = createFlowEngine({
     transform: async ({
       config,
     }: {
-      ctx: ExecutionContext;
       config: { data: unknown; format: "json" | "csv" | "text" };
     }) => {
       switch (config.format) {

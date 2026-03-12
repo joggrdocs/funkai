@@ -30,9 +30,15 @@ export type CustomStepFactory<TConfig, TResult> = (params: {
 
 /**
  * Map of custom step names to their factory functions.
+ *
+ * Uses `config: never` as the base constraint so that any concrete
+ * `CustomStepFactory<TConfig, TResult>` is assignable via function
+ * parameter contravariance — `never extends TConfig` is always true.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>;
+export type CustomStepDefinitions = Record<
+  string,
+  (params: { ctx: ExecutionContext; config: never }) => Promise<unknown>
+>;
 
 /**
  * Derive typed custom step methods from a definitions map.
@@ -102,11 +108,13 @@ export type FlowFactory<TCustomSteps extends CustomStepDefinitions> = <TInput, T
 
 /**
  * Wrap a hook callback so it can be passed to `fireHooks`.
+ *
+ * Generic over `TEvent` so the hook is called with the correct
+ * event type without resorting to `any`.
  */
-function createHookCaller(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  hook: ((event: any) => void | Promise<void>) | undefined,
-  event: unknown,
+function createHookCaller<TEvent>(
+  hook: ((event: TEvent) => void | Promise<void>) | undefined,
+  event: TEvent,
 ): (() => void | Promise<void>) | undefined {
   if (hook) {
     return () => hook(event);
@@ -116,9 +124,12 @@ function createHookCaller(
 
 /**
  * Build a merged hook that runs engine and flow agent hooks sequentially.
+ *
+ * The `(event: never)` constraint is the widest function type under
+ * strict mode — any single-argument function is assignable via
+ * contravariance (`never extends T` for all `T`).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildMergedHook<THook extends (event: any) => void | Promise<void>>(
+function buildMergedHook<THook extends (event: never) => void | Promise<void>>(
   log: Logger,
   engineHook: THook | undefined,
   flowHook: THook | undefined,
@@ -128,8 +139,14 @@ function buildMergedHook<THook extends (event: any) => void | Promise<void>>(
   }
 
   const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(engineHook, event);
-    const flowFn = createHookCaller(flowHook, event);
+    const engineFn = createHookCaller(
+      engineHook as ((event: unknown) => void | Promise<void>) | undefined,
+      event,
+    );
+    const flowFn = createHookCaller(
+      flowHook as ((event: unknown) => void | Promise<void>) | undefined,
+      event,
+    );
     await fireHooks(log, engineFn, flowFn);
   };
   return merged as unknown as THook;
@@ -224,12 +241,17 @@ export function createFlowEngine<
     return flowAgent(mergedConfig, wrappedHandler, {
       augment$: ($, ctx) => {
         const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
+        const reservedNames = new Set(Object.keys($));
+
         for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
+          if (reservedNames.has(name)) {
+            throw new Error(`Custom step "${name}" conflicts with a built-in StepBuilder method`);
+          }
           // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
           customSteps[name] = (config: unknown) =>
-            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config });
+            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never });
         }
-        return Object.assign($, customSteps) as StepBuilder;
+        return { ...$, ...customSteps } as StepBuilder;
       },
     });
   };

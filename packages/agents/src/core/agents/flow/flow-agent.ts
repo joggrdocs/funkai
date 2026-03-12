@@ -140,6 +140,7 @@ export function flowAgent<TInput, TOutput>(
         },
       };
     }
+    const parsedInput = inputParsed.data as TInput;
 
     const startedAt = Date.now();
     const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
@@ -160,18 +161,18 @@ export function flowAgent<TInput, TOutput>(
     const $ = augmentStepBuilder(base$, ctx, _internal);
 
     // Push user message
-    messages.push(createUserMessage(input));
+    messages.push(createUserMessage(parsedInput));
 
     await fireHooks(
       log,
-      wrapHook(config.onStart, { input }),
-      wrapHook(overrides && overrides.onStart, { input }),
+      wrapHook(config.onStart, { input: parsedInput }),
+      wrapHook(overrides && overrides.onStart, { input: parsedInput }),
     );
 
     log.debug("flowAgent.generate start", { name: config.name });
 
     try {
-      const output = await handler({ input, $, log });
+      const output = await handler({ input: parsedInput, $, log });
 
       const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {
@@ -183,17 +184,18 @@ export function flowAgent<TInput, TOutput>(
           },
         };
       }
+      const parsedOutput = outputParsed.data as TOutput;
 
       const duration = Date.now() - startedAt;
 
       // Push final assistant message
-      messages.push(createAssistantMessage(output));
+      messages.push(createAssistantMessage(parsedOutput));
 
       const usage = sumTokenUsage(collectUsages(trace));
       const frozenTrace = snapshotTrace(trace);
 
       const result: FlowAgentGenerateResult<TOutput> = {
-        output,
+        output: parsedOutput,
         messages: [...messages],
         usage,
         finishReason: "stop",
@@ -203,9 +205,9 @@ export function flowAgent<TInput, TOutput>(
 
       await fireHooks(
         log,
-        wrapHook(config.onFinish, { input, result, duration }),
+        wrapHook(config.onFinish, { input: parsedInput, result, duration }),
         wrapHook(overrides && overrides.onFinish, {
-          input,
+          input: parsedInput,
           result: result as import("@/core/agents/base/types.js").GenerateResult,
           duration,
         }),
@@ -222,8 +224,8 @@ export function flowAgent<TInput, TOutput>(
 
       await fireHooks(
         log,
-        wrapHook(config.onError, { input, error }),
-        wrapHook(overrides && overrides.onError, { input, error }),
+        wrapHook(config.onError, { input: parsedInput, error }),
+        wrapHook(overrides && overrides.onError, { input: parsedInput, error }),
       );
 
       return {
@@ -251,6 +253,7 @@ export function flowAgent<TInput, TOutput>(
         },
       };
     }
+    const parsedInput = inputParsed.data as TInput;
 
     const startedAt = Date.now();
     const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
@@ -275,12 +278,12 @@ export function flowAgent<TInput, TOutput>(
     const $ = augmentStepBuilder(base$, ctx, _internal);
 
     // Push user message
-    messages.push(createUserMessage(input));
+    messages.push(createUserMessage(parsedInput));
 
     await fireHooks(
       log,
-      wrapHook(config.onStart, { input }),
-      wrapHook(overrides && overrides.onStart, { input }),
+      wrapHook(config.onStart, { input: parsedInput }),
+      wrapHook(overrides && overrides.onStart, { input: parsedInput }),
     );
 
     log.debug("flowAgent.stream start", { name: config.name });
@@ -288,22 +291,23 @@ export function flowAgent<TInput, TOutput>(
     // Run handler in background, piping results through stream
     const done = (async () => {
       try {
-        const output = await handler({ input, $, log });
+        const output = await handler({ input: parsedInput, $, log });
 
         const outputParsed = config.output.safeParse(output);
         if (!outputParsed.success) {
           throw new Error(`Output validation failed: ${outputParsed.error.message}`);
         }
+        const parsedOutput = outputParsed.data as TOutput;
 
         const duration = Date.now() - startedAt;
 
         // Push final assistant message
-        messages.push(createAssistantMessage(output));
+        messages.push(createAssistantMessage(parsedOutput));
 
         const usage = sumTokenUsage(collectUsages(trace));
 
         const result: FlowAgentGenerateResult<TOutput> = {
-          output,
+          output: parsedOutput,
           messages: [...messages],
           usage,
           finishReason: "stop",
@@ -313,9 +317,9 @@ export function flowAgent<TInput, TOutput>(
 
         await fireHooks(
           log,
-          wrapHook(config.onFinish, { input, result, duration }),
+          wrapHook(config.onFinish, { input: parsedInput, result, duration }),
           wrapHook(overrides && overrides.onFinish, {
-            input,
+            input: parsedInput,
             result: result as import("@/core/agents/base/types.js").GenerateResult,
             duration,
           }),
@@ -349,8 +353,8 @@ export function flowAgent<TInput, TOutput>(
 
         await fireHooks(
           log,
-          wrapHook(config.onError, { input, error }),
-          wrapHook(overrides && overrides.onError, { input, error }),
+          wrapHook(config.onError, { input: parsedInput, error }),
+          wrapHook(overrides && overrides.onError, { input: parsedInput, error }),
         );
 
         throw error;

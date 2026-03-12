@@ -262,8 +262,7 @@ describe("generate() output validation", () => {
         output: Output,
         logger: createMockLogger(),
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      async () => ({ y: "not-a-number" }) as any,
+      async () => ({ y: "not-a-number" }) as unknown as { y: number },
     );
 
     const result = await fa.generate({ x: 1 });
