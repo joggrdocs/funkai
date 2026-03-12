@@ -357,6 +357,11 @@ function augmentStepBuilder(
  * State is just variables. `$` is passed into every callback so you
  * can nest operations freely.
  *
+ * @deprecated Use `flowAgent()` from `@funkai/agents` instead.
+ * `flowAgent()` returns `GenerateResult` (with `messages` and `finishReason`)
+ * matching the `Agent` API, and its stream emits AI SDK-compatible tool-call
+ * events. See the migration guide for details.
+ *
  * @typeParam TInput - Input type, inferred from the `input` Zod schema.
  * @typeParam TOutput - Output type, inferred from the `output` Zod schema.
  * @param config - Workflow configuration including name, schemas,
@@ -418,7 +423,8 @@ export function workflow<TInput, TOutput>(
 
     const signal = (overrides && overrides.signal) || new AbortController().signal
     const trace: TraceEntry[] = []
-    const ctx: Context = { signal, log, trace }
+    const messages: import('@/core/agent/types.js').Message[] = []
+    const ctx: Context = { signal, log, trace, messages }
 
     const base$ = createStepBuilder({
       ctx,
@@ -505,7 +511,8 @@ export function workflow<TInput, TOutput>(
 
     const signal = (overrides && overrides.signal) || new AbortController().signal
     const trace: TraceEntry[] = []
-    const ctx: Context = { signal, log, trace }
+    const messages: import('@/core/agent/types.js').Message[] = []
+    const ctx: Context = { signal, log, trace, messages }
 
     const { readable, writable } = new TransformStream<StepEvent>()
     const writer = writable.getWriter()

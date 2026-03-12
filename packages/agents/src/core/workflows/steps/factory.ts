@@ -1,3 +1,10 @@
+import {
+  buildToolCallId,
+  createToolCallMessage,
+  createToolResultMessage,
+  formatToolCallEvent,
+  formatToolResultEvent,
+} from '@/core/flow-agent/messages.js'
 import type { AgentStepConfig } from '@/core/workflows/steps/agent.js'
 import type { AllConfig } from '@/core/workflows/steps/all.js'
 import type { StepBuilder } from '@/core/workflows/steps/builder.js'
@@ -44,6 +51,15 @@ export interface StepBuilderOptions {
    * Emit a step event to the workflow's event stream.
    */
   emit?: (event: StepEvent) => void
+
+  /**
+   * Stream writer for emitting serialized tool-call events.
+   *
+   * When provided, step start/finish events are written as JSON
+   * strings to this writer. Used by `flowAgent.stream()` to pipe
+   * step events through the readable stream.
+   */
+  writer?: WritableStreamDefaultWriter<string>
 }
 
 /**
@@ -77,7 +93,7 @@ export function createStepBuilder(options: StepBuilderOptions): StepBuilder {
  * the same ref so step indices are globally unique.
  */
 function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexRef): StepBuilder {
-  const { ctx, parentHooks, emit } = options
+  const { ctx, parentHooks, emit, writer } = options
 
   /**
    * Core step primitive — every other method delegates here.
@@ -119,8 +135,18 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       signal: ctx.signal,
       log: ctx.log.child({ stepId: id }),
       trace: childTrace,
+      messages: ctx.messages,
     }
-    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, emit }, indexRef)
+    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, emit, writer }, indexRef)
+
+    // Build synthetic tool-call message and push to context
+    const toolCallId = buildToolCallId(id, stepInfo.index)
+    ctx.messages.push(createToolCallMessage(toolCallId, id, input))
+
+    // Write tool-call event to stream if writer is available
+    if (writer != null) {
+      writer.write(formatToolCallEvent(toolCallId, id, input)).catch(() => {})
+    }
 
     const onStartHook = buildHookCallback(onStart, (fn) => fn({ id }))
     const parentOnStepStartHook = buildParentHookCallback(parentHooks, 'onStepStart', (fn) =>
@@ -140,6 +166,14 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       traceEntry.finishedAt = Date.now()
       if (value != null && typeof value === 'object' && 'usage' in value) {
         traceEntry.usage = (value as { usage: import('@/core/provider/types.js').TokenUsage }).usage
+      }
+
+      // Push synthetic tool-result message
+      ctx.messages.push(createToolResultMessage(toolCallId, id, value))
+
+      // Write tool-result event to stream
+      if (writer != null) {
+        writer.write(formatToolResultEvent(toolCallId, id, value)).catch(() => {})
       }
 
       const onFinishHook = buildHookCallback(onFinish, (fn) =>
@@ -167,6 +201,18 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         message: error.message,
         cause: error,
         stepId: id,
+      }
+
+      // Push synthetic tool-result message for error
+      ctx.messages.push(
+        createToolResultMessage(toolCallId, id, { error: error.message }, true)
+      )
+
+      // Write error tool-result event to stream
+      if (writer != null) {
+        writer.write(
+          formatToolResultEvent(toolCallId, id, { error: error.message }, true)
+        ).catch(() => {})
       }
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }))
@@ -200,6 +246,39 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           ...config.config,
           logger: ctx.log.child({ stepId: config.id }),
         }
+
+        // When stream: true and a writer is available, use agent.stream()
+        // to pipe text through the parent flow's stream
+        if (config.stream && writer != null) {
+          const streamResult = await config.agent.stream(config.input, agentConfig)
+          if (!streamResult.ok) {
+            throw streamResult.error.cause ?? new Error(streamResult.error.message)
+          }
+          const full = streamResult as unknown as import('@/core/agent/types.js').StreamResult & {
+            ok: true
+          }
+
+          // Pipe text chunks through the parent writer
+          const reader = full.stream.getReader()
+          try {
+            while (true) {
+              const { done: readerDone, value: chunk } = await reader.read()
+              if (readerDone) break
+              await writer.write(chunk)
+            }
+          } finally {
+            reader.releaseLock()
+          }
+
+          // Await the final results
+          return {
+            output: await full.output,
+            messages: await full.messages,
+            usage: await full.usage,
+            finishReason: await full.finishReason,
+          }
+        }
+
         const result = await config.agent.generate(config.input, agentConfig)
         if (!result.ok) {
           throw result.error.cause ?? new Error(result.error.message)

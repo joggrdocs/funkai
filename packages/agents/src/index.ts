@@ -1,12 +1,14 @@
 export { tool } from '@/core/tool.js'
 export { agent } from '@/core/agent/agent.js'
 export { resolveOutput } from '@/core/agent/output.js'
+export { flowAgent } from '@/core/flow-agent/flow-agent.js'
+export { createFlowEngine } from '@/core/flow-agent/engine.js'
 export { workflow } from '@/core/workflows/workflow.js'
 export { createWorkflowEngine } from '@/core/workflows/engine.js'
 export { createDefaultLogger } from '@/core/logger.js'
 export { model, tryModel, models } from '@/core/models/index.js'
 export { createOpenRouter, openrouter } from '@/core/provider/provider.js'
-export { agentUsage, workflowUsage, sumTokenUsage } from '@/core/provider/usage.js'
+export { agentUsage, flowAgentUsage, workflowUsage, sumTokenUsage } from '@/core/provider/usage.js'
 export { createStepBuilder } from '@/core/workflows/steps/factory.js'
 
 export type { Runnable, Model, ModelRef } from '@/core/types.js'
@@ -27,6 +29,23 @@ export type {
   GenerateResult,
   StreamResult,
 } from '@/core/agent/types.js'
+
+export type {
+  FlowAgent,
+  FlowAgentConfig,
+  FlowAgentOverrides,
+  FlowAgentHandler,
+  FlowAgentParams,
+  FlowAgentGenerateResult,
+} from '@/core/flow-agent/types.js'
+
+export type {
+  FlowFactory,
+  FlowEngineConfig,
+  CustomStepDefinitions as FlowCustomStepDefinitions,
+  CustomStepFactory as FlowCustomStepFactory,
+  TypedCustomSteps as FlowTypedCustomSteps,
+} from '@/core/flow-agent/engine.js'
 
 export type {
   Workflow,
@@ -73,6 +92,7 @@ export type {
   TokenUsage,
   TokenUsageRecord,
   AgentTokenUsage,
+  FlowAgentTokenUsage,
   WorkflowTokenUsage,
 } from '@/core/provider/types.js'
 

@@ -6,6 +6,7 @@ import type {
   TokenUsageRecord,
   AgentTokenUsage,
   WorkflowTokenUsage,
+  FlowAgentTokenUsage,
 } from '@/core/provider/types.js'
 
 /**
@@ -74,6 +75,19 @@ export function workflowUsage(records: TokenUsageRecord[]): WorkflowTokenUsage {
   return {
     usages,
   }
+}
+
+/**
+ * Compute final usage for a flow agent with multiple agent calls.
+ *
+ * Groups raw tracking records by `source.agentId`, computes per-agent
+ * usage via {@link agentUsage}.
+ *
+ * @param records - Raw tracking records from all agents in the flow.
+ * @returns {@link FlowAgentTokenUsage} with per-agent breakdown.
+ */
+export function flowAgentUsage(records: TokenUsageRecord[]): FlowAgentTokenUsage {
+  return workflowUsage(records)
 }
 
 /**

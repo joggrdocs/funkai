@@ -26,6 +26,7 @@ export function createMockCtx(overrides?: Partial<Context>): Context {
     signal: new AbortController().signal,
     log: createMockLogger(),
     trace: [],
+    messages: [],
     ...overrides,
   }
 }

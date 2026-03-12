@@ -43,6 +43,18 @@ export interface AgentStepConfig<TInput> {
   config?: AgentOverrides
 
   /**
+   * When `true`, call `agent.stream()` instead of `agent.generate()`
+   * and pipe the agent's text output through the parent flow's stream.
+   *
+   * Only has an effect when the flow agent is streaming (i.e., when
+   * a stream writer is available). Falls back to `agent.generate()`
+   * when the flow agent is not streaming.
+   *
+   * @default false
+   */
+  stream?: boolean
+
+  /**
    * Hook: fires when this agent step starts.
    *
    * @param event - Event containing the step id.
