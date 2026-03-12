@@ -1,4 +1,4 @@
-import { attempt, attemptAsync } from 'es-toolkit'
+import { attempt, attemptAsync } from "es-toolkit";
 
 /**
  * Run N callbacks sequentially, swallowing errors.
@@ -12,7 +12,7 @@ import { attempt, attemptAsync } from 'es-toolkit'
 export function attemptEach<T = void, E = Error>(
   ...handlers: Array<(() => T) | undefined>
 ): Array<[null, T] | [E, null]> {
-  return handlers.filter((h): h is () => T => h != null).map((h) => attempt<T, E>(h))
+  return handlers.filter((h): h is () => T => h != null).map((h) => attempt<T, E>(h));
 }
 
 /**
@@ -27,12 +27,12 @@ export function attemptEach<T = void, E = Error>(
 export async function attemptEachAsync<T = void, E = Error>(
   ...handlers: Array<(() => T | Promise<T>) | undefined>
 ): Promise<Array<[null, T] | [E, null]>> {
-  const results: Array<[null, T] | [E, null]> = []
+  const results: Array<[null, T] | [E, null]> = [];
   for (const h of handlers) {
     if (h != null) {
       // oxlint-disable-next-line no-await-in-loop - sequential by design
-      results.push(await attemptAsync<T, E>(async () => h()))
+      results.push(await attemptAsync<T, E>(async () => h()));
     }
   }
-  return results
+  return results;
 }

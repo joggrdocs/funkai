@@ -1,5 +1,5 @@
-import type { Context, ExecutionContext } from '@/lib/context.js'
-import { createMockLogger } from '@/testing/logger.js'
+import type { Context, ExecutionContext } from "@/lib/context.js";
+import { createMockLogger } from "@/testing/logger.js";
 
 /**
  * Create a mock {@link ExecutionContext} with a mock logger
@@ -12,7 +12,7 @@ export function createMockExecutionCtx(overrides?: Partial<ExecutionContext>): E
     signal: new AbortController().signal,
     log: createMockLogger(),
     ...overrides,
-  }
+  };
 }
 
 /**
@@ -28,5 +28,5 @@ export function createMockCtx(overrides?: Partial<Context>): Context {
     trace: [],
     messages: [],
     ...overrides,
-  }
+  };
 }

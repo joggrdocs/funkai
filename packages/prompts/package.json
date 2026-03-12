@@ -2,15 +2,12 @@
   "name": "@funkai/prompts",
   "version": "0.4.0",
   "private": false,
-  "license": "MIT",
   "description": "Prompt SDK with LiquidJS templating and Zod validation",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
     "directory": "packages/prompts"
-  },
-  "bin": {
-    "prompts": "./bin/prompts.mjs"
   },
   "type": "module",
   "exports": {
@@ -20,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown && cp -r src/prompts dist/prompts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
@@ -30,16 +27,10 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@clack/prompts": "^1.1.0",
     "@types/node": "^25.5.0",
-    "@types/yargs": "^17.0.35",
-    "picocolors": "^1.1.1",
-    "ts-pattern": "^5.9.0",
     "tsdown": "^0.21.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0",
-    "yaml": "^2.8.2",
-    "yargs": "^18.0.0"
+    "vitest": "^4.1.0"
   },
   "engines": {
     "node": ">=24.0.0"

@@ -15,93 +15,93 @@ Lightweight agent orchestration framework built on the [Vercel AI SDK](https://a
 ### Agent
 
 ```typescript
-import { agent, tool } from '@pkg/agent-sdk'
-import { z } from 'zod'
+import { agent, tool } from "@pkg/agent-sdk";
+import { z } from "zod";
 
 // Simple mode -- pass a string directly
 const helper = agent({
-  name: 'helper',
-  model: 'openai/gpt-4.1',
-  system: 'You are a helpful assistant.',
-})
+  name: "helper",
+  model: "openai/gpt-4.1",
+  system: "You are a helpful assistant.",
+});
 
-const result = await helper.generate('What is TypeScript?')
+const result = await helper.generate("What is TypeScript?");
 
 if (!result.ok) {
-  console.error(result.error.code, result.error.message)
+  console.error(result.error.code, result.error.message);
 } else {
-  console.log(result.output) // string
-  console.log(result.messages) // full message history
+  console.log(result.output); // string
+  console.log(result.messages); // full message history
 }
 
 // Typed mode -- input schema + prompt template
 const summarizer = agent({
-  name: 'summarizer',
-  model: 'openai/gpt-4.1',
+  name: "summarizer",
+  model: "openai/gpt-4.1",
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize the following:\n\n${input.text}`,
-})
+});
 
-const summary = await summarizer.generate({ text: 'A long article...' })
+const summary = await summarizer.generate({ text: "A long article..." });
 ```
 
 ### Tool
 
 ```typescript
-import { tool } from '@pkg/agent-sdk'
-import { z } from 'zod'
+import { tool } from "@pkg/agent-sdk";
+import { z } from "zod";
 
 const fetchPage = tool({
-  description: 'Fetch the contents of a web page by URL',
+  description: "Fetch the contents of a web page by URL",
   inputSchema: z.object({ url: z.url() }),
   execute: async ({ url }) => {
-    const res = await fetch(url)
-    return { url, status: res.status, body: await res.text() }
+    const res = await fetch(url);
+    return { url, status: res.status, body: await res.text() };
   },
-})
+});
 ```
 
 ### Workflow
 
 ```typescript
-import { workflow } from '@pkg/agent-sdk'
-import { z } from 'zod'
+import { workflow } from "@pkg/agent-sdk";
+import { z } from "zod";
 
-const InputSchema = z.object({ topic: z.string() })
-const OutputSchema = z.object({ summary: z.string(), sources: z.array(z.string()) })
+const InputSchema = z.object({ topic: z.string() });
+const OutputSchema = z.object({ summary: z.string(), sources: z.array(z.string()) });
 
 const research = workflow(
   {
-    name: 'research',
+    name: "research",
     input: InputSchema,
     output: OutputSchema,
   },
   async ({ input, $ }) => {
     // State is just variables
-    let sources: string[] = []
+    let sources: string[] = [];
 
     // $.step -- tracked unit of work
     const data = await $.step({
-      id: 'fetch-sources',
+      id: "fetch-sources",
       execute: async () => findSources(input.topic),
-    })
-    if (data.ok) sources = data.value
+    });
+    if (data.ok) sources = data.value;
 
     // $.agent -- run an agent as a tracked step
     const analysis = await $.agent({
-      id: 'summarize',
+      id: "summarize",
       agent: summarizer,
-      input: { text: sources.join('\n') },
-    })
+      input: { text: sources.join("\n") },
+    });
 
     return {
-      summary: analysis.ok ? analysis.output : 'Failed to summarize',
+      summary: analysis.ok ? analysis.output : "Failed to summarize",
       sources,
-    }
-  }
-)
+    };
+  },
+);
 
-const result = await research.generate({ topic: 'Effect systems' })
+const result = await research.generate({ topic: "Effect systems" });
 ```
 
 ## Public API
@@ -120,21 +120,21 @@ const result = await research.generate({ topic: 'Effect systems' })
 Every `generate()` call returns `Result<T>` -- a discriminated union where success fields are flat on the object:
 
 ```typescript
-type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError }
+type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 ```
 
 ```typescript
-const result = await myAgent.generate('hello')
+const result = await myAgent.generate("hello");
 
 if (!result.ok) {
   // result.error.code    -- machine-readable code
   // result.error.message -- human-readable description
-  return
+  return;
 }
 
 // Success -- fields from GenerateResult are directly on result
-result.output // TOutput
-result.messages // Message[]
+result.output; // TOutput
+result.messages; // Message[]
 ```
 
 ## Step Builder (`$`)
@@ -160,20 +160,20 @@ Both agents and workflows support streaming:
 
 ```typescript
 // Agent streaming
-const result = await helper.stream('Explain closures')
+const result = await helper.stream("Explain closures");
 if (result.ok) {
   for await (const chunk of result.stream) {
-    process.stdout.write(chunk)
+    process.stdout.write(chunk);
   }
-  const finalOutput = await result.output // resolves after stream ends
-  const messages = await result.messages // resolves after stream ends
+  const finalOutput = await result.output; // resolves after stream ends
+  const messages = await result.messages; // resolves after stream ends
 }
 
 // Workflow streaming -- emits StepEvent objects
-const result = await research.stream({ topic: 'Closures' })
+const result = await research.stream({ topic: "Closures" });
 if (result.ok) {
   for await (const event of result.stream) {
-    console.log(event.type) // step:start, step:finish, workflow:finish, ...
+    console.log(event.type); // step:start, step:finish, workflow:finish, ...
   }
 }
 ```

@@ -5,7 +5,7 @@
 ## Signature
 
 ```ts
-function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool<TInput, TOutput>
+function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool<TInput, TOutput>;
 ```
 
 ## ToolConfig
@@ -26,69 +26,69 @@ function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool<TInput
 The `Tool` type is the return type of the AI SDK's `tool()` function:
 
 ```ts
-type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput, TOutput>>
+type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput, TOutput>>;
 ```
 
 ## Example
 
 ```ts
-import { tool, agent } from '@joggr/agent-sdk'
-import { z } from 'zod'
+import { tool, agent } from "@joggr/agent-sdk";
+import { z } from "zod";
 
 const fetchPage = tool({
-  description: 'Fetch the contents of a web page by URL',
+  description: "Fetch the contents of a web page by URL",
   inputSchema: z.object({
     url: z.url(),
   }),
   execute: async ({ url }) => {
-    const res = await fetch(url)
+    const res = await fetch(url);
     return {
       url,
       status: res.status,
       body: await res.text(),
-    }
+    };
   },
-})
+});
 
 // Tool name ("fetchPage") comes from the object key:
 const assistant = agent({
-  name: 'assistant',
-  model: 'openai/gpt-4.1',
-  system: 'You are a helpful assistant that can fetch web pages.',
+  name: "assistant",
+  model: "openai/gpt-4.1",
+  system: "You are a helpful assistant that can fetch web pages.",
   tools: { fetchPage },
-})
+});
 ```
 
 ### Output validation
 
 ```ts
 const calculator = tool({
-  description: 'Evaluate a math expression',
+  description: "Evaluate a math expression",
   inputSchema: z.object({ expression: z.string() }),
   outputSchema: z.object({ result: z.number() }),
   execute: async ({ expression }) => {
-    return { result: evaluate(expression) }
+    return { result: evaluate(expression) };
   },
-})
+});
 ```
 
 ### Input examples
 
 ```ts
 const searchTool = tool({
-  description: 'Search the codebase for a pattern',
+  description: "Search the codebase for a pattern",
   inputSchema: z.object({
     query: z.string(),
     fileType: z.string().optional(),
   }),
   inputExamples: [
-    { input: { query: 'function handleError', fileType: 'ts' } },
-    { input: { query: 'TODO:' } },
+    { input: { query: "function handleError", fileType: "ts" } },
+    { input: { query: "TODO:" } },
   ],
   execute: async ({ query, fileType }) => {
-    return await searchCodebase(query, fileType)
+    return await searchCodebase(query, fileType);
   },
-})
+});
 ```
 
 ## References

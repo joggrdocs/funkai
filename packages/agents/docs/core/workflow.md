@@ -7,8 +7,8 @@
 ```ts
 function workflow<TInput, TOutput>(
   config: WorkflowConfig<TInput, TOutput>,
-  handler: WorkflowHandler<TInput, TOutput>
-): Workflow<TInput, TOutput>
+  handler: WorkflowHandler<TInput, TOutput>,
+): Workflow<TInput, TOutput>;
 ```
 
 ## WorkflowConfig
@@ -28,7 +28,7 @@ function workflow<TInput, TOutput>(
 ## WorkflowHandler
 
 ```ts
-type WorkflowHandler<TInput, TOutput> = (params: WorkflowParams<TInput>) => Promise<TOutput>
+type WorkflowHandler<TInput, TOutput> = (params: WorkflowParams<TInput>) => Promise<TOutput>;
 ```
 
 The handler receives `{ input, $ }`:
@@ -42,9 +42,9 @@ The handler returns `TOutput`, which is validated against the `output` Zod schem
 
 ```ts
 interface Workflow<TInput, TOutput> {
-  generate(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowResult<TOutput>>>
-  stream(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowStreamResult<TOutput>>>
-  fn(): (input: TInput, config?: WorkflowOverrides) => Promise<Result<WorkflowResult<TOutput>>>
+  generate(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowResult<TOutput>>>;
+  stream(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowStreamResult<TOutput>>>;
+  fn(): (input: TInput, config?: WorkflowOverrides) => Promise<Result<WorkflowResult<TOutput>>>;
 }
 ```
 
@@ -54,10 +54,10 @@ Runs the workflow to completion. Returns `Result<WorkflowResult<TOutput>>`.
 
 ```ts
 interface WorkflowResult<TOutput> {
-  output: TOutput // validated output
-  trace: readonly TraceEntry[] // frozen execution trace tree
-  usage: TokenUsage // aggregated token usage from all $.agent() calls
-  duration: number // wall-clock time in ms
+  output: TOutput; // validated output
+  trace: readonly TraceEntry[]; // frozen execution trace tree
+  usage: TokenUsage; // aggregated token usage from all $.agent() calls
+  duration: number; // wall-clock time in ms
 }
 ```
 
@@ -69,11 +69,11 @@ Runs the workflow with streaming step progress. Returns `Result<WorkflowStreamRe
 
 ```ts
 interface WorkflowStreamResult<TOutput> {
-  output: TOutput // available after stream completes
-  trace: readonly TraceEntry[] // available after stream completes
-  usage: TokenUsage // aggregated token usage (available after stream completes)
-  duration: number // available after stream completes
-  stream: ReadableStream<StepEvent>
+  output: TOutput; // available after stream completes
+  trace: readonly TraceEntry[]; // available after stream completes
+  usage: TokenUsage; // aggregated token usage (available after stream completes)
+  duration: number; // available after stream completes
+  stream: ReadableStream<StepEvent>;
 }
 ```
 
@@ -110,8 +110,8 @@ For custom step types, use `createWorkflowEngine()`. It returns a `workflow()`-l
 
 ```ts
 function createWorkflowEngine<TCustomSteps>(
-  config: EngineConfig<TCustomSteps>
-): WorkflowFactory<TCustomSteps>
+  config: EngineConfig<TCustomSteps>,
+): WorkflowFactory<TCustomSteps>;
 ```
 
 ### EngineConfig
@@ -131,9 +131,9 @@ Each custom step factory receives `{ ctx: ExecutionContext, config }` where `Exe
 
 ```ts
 type CustomStepFactory<TConfig, TResult> = (params: {
-  ctx: ExecutionContext
-  config: TConfig
-}) => Promise<TResult>
+  ctx: ExecutionContext;
+  config: TConfig;
+}) => Promise<TResult>;
 ```
 
 ### Example
@@ -142,26 +142,26 @@ type CustomStepFactory<TConfig, TResult> = (params: {
 const engine = createWorkflowEngine({
   $: {
     retry: async ({ ctx, config }) => {
-      let lastError: Error | undefined
+      let lastError: Error | undefined;
       for (let attempt = 0; attempt < config.attempts; attempt++) {
-        if (ctx.signal.aborted) throw new Error('Aborted')
+        if (ctx.signal.aborted) throw new Error("Aborted");
         try {
-          return await config.execute({ attempt })
+          return await config.execute({ attempt });
         } catch (err) {
-          lastError = err as Error
-          await sleep(config.backoff * (attempt + 1))
+          lastError = err as Error;
+          await sleep(config.backoff * (attempt + 1));
         }
       }
-      throw lastError
+      throw lastError;
     },
   },
   onStart: ({ input }) => telemetry.trackStart(input),
   onFinish: ({ output, duration }) => telemetry.trackFinish(output, duration),
-})
+});
 
 const myWorkflow = engine(
   {
-    name: 'my-workflow',
+    name: "my-workflow",
     input: MyInput,
     output: MyOutput,
   },
@@ -170,61 +170,61 @@ const myWorkflow = engine(
     const data = await $.retry({
       attempts: 3,
       backoff: 1000,
-      execute: async () => fetch('https://api.example.com/data'),
-    })
-    return data
-  }
-)
+      execute: async () => fetch("https://api.example.com/data"),
+    });
+    return data;
+  },
+);
 ```
 
 ## Full Example
 
 ```ts
-import { workflow, agent, tool } from '@joggr/agent-sdk'
-import { z } from 'zod'
+import { workflow, agent, tool } from "@joggr/agent-sdk";
+import { z } from "zod";
 
 const analyzeAgent = agent({
-  name: 'analyzer',
-  model: 'openai/gpt-4.1',
+  name: "analyzer",
+  model: "openai/gpt-4.1",
   input: z.object({ files: z.array(z.string()) }),
-  prompt: ({ input }) => `Analyze these files:\n${input.files.join('\n')}`,
-})
+  prompt: ({ input }) => `Analyze these files:\n${input.files.join("\n")}`,
+});
 
-const InputSchema = z.object({ repo: z.string() })
-const OutputSchema = z.object({ report: z.string(), fileCount: z.number() })
+const InputSchema = z.object({ repo: z.string() });
+const OutputSchema = z.object({ report: z.string(), fileCount: z.number() });
 
 const reporter = workflow(
   {
-    name: 'reporter',
+    name: "reporter",
     input: InputSchema,
     output: OutputSchema,
   },
   async ({ input, $ }) => {
     // $.step for a tracked unit of work
     const files = await $.step({
-      id: 'list-files',
+      id: "list-files",
       execute: async () => listFiles(input.repo),
-    })
+    });
 
     if (!files.ok) {
-      return { report: 'Failed to list files', fileCount: 0 }
+      return { report: "Failed to list files", fileCount: 0 };
     }
 
     // $.agent for a tracked agent call
     const analysis = await $.agent({
-      id: 'analyze',
+      id: "analyze",
       agent: analyzeAgent,
       input: { files: files.value },
-    })
+    });
 
     return {
-      report: analysis.ok ? analysis.value.output : 'Analysis failed',
+      report: analysis.ok ? analysis.value.output : "Analysis failed",
       fileCount: files.value.length,
-    }
-  }
-)
+    };
+  },
+);
 
-const result = await reporter.generate({ repo: 'my-org/my-repo' })
+const result = await reporter.generate({ repo: "my-org/my-repo" });
 ```
 
 ## References

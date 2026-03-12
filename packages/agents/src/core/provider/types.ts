@@ -1,6 +1,6 @@
-import { type LanguageModel as BaseLanguageModel } from 'ai'
+import { type LanguageModel as BaseLanguageModel } from "ai";
 
-import type { ModelId } from '@/core/models/index.js'
+import type { ModelId } from "@/core/models/index.js";
 
 /**
  * AI SDK v3 language model type.
@@ -8,7 +8,7 @@ import type { ModelId } from '@/core/models/index.js'
  * Narrowed to the v3 specification version for type safety.
  * All models created via `openrouter()` or `wrapModel()` satisfy this type.
  */
-export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: 'v3' }>
+export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: "v3" }>;
 
 /**
  * Base token counts shared by raw tracking records and final output.
@@ -17,22 +17,22 @@ export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: '
  */
 export interface TokenUsage {
   /** Number of input (prompt) tokens. */
-  readonly inputTokens: number
+  readonly inputTokens: number;
 
   /** Number of output (completion) tokens. */
-  readonly outputTokens: number
+  readonly outputTokens: number;
 
   /** Total tokens (input + output). */
-  readonly totalTokens: number
+  readonly totalTokens: number;
 
   /** Tokens served from the provider's prompt cache. */
-  readonly cacheReadTokens: number
+  readonly cacheReadTokens: number;
 
   /** Tokens written into the provider's prompt cache. */
-  readonly cacheWriteTokens: number
+  readonly cacheWriteTokens: number;
 
   /** Tokens consumed by the model's internal reasoning (e.g. o3/o4). */
-  readonly reasoningTokens: number
+  readonly reasoningTokens: number;
 }
 
 /**
@@ -46,35 +46,35 @@ export interface TokenUsageRecord {
    * The model identifier that produced this usage
    * (e.g. `"openai/gpt-5.2-codex"`).
    */
-  readonly modelId: ModelId
+  readonly modelId: ModelId;
 
   /** Number of input (prompt) tokens. */
-  readonly inputTokens: number | undefined
+  readonly inputTokens: number | undefined;
 
   /** Number of output (completion) tokens. */
-  readonly outputTokens: number | undefined
+  readonly outputTokens: number | undefined;
 
   /** Total tokens (input + output). */
-  readonly totalTokens: number | undefined
+  readonly totalTokens: number | undefined;
 
   /** Tokens served from the provider's prompt cache. */
-  readonly cacheReadTokens: number | undefined
+  readonly cacheReadTokens: number | undefined;
 
   /** Tokens written into the provider's prompt cache. */
-  readonly cacheWriteTokens: number | undefined
+  readonly cacheWriteTokens: number | undefined;
 
   /** Tokens consumed by the model's internal reasoning (e.g. o3/o4). */
-  readonly reasoningTokens: number | undefined
+  readonly reasoningTokens: number | undefined;
 
   /**
    * Populated by the framework — identifies which component produced this usage.
    */
   readonly source?: {
-    readonly workflowId?: string
-    readonly stepId?: string
-    readonly agentId: string
-    readonly scope: readonly string[]
-  }
+    readonly workflowId?: string;
+    readonly stepId?: string;
+    readonly agentId: string;
+    readonly scope: readonly string[];
+  };
 }
 
 /**
@@ -84,7 +84,7 @@ export interface TokenUsageRecord {
  */
 export interface AgentTokenUsage extends TokenUsage {
   /** The agent that produced this usage. */
-  readonly agentId: string
+  readonly agentId: string;
 }
 
 /**
@@ -94,5 +94,5 @@ export interface AgentTokenUsage extends TokenUsage {
  */
 export interface FlowAgentTokenUsage {
   /** Per-agent usage entries. */
-  readonly usages: readonly AgentTokenUsage[]
+  readonly usages: readonly AgentTokenUsage[];
 }

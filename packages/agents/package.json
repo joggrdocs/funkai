@@ -2,8 +2,8 @@
   "name": "@funkai/agents",
   "version": "0.4.0",
   "private": false,
-  "license": "MIT",
   "description": "Lightweight workflow and agent handle orchestration framework",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
@@ -31,9 +31,6 @@
     "type-fest": "^5.4.4",
     "zod": "^4.3.6"
   },
-  "engines": {
-    "node": ">=24.0.0"
-  },
   "devDependencies": {
     "@ai-sdk/devtools": "^0.0.15",
     "@openrouter/sdk": "^0.9.11",
@@ -43,5 +40,8 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

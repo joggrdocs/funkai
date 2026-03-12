@@ -1,4 +1,4 @@
-import type { ZodType } from 'zod'
+import type { ZodType } from "zod";
 
 /**
  * Symbol key for internal runnable metadata.
@@ -9,7 +9,7 @@ import type { ZodType } from 'zod'
  *
  * @internal
  */
-export const RUNNABLE_META: unique symbol = Symbol.for('agent-sdk:runnable-meta')
+export const RUNNABLE_META: unique symbol = Symbol.for("agent-sdk:runnable-meta");
 
 /**
  * Metadata stored on Agent and Workflow objects via {@link RUNNABLE_META}.
@@ -17,6 +17,6 @@ export const RUNNABLE_META: unique symbol = Symbol.for('agent-sdk:runnable-meta'
  * @internal
  */
 export interface RunnableMeta {
-  name: string
-  inputSchema?: ZodType
+  name: string;
+  inputSchema?: ZodType;
 }

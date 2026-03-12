@@ -4,7 +4,11 @@ The `prompts` CLI discovers, validates, and generates typed TypeScript from `.pr
 
 ## Installation
 
-Available as the `prompts` binary from `@pkg/prompts-sdk`. No separate install needed when the package is a workspace dependency.
+Available as the `prompts` binary from `@funkai/cli`. Install it as a workspace dependency:
+
+```bash
+pnpm add @funkai/cli --workspace
+```
 
 ## Workflow
 

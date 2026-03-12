@@ -20,7 +20,7 @@ export interface ResultError {
    * }
    * ```
    */
-  code: string
+  code: string;
 
   /**
    * Human-readable error description.
@@ -28,7 +28,7 @@ export interface ResultError {
    * Suitable for logging but not for programmatic matching —
    * use `code` for that.
    */
-  message: string
+  message: string;
 
   /**
    * Original thrown error, if any.
@@ -36,7 +36,7 @@ export interface ResultError {
    * Preserved so callers can inspect the root cause when the
    * SDK catches and wraps an exception.
    */
-  cause?: Error
+  cause?: Error;
 }
 
 /**
@@ -64,7 +64,7 @@ export interface ResultError {
  * console.log(result.trace)
  * ```
  */
-export type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError }
+export type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 
 // ---------------------------------------------------------------------------
 // Constructors
@@ -85,7 +85,7 @@ export type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError }
  * ```
  */
 export function ok<T extends Record<string, unknown>>(value: T): T & { ok: true } {
-  return { ...value, ok: true as const }
+  return { ...value, ok: true as const };
 }
 
 /**
@@ -105,9 +105,9 @@ export function ok<T extends Record<string, unknown>>(value: T): T & { ok: true 
 export function err(
   code: string,
   message: string,
-  cause?: Error
+  cause?: Error,
 ): { ok: false; error: ResultError } {
-  return { ok: false as const, error: { code, message, cause } }
+  return { ok: false as const, error: { code, message, cause } };
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ export function err(
  * ```
  */
 export function isOk<T>(result: Result<T>): result is T & { ok: true } {
-  return result.ok
+  return result.ok;
 }
 
 /**
@@ -147,5 +147,5 @@ export function isOk<T>(result: Result<T>): result is T & { ok: true } {
  * ```
  */
 export function isErr<T>(result: Result<T>): result is { ok: false; error: ResultError } {
-  return !result.ok
+  return !result.ok;
 }

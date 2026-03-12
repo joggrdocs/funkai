@@ -12,17 +12,17 @@
 A tool wraps a function for AI agent function calling. Provide a `description`, an `inputSchema`, and an `execute` function.
 
 ```ts
-import { tool } from '@pkg/agent-sdk'
-import { z } from 'zod'
+import { tool } from "@pkg/agent-sdk";
+import { z } from "zod";
 
 const fetchPage = tool({
-  description: 'Fetch a web page by URL',
+  description: "Fetch a web page by URL",
   inputSchema: z.object({ url: z.url() }),
   execute: async (input) => {
-    const res = await fetch(input.url)
-    return { url: input.url, status: res.status, body: await res.text() }
+    const res = await fetch(input.url);
+    return { url: input.url, status: res.status, body: await res.text() };
   },
-})
+});
 ```
 
 The `execute` function receives the validated input directly -- not wrapped in an object.
@@ -32,14 +32,14 @@ The `execute` function receives the validated input directly -- not wrapped in a
 Pass tools as a record on the agent config. The tool's name comes from the object key, not from the tool definition itself.
 
 ```ts
-import { agent } from '@pkg/agent-sdk'
+import { agent } from "@pkg/agent-sdk";
 
 const researcher = agent({
-  name: 'researcher',
-  model: 'openai/gpt-4.1',
-  system: 'You research topics by fetching web pages.',
+  name: "researcher",
+  model: "openai/gpt-4.1",
+  system: "You research topics by fetching web pages.",
   tools: { fetchPage },
-})
+});
 ```
 
 The model sees the tool as `fetchPage` and uses the `description` to decide when to call it.
@@ -61,14 +61,14 @@ Use `outputSchema` to validate the tool's return value before it is sent back to
 
 ```ts
 const calculator = tool({
-  description: 'Evaluate a math expression',
+  description: "Evaluate a math expression",
   inputSchema: z.object({ expression: z.string() }),
   outputSchema: z.object({ result: z.number() }),
   execute: async ({ expression }) => {
-    const result = eval(expression) // simplified example
-    return { result }
+    const result = eval(expression); // simplified example
+    return { result };
   },
-})
+});
 ```
 
 ### 5. Add input examples
@@ -77,19 +77,19 @@ Use `inputExamples` to help the model understand expected input structure. Nativ
 
 ```ts
 const searchTool = tool({
-  description: 'Search the codebase',
+  description: "Search the codebase",
   inputSchema: z.object({
-    query: z.string().describe('Search query'),
+    query: z.string().describe("Search query"),
     maxResults: z.number().default(10),
   }),
   inputExamples: [
-    { input: { query: 'authentication middleware', maxResults: 5 } },
-    { input: { query: 'database connection pool', maxResults: 10 } },
+    { input: { query: "authentication middleware", maxResults: 5 } },
+    { input: { query: "database connection pool", maxResults: 10 } },
   ],
   execute: async ({ query, maxResults }) => {
-    return await codeSearch(query, maxResults)
+    return await codeSearch(query, maxResults);
   },
-})
+});
 ```
 
 ### 6. Destructure input for cleaner code
@@ -98,16 +98,16 @@ Since `execute` receives the validated input directly, you can destructure it in
 
 ```ts
 const createFile = tool({
-  description: 'Create a file with the given content',
+  description: "Create a file with the given content",
   inputSchema: z.object({
     path: z.string(),
     content: z.string(),
   }),
   execute: async ({ path, content }) => {
-    await fs.writeFile(path, content)
-    return { created: path }
+    await fs.writeFile(path, content);
+    return { created: path };
   },
-})
+});
 ```
 
 ## Verification
