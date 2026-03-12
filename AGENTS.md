@@ -13,12 +13,14 @@ You are a senior Node.js engineer who writes clean, functional TypeScript. You f
 - **Type-driven design** - Discriminated unions, branded types, exhaustive matching. Make illegal states unrepresentable.
 - **JSDoc for exports** - All exported functions, types, and interfaces get JSDoc with `@param`, `@returns`, `@example`.
 
+For detailed TypeScript standards, see [`contributing/standards/typescript/`](contributing/README.md#typescript).
+
 ## Always
 
-- Read relevant docs before modifying code — `packages/agents/docs/` for agent SDK, `packages/prompts/docs/` for prompt SDK.
+- Read relevant docs before modifying code — `packages/agents/docs/` for agent SDK, `packages/prompts/docs/` for prompt SDK, `contributing/` for coding standards.
 - Run commands from root with filters (e.g., `pnpm test --filter=@funkai/agents`). Never `cd` into package directories.
-- Validate before commit — `pnpm build && pnpm check-types`.
-- Conventional Commits format — `type(scope): description`.
+- Validate before commit — `pnpm typecheck && pnpm build`.
+- Conventional Commits format — `type(scope): description`. See [commit standards](contributing/standards/git-commits.md).
 - Run `<command> --help` before using unfamiliar CLI commands or flags.
 
 ## Ask First
@@ -40,11 +42,12 @@ You are a senior Node.js engineer who writes clean, functional TypeScript. You f
 
 ## Tech Stack
 
-- **Node**: 22+ (`engines: >=22.0.0`)
+- **Node**: 24+ (`engines: >=24.0.0`)
 - **Package manager**: pnpm 9 (workspaces)
 - **Build**: Turborepo + tsdown
 - **Language**: TypeScript 5.9 (strict mode, ESM)
 - **Type checker**: tsc
+- **Formatting**: OXFmt
 - **Testing**: Vitest
 - **AI SDK**: Vercel AI SDK (`ai`) + OpenRouter
 - **Validation**: Zod
@@ -52,19 +55,27 @@ You are a senior Node.js engineer who writes clean, functional TypeScript. You f
 - **Utilities**: es-toolkit
 - **Templating**: LiquidJS (prompts package)
 
+For design rationale and full tool reference, see [Tech Stack](contributing/concepts/tech-stack.md).
+
 ## Commands
 
 - `pnpm build` — Build all packages
 - `pnpm build --filter=@funkai/agents` — Build specific package
-- `pnpm check-types` — Run type checking across all packages
+- `pnpm typecheck` — Run type checking across all packages
 - `pnpm test --filter=@funkai/agents` — Run tests for a package
+- `pnpm lint` — Lint all packages
+- `pnpm format` — Format with OXFmt
+- `pnpm format:check` — Check formatting
 - `pnpm changeset` — Create changeset for versioning (required before PR for published packages)
 
 ## Project Layout
 
 - `packages/agents` — `@funkai/agents` — Lightweight workflow and agent orchestration framework
 - `packages/prompts` — `@funkai/prompts` — Prompt SDK with LiquidJS templating and Zod validation
+- `contributing/` — Contributing standards, guides, and architectural concepts
 - Workspace packages: `@funkai/<name>`
+
+For architectural details, see [Architecture](contributing/concepts/architecture.md).
 
 ## Git Workflow
 
@@ -74,7 +85,10 @@ You are a senior Node.js engineer who writes clean, functional TypeScript. You f
 - **Changesets**: Run `pnpm changeset` for changes to published packages
 - **PR standards**: Keep PRs focused — one feature/fix per PR
 
+For details, see [Commit Standards](contributing/standards/git-commits.md) and [PR Standards](contributing/standards/git-pulls.md).
+
 ## Documentation
 
 - `packages/agents/docs/` — Agent SDK documentation (core concepts, guides, provider info)
 - `packages/prompts/docs/` — Prompt SDK documentation (CLI, file format, codegen, guides)
+- `contributing/` — Contributing docs ([standards](contributing/README.md#standards), [concepts](contributing/README.md#concepts), [guides](contributing/README.md#guides))
