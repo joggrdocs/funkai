@@ -60,6 +60,19 @@ function readOverride<
 }
 
 /**
+ * Safely compute the JSON-serialized length of a value.
+ * Returns 0 if serialization fails (e.g. circular refs, BigInt).
+ */
+function safeSerializedLength(value: unknown): number {
+  try {
+    const json = JSON.stringify(value)
+    return typeof json === 'string' ? json.length : 0
+  } catch {
+    return 0
+  }
+}
+
+/**
  * Return the value if the predicate is true, otherwise undefined.
  * Replaces `predicate ? value : undefined` ternary.
  */
@@ -248,11 +261,11 @@ export function agent<
           const stepId = `${config.name}:${stepCounter.value++}`
           const toolCalls = (step.toolCalls ?? []).map((tc) => {
             const args = extractProperty(tc, 'args')
-            return { toolName: tc.toolName, argsTextLength: JSON.stringify(args).length }
+            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) }
           })
           const toolResults = (step.toolResults ?? []).map((tr) => {
             const result = extractProperty(tr, 'result')
-            return { toolName: tr.toolName, resultTextLength: JSON.stringify(result).length }
+            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) }
           })
           const usage = extractUsage(step.usage)
           const event = { stepId, toolCalls, toolResults, usage }
@@ -382,11 +395,11 @@ export function agent<
           const stepId = `${config.name}:${stepCounter.value++}`
           const toolCalls = (step.toolCalls ?? []).map((tc) => {
             const args = extractProperty(tc, 'args')
-            return { toolName: tc.toolName, argsTextLength: JSON.stringify(args).length }
+            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) }
           })
           const toolResults = (step.toolResults ?? []).map((tr) => {
             const result = extractProperty(tr, 'result')
-            return { toolName: tr.toolName, resultTextLength: JSON.stringify(result).length }
+            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) }
           })
           const usage = extractUsage(step.usage)
           const event = { stepId, toolCalls, toolResults, usage }
