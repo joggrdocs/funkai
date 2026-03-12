@@ -27,35 +27,35 @@ with any AI SDK provider.
 
 ```typescript
 // Factories
-export { agent } from './core/agent/agent.js'
-export { flowAgent } from './core/flow-agent/flow-agent.js'
-export { tool } from './core/tool.js'
-export { createFlowEngine } from './core/flow-agent/engine.js'
-export { createStepBuilder } from './core/flow-agent/steps/factory.js'
-export { createDefaultLogger } from './core/logger.js'
-export { configure } from './core/config.js'
+export { agent } from "./core/agent/agent.js";
+export { flowAgent } from "./core/flow-agent/flow-agent.js";
+export { tool } from "./core/tool.js";
+export { createFlowEngine } from "./core/flow-agent/engine.js";
+export { createStepBuilder } from "./core/flow-agent/steps/factory.js";
+export { createDefaultLogger } from "./core/logger.js";
+export { configure } from "./core/config.js";
 
 // Result utilities
-export { ok, err, isOk, isErr } from './utils/result.js'
+export { ok, err, isOk, isErr } from "./utils/result.js";
 
 // Usage utilities
-export { agentUsage, flowAgentUsage, sumTokenUsage } from './core/provider/usage.js'
-export { collectUsages } from './lib/trace.js'
+export { agentUsage, flowAgentUsage, sumTokenUsage } from "./core/provider/usage.js";
+export { collectUsages } from "./lib/trace.js";
 
 // Error utilities
-export { toError, safeStringify, safeStringifyJSON } from './utils/error.js'
+export { toError, safeStringify, safeStringifyJSON } from "./utils/error.js";
 
 // Types (all the existing ones, renamed where needed)
-export type { Agent, AgentConfig, AgentOverrides, GenerateResult, StreamResult, Message }
-export type { FlowAgent, FlowAgentConfig, FlowAgentOverrides }
-export type { Runnable, Model, Result, ResultError }
-export type { Tool, ToolConfig }
-export type { LanguageModel, TokenUsage, TokenUsageRecord }
-export type { Logger, ExecutionContext }
-export type { StepBuilder, StepConfig, StepResult, StepError, StepInfo }
-export type { FlowEngine, FlowEngineConfig }
-export type { TraceEntry, OperationType }
-export type { Output } from 'ai'
+export type { Agent, AgentConfig, AgentOverrides, GenerateResult, StreamResult, Message };
+export type { FlowAgent, FlowAgentConfig, FlowAgentOverrides };
+export type { Runnable, Model, Result, ResultError };
+export type { Tool, ToolConfig };
+export type { LanguageModel, TokenUsage, TokenUsageRecord };
+export type { Logger, ExecutionContext };
+export type { StepBuilder, StepConfig, StepResult, StepError, StepInfo };
+export type { FlowEngine, FlowEngineConfig };
+export type { TraceEntry, OperationType };
+export type { Output } from "ai";
 ```
 
 ### What moves OUT
@@ -85,9 +85,9 @@ No runtime AI SDK dependency.
 ### Exports
 
 ```typescript
-export { model, tryModel, models } from './models/index.js'
-export { MODELS } from './models/index.js'
-export type { ModelId, ModelDefinition, ModelCategory, ModelPricing }
+export { model, tryModel, models } from "./models/index.js";
+export { MODELS } from "./models/index.js";
+export type { ModelId, ModelDefinition, ModelCategory, ModelPricing };
 ```
 
 ### Why separate
@@ -106,8 +106,8 @@ OpenRouter provider integration. Creates `LanguageModel` instances.
 ### Exports
 
 ```typescript
-export { createOpenRouter, openrouter } from './provider.js'
-export type { OpenRouterLanguageModelId } from './types.js'
+export { createOpenRouter, openrouter } from "./provider.js";
+export type { OpenRouterLanguageModelId } from "./types.js";
 ```
 
 ### Dependencies
@@ -133,8 +133,8 @@ Mock utilities for testing agents and flow agents.
 ### Exports
 
 ```typescript
-export { createMockContext } from './context.js'
-export { createMockLogger } from './logger.js'
+export { createMockContext } from "./context.js";
+export { createMockLogger } from "./logger.js";
 ```
 
 ### Dependencies
@@ -172,10 +172,10 @@ Batteries-included. Install one package, get everything.
 
 ```typescript
 // Re-export everything
-export * from '@funkai/agents'
-export * from '@funkai/models'
-export * from '@funkai/openrouter'
-export * from '@funkai/prompts'
+export * from "@funkai/agents";
+export * from "@funkai/models";
+export * from "@funkai/openrouter";
+export * from "@funkai/prompts";
 
 // Testing is intentionally NOT re-exported from root
 // (it's a devDependency concern)

@@ -50,14 +50,14 @@ git commit -m "feat(packages/agents): added workflow support"
 
 Scopes identify what part of the codebase changed. Use directory-style paths for packages and short labels for cross-cutting concerns.
 
-| Scope              | Description                     |
-| ------------------ | ------------------------------- |
-| `packages/agents`  | The agents SDK package          |
-| `packages/prompts` | The prompts SDK package         |
-| `deps`             | Dependency updates              |
-| `ci`               | CI/CD workflow changes          |
-| `tooling`          | Workspace/monorepo config       |
-| `workspace`        | Root workspace changes          |
+| Scope              | Description               |
+| ------------------ | ------------------------- |
+| `packages/agents`  | The agents SDK package    |
+| `packages/prompts` | The prompts SDK package   |
+| `deps`             | Dependency updates        |
+| `ci`               | CI/CD workflow changes    |
+| `tooling`          | Workspace/monorepo config |
+| `workspace`        | Root workspace changes    |
 
 #### Correct
 

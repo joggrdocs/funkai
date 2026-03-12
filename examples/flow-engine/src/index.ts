@@ -1,6 +1,6 @@
-import { createFlowEngine } from '@funkai/agents'
-import type { ExecutionContext } from '@funkai/agents'
-import { z } from 'zod'
+import { createFlowEngine } from "@funkai/agents";
+import type { ExecutionContext } from "@funkai/agents";
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Flow engines let you define reusable custom step types that appear on `$`.
@@ -22,27 +22,27 @@ const engine = createFlowEngine({
       ctx,
       config,
     }: {
-      ctx: ExecutionContext
-      config: { url: string; retries?: number }
+      ctx: ExecutionContext;
+      config: { url: string; retries?: number };
     }) => {
-      const maxRetries = config.retries ?? 3
+      const maxRetries = config.retries ?? 3;
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         if (ctx.signal.aborted) {
-          throw new Error('Aborted')
+          throw new Error("Aborted");
         }
 
         try {
-          ctx.log.info({ url: config.url, attempt }, 'Fetching...')
+          ctx.log.info({ url: config.url, attempt }, "Fetching...");
           // Simulated fetch
-          return { status: 200, data: `Response from ${config.url}` }
+          return { status: 200, data: `Response from ${config.url}` };
         } catch (err) {
-          if (attempt === maxRetries - 1) throw err
-          ctx.log.warn({ attempt }, 'Retrying...')
+          if (attempt === maxRetries - 1) throw err;
+          ctx.log.warn({ attempt }, "Retrying...");
         }
       }
 
-      throw new Error('Exhausted retries')
+      throw new Error("Exhausted retries");
     },
 
     /**
@@ -51,34 +51,34 @@ const engine = createFlowEngine({
     transform: async ({
       config,
     }: {
-      ctx: ExecutionContext
-      config: { data: unknown; format: 'json' | 'csv' | 'text' }
+      ctx: ExecutionContext;
+      config: { data: unknown; format: "json" | "csv" | "text" };
     }) => {
       switch (config.format) {
-        case 'json':
-          return JSON.stringify(config.data)
-        case 'csv':
-          return `data,${String(config.data)}`
-        case 'text':
-          return String(config.data)
+        case "json":
+          return JSON.stringify(config.data);
+        case "csv":
+          return `data,${String(config.data)}`;
+        case "text":
+          return String(config.data);
       }
     },
   },
 
   // Engine-level hooks fire before flow-level hooks
   onStart: () => {
-    console.log('[engine] Flow started')
+    console.log("[engine] Flow started");
   },
   onFinish: () => {
-    console.log('[engine] Flow finished')
+    console.log("[engine] Flow finished");
   },
   onStepStart: ({ step }) => {
-    console.log(`[engine] Step started: ${step.id}`)
+    console.log(`[engine] Step started: ${step.id}`);
   },
   onStepFinish: ({ step, duration }) => {
-    console.log(`[engine] Step finished: ${step.id} (${duration}ms)`)
+    console.log(`[engine] Step finished: ${step.id} (${duration}ms)`);
   },
-})
+});
 
 // ---------------------------------------------------------------------------
 // 2. Create flow agents using the engine
@@ -89,59 +89,59 @@ const engine = createFlowEngine({
 
 const pipeline = engine(
   {
-    name: 'data-pipeline',
+    name: "data-pipeline",
     input: z.object({ urls: z.array(z.string()) }),
     output: z.object({ results: z.array(z.string()) }),
     onStart: () => {
-      console.log('[flow] Pipeline started')
+      console.log("[flow] Pipeline started");
     },
   },
   async ({ input, $ }) => {
     // Use built-in $.map with custom $.fetch inside
     const fetchResult = await $.map({
-      id: 'fetch-all',
+      id: "fetch-all",
       input: input.urls,
       concurrency: 2,
       execute: async ({ item }) => {
         // Custom step: $.fetch
-        const response = await $.fetch({ url: item })
-        return response.data
+        const response = await $.fetch({ url: item });
+        return response.data;
       },
-    })
+    });
 
     if (!fetchResult.ok) {
-      throw new Error(`Fetch failed: ${fetchResult.error.message}`)
+      throw new Error(`Fetch failed: ${fetchResult.error.message}`);
     }
 
     // Use custom step: $.transform
     const transformResult = await $.map({
-      id: 'transform-all',
+      id: "transform-all",
       input: fetchResult.value,
       execute: async ({ item }) => {
-        const formatted = await $.transform({ data: item, format: 'text' })
-        return formatted
+        const formatted = await $.transform({ data: item, format: "text" });
+        return formatted;
       },
-    })
+    });
 
     if (!transformResult.ok) {
-      throw new Error(`Transform failed: ${transformResult.error.message}`)
+      throw new Error(`Transform failed: ${transformResult.error.message}`);
     }
 
-    return { results: transformResult.value }
-  }
-)
+    return { results: transformResult.value };
+  },
+);
 
 // ---------------------------------------------------------------------------
 // 3. Run
 // ---------------------------------------------------------------------------
 
 const result = await pipeline.generate({
-  urls: ['https://api.example.com/data/1', 'https://api.example.com/data/2'],
-})
+  urls: ["https://api.example.com/data/1", "https://api.example.com/data/2"],
+});
 
 if (result.ok) {
-  console.log('\nResults:', result.output.results)
-  console.log('Duration:', result.duration, 'ms')
+  console.log("\nResults:", result.output.results);
+  console.log("Duration:", result.duration, "ms");
 } else {
-  console.error('Error:', result.error)
+  console.error("Error:", result.error);
 }

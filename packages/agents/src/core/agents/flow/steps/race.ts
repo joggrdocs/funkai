@@ -1,4 +1,4 @@
-import type { EntryFactory } from '@/core/agents/flow/steps/all.js'
+import type { EntryFactory } from "@/core/agents/flow/steps/all.js";
 
 /**
  * Configuration for `$.race()` — first-to-finish wins.
@@ -12,7 +12,7 @@ export interface RaceConfig {
    *
    * Appears in the execution trace.
    */
-  id: string
+  id: string;
 
   /**
    * Array of factory functions to race.
@@ -28,7 +28,7 @@ export interface RaceConfig {
    * ]
    * ```
    */
-  entries: EntryFactory[]
+  entries: EntryFactory[];
 
   /**
    * Hook: fires when the race starts.
@@ -36,7 +36,7 @@ export interface RaceConfig {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when the first entry completes.
@@ -46,7 +46,7 @@ export interface RaceConfig {
    * @param event.result - The first resolved value.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { id: string; result: unknown; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; result: unknown; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires if the race encounters an error.
@@ -55,5 +55,5 @@ export interface RaceConfig {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

@@ -1,5 +1,5 @@
-import type { Message } from '@/core/agents/base/types.js'
-import { safeStringify } from '@/utils/error.js'
+import type { Message } from "@/core/agents/base/types.js";
+import { safeStringify } from "@/utils/error.js";
 
 /**
  * Build the `toolCallId` for a step.
@@ -12,7 +12,7 @@ import { safeStringify } from '@/utils/error.js'
  * @returns A unique tool call identifier.
  */
 export function buildToolCallId(stepId: string, index: number): string {
-  return `${stepId}-${index}`
+  return `${stepId}-${index}`;
 }
 
 /**
@@ -29,19 +29,19 @@ export function buildToolCallId(stepId: string, index: number): string {
 export function createToolCallMessage(
   toolCallId: string,
   toolName: string,
-  args: unknown
+  args: unknown,
 ): Message {
   return {
-    role: 'assistant',
+    role: "assistant",
     content: [
       {
-        type: 'tool-call',
+        type: "tool-call",
         toolCallId,
         toolName,
         input: args ?? {},
       },
     ],
-  }
+  };
 }
 
 /**
@@ -61,21 +61,21 @@ export function createToolResultMessage(
   toolCallId: string,
   toolName: string,
   result: unknown,
-  isError?: boolean
+  isError?: boolean,
 ): Message {
   // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
   return {
-    role: 'tool',
+    role: "tool",
     content: [
       {
-        type: 'tool-result',
+        type: "tool-result",
         toolCallId,
         toolName,
         output: result ?? {},
         ...(isError ? { isError: true } : {}),
       },
     ],
-  } as Message
+  } as Message;
 }
 
 /**
@@ -89,10 +89,10 @@ export function createToolResultMessage(
  * @returns A string representation of the value.
  */
 function serializeMessageContent(value: unknown): string {
-  if (typeof value === 'string') {
-    return value
+  if (typeof value === "string") {
+    return value;
   }
-  return safeStringify(value ?? null)
+  return safeStringify(value ?? null);
 }
 
 /**
@@ -105,7 +105,7 @@ function serializeMessageContent(value: unknown): string {
  * @returns A `Message` with role `user`.
  */
 export function createUserMessage(input: unknown): Message {
-  return { role: 'user', content: serializeMessageContent(input) }
+  return { role: "user", content: serializeMessageContent(input) };
 }
 
 /**
@@ -118,6 +118,5 @@ export function createUserMessage(input: unknown): Message {
  * @returns A `Message` with role `assistant`.
  */
 export function createAssistantMessage(output: unknown): Message {
-  return { role: 'assistant', content: serializeMessageContent(output) }
+  return { role: "assistant", content: serializeMessageContent(output) };
 }
-

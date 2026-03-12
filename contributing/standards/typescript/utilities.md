@@ -25,7 +25,7 @@ Functions for runtime type checking. Prefer these over manual `typeof` chains.
 #### Correct
 
 ```ts
-import { isNil, isPlainObject, isString } from 'es-toolkit'
+import { isNil, isPlainObject, isString } from "es-toolkit";
 
 // Filter out nil values
 if (!isNil(value)) {
@@ -57,16 +57,16 @@ Functions for picking, omitting, and transforming object properties without muta
 #### Correct
 
 ```ts
-import { pick, omit, omitBy, isNil } from 'es-toolkit'
+import { pick, omit, omitBy, isNil } from "es-toolkit";
 
 // Select specific fields for display
-const summary = pick(config, ['name', 'model', 'tools'])
+const summary = pick(config, ["name", "model", "tools"]);
 
 // Remove internal fields before serializing
-const safeConfig = omit(config, ['_resolved', '_path'])
+const safeConfig = omit(config, ["_resolved", "_path"]);
 
 // Remove nil values before writing config
-const cleanConfig = omitBy(rawConfig, isNil)
+const cleanConfig = omitBy(rawConfig, isNil);
 ```
 
 ### Use Collection Utilities for Arrays
@@ -89,22 +89,22 @@ Functions for grouping, deduplicating, and batching arrays.
 #### Correct
 
 ```ts
-import { groupBy, keyBy, chunk, uniqBy } from 'es-toolkit'
+import { groupBy, keyBy, chunk, uniqBy } from "es-toolkit";
 
 // Group tools by category
-const toolsByCategory = groupBy(tools, 'category')
+const toolsByCategory = groupBy(tools, "category");
 // { search: [...], code: [...] }
 
 // Create name lookup
-const toolsByName = keyBy(tools, 'name')
+const toolsByName = keyBy(tools, "name");
 // { search: tool1, codeExec: tool2 }
 
 // Process steps in batches
-const batches = chunk(steps, 10)
-await batches.reduce((chain, batch) => chain.then(() => processBatch(batch)), Promise.resolve())
+const batches = chunk(steps, 10);
+await batches.reduce((chain, batch) => chain.then(() => processBatch(batch)), Promise.resolve());
 
 // Remove duplicate tool names
-const uniqueTools = uniqBy(tools, 'name')
+const uniqueTools = uniqBy(tools, "name");
 ```
 
 ### Use Function Utilities for Scheduling and Caching
@@ -124,20 +124,20 @@ Functions for controlling execution timing and caching results.
 #### Correct
 
 ```ts
-import { debounce, memoize, attempt } from 'es-toolkit'
+import { debounce, memoize, attempt } from "es-toolkit";
 
 // Debounce file watcher callback to avoid redundant rebuilds
 const onFileChange = debounce((path: string) => {
-  rebuildWorkflow(path)
-}, 300)
+  rebuildWorkflow(path);
+}, 300);
 
 // Cache expensive model resolution
 const resolveModel = memoize((modelId: string) => {
-  return loadAndValidateModel(modelId)
-})
+  return loadAndValidateModel(modelId);
+});
 
 // Wrap unsafe JSON parse
-const [error, parsed] = attempt(() => JSON.parse(raw))
+const [error, parsed] = attempt(() => JSON.parse(raw));
 ```
 
 ### Use String Utilities for Case Conversion
@@ -150,20 +150,20 @@ Functions for converting between naming conventions.
 | `kebabCase`  | Convert to kebab-case  | `kebabCase('fooBar')`  |
 | `snakeCase`  | Convert to snake_case  | `snakeCase('fooBar')`  |
 | `capitalize` | Uppercase first letter | `capitalize('hello')`  |
-| `trim`       | Remove whitespace      | `trim(' hello ')`     |
+| `trim`       | Remove whitespace      | `trim(' hello ')`      |
 
 #### Correct
 
 ```ts
-import { camelCase, kebabCase } from 'es-toolkit'
+import { camelCase, kebabCase } from "es-toolkit";
 
 // Convert config keys from snake_case
-const configKey = 'max_retries'
-const jsKey = camelCase(configKey) // 'maxRetries'
+const configKey = "max_retries";
+const jsKey = camelCase(configKey); // 'maxRetries'
 
 // Convert to kebab-case for file names
-const moduleName = 'AgentBuilder'
-const fileName = kebabCase(moduleName) // 'agent-builder'
+const moduleName = "AgentBuilder";
+const fileName = kebabCase(moduleName); // 'agent-builder'
 ```
 
 ### Avoid es-toolkit for Trivial Operations
@@ -179,14 +179,14 @@ if (x != null) {
 }
 
 // Complex grouping - use es-toolkit
-const grouped = groupBy(tools, 'category')
-const batches = chunk(steps, 100)
+const grouped = groupBy(tools, "category");
+const batches = chunk(steps, 100);
 ```
 
 #### Incorrect
 
 ```ts
-import { isNil } from 'es-toolkit'
+import { isNil } from "es-toolkit";
 
 // Overkill for a simple null check
 if (!isNil(x)) {

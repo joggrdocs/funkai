@@ -15,8 +15,8 @@ Show only the critical parts. Omit imports, boilerplate, and obvious code.
 This example is focused on the API.
 
 ```ts
-const agent = createAgent({ model: 'openai/gpt-4o', tools: [searchTool] })
-const result = await agent.run('Summarize the latest news')
+const agent = createAgent({ model: "openai/gpt-4o", tools: [searchTool] });
+const result = await agent.run("Summarize the latest news");
 ```
 
 #### Incorrect
@@ -24,20 +24,20 @@ const result = await agent.run('Summarize the latest news')
 This example is too noisy and the reader is distracted by the boilerplate and obvious code.
 
 ```ts
-import { createAgent } from '@funkai/agents'
-import { searchTool } from './tools/search'
-import { createProvider } from './lib/provider'
-import { logger } from './lib/logger'
+import { createAgent } from "@funkai/agents";
+import { searchTool } from "./tools/search";
+import { createProvider } from "./lib/provider";
+import { logger } from "./lib/logger";
 
 async function main() {
-  const provider = createProvider('openrouter')
-  const agent = createAgent({ model: 'openai/gpt-4o', tools: [searchTool] })
-  const result = await agent.run('Summarize the latest news')
+  const provider = createProvider("openrouter");
+  const agent = createAgent({ model: "openai/gpt-4o", tools: [searchTool] });
+  const result = await agent.run("Summarize the latest news");
 
-  logger.info(`Result: ${result.output}`)
+  logger.info(`Result: ${result.output}`);
 }
 
-main()
+main();
 ```
 
 ### Use Full Examples for Copy-Paste Templates
@@ -48,25 +48,25 @@ When the reader should copy the entire block, show everything including imports 
 
 ```ts
 // Full file template - reader copies this
-import { agent, tool } from '@funkai/agents'
-import { z } from 'zod'
+import { agent, tool } from "@funkai/agents";
+import { z } from "zod";
 
 const searchTool = tool({
-  name: 'search',
-  description: 'Search the web',
+  name: "search",
+  description: "Search the web",
   parameters: z.object({
     query: z.string(),
   }),
   execute: async ({ query }) => {
     // implementation
   },
-})
+});
 
 export default agent({
-  name: 'researcher',
-  model: 'openai/gpt-4o',
+  name: "researcher",
+  model: "openai/gpt-4o",
   tools: [searchTool],
-})
+});
 ```
 
 ### Follow Code Example Rules
@@ -94,7 +94,7 @@ Always specify the language for syntax highlighting.
 #### Correct
 
 ```ts
-const example = 'typescript'
+const example = "typescript";
 ```
 
 ```bash

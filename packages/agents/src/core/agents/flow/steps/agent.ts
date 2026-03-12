@@ -1,5 +1,5 @@
-import type { AgentOverrides, GenerateResult } from '@/core/agents/base/types.js'
-import type { Runnable } from '@/core/types.js'
+import type { AgentOverrides, GenerateResult } from "@/core/agents/base/types.js";
+import type { Runnable } from "@/core/types.js";
 
 /**
  * Configuration for `$.agent()` — execute an agent call as a tracked operation.
@@ -15,7 +15,7 @@ export interface AgentStepConfig<TInput> {
    *
    * Appears in the execution trace, hook events, and error messages.
    */
-  id: string
+  id: string;
 
   /**
    * The agent to invoke.
@@ -23,7 +23,7 @@ export interface AgentStepConfig<TInput> {
    * The framework calls `agent.generate()` internally with the
    * provided `input` and optional `config` overrides.
    */
-  agent: Runnable<TInput>
+  agent: Runnable<TInput>;
 
   /**
    * Input to pass to the agent.
@@ -32,7 +32,7 @@ export interface AgentStepConfig<TInput> {
    * for agents with an input schema, or `string | Message[]` for
    * simple agents.
    */
-  input: TInput
+  input: TInput;
 
   /**
    * Optional inline overrides for this agent call.
@@ -40,7 +40,7 @@ export interface AgentStepConfig<TInput> {
    * Accepts the same fields as `AgentOverrides` — model, output,
    * tools, hooks, etc.
    */
-  config?: AgentOverrides
+  config?: AgentOverrides;
 
   /**
    * When `true`, call `agent.stream()` instead of `agent.generate()`
@@ -52,7 +52,7 @@ export interface AgentStepConfig<TInput> {
    *
    * @default false
    */
-  stream?: boolean
+  stream?: boolean;
 
   /**
    * Hook: fires when this agent step starts.
@@ -60,7 +60,7 @@ export interface AgentStepConfig<TInput> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when this agent step finishes.
@@ -71,10 +71,10 @@ export interface AgentStepConfig<TInput> {
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
-    id: string
-    result: GenerateResult
-    duration: number
-  }) => void | Promise<void>
+    id: string;
+    result: GenerateResult;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Hook: fires when this agent step encounters an error.
@@ -83,5 +83,5 @@ export interface AgentStepConfig<TInput> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

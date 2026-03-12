@@ -15,17 +15,17 @@ Complete reference of tools and libraries used in the funkai AI SDK framework.
 
 ### AI & Model Layer
 
-| Tool                                                                   | Purpose            | Critical Rules                                                              | Documentation                                                    |
-| ---------------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [Vercel AI SDK](https://sdk.vercel.ai)                                 | AI model interface | **Foundation layer** -- all model calls go through the `ai` package.        | [Docs](https://sdk.vercel.ai/docs)                               |
-| [OpenRouter](https://openrouter.ai)                                    | Model routing      | Default provider for multi-model access.                                    | [Docs](https://openrouter.ai/docs)                               |
-| [@openrouter/ai-sdk-provider](https://github.com/openrouter/ai-sdk-provider) | SDK integration    | Bridges OpenRouter to Vercel AI SDK provider interface.                     | [GitHub](https://github.com/openrouter/ai-sdk-provider)         |
+| Tool                                                                         | Purpose            | Critical Rules                                                       | Documentation                                           |
+| ---------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------- | ------------------------------------------------------- |
+| [Vercel AI SDK](https://sdk.vercel.ai)                                       | AI model interface | **Foundation layer** -- all model calls go through the `ai` package. | [Docs](https://sdk.vercel.ai/docs)                      |
+| [OpenRouter](https://openrouter.ai)                                          | Model routing      | Default provider for multi-model access.                             | [Docs](https://openrouter.ai/docs)                      |
+| [@openrouter/ai-sdk-provider](https://github.com/openrouter/ai-sdk-provider) | SDK integration    | Bridges OpenRouter to Vercel AI SDK provider interface.              | [GitHub](https://github.com/openrouter/ai-sdk-provider) |
 
 ### Functional Programming
 
-| Tool                                                  | Purpose              | Critical Rules                                                                                       | Documentation                                     |
-| ----------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| [ts-pattern](https://github.com/gvergnaud/ts-pattern) | Pattern matching     | **Required** for all conditionals with 2+ branches. No `switch` statements allowed.                  | [GitHub](https://github.com/gvergnaud/ts-pattern) |
+| Tool                                                  | Purpose              | Critical Rules                                                                                        | Documentation                                     |
+| ----------------------------------------------------- | -------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| [ts-pattern](https://github.com/gvergnaud/ts-pattern) | Pattern matching     | **Required** for all conditionals with 2+ branches. No `switch` statements allowed.                   | [GitHub](https://github.com/gvergnaud/ts-pattern) |
 | [es-toolkit](https://es-toolkit.sh)                   | Functional utilities | **Check before implementing custom helpers.** Use `pipe`, `map`, `filter`, `attempt` from es-toolkit. | [GitHub](https://github.com/toss/es-toolkit)      |
 
 ### Validation & Types
@@ -37,21 +37,21 @@ Complete reference of tools and libraries used in the funkai AI SDK framework.
 
 ### Templating
 
-| Tool                                   | Purpose            | Usage                                                                  | Documentation                                    |
-| -------------------------------------- | ------------------ | ---------------------------------------------------------------------- | ------------------------------------------------ |
-| [LiquidJS](https://liquidjs.com)      | Template engine    | Used in `@funkai/prompts` for prompt template rendering.               | [Docs](https://liquidjs.com)                     |
+| Tool                             | Purpose         | Usage                                                    | Documentation                |
+| -------------------------------- | --------------- | -------------------------------------------------------- | ---------------------------- |
+| [LiquidJS](https://liquidjs.com) | Template engine | Used in `@funkai/prompts` for prompt template rendering. | [Docs](https://liquidjs.com) |
 
 ### Testing
 
-| Tool                         | Purpose           | Configuration                                                          | Documentation                                  |
-| ---------------------------- | ----------------- | ---------------------------------------------------------------------- | ---------------------------------------------- |
+| Tool                         | Purpose           | Configuration                                                            | Documentation                                  |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------------ | ---------------------------------------------- |
 | [Vitest](https://vitest.dev) | Testing framework | Unit tests colocated as `*.test.ts`, coverage via `@vitest/coverage-v8`. | [GitHub](https://github.com/vitest-dev/vitest) |
 
 ### Formatting
 
-| Tool                           | Purpose    | Configuration                              | Documentation                       |
-| ------------------------------ | ---------- | ------------------------------------------ | ----------------------------------- |
-| [OXC](https://oxc.rs) (oxfmt) | Formatting | Run `pnpm format` from root.              | [llms.txt](https://oxc.rs/llms.txt) |
+| Tool                          | Purpose    | Configuration                | Documentation                       |
+| ----------------------------- | ---------- | ---------------------------- | ----------------------------------- |
+| [OXC](https://oxc.rs) (oxfmt) | Formatting | Run `pnpm format` from root. | [llms.txt](https://oxc.rs/llms.txt) |
 
 ### Versioning & Publishing
 
@@ -61,9 +61,9 @@ Complete reference of tools and libraries used in the funkai AI SDK framework.
 
 ## AI & Code Review
 
-| Tool                                    | Purpose             | Configuration                                               | Documentation                          |
-| --------------------------------------- | ------------------- | ----------------------------------------------------------- | -------------------------------------- |
-| [Claude Code](https://claude.ai)        | AI coding assistant | `AGENTS.md` (source of truth), `CLAUDE.md` (symlink).       | [Anthropic](https://www.anthropic.com) |
+| Tool                             | Purpose             | Configuration                                         | Documentation                          |
+| -------------------------------- | ------------------- | ----------------------------------------------------- | -------------------------------------- |
+| [Claude Code](https://claude.ai) | AI coding assistant | `AGENTS.md` (source of truth), `CLAUDE.md` (symlink). | [Anthropic](https://www.anthropic.com) |
 
 ## Design Rationale
 

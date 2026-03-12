@@ -176,11 +176,11 @@ Troubleshooting documents list common issues and fixes.
 
 **Issue Naming:**
 
-| Good                            | Bad                 |
-| ------------------------------- | ------------------- |
-| `Connection refused`            | `Database problems` |
-| `Module not found: @funkai/ai`  | `Import errors`     |
-| `Model resolution failed`       | `AI issues`         |
+| Good                           | Bad                 |
+| ------------------------------ | ------------------- |
+| `Connection refused`           | `Database problems` |
+| `Module not found: @funkai/ai` | `Import errors`     |
+| `Model resolution failed`      | `AI issues`         |
 
 ````markdown
 # Domain Troubleshooting

@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 
 /**
  * Configuration for `$.each()` — sequential side effects.
@@ -14,14 +14,14 @@ export interface EachConfig<T> {
    *
    * Appears in the execution trace.
    */
-  id: string
+  id: string;
 
   /**
    * Array of items to process sequentially.
    *
    * Each item is passed to the `execute` callback in order.
    */
-  input: readonly T[]
+  input: readonly T[];
 
   /**
    * Process a single item (side effect).
@@ -31,7 +31,7 @@ export interface EachConfig<T> {
    * @param params.index - The item's zero-based index in the input array.
    * @param params.$ - The step builder for nesting further operations.
    */
-  execute: (params: { item: T; index: number; $: StepBuilder }) => Promise<void>
+  execute: (params: { item: T; index: number; $: StepBuilder }) => Promise<void>;
 
   /**
    * Hook: fires when the each operation starts.
@@ -39,7 +39,7 @@ export interface EachConfig<T> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when all items are processed.
@@ -48,7 +48,7 @@ export interface EachConfig<T> {
    * @param event.id - The step's unique identifier.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { id: string; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires if the each operation encounters an error.
@@ -57,5 +57,5 @@ export interface EachConfig<T> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

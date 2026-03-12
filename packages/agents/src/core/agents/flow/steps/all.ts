@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 
 /**
  * A factory that receives an abort signal and returns a promise.
@@ -11,7 +11,7 @@ import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
  * is recommended for correct trace hierarchy.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type EntryFactory = (signal: AbortSignal, $: StepBuilder) => Promise<any>
+export type EntryFactory = (signal: AbortSignal, $: StepBuilder) => Promise<any>;
 
 /**
  * Configuration for `$.all()` — concurrent heterogeneous operations.
@@ -26,7 +26,7 @@ export interface AllConfig {
    *
    * Appears in the execution trace.
    */
-  id: string
+  id: string;
 
   /**
    * Array of factory functions to run concurrently.
@@ -43,7 +43,7 @@ export interface AllConfig {
    * ]
    * ```
    */
-  entries: EntryFactory[]
+  entries: EntryFactory[];
 
   /**
    * Hook: fires when the all operation starts.
@@ -51,7 +51,7 @@ export interface AllConfig {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when all entries complete.
@@ -62,7 +62,7 @@ export interface AllConfig {
    * @param event.duration - Wall-clock time in milliseconds.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onFinish?: (event: { id: string; result: any[]; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; result: any[]; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires if any entry encounters an error.
@@ -71,5 +71,5 @@ export interface AllConfig {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

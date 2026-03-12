@@ -28,15 +28,15 @@ For a more detailed walkthrough, see the [Getting Started Guide](contributing/gu
 
 ### Available Commands
 
-| Command              | Description                         |
-| -------------------- | ----------------------------------- |
-| `pnpm build`         | Build all packages (via Turborepo)  |
-| `pnpm typecheck`     | Type check all packages             |
-| `pnpm test`          | Run all tests (vitest)              |
-| `pnpm lint`          | Lint all packages                   |
-| `pnpm format`        | Format with OXFmt                   |
-| `pnpm format:check`  | Check formatting                    |
-| `pnpm changeset`     | Create changeset for versioning     |
+| Command             | Description                        |
+| ------------------- | ---------------------------------- |
+| `pnpm build`        | Build all packages (via Turborepo) |
+| `pnpm typecheck`    | Type check all packages            |
+| `pnpm test`         | Run all tests (vitest)             |
+| `pnpm lint`         | Lint all packages                  |
+| `pnpm format`       | Format with OXFmt                  |
+| `pnpm format:check` | Check formatting                   |
+| `pnpm changeset`    | Create changeset for versioning    |
 
 ### Making Changes
 

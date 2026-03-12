@@ -17,16 +17,16 @@ rendering for free.
 ### StreamResult — identical to Agent
 
 ```typescript
-import type { AsyncIterableStream, TextStreamPart, ToolSet } from 'ai'
+import type { AsyncIterableStream, TextStreamPart, ToolSet } from "ai";
 
-type StreamPart = TextStreamPart<ToolSet>
+type StreamPart = TextStreamPart<ToolSet>;
 
 interface StreamResult<TOutput> {
-  output: Promise<TOutput>
-  messages: Promise<Message[]>
-  usage: Promise<TokenUsage>
-  finishReason: Promise<string>
-  fullStream: AsyncIterableStream<StreamPart>
+  output: Promise<TOutput>;
+  messages: Promise<Message[]>;
+  usage: Promise<TokenUsage>;
+  finishReason: Promise<string>;
+  fullStream: AsyncIterableStream<StreamPart>;
 }
 ```
 
@@ -51,27 +51,27 @@ Concretely, emitting typed `StreamPart` objects:
 ```typescript
 // Step start — emitted when $.step/$.agent/$.map/etc begins
 writer.write({
-  type: 'tool-call',
-  toolCallId: 'scan-repo-0',
-  toolName: 'scan-repo',
-  args: { repo: 'github.com/...' },
-} as StreamPart)
+  type: "tool-call",
+  toolCallId: "scan-repo-0",
+  toolName: "scan-repo",
+  args: { repo: "github.com/..." },
+} as StreamPart);
 
 // Step finish — emitted when step completes
 writer.write({
-  type: 'tool-result',
-  toolCallId: 'scan-repo-0',
-  toolName: 'scan-repo',
-  args: { repo: 'github.com/...' },
-  result: { files: ['README.md', 'src/index.ts'] },
-} as StreamPart)
+  type: "tool-result",
+  toolCallId: "scan-repo-0",
+  toolName: "scan-repo",
+  args: { repo: "github.com/..." },
+  result: { files: ["README.md", "src/index.ts"] },
+} as StreamPart);
 
 // Flow finish — emitted at the end
 writer.write({
-  type: 'finish',
-  finishReason: 'stop',
+  type: "finish",
+  finishReason: "stop",
   usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
-} as StreamPart)
+} as StreamPart);
 ```
 
 ### Sub-agent text streaming
@@ -95,10 +95,10 @@ needs an explicit streaming mode:
 
 ```typescript
 // Default: no text streaming from sub-agents
-const r = await $.agent({ id: 'analyze', agent: analyzer, input: data })
+const r = await $.agent({ id: "analyze", agent: analyzer, input: data });
 
 // Opt-in: stream sub-agent text through parent stream
-const r = await $.agent({ id: 'analyze', agent: analyzer, input: data, stream: true })
+const r = await $.agent({ id: "analyze", agent: analyzer, input: data, stream: true });
 ```
 
 When `stream: true`, the step builder calls `agent.stream()` instead of
@@ -198,7 +198,7 @@ if the model issued multiple parallel tool calls.
 ### Before (workflow)
 
 ```typescript
-const result = await w.stream({ text: '...' })
+const result = await w.stream({ text: "..." });
 // result.stream is ReadableStream<StepEvent>
 // StepEvent = { type: 'step:start' | 'step:finish' | 'step:error' | 'workflow:finish', ... }
 // Custom event format — consumers need custom rendering
@@ -207,7 +207,7 @@ const result = await w.stream({ text: '...' })
 ### After (flowAgent)
 
 ```typescript
-const result = await analyze.stream({ text: '...' })
+const result = await analyze.stream({ text: "..." });
 // result.fullStream is AsyncIterableStream<StreamPart> (typed events)
 // Emits AI SDK tool-call, tool-result, text-delta, finish, error events
 // Standard UI components render steps as tool calls automatically

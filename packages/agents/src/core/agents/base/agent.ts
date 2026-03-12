@@ -1,7 +1,7 @@
-import { generateText, streamText, stepCountIs } from 'ai'
-import type { AsyncIterableStream } from 'ai'
+import { generateText, streamText, stepCountIs } from "ai";
+import type { AsyncIterableStream } from "ai";
 
-import { resolveOutput } from '@/core/agents/base/output.js'
+import { resolveOutput } from "@/core/agents/base/output.js";
 import type {
   Agent,
   AgentConfig,
@@ -11,20 +11,20 @@ import type {
   StreamPart,
   StreamResult,
   SubAgents,
-} from '@/core/agents/base/types.js'
+} from "@/core/agents/base/types.js";
 import {
   resolveModel,
   buildAITools,
   resolveSystem,
   buildPrompt,
   toTokenUsage,
-} from '@/core/agents/base/utils.js'
-import { createDefaultLogger } from '@/core/logger.js'
-import type { Tool } from '@/core/tool.js'
-import { fireHooks } from '@/lib/hooks.js'
-import { withModelMiddleware } from '@/lib/middleware.js'
-import { RUNNABLE_META, type RunnableMeta } from '@/lib/runnable.js'
-import { toError } from '@/utils/error.js'
+} from "@/core/agents/base/utils.js";
+import { createDefaultLogger } from "@/core/logger.js";
+import type { Tool } from "@/core/tool.js";
+import { fireHooks } from "@/lib/hooks.js";
+import { withModelMiddleware } from "@/lib/middleware.js";
+import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import { toError } from "@/utils/error.js";
 
 /**
  * Wrap a nullable hook into a callback for `fireHooks`, avoiding
@@ -32,12 +32,12 @@ import { toError } from '@/utils/error.js'
  */
 function wrapHook<T>(
   hookFn: ((event: T) => void | Promise<void>) | undefined,
-  event: T
+  event: T,
 ): (() => void | Promise<void>) | undefined {
   if (hookFn !== undefined) {
-    return () => hookFn(event)
+    return () => hookFn(event);
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -50,13 +50,13 @@ function readOverride<
   K extends keyof AgentOverrides<TTools, TSubAgents>,
 >(
   overrides: AgentOverrides<TTools, TSubAgents> | undefined,
-  key: K
+  key: K,
 ): AgentOverrides<TTools, TSubAgents>[K] | undefined {
   if (overrides !== undefined) {
     // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return overrides[key]
+    return overrides[key];
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -65,10 +65,10 @@ function readOverride<
  */
 function safeSerializedLength(value: unknown): number {
   try {
-    const json = JSON.stringify(value)
-    return typeof json === 'string' ? json.length : 0
+    const json = JSON.stringify(value);
+    return typeof json === "string" ? json.length : 0;
   } catch {
-    return 0
+    return 0;
   }
 }
 
@@ -78,20 +78,22 @@ function safeSerializedLength(value: unknown): number {
  */
 function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
   if (predicate) {
-    return value
+    return value;
   }
-  return undefined
+  return undefined;
 }
 
 /**
  * Resolve an optional output param. Returns `resolveOutput(param)` if
  * param is defined, otherwise undefined.
  */
-function resolveOptionalOutput(param: import('@/core/agents/base/output.js').OutputParam | undefined) {
+function resolveOptionalOutput(
+  param: import("@/core/agents/base/output.js").OutputParam | undefined,
+) {
   if (param !== undefined) {
-    return resolveOutput(param)
+    return resolveOutput(param);
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -101,9 +103,9 @@ function resolveOptionalOutput(param: import('@/core/agents/base/output.js').Out
 function extractProperty(obj: Record<string, unknown>, key: string): unknown {
   if (key in obj) {
     // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return obj[key]
+    return obj[key];
   }
-  return {}
+  return {};
 }
 
 /**
@@ -111,16 +113,16 @@ function extractProperty(obj: Record<string, unknown>, key: string): unknown {
  * when usage is undefined. Replaces optional chaining on `step.usage`.
  */
 function extractUsage(usage: { inputTokens?: number; outputTokens?: number } | undefined): {
-  inputTokens: number
-  outputTokens: number
-  totalTokens: number
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
 } {
   if (usage !== undefined) {
-    const inputTokens = usage.inputTokens ?? 0
-    const outputTokens = usage.outputTokens ?? 0
-    return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens }
+    const inputTokens = usage.inputTokens ?? 0;
+    const outputTokens = usage.outputTokens ?? 0;
+    return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens };
   }
-  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 }
+  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 }
 
 /**
@@ -129,9 +131,9 @@ function extractUsage(usage: { inputTokens?: number; outputTokens?: number } | u
  */
 function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
   if (output !== undefined) {
-    return ifOutput
+    return ifOutput;
   }
-  return ifText
+  return ifText;
 }
 
 /**
@@ -184,71 +186,71 @@ export function agent<
   TTools extends Record<string, Tool> = {},
   TSubAgents extends SubAgents = {},
 >(
-  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>
+  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
 ): Agent<TInput, TOutput, TTools, TSubAgents> {
-  const baseLogger = config.logger ?? createDefaultLogger()
+  const baseLogger = config.logger ?? createDefaultLogger();
 
   async function generate(
     input: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<import('@/utils/result.js').Result<GenerateResult<TOutput>>> {
+    overrides?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<import("@/utils/result.js").Result<GenerateResult<TOutput>>> {
     if (config.input) {
-      const parsed = config.input.safeParse(input)
+      const parsed = config.input.safeParse(input);
       if (!parsed.success) {
         return {
           ok: false,
           error: {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: `Input validation failed: ${parsed.error.message}`,
           },
-        }
+        };
       }
     }
 
-    const overrideLogger = readOverride(overrides, 'logger')
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name })
-    const startedAt = Date.now()
+    const overrideLogger = readOverride(overrides, "logger");
+    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
+    const startedAt = Date.now();
 
     try {
-      const overrideModel = readOverride(overrides, 'model')
-      const modelRef = overrideModel ?? config.model
-      const baseModel = resolveModel(modelRef)
-      const model = await withModelMiddleware({ model: baseModel })
+      const overrideModel = readOverride(overrides, "model");
+      const modelRef = overrideModel ?? config.model;
+      const baseModel = resolveModel(modelRef);
+      const model = await withModelMiddleware({ model: baseModel });
 
-      const overrideTools = readOverride(overrides, 'tools')
-      const overrideAgents = readOverride(overrides, 'agents')
-      const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>
-      const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents
-      const hasTools = Object.keys(mergedTools).length > 0
-      const hasAgents = Object.keys(mergedAgents).length > 0
+      const overrideTools = readOverride(overrides, "tools");
+      const overrideAgents = readOverride(overrides, "agents");
+      const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>;
+      const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents;
+      const hasTools = Object.keys(mergedTools).length > 0;
+      const hasAgents = Object.keys(mergedAgents).length > 0;
 
       const aiTools = buildAITools(
         valueOrUndefined(hasTools, mergedTools),
-        valueOrUndefined(hasAgents, mergedAgents)
-      )
+        valueOrUndefined(hasAgents, mergedAgents),
+      );
 
-      const overrideSystem = readOverride(overrides, 'system')
-      const systemConfig = overrideSystem ?? config.system
-      const system = resolveSystem(systemConfig, input)
+      const overrideSystem = readOverride(overrides, "system");
+      const systemConfig = overrideSystem ?? config.system;
+      const system = resolveSystem(systemConfig, input);
 
-      const promptParams = buildPrompt(input, config)
+      const promptParams = buildPrompt(input, config);
 
-      const overrideOutput = readOverride(overrides, 'output')
-      const outputParam = overrideOutput ?? config.output
-      const output = resolveOptionalOutput(outputParam)
+      const overrideOutput = readOverride(overrides, "output");
+      const outputParam = overrideOutput ?? config.output;
+      const output = resolveOptionalOutput(outputParam);
 
       await fireHooks(
         log,
         wrapHook(config.onStart, { input }),
-        wrapHook(readOverride(overrides, 'onStart'), { input })
-      )
+        wrapHook(readOverride(overrides, "onStart"), { input }),
+      );
 
-      log.debug('agent.generate start', { name: config.name })
+      log.debug("agent.generate start", { name: config.name });
 
-      const overrideMaxSteps = readOverride(overrides, 'maxSteps')
-      const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20
-      const overrideSignal = readOverride(overrides, 'signal')
-      const stepCounter = { value: 0 }
+      const overrideMaxSteps = readOverride(overrides, "maxSteps");
+      const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20;
+      const overrideSignal = readOverride(overrides, "signal");
+      const stepCounter = { value: 0 };
       const aiResult = await generateText({
         model,
         system,
@@ -258,131 +260,131 @@ export function agent<
         stopWhen: stepCountIs(maxSteps),
         abortSignal: overrideSignal,
         onStepFinish: async (step) => {
-          const stepId = `${config.name}:${stepCounter.value++}`
+          const stepId = `${config.name}:${stepCounter.value++}`;
           const toolCalls = (step.toolCalls ?? []).map((tc) => {
-            const args = extractProperty(tc, 'args')
-            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) }
-          })
+            const args = extractProperty(tc, "args");
+            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) };
+          });
           const toolResults = (step.toolResults ?? []).map((tr) => {
-            const result = extractProperty(tr, 'result')
-            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) }
-          })
-          const usage = extractUsage(step.usage)
-          const event = { stepId, toolCalls, toolResults, usage }
+            const result = extractProperty(tr, "result");
+            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
+          });
+          const usage = extractUsage(step.usage);
+          const event = { stepId, toolCalls, toolResults, usage };
           await fireHooks(
             log,
             wrapHook(config.onStepFinish, event),
-            wrapHook(readOverride(overrides, 'onStepFinish'), event)
-          )
+            wrapHook(readOverride(overrides, "onStepFinish"), event),
+          );
         },
-      })
+      });
 
-      const duration = Date.now() - startedAt
+      const duration = Date.now() - startedAt;
 
       const generateResult: GenerateResult<TOutput> = {
         output: pickByOutput(output, aiResult.output, aiResult.text) as TOutput,
         messages: aiResult.response.messages as Message[],
         usage: toTokenUsage(aiResult.totalUsage),
         finishReason: aiResult.finishReason,
-      }
+      };
 
       await fireHooks(
         log,
         wrapHook(config.onFinish, { input, result: generateResult, duration }),
-        wrapHook(readOverride(overrides, 'onFinish'), {
+        wrapHook(readOverride(overrides, "onFinish"), {
           input,
           result: generateResult as GenerateResult,
           duration,
-        })
-      )
+        }),
+      );
 
-      log.debug('agent.generate finish', { name: config.name, duration })
+      log.debug("agent.generate finish", { name: config.name, duration });
 
-      return { ok: true, ...generateResult }
+      return { ok: true, ...generateResult };
     } catch (thrown) {
-      const error = toError(thrown)
-      const duration = Date.now() - startedAt
+      const error = toError(thrown);
+      const duration = Date.now() - startedAt;
 
-      log.error('agent.generate error', { name: config.name, error: error.message, duration })
+      log.error("agent.generate error", { name: config.name, error: error.message, duration });
 
       await fireHooks(
         log,
         wrapHook(config.onError, { input, error }),
-        wrapHook(readOverride(overrides, 'onError'), { input, error })
-      )
+        wrapHook(readOverride(overrides, "onError"), { input, error }),
+      );
 
       return {
         ok: false,
         error: {
-          code: 'AGENT_ERROR',
+          code: "AGENT_ERROR",
           message: error.message,
           cause: error,
         },
-      }
+      };
     }
   }
 
   async function stream(
     input: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<import('@/utils/result.js').Result<StreamResult<TOutput>>> {
+    overrides?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<import("@/utils/result.js").Result<StreamResult<TOutput>>> {
     if (config.input) {
-      const parsed = config.input.safeParse(input)
+      const parsed = config.input.safeParse(input);
       if (!parsed.success) {
         return {
           ok: false,
           error: {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: `Input validation failed: ${parsed.error.message}`,
           },
-        }
+        };
       }
     }
 
-    const overrideLogger = readOverride(overrides, 'logger')
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name })
-    const startedAt = Date.now()
+    const overrideLogger = readOverride(overrides, "logger");
+    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
+    const startedAt = Date.now();
 
     try {
-      const overrideModel = readOverride(overrides, 'model')
-      const modelRef = overrideModel ?? config.model
-      const baseModel = resolveModel(modelRef)
-      const model = await withModelMiddleware({ model: baseModel })
+      const overrideModel = readOverride(overrides, "model");
+      const modelRef = overrideModel ?? config.model;
+      const baseModel = resolveModel(modelRef);
+      const model = await withModelMiddleware({ model: baseModel });
 
-      const overrideTools = readOverride(overrides, 'tools')
-      const overrideAgents = readOverride(overrides, 'agents')
-      const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>
-      const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents
-      const hasTools = Object.keys(mergedTools).length > 0
-      const hasAgents = Object.keys(mergedAgents).length > 0
+      const overrideTools = readOverride(overrides, "tools");
+      const overrideAgents = readOverride(overrides, "agents");
+      const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>;
+      const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents;
+      const hasTools = Object.keys(mergedTools).length > 0;
+      const hasAgents = Object.keys(mergedAgents).length > 0;
 
       const aiTools = buildAITools(
         valueOrUndefined(hasTools, mergedTools),
-        valueOrUndefined(hasAgents, mergedAgents)
-      )
+        valueOrUndefined(hasAgents, mergedAgents),
+      );
 
-      const overrideSystem = readOverride(overrides, 'system')
-      const systemConfig = overrideSystem ?? config.system
-      const system = resolveSystem(systemConfig, input)
+      const overrideSystem = readOverride(overrides, "system");
+      const systemConfig = overrideSystem ?? config.system;
+      const system = resolveSystem(systemConfig, input);
 
-      const promptParams = buildPrompt(input, config)
+      const promptParams = buildPrompt(input, config);
 
-      const overrideOutput = readOverride(overrides, 'output')
-      const outputParam = overrideOutput ?? config.output
-      const output = resolveOptionalOutput(outputParam)
+      const overrideOutput = readOverride(overrides, "output");
+      const outputParam = overrideOutput ?? config.output;
+      const output = resolveOptionalOutput(outputParam);
 
       await fireHooks(
         log,
         wrapHook(config.onStart, { input }),
-        wrapHook(readOverride(overrides, 'onStart'), { input })
-      )
+        wrapHook(readOverride(overrides, "onStart"), { input }),
+      );
 
-      log.debug('agent.stream start', { name: config.name })
+      log.debug("agent.stream start", { name: config.name });
 
-      const overrideMaxSteps = readOverride(overrides, 'maxSteps')
-      const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20
-      const overrideSignal = readOverride(overrides, 'signal')
-      const stepCounter = { value: 0 }
+      const overrideMaxSteps = readOverride(overrides, "maxSteps");
+      const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20;
+      const overrideSignal = readOverride(overrides, "signal");
+      const stepCounter = { value: 0 };
       const aiResult = streamText({
         model,
         system,
@@ -392,90 +394,90 @@ export function agent<
         stopWhen: stepCountIs(maxSteps),
         abortSignal: overrideSignal,
         onStepFinish: async (step) => {
-          const stepId = `${config.name}:${stepCounter.value++}`
+          const stepId = `${config.name}:${stepCounter.value++}`;
           const toolCalls = (step.toolCalls ?? []).map((tc) => {
-            const args = extractProperty(tc, 'args')
-            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) }
-          })
+            const args = extractProperty(tc, "args");
+            return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) };
+          });
           const toolResults = (step.toolResults ?? []).map((tr) => {
-            const result = extractProperty(tr, 'result')
-            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) }
-          })
-          const usage = extractUsage(step.usage)
-          const event = { stepId, toolCalls, toolResults, usage }
+            const result = extractProperty(tr, "result");
+            return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
+          });
+          const usage = extractUsage(step.usage);
+          const event = { stepId, toolCalls, toolResults, usage };
           await fireHooks(
             log,
             wrapHook(config.onStepFinish, event),
-            wrapHook(readOverride(overrides, 'onStepFinish'), event)
-          )
+            wrapHook(readOverride(overrides, "onStepFinish"), event),
+          );
         },
-      })
+      });
 
-      const { readable, writable } = new TransformStream<StreamPart, StreamPart>()
+      const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 
       const done = (async () => {
-        const writer = writable.getWriter()
+        const writer = writable.getWriter();
         try {
           for await (const part of aiResult.fullStream) {
-            await writer.write(part as StreamPart)
+            await writer.write(part as StreamPart);
           }
-          await writer.close()
+          await writer.close();
         } catch (error) {
-          await writer.abort(error).catch(() => {})
-          throw error
+          await writer.abort(error).catch(() => {});
+          throw error;
         }
 
         const finalOutput = pickByOutput(
           output,
           await aiResult.output,
-          await aiResult.text
-        ) as TOutput
-        const response = await aiResult.response
-        const finalMessages = response.messages as Message[]
-        const finalUsage = toTokenUsage(await aiResult.totalUsage)
-        const finalFinishReason = await aiResult.finishReason
+          await aiResult.text,
+        ) as TOutput;
+        const response = await aiResult.response;
+        const finalMessages = response.messages as Message[];
+        const finalUsage = toTokenUsage(await aiResult.totalUsage);
+        const finalFinishReason = await aiResult.finishReason;
 
-        const duration = Date.now() - startedAt
+        const duration = Date.now() - startedAt;
 
         const generateResult: GenerateResult<TOutput> = {
           output: finalOutput,
           messages: finalMessages,
           usage: finalUsage,
           finishReason: finalFinishReason,
-        }
+        };
         await fireHooks(
           log,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
-          wrapHook(readOverride(overrides, 'onFinish'), {
+          wrapHook(readOverride(overrides, "onFinish"), {
             input,
             result: generateResult as GenerateResult,
             duration,
-          })
-        )
+          }),
+        );
 
-        log.debug('agent.stream finish', { name: config.name, duration })
+        log.debug("agent.stream finish", { name: config.name, duration });
 
         return {
           output: finalOutput,
           messages: finalMessages,
           usage: finalUsage,
           finishReason: finalFinishReason,
-        }
-      })()
+        };
+      })();
 
       // Catch stream errors: fire onError hooks and prevent unhandled rejections
       done.catch(async (thrown) => {
-        const error = toError(thrown)
-        const duration = Date.now() - startedAt
+        const error = toError(thrown);
+        const duration = Date.now() - startedAt;
 
-        log.error('agent.stream error', { name: config.name, error: error.message, duration })
+        log.error("agent.stream error", { name: config.name, error: error.message, duration });
 
         await fireHooks(
           log,
           wrapHook(config.onError, { input, error }),
-          wrapHook(readOverride(overrides, 'onError'), { input, error })
-        )
-      })
+          wrapHook(readOverride(overrides, "onError"), { input, error }),
+        );
+      });
 
       const streamResult: StreamResult<TOutput> = {
         output: done.then((r) => r.output),
@@ -483,29 +485,29 @@ export function agent<
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
-      }
+      };
 
-      return { ok: true, ...streamResult }
+      return { ok: true, ...streamResult };
     } catch (thrown) {
-      const error = toError(thrown)
-      const duration = Date.now() - startedAt
+      const error = toError(thrown);
+      const duration = Date.now() - startedAt;
 
-      log.error('agent.stream error', { name: config.name, error: error.message, duration })
+      log.error("agent.stream error", { name: config.name, error: error.message, duration });
 
       await fireHooks(
         log,
         wrapHook(config.onError, { input, error }),
-        wrapHook(readOverride(overrides, 'onError'), { input, error })
-      )
+        wrapHook(readOverride(overrides, "onError"), { input, error }),
+      );
 
       return {
         ok: false,
         error: {
-          code: 'AGENT_ERROR',
+          code: "AGENT_ERROR",
           message: error.message,
           cause: error,
         },
-      }
+      };
     }
   }
 
@@ -514,13 +516,13 @@ export function agent<
     generate,
     stream,
     fn: () => generate,
-  }
+  };
 
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-  ;(agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
+  (agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
     name: config.name,
     inputSchema: config.input,
-  } satisfies RunnableMeta
+  } satisfies RunnableMeta;
 
-  return agent
+  return agent;
 }

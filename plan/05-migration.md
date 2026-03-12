@@ -11,24 +11,24 @@ with extra fields.
 
 ```typescript
 // Before
-import { workflow } from '@funkai/agents'
-const w = workflow({ name: '...', input: z, output: z }, handler)
-const result = await w.generate(input)
-result.trace    // TraceEntry[]
-result.duration // number
-result.usage    // TokenUsage
+import { workflow } from "@funkai/agents";
+const w = workflow({ name: "...", input: z, output: z }, handler);
+const result = await w.generate(input);
+result.trace; // TraceEntry[]
+result.duration; // number
+result.usage; // TokenUsage
 // result.messages — does not exist
 
 // After
-import { flowAgent } from '@funkai/agents'
-const f = flowAgent({ name: '...', input: z, output: z }, handler)
-const result = await f.generate(input)
-result.output       // TOutput (same)
-result.messages     // Message[] (NEW — synthetic tool calls)
-result.usage        // TokenUsage (same)
-result.finishReason // string (NEW — 'stop')
-result.trace        // TraceEntry[] (still available as extra field)
-result.duration     // number (still available as extra field)
+import { flowAgent } from "@funkai/agents";
+const f = flowAgent({ name: "...", input: z, output: z }, handler);
+const result = await f.generate(input);
+result.output; // TOutput (same)
+result.messages; // Message[] (NEW — synthetic tool calls)
+result.usage; // TokenUsage (same)
+result.finishReason; // string (NEW — 'stop')
+result.trace; // TraceEntry[] (still available as extra field)
+result.duration; // number (still available as extra field)
 ```
 
 ### 2. `WorkflowResult` → `GenerateResult` (extended)
@@ -51,15 +51,15 @@ Stream results now match the `Agent` stream result shape:
 
 ```typescript
 // Before
-result.stream  // ReadableStream<StepEvent>
-result.output  // TOutput (resolved)
-result.trace   // TraceEntry[] (resolved)
+result.stream; // ReadableStream<StepEvent>
+result.output; // TOutput (resolved)
+result.trace; // TraceEntry[] (resolved)
 
 // After
-result.fullStream  // AsyncIterableStream<StreamPart> (typed events)
-result.output      // Promise<TOutput>
-result.messages    // Promise<Message[]>
-result.usage       // Promise<TokenUsage>
+result.fullStream; // AsyncIterableStream<StreamPart> (typed events)
+result.output; // Promise<TOutput>
+result.messages; // Promise<Message[]>
+result.usage; // Promise<TokenUsage>
 ```
 
 ### 4. String model IDs require `configure()`
@@ -87,34 +87,34 @@ const a = agent({ model: 'openai/gpt-4.1', ... })  // works
 
 ```typescript
 // Before
-import { model, tryModel, models } from '@funkai/agents'
+import { model, tryModel, models } from "@funkai/agents";
 
 // After
-import { model, tryModel, models } from '@funkai/models'
+import { model, tryModel, models } from "@funkai/models";
 // or
-import { model, tryModel, models } from 'funkai'  // re-exported
+import { model, tryModel, models } from "funkai"; // re-exported
 ```
 
 ### 6. OpenRouter provider moves to `@funkai/openrouter`
 
 ```typescript
 // Before
-import { createOpenRouter, openrouter } from '@funkai/agents'
+import { createOpenRouter, openrouter } from "@funkai/agents";
 
 // After
-import { createOpenRouter, openrouter } from '@funkai/openrouter'
+import { createOpenRouter, openrouter } from "@funkai/openrouter";
 // or
-import { createOpenRouter, openrouter } from 'funkai'  // re-exported
+import { createOpenRouter, openrouter } from "funkai"; // re-exported
 ```
 
 ### 7. Testing utilities move to `@funkai/testing`
 
 ```typescript
 // Before
-import { createMockContext, createMockLogger } from '@funkai/agents/testing'
+import { createMockContext, createMockLogger } from "@funkai/agents/testing";
 
 // After
-import { createMockContext, createMockLogger } from '@funkai/testing'
+import { createMockContext, createMockLogger } from "@funkai/testing";
 ```
 
 ### 8. `createWorkflowEngine` → `createFlowEngine`
@@ -131,19 +131,19 @@ const engine = createFlowEngine({ $: { custom: ... } })
 
 ### 9. Type renames
 
-| Before | After |
-|--------|-------|
-| `Workflow<TInput, TOutput>` | `FlowAgent<TInput, TOutput>` |
-| `WorkflowConfig<TInput, TOutput>` | `FlowAgentConfig<TInput, TOutput>` |
-| `WorkflowOverrides` | `FlowAgentOverrides` |
-| `WorkflowResult<TOutput>` | removed (use `GenerateResult<TOutput>`) |
-| `WorkflowStreamResult<TOutput>` | removed (use `StreamResult<TOutput>`) |
-| `WorkflowHandler<TInput, TOutput>` | `FlowAgentHandler<TInput, TOutput>` |
-| `WorkflowParams<TInput>` | `FlowAgentParams<TInput>` |
-| `WorkflowFactory` | `FlowFactory` |
-| `EngineConfig` | `FlowEngineConfig` |
-| `workflowUsage()` | `flowAgentUsage()` |
-| `WorkflowTokenUsage` | `FlowAgentTokenUsage` |
+| Before                             | After                                   |
+| ---------------------------------- | --------------------------------------- |
+| `Workflow<TInput, TOutput>`        | `FlowAgent<TInput, TOutput>`            |
+| `WorkflowConfig<TInput, TOutput>`  | `FlowAgentConfig<TInput, TOutput>`      |
+| `WorkflowOverrides`                | `FlowAgentOverrides`                    |
+| `WorkflowResult<TOutput>`          | removed (use `GenerateResult<TOutput>`) |
+| `WorkflowStreamResult<TOutput>`    | removed (use `StreamResult<TOutput>`)   |
+| `WorkflowHandler<TInput, TOutput>` | `FlowAgentHandler<TInput, TOutput>`     |
+| `WorkflowParams<TInput>`           | `FlowAgentParams<TInput>`               |
+| `WorkflowFactory`                  | `FlowFactory`                           |
+| `EngineConfig`                     | `FlowEngineConfig`                      |
+| `workflowUsage()`                  | `flowAgentUsage()`                      |
+| `WorkflowTokenUsage`               | `FlowAgentTokenUsage`                   |
 
 ---
 

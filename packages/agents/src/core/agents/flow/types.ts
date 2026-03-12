@@ -1,10 +1,10 @@
-import type { ZodType } from 'zod'
+import type { ZodType } from "zod";
 
-import type { GenerateResult, Message, StreamResult } from '@/core/agents/base/types.js'
-import type { Logger } from '@/core/logger.js'
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
-import type { TraceEntry, OperationType } from '@/lib/trace.js'
-import type { Result } from '@/utils/result.js'
+import type { GenerateResult, Message, StreamResult } from "@/core/agents/base/types.js";
+import type { Logger } from "@/core/logger.js";
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
+import type { TraceEntry, OperationType } from "@/lib/trace.js";
+import type { Result } from "@/utils/result.js";
 
 /**
  * Information about a step in a flow agent execution.
@@ -18,7 +18,7 @@ export interface StepInfo {
    *
    * Matches the `id` field on the step config that produced this event.
    */
-  id: string
+  id: string;
 
   /**
    * Auto-incrementing index within the flow agent execution.
@@ -26,14 +26,14 @@ export interface StepInfo {
    * Starts at `0` for the first `$` call and increments for each
    * subsequent tracked operation.
    */
-  index: number
+  index: number;
 
   /**
    * What kind of `$` call produced this step.
    *
    * Discriminant for filtering or grouping step events.
    */
-  type: OperationType
+  type: OperationType;
 }
 
 /**
@@ -53,7 +53,7 @@ export interface FlowAgentGenerateResult<TOutput> extends GenerateResult<TOutput
    * A frozen tree of `TraceEntry` nodes representing every tracked `$`
    * operation that ran during the flow.
    */
-  trace: readonly TraceEntry[]
+  trace: readonly TraceEntry[];
 
   /**
    * Total wall-clock time in milliseconds.
@@ -61,7 +61,7 @@ export interface FlowAgentGenerateResult<TOutput> extends GenerateResult<TOutput
    * Measured from the start of the flow to the completion
    * of all operations.
    */
-  duration: number
+  duration: number;
 }
 
 /**
@@ -76,7 +76,7 @@ export interface FlowAgentConfig<TInput, TOutput> {
    *
    * Used in logging, trace entries, and hook events.
    */
-  name: string
+  name: string;
 
   /**
    * Zod schema for validating flow agent input.
@@ -84,7 +84,7 @@ export interface FlowAgentConfig<TInput, TOutput> {
    * The raw input passed to `.generate()` is validated against this
    * schema before the handler is called.
    */
-  input: ZodType<TInput>
+  input: ZodType<TInput>;
 
   /**
    * Zod schema for validating flow agent output.
@@ -92,7 +92,7 @@ export interface FlowAgentConfig<TInput, TOutput> {
    * The handler's return value is validated against this schema
    * before being returned to the caller.
    */
-  output: ZodType<TOutput>
+  output: ZodType<TOutput>;
 
   /**
    * Pino-compatible logger.
@@ -101,14 +101,14 @@ export interface FlowAgentConfig<TInput, TOutput> {
    * The framework automatically creates scoped child loggers
    * with contextual bindings (`flowAgentId`, `stepId`).
    */
-  logger?: Logger
+  logger?: Logger;
 
   /**
    * Hook: fires when the flow agent starts execution.
    *
    * @param event - Event containing the validated input.
    */
-  onStart?: (event: { input: TInput }) => void | Promise<void>
+  onStart?: (event: { input: TInput }) => void | Promise<void>;
 
   /**
    * Hook: fires when the flow agent finishes successfully.
@@ -116,24 +116,24 @@ export interface FlowAgentConfig<TInput, TOutput> {
    * @param event - Event containing input, result, and duration.
    */
   onFinish?: (event: {
-    input: TInput
-    result: FlowAgentGenerateResult<TOutput>
-    duration: number
-  }) => void | Promise<void>
+    input: TInput;
+    result: FlowAgentGenerateResult<TOutput>;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Hook: fires when the flow agent encounters an error.
    *
    * @param event - Event containing the input and error.
    */
-  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>
+  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
 
   /**
    * Hook: fires when any tracked `$` step starts.
    *
    * @param event - Event containing step info.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
 
   /**
    * Hook: fires when any tracked `$` step finishes.
@@ -141,10 +141,10 @@ export interface FlowAgentConfig<TInput, TOutput> {
    * @param event - Event containing step info, result, and duration.
    */
   onStepFinish?: (event: {
-    step: StepInfo
-    result: unknown
-    duration: number
-  }) => void | Promise<void>
+    step: StepInfo;
+    result: unknown;
+    duration: number;
+  }) => void | Promise<void>;
 }
 
 /**
@@ -159,42 +159,42 @@ export interface FlowAgentOverrides {
    * When fired, all in-flight operations should clean up and exit.
    * Propagated through the entire execution tree.
    */
-  signal?: AbortSignal
+  signal?: AbortSignal;
 
   /**
    * Override the logger for this call.
    *
    * When provided, replaces the logger configured at creation time.
    */
-  logger?: Logger
+  logger?: Logger;
 
   /**
    * Per-call hook — fires after base `onStart`.
    */
-  onStart?: (event: { input: unknown }) => void | Promise<void>
+  onStart?: (event: { input: unknown }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onFinish`.
    */
   onFinish?: (event: {
-    input: unknown
-    result: GenerateResult
-    duration: number
-  }) => void | Promise<void>
+    input: unknown;
+    result: GenerateResult;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onError`.
    */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>
+  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onStepFinish`.
    */
   onStepFinish?: (event: {
-    step: StepInfo
-    result: unknown
-    duration: number
-  }) => void | Promise<void>
+    step: StepInfo;
+    result: unknown;
+    duration: number;
+  }) => void | Promise<void>;
 }
 
 /**
@@ -206,7 +206,7 @@ export interface FlowAgentParams<TInput> {
   /**
    * Validated input.
    */
-  input: TInput
+  input: TInput;
 
   /**
    * Composable step builder utilities.
@@ -215,12 +215,12 @@ export interface FlowAgentParams<TInput> {
    * that register data flow for observability and produce synthetic
    * tool-call messages.
    */
-  $: StepBuilder
+  $: StepBuilder;
 
   /**
    * Scoped logger for the current flow execution.
    */
-  log: Logger
+  log: Logger;
 }
 
 /**
@@ -233,8 +233,8 @@ export interface FlowAgentParams<TInput> {
  * @typeParam TOutput - The output type to return.
  */
 export type FlowAgentHandler<TInput, TOutput> = (
-  params: FlowAgentParams<TInput>
-) => Promise<TOutput>
+  params: FlowAgentParams<TInput>,
+) => Promise<TOutput>;
 
 /**
  * A created flow agent — exposes `.generate()`, `.stream()`, and `.fn()`.
@@ -259,8 +259,8 @@ export interface FlowAgent<TInput, TOutput> {
    */
   generate(
     input: TInput,
-    config?: FlowAgentOverrides
-  ): Promise<Result<FlowAgentGenerateResult<TOutput>>>
+    config?: FlowAgentOverrides,
+  ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 
   /**
    * Run the flow agent with streaming step progress.
@@ -273,18 +273,15 @@ export interface FlowAgent<TInput, TOutput> {
    * @param config - Optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`.
    */
-  stream(
-    input: TInput,
-    config?: FlowAgentOverrides
-  ): Promise<Result<StreamResult<TOutput>>>
+  stream(input: TInput, config?: FlowAgentOverrides): Promise<Result<StreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.
    */
   fn(): (
     input: TInput,
-    config?: FlowAgentOverrides
-  ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>
+    config?: FlowAgentOverrides,
+  ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 
 /**
@@ -293,5 +290,5 @@ export interface FlowAgent<TInput, TOutput> {
  * into flowAgent(). Not exported — only accessible within the package.
  */
 export interface InternalFlowAgentOptions {
-  augment$?: ($: StepBuilder, ctx: import('@/lib/context.js').Context) => StepBuilder
+  augment$?: ($: StepBuilder, ctx: import("@/lib/context.js").Context) => StepBuilder;
 }

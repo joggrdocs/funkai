@@ -1,15 +1,11 @@
-import type { Logger } from '@/core/logger.js'
-import { createDefaultLogger } from '@/core/logger.js'
-import { flowAgent } from '@/core/agents/flow/flow-agent.js'
-import type {
-  FlowAgent,
-  FlowAgentConfig,
-  FlowAgentHandler,
-} from '@/core/agents/flow/types.js'
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
-import type { StepInfo } from '@/core/agents/flow/types.js'
-import type { ExecutionContext } from '@/lib/context.js'
-import { fireHooks } from '@/lib/hooks.js'
+import type { Logger } from "@/core/logger.js";
+import { createDefaultLogger } from "@/core/logger.js";
+import { flowAgent } from "@/core/agents/flow/flow-agent.js";
+import type { FlowAgent, FlowAgentConfig, FlowAgentHandler } from "@/core/agents/flow/types.js";
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
+import type { StepInfo } from "@/core/agents/flow/types.js";
+import type { ExecutionContext } from "@/lib/context.js";
+import { fireHooks } from "@/lib/hooks.js";
 
 /**
  * Factory function for a custom step type.
@@ -24,19 +20,19 @@ export type CustomStepFactory<TConfig, TResult> = (params: {
   /**
    * Execution context.
    */
-  ctx: ExecutionContext
+  ctx: ExecutionContext;
 
   /**
    * The config object the user passed to the custom step.
    */
-  config: TConfig
-}) => Promise<TResult>
+  config: TConfig;
+}) => Promise<TResult>;
 
 /**
  * Map of custom step names to their factory functions.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>
+export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>;
 
 /**
  * Derive typed custom step methods from a definitions map.
@@ -46,8 +42,8 @@ export type CustomStepDefinitions = Record<string, CustomStepFactory<any, any>>
 export type TypedCustomSteps<T extends CustomStepDefinitions> = {
   [K in keyof T]: T[K] extends CustomStepFactory<infer TConfig, infer TResult>
     ? (config: TConfig) => Promise<TResult>
-    : never
-}
+    : never;
+};
 
 /**
  * Configuration for creating a custom flow engine.
@@ -58,36 +54,36 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Custom step types to add to `$`.
    */
-  $?: TCustomSteps
+  $?: TCustomSteps;
 
   /**
    * Default hook: fires when any flow agent starts.
    */
-  onStart?: (event: { input: unknown }) => void | Promise<void>
+  onStart?: (event: { input: unknown }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any flow agent finishes.
    */
-  onFinish?: (event: { input: unknown; output: unknown; duration: number }) => void | Promise<void>
+  onFinish?: (event: { input: unknown; output: unknown; duration: number }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any flow agent errors.
    */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>
+  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any step starts.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any step finishes.
    */
   onStepFinish?: (event: {
-    step: StepInfo
-    result: unknown
-    duration: number
-  }) => void | Promise<void>
+    step: StepInfo;
+    result: unknown;
+    duration: number;
+  }) => void | Promise<void>;
 }
 
 /**
@@ -98,11 +94,11 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
 export type FlowFactory<TCustomSteps extends CustomStepDefinitions> = <TInput, TOutput>(
   config: FlowAgentConfig<TInput, TOutput>,
   handler: (params: {
-    input: TInput
-    $: StepBuilder & TypedCustomSteps<TCustomSteps>
-    log: Logger
-  }) => Promise<TOutput>
-) => FlowAgent<TInput, TOutput>
+    input: TInput;
+    $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+    log: Logger;
+  }) => Promise<TOutput>,
+) => FlowAgent<TInput, TOutput>;
 
 /**
  * Wrap a hook callback so it can be passed to `fireHooks`.
@@ -110,12 +106,12 @@ export type FlowFactory<TCustomSteps extends CustomStepDefinitions> = <TInput, T
 function createHookCaller(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hook: ((event: any) => void | Promise<void>) | undefined,
-  event: unknown
+  event: unknown,
 ): (() => void | Promise<void>) | undefined {
   if (hook) {
-    return () => hook(event)
+    return () => hook(event);
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -125,18 +121,18 @@ function createHookCaller(
 function buildMergedHook<THook extends (event: any) => void | Promise<void>>(
   log: Logger,
   engineHook: THook | undefined,
-  flowHook: THook | undefined
+  flowHook: THook | undefined,
 ): THook | undefined {
   if (!engineHook && !flowHook) {
-    return undefined
+    return undefined;
   }
 
   const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(engineHook, event)
-    const flowFn = createHookCaller(flowHook, event)
-    await fireHooks(log, engineFn, flowFn)
-  }
-  return merged as unknown as THook
+    const engineFn = createHookCaller(engineHook, event);
+    const flowFn = createHookCaller(flowHook, event);
+    await fireHooks(log, engineFn, flowFn);
+  };
+  return merged as unknown as THook;
 }
 
 /**
@@ -189,20 +185,20 @@ export function createFlowEngine<
 >(engineConfig: FlowEngineConfig<TCustomSteps>): FlowFactory<TCustomSteps> {
   return function engineCreateFlowAgent<TInput, TOutput>(
     flowConfig: FlowAgentConfig<TInput, TOutput>,
-    handler: FlowAgentHandler<TInput, TOutput>
+    handler: FlowAgentHandler<TInput, TOutput>,
   ): FlowAgent<TInput, TOutput> {
-    const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: 'engine' })
+    const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
 
-    const { onStart: engineOnStart } = engineConfig
-    const { onStart: flowOnStart } = flowConfig
-    const { onFinish: engineOnFinish } = engineConfig
-    const { onFinish: flowOnFinish } = flowConfig
-    const { onError: engineOnError } = engineConfig
-    const { onError: flowOnError } = flowConfig
-    const { onStepStart: engineOnStepStart } = engineConfig
-    const { onStepStart: flowOnStepStart } = flowConfig
-    const { onStepFinish: engineOnStepFinish } = engineConfig
-    const { onStepFinish: flowOnStepFinish } = flowConfig
+    const { onStart: engineOnStart } = engineConfig;
+    const { onStart: flowOnStart } = flowConfig;
+    const { onFinish: engineOnFinish } = engineConfig;
+    const { onFinish: flowOnFinish } = flowConfig;
+    const { onError: engineOnError } = engineConfig;
+    const { onError: flowOnError } = flowConfig;
+    const { onStepStart: engineOnStepStart } = engineConfig;
+    const { onStepStart: flowOnStepStart } = flowConfig;
+    const { onStepFinish: engineOnStepFinish } = engineConfig;
+    const { onStepFinish: flowOnStepFinish } = flowConfig;
 
     const mergedConfig: FlowAgentConfig<TInput, TOutput> = {
       ...flowConfig,
@@ -211,26 +207,26 @@ export function createFlowEngine<
       onError: buildMergedHook(hookLog, engineOnError, flowOnError),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, flowOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, flowOnStepFinish),
-    }
+    };
 
     const wrappedHandler: FlowAgentHandler<TInput, TOutput> = async (params) => {
       return handler({
         input: params.input,
         $: params.$ as StepBuilder & TypedCustomSteps<TCustomSteps>,
         log: params.log,
-      })
-    }
+      });
+    };
 
     return flowAgent(mergedConfig, wrappedHandler, {
       augment$: ($, ctx) => {
-        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {}
+        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
         for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
           // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
           customSteps[name] = (config: unknown) =>
-            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config })
+            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config });
         }
-        return Object.assign($, customSteps) as StepBuilder
+        return Object.assign($, customSteps) as StepBuilder;
       },
-    })
-  }
+    });
+  };
 }

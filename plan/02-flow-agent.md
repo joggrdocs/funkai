@@ -133,44 +133,47 @@ result.messages = [
 ### `flowAgent()` factory
 
 ```typescript
-import { flowAgent } from '@funkai/agents'
+import { flowAgent } from "@funkai/agents";
 
-const pipeline = flowAgent({
-  name: 'doc-pipeline',
-  input: z.object({ repo: z.string() }),
-  output: z.object({ docs: z.array(z.string()) }),
+const pipeline = flowAgent(
+  {
+    name: "doc-pipeline",
+    input: z.object({ repo: z.string() }),
+    output: z.object({ docs: z.array(z.string()) }),
 
-  // Optional (same as agent)
-  logger: customLogger,
-  onStart: ({ input }) => {},
-  onFinish: ({ input, result, duration }) => {},
-  onError: ({ input, error }) => {},
-  onStepFinish: ({ stepId, toolCalls, toolResults, usage }) => {},
-}, async ({ input, $ }) => {
-  // Your orchestration code
-  const files = await $.step({
-    id: 'scan-repo',
-    execute: () => scanRepo(input.repo),
-  })
+    // Optional (same as agent)
+    logger: customLogger,
+    onStart: ({ input }) => {},
+    onFinish: ({ input, result, duration }) => {},
+    onError: ({ input, error }) => {},
+    onStepFinish: ({ stepId, toolCalls, toolResults, usage }) => {},
+  },
+  async ({ input, $ }) => {
+    // Your orchestration code
+    const files = await $.step({
+      id: "scan-repo",
+      execute: () => scanRepo(input.repo),
+    });
 
-  if (!files.ok) throw files.error
+    if (!files.ok) throw files.error;
 
-  const docs = await $.map({
-    id: 'generate-docs',
-    input: files.value,
-    execute: async ({ item, $ }) => {
-      const result = await $.agent({
-        id: 'write-doc',
-        agent: writerAgent,
-        input: item,
-      })
-      return result.ok ? result.value.output : ''
-    },
-    concurrency: 3,
-  })
+    const docs = await $.map({
+      id: "generate-docs",
+      input: files.value,
+      execute: async ({ item, $ }) => {
+        const result = await $.agent({
+          id: "write-doc",
+          agent: writerAgent,
+          input: item,
+        });
+        return result.ok ? result.value.output : "";
+      },
+      concurrency: 3,
+    });
 
-  return { docs: docs.ok ? docs.value : [] }
-})
+    return { docs: docs.ok ? docs.value : [] };
+  },
+);
 ```
 
 ### `FlowAgent` type
@@ -178,20 +181,11 @@ const pipeline = flowAgent({
 ```typescript
 interface FlowAgent<TInput, TOutput> {
   // Identical to Agent
-  generate(
-    input: TInput,
-    config?: FlowAgentOverrides
-  ): Promise<Result<GenerateResult<TOutput>>>
+  generate(input: TInput, config?: FlowAgentOverrides): Promise<Result<GenerateResult<TOutput>>>;
 
-  stream(
-    input: TInput,
-    config?: FlowAgentOverrides
-  ): Promise<Result<StreamResult<TOutput>>>
+  stream(input: TInput, config?: FlowAgentOverrides): Promise<Result<StreamResult<TOutput>>>;
 
-  fn(): (
-    input: TInput,
-    config?: FlowAgentOverrides
-  ) => Promise<Result<GenerateResult<TOutput>>>
+  fn(): (input: TInput, config?: FlowAgentOverrides) => Promise<Result<GenerateResult<TOutput>>>;
 }
 ```
 
@@ -200,10 +194,10 @@ interface FlowAgent<TInput, TOutput> {
 ```typescript
 // SAME type as agent. No separate WorkflowResult.
 interface GenerateResult<TOutput> {
-  output: TOutput
-  messages: Message[]       // includes synthetic tool calls for steps
-  usage: TokenUsage         // aggregated across all sub-agent calls
-  finishReason: string      // 'stop' for successful flows
+  output: TOutput;
+  messages: Message[]; // includes synthetic tool calls for steps
+  usage: TokenUsage; // aggregated across all sub-agent calls
+  finishReason: string; // 'stop' for successful flows
 }
 ```
 
@@ -216,8 +210,8 @@ can access the extras:
 
 ```typescript
 interface FlowAgentGenerateResult<TOutput> extends GenerateResult<TOutput> {
-  trace: readonly TraceEntry[]   // execution trace tree
-  duration: number               // wall-clock ms
+  trace: readonly TraceEntry[]; // execution trace tree
+  duration: number; // wall-clock ms
 }
 ```
 
@@ -246,17 +240,25 @@ interface FlowAgentOverrides {
 
 ```typescript
 interface FlowAgentConfig<TInput, TOutput> {
-  name: string
-  input: ZodType<TInput>       // required (typed mode only for flows)
-  output: ZodType<TOutput>     // required (validates return value)
-  logger?: Logger
+  name: string;
+  input: ZodType<TInput>; // required (typed mode only for flows)
+  output: ZodType<TOutput>; // required (validates return value)
+  logger?: Logger;
 
   // Hooks
-  onStart?: (event: { input: TInput }) => void | Promise<void>
-  onFinish?: (event: { input: TInput; result: GenerateResult<TOutput>; duration: number }) => void | Promise<void>
-  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>
-  onStepFinish?: (event: { step: StepInfo; result: unknown; duration: number }) => void | Promise<void>
+  onStart?: (event: { input: TInput }) => void | Promise<void>;
+  onFinish?: (event: {
+    input: TInput;
+    result: GenerateResult<TOutput>;
+    duration: number;
+  }) => void | Promise<void>;
+  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+  onStepFinish?: (event: {
+    step: StepInfo;
+    result: unknown;
+    duration: number;
+  }) => void | Promise<void>;
 }
 ```
 
@@ -266,10 +268,10 @@ interface FlowAgentConfig<TInput, TOutput> {
 
 ```typescript
 type FlowAgentHandler<TInput, TOutput> = (params: {
-  input: TInput
-  $: StepBuilder
-  log: Logger
-}) => Promise<TOutput>
+  input: TInput;
+  $: StepBuilder;
+  log: Logger;
+}) => Promise<TOutput>;
 ```
 
 ---
@@ -281,14 +283,14 @@ now also produces synthetic messages that get collected into the result.
 
 ```typescript
 interface StepBuilder {
-  step<T>(config: StepConfig<T>): Promise<StepResult<T>>
-  agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>
-  map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>
-  each<T>(config: EachConfig<T>): Promise<StepResult<void>>
-  reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>
-  while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>
-  all(config: AllConfig): Promise<StepResult<unknown[]>>
-  race(config: RaceConfig): Promise<StepResult<unknown>>
+  step<T>(config: StepConfig<T>): Promise<StepResult<T>>;
+  agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>;
+  map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>;
+  each<T>(config: EachConfig<T>): Promise<StepResult<void>>;
+  reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>;
+  while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>;
+  all(config: AllConfig): Promise<StepResult<unknown[]>>;
+  race(config: RaceConfig): Promise<StepResult<unknown>>;
 }
 ```
 
@@ -301,8 +303,8 @@ full message array:
 
 ```typescript
 interface Context extends ExecutionContext {
-  readonly trace: TraceEntry[]
-  readonly messages: Message[]    // NEW: synthetic messages from steps
+  readonly trace: TraceEntry[];
+  readonly messages: Message[]; // NEW: synthetic messages from steps
 }
 ```
 
@@ -314,18 +316,18 @@ Both `Agent` and `FlowAgent` satisfy `Runnable`:
 
 ```typescript
 interface Runnable<TInput, TOutput> {
-  generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>
-  stream(input: TInput, config?: any): Promise<Result<StreamResult<TOutput>>>
-  fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>
+  generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>;
+  stream(input: TInput, config?: any): Promise<Result<StreamResult<TOutput>>>;
+  fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>;
 }
 
 // StreamResult uses AI SDK types directly:
 interface StreamResult<TOutput> {
-  output: Promise<TOutput>
-  messages: Promise<Message[]>
-  usage: Promise<TokenUsage>
-  finishReason: Promise<string>
-  fullStream: AsyncIterableStream<StreamPart>  // typed events, not raw strings
+  output: Promise<TOutput>;
+  messages: Promise<Message[]>;
+  usage: Promise<TokenUsage>;
+  finishReason: Promise<string>;
+  fullStream: AsyncIterableStream<StreamPart>; // typed events, not raw strings
 }
 ```
 
@@ -339,18 +341,21 @@ This means flow agents work anywhere agents work — as sub-agents, in
 ### Before (workflow)
 
 ```typescript
-import { workflow } from '@funkai/agents'
+import { workflow } from "@funkai/agents";
 
-const w = workflow({
-  name: 'analyze',
-  input: z.object({ text: z.string() }),
-  output: z.object({ summary: z.string() }),
-}, async ({ input, $ }) => {
-  const r = await $.agent({ id: 'summarize', agent: summarizer, input: input.text })
-  return { summary: r.ok ? r.value.output : '' }
-})
+const w = workflow(
+  {
+    name: "analyze",
+    input: z.object({ text: z.string() }),
+    output: z.object({ summary: z.string() }),
+  },
+  async ({ input, $ }) => {
+    const r = await $.agent({ id: "summarize", agent: summarizer, input: input.text });
+    return { summary: r.ok ? r.value.output : "" };
+  },
+);
 
-const result = await w.generate({ text: '...' })
+const result = await w.generate({ text: "..." });
 // result.output   — the output
 // result.trace    — execution trace
 // result.usage    — token usage
@@ -361,18 +366,21 @@ const result = await w.generate({ text: '...' })
 ### After (flowAgent)
 
 ```typescript
-import { flowAgent } from '@funkai/agents'
+import { flowAgent } from "@funkai/agents";
 
-const analyze = flowAgent({
-  name: 'analyze',
-  input: z.object({ text: z.string() }),
-  output: z.object({ summary: z.string() }),
-}, async ({ input, $ }) => {
-  const r = await $.agent({ id: 'summarize', agent: summarizer, input: input.text })
-  return { summary: r.ok ? r.value.output : '' }
-})
+const analyze = flowAgent(
+  {
+    name: "analyze",
+    input: z.object({ text: z.string() }),
+    output: z.object({ summary: z.string() }),
+  },
+  async ({ input, $ }) => {
+    const r = await $.agent({ id: "summarize", agent: summarizer, input: input.text });
+    return { summary: r.ok ? r.value.output : "" };
+  },
+);
 
-const result = await analyze.generate({ text: '...' })
+const result = await analyze.generate({ text: "..." });
 // result.output       — the output (same)
 // result.messages     — tool-call messages for each step (NEW)
 // result.usage        — token usage (same)

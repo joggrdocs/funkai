@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 
 /**
  * Configuration for `$.map()` — parallel map with optional concurrency limit.
@@ -16,14 +16,14 @@ export interface MapConfig<T, R> {
    * Appears in the execution trace. Individual iterations appear
    * as children of this entry.
    */
-  id: string
+  id: string;
 
   /**
    * Array of items to process.
    *
    * Each item is passed to the `execute` callback along with its index.
    */
-  input: readonly T[]
+  input: readonly T[];
 
   /**
    * Maximum number of parallel executions.
@@ -33,7 +33,7 @@ export interface MapConfig<T, R> {
    *
    * @default Infinity
    */
-  concurrency?: number
+  concurrency?: number;
 
   /**
    * Process a single item.
@@ -44,7 +44,7 @@ export interface MapConfig<T, R> {
    * @param params.$ - The step builder for nesting further operations.
    * @returns The processed result for this item.
    */
-  execute: (params: { item: T; index: number; $: StepBuilder }) => Promise<R>
+  execute: (params: { item: T; index: number; $: StepBuilder }) => Promise<R>;
 
   /**
    * Hook: fires when the map operation starts.
@@ -52,7 +52,7 @@ export interface MapConfig<T, R> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when all items are processed.
@@ -62,7 +62,7 @@ export interface MapConfig<T, R> {
    * @param event.result - Array of results in input order.
    * @param event.duration - Wall-clock time in milliseconds.
    */
-  onFinish?: (event: { id: string; result: R[]; duration: number }) => void | Promise<void>
+  onFinish?: (event: { id: string; result: R[]; duration: number }) => void | Promise<void>;
 
   /**
    * Hook: fires if the map operation encounters an error.
@@ -71,5 +71,5 @@ export interface MapConfig<T, R> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

@@ -16,10 +16,10 @@ packages/
 └── prompts/         # @funkai/prompts -- Prompt SDK with templating and validation
 ```
 
-| Package           | Purpose                                                         |
-| ----------------- | --------------------------------------------------------------- |
+| Package           | Purpose                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------- |
 | `@funkai/agents`  | Agent and workflow orchestration: agents, workflows, steps, tools, hooks, provider |
-| `@funkai/prompts` | Prompt authoring SDK: LiquidJS templating, Zod validation, CLI, codegen |
+| `@funkai/prompts` | Prompt authoring SDK: LiquidJS templating, Zod validation, CLI, codegen            |
 
 ## Agents Package
 
@@ -27,14 +27,14 @@ The agents package provides primitives for building AI agent workflows.
 
 ### Core Primitives
 
-| Primitive  | Purpose                                                        |
-| ---------- | -------------------------------------------------------------- |
-| Agent      | Autonomous AI entity with tools, model, and system prompt      |
-| Workflow   | Multi-step orchestration of agents and operations              |
-| Step (`$`) | Builder for defining individual workflow steps                 |
-| Tool       | Typed function that agents can call during execution           |
-| Hook       | Lifecycle callbacks for workflows and agents                   |
-| Provider   | Model provider configuration (OpenRouter + Vercel AI SDK)      |
+| Primitive  | Purpose                                                   |
+| ---------- | --------------------------------------------------------- |
+| Agent      | Autonomous AI entity with tools, model, and system prompt |
+| Workflow   | Multi-step orchestration of agents and operations         |
+| Step (`$`) | Builder for defining individual workflow steps            |
+| Tool       | Typed function that agents can call during execution      |
+| Hook       | Lifecycle callbacks for workflows and agents              |
+| Provider   | Model provider configuration (OpenRouter + Vercel AI SDK) |
 
 ### Data Flow
 
@@ -93,19 +93,19 @@ The prompts package provides a prompt authoring SDK with two surfaces:
 
 ### Dual Surface
 
-| Surface | Purpose                                                    |
-| ------- | ---------------------------------------------------------- |
+| Surface | Purpose                                                     |
+| ------- | ----------------------------------------------------------- |
 | CLI     | Author, validate, and manage prompt files from the terminal |
 | Library | Runtime API for loading, rendering, and validating prompts  |
 
 ### Key Concepts
 
-| Concept      | Purpose                                              |
-| ------------ | ---------------------------------------------------- |
-| Frontmatter  | YAML metadata (model, temperature, variables schema) |
-| Template     | LiquidJS template body with variable interpolation   |
-| Partial      | Reusable template fragment included via `{% partial %}` |
-| Codegen      | Generate TypeScript types from prompt files           |
+| Concept     | Purpose                                                 |
+| ----------- | ------------------------------------------------------- |
+| Frontmatter | YAML metadata (model, temperature, variables schema)    |
+| Template    | LiquidJS template body with variable interpolation      |
+| Partial     | Reusable template fragment included via `{% partial %}` |
+| Codegen     | Generate TypeScript types from prompt files             |
 
 ## Design Decisions
 

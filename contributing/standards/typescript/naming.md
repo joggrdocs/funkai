@@ -10,15 +10,15 @@ Conventions for naming files, variables, and object properties. Consistent namin
 
 Use **kebab-case** for all file names. Design file names with `ls` in mind -- they should be scannable and sortable.
 
-| Type      | Pattern         | Example                |
-| --------- | --------------- | ---------------------- |
-| Module    | `kebab-case.ts` | `agent-builder.ts`     |
-| Types     | `types.ts`      | `types.ts`             |
-| Constants | `constants.ts`  | `constants.ts`         |
-| Schema    | `schema.ts`     | `schema.ts`            |
-| Utilities | `utils.ts`      | `utils.ts`             |
-| Config    | `config.ts`     | `config.ts`            |
-| Tests     | `*.test.ts`     | `agent-builder.test.ts`|
+| Type      | Pattern         | Example                 |
+| --------- | --------------- | ----------------------- |
+| Module    | `kebab-case.ts` | `agent-builder.ts`      |
+| Types     | `types.ts`      | `types.ts`              |
+| Constants | `constants.ts`  | `constants.ts`          |
+| Schema    | `schema.ts`     | `schema.ts`             |
+| Utilities | `utils.ts`      | `utils.ts`              |
+| Config    | `config.ts`     | `config.ts`             |
+| Tests     | `*.test.ts`     | `agent-builder.test.ts` |
 
 #### Correct
 
@@ -44,16 +44,16 @@ Use **camelCase** for variables and function names.
 #### Correct
 
 ```ts
-const agentId = '123'
-const isCompleted = true
+const agentId = "123";
+const isCompleted = true;
 function parseToolResult() {}
 ```
 
 #### Incorrect
 
 ```ts
-const agent_id = '123'
-const IsCompleted = true
+const agent_id = "123";
+const IsCompleted = true;
 function ParseToolResult() {}
 ```
 
@@ -64,19 +64,19 @@ Use **SCREAMING_SNAKE_CASE** for constants. Group related constants in objects w
 #### Correct
 
 ```ts
-export const MAX_RETRIES = 3
+export const MAX_RETRIES = 3;
 
 export const WORKFLOW_EVENTS = {
-  START: 'start',
-  COMPLETE: 'complete',
-} as const
+  START: "start",
+  COMPLETE: "complete",
+} as const;
 ```
 
 #### Incorrect
 
 ```ts
-export const maxRetries = 3
-export const workflowEvents = { start: 'start' }
+export const maxRetries = 3;
+export const workflowEvents = { start: "start" };
 ```
 
 ### Object Property Naming
@@ -89,20 +89,20 @@ Prefer **nested objects** when properties form a logical group. Use flat naming 
 // Nested -- grouped by relationship
 interface AgentConfig {
   model: {
-    provider: string
-    name: string
-  }
+    provider: string;
+    name: string;
+  };
   tools: {
-    maxConcurrency: number
-    timeout: number
-  }
+    maxConcurrency: number;
+    timeout: number;
+  };
 }
 
 // Flat -- simple DTO, destructuring is primary use
 interface CreateAgentParams {
-  name: string
-  description: string
-  systemPrompt: string
+  name: string;
+  description: string;
+  systemPrompt: string;
 }
 ```
 
@@ -111,18 +111,18 @@ interface CreateAgentParams {
 ```ts
 // Concatenated names instead of nesting
 interface AgentConfig {
-  modelProvider: string
-  modelName: string
-  toolsMaxConcurrency: number
-  toolsTimeout: number
+  modelProvider: string;
+  modelName: string;
+  toolsMaxConcurrency: number;
+  toolsTimeout: number;
 }
 
 // Unnecessary nesting for unrelated properties
 interface CreateAgentParams {
   data: {
-    name: string
-    description: string
-  }
+    name: string;
+    description: string;
+  };
 }
 ```
 

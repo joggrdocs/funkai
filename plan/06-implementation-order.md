@@ -36,6 +36,7 @@ Extend the internal `Context` interface to carry a `messages` array.
 Steps push synthetic tool-call messages as they execute.
 
 **Files:**
+
 - `src/lib/context.ts` — add `messages: Message[]` to `Context`
 
 ### 1.2 Update step builder to produce messages
@@ -45,6 +46,7 @@ tool-result messages for each step execution. Push them to
 `ctx.messages`.
 
 **Files:**
+
 - `src/core/workflows/steps/factory.ts` — add message production to `executeStep()`
 - New helper: `src/core/flow-agent/messages.ts` — functions to create synthetic
   `ToolCallPart`, `ToolResultPart`, assistant/tool messages from step data
@@ -56,6 +58,7 @@ Returns `GenerateResult<TOutput>` from `.generate()` and
 `StreamResult<TOutput>` from `.stream()`.
 
 **Files:**
+
 - `src/core/flow-agent/flow-agent.ts` — main factory
 - `src/core/flow-agent/types.ts` — `FlowAgent`, `FlowAgentConfig`, etc.
 
@@ -65,6 +68,7 @@ Modify the step builder's stream emission to produce AI SDK-compatible
 tool-call/tool-result text events instead of custom `StepEvent` objects.
 
 **Files:**
+
 - `src/core/flow-agent/flow-agent.ts` — stream implementation
 - `src/core/flow-agent/messages.ts` — stream event formatters
 
@@ -73,6 +77,7 @@ tool-call/tool-result text events instead of custom `StepEvent` objects.
 Allow sub-agent text to pipe through the parent flow's stream.
 
 **Files:**
+
 - `src/core/workflows/steps/agent.ts` — add `stream` option to `AgentStepConfig`
 - `src/core/workflows/steps/factory.ts` — handle streaming agent calls
 
@@ -82,6 +87,7 @@ Rename and update the workflow engine to produce `FlowAgent` instances
 with the new API.
 
 **Files:**
+
 - `src/core/flow-agent/engine.ts` — `createFlowEngine()`
 
 ### 1.7 Tests
@@ -97,6 +103,7 @@ Mark `workflow()` as deprecated. It internally delegates to `flowAgent()`
 and wraps the result to maintain backward compatibility.
 
 **Files:**
+
 - `src/core/workflows/workflow.ts` — add `@deprecated` JSDoc, delegate
 
 ---
@@ -108,6 +115,7 @@ and wraps the result to maintain backward compatibility.
 New module for global configuration.
 
 **Files:**
+
 - `src/core/config.ts` — `configure()`, `getModelResolver()`
 
 ### 2.2 Update `resolveModel()` to use configured resolver
@@ -116,6 +124,7 @@ Remove hardcoded `openrouter()` call. Use configured resolver or throw
 helpful error.
 
 **Files:**
+
 - `src/core/agent/utils.ts` — update `resolveModel()`
 
 ### 2.3 Tests
@@ -133,6 +142,7 @@ helpful error.
 Extract model catalog into standalone package.
 
 **Steps:**
+
 - Create `packages/models/` with package.json, tsconfig
 - Move `src/core/models/` → `packages/models/src/`
 - Move `models.config.json` and generation script
@@ -144,6 +154,7 @@ Extract model catalog into standalone package.
 Extract OpenRouter provider into standalone package.
 
 **Steps:**
+
 - Create `packages/openrouter/` with package.json, tsconfig
 - Move `src/core/provider/provider.ts` → `packages/openrouter/src/`
 - Add `@funkai/models` as dependency (for `ModelId` type)
@@ -154,6 +165,7 @@ Extract OpenRouter provider into standalone package.
 Extract testing utilities.
 
 **Steps:**
+
 - Create `packages/testing/` with package.json, tsconfig
 - Move `src/testing/` → `packages/testing/src/`
 - Add `@funkai/agents` as peer dependency
@@ -163,6 +175,7 @@ Extract testing utilities.
 Batteries-included package.
 
 **Steps:**
+
 - Create `packages/funkai/` with package.json
 - Re-export all sub-packages
 - Auto-configure OpenRouter as default model resolver
@@ -181,6 +194,7 @@ Batteries-included package.
 ### 4.1 Remove deprecated workflow API
 
 In the next major version:
+
 - Remove `workflow()` factory
 - Remove all `Workflow*` types
 - Remove backward-compat wrappers

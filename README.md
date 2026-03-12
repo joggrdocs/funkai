@@ -5,9 +5,9 @@
 
 ## Packages
 
-| Package | Description |
-| --- | --- |
-| [`@funkai/agents`](packages/agents) | Lightweight agent, tool, and workflow orchestration |
+| Package                               | Description                                                          |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| [`@funkai/agents`](packages/agents)   | Lightweight agent, tool, and workflow orchestration                  |
 | [`@funkai/prompts`](packages/prompts) | Prompt SDK with LiquidJS templating, Zod validation, and CLI codegen |
 
 ## Quick Start
@@ -15,17 +15,17 @@
 ### Create an agent
 
 ```ts
-import { agent } from '@funkai/agents'
-import { prompts } from '~prompts'
+import { agent } from "@funkai/agents";
+import { prompts } from "~prompts";
 
 const writer = agent({
-  name: 'writer',
-  model: 'openai/gpt-4.1',
-  system: prompts('writer'),
+  name: "writer",
+  model: "openai/gpt-4.1",
+  system: prompts("writer"),
   tools: { search },
-})
+});
 
-const result = await writer.generate('Write about closures')
+const result = await writer.generate("Write about closures");
 ```
 
 ### Define a prompt

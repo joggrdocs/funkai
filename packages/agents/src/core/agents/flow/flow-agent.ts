@@ -1,10 +1,7 @@
-import type { AsyncIterableStream } from 'ai'
+import type { AsyncIterableStream } from "ai";
 
-import type { Message, StreamPart } from '@/core/agents/base/types.js'
-import {
-  createAssistantMessage,
-  createUserMessage,
-} from '@/core/agents/flow/messages.js'
+import type { Message, StreamPart } from "@/core/agents/base/types.js";
+import { createAssistantMessage, createUserMessage } from "@/core/agents/flow/messages.js";
 import type {
   FlowAgent,
   FlowAgentConfig,
@@ -12,31 +9,31 @@ import type {
   FlowAgentHandler,
   FlowAgentOverrides,
   InternalFlowAgentOptions,
-} from '@/core/agents/flow/types.js'
-import { createDefaultLogger } from '@/core/logger.js'
-import type { Logger } from '@/core/logger.js'
-import { sumTokenUsage } from '@/core/provider/usage.js'
-import type { StepBuilder } from '@/core/agents/flow/steps/builder.js'
-import { createStepBuilder } from '@/core/agents/flow/steps/factory.js'
-import type { Context } from '@/lib/context.js'
-import { fireHooks } from '@/lib/hooks.js'
-import { RUNNABLE_META, type RunnableMeta } from '@/lib/runnable.js'
-import type { TraceEntry } from '@/lib/trace.js'
-import { collectUsages, snapshotTrace } from '@/lib/trace.js'
-import { toError } from '@/utils/error.js'
-import type { Result } from '@/utils/result.js'
+} from "@/core/agents/flow/types.js";
+import { createDefaultLogger } from "@/core/logger.js";
+import type { Logger } from "@/core/logger.js";
+import { sumTokenUsage } from "@/core/provider/usage.js";
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
+import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
+import type { Context } from "@/lib/context.js";
+import { fireHooks } from "@/lib/hooks.js";
+import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import type { TraceEntry } from "@/lib/trace.js";
+import { collectUsages, snapshotTrace } from "@/lib/trace.js";
+import { toError } from "@/utils/error.js";
+import type { Result } from "@/utils/result.js";
 
 /**
  * Wrap a nullable hook into a callback for `fireHooks`.
  */
 function wrapHook<T>(
   hookFn: ((event: T) => void | Promise<void>) | undefined,
-  event: T
+  event: T,
 ): (() => void | Promise<void>) | undefined {
   if (hookFn !== undefined) {
-    return () => hookFn(event)
+    return () => hookFn(event);
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -45,10 +42,10 @@ function wrapHook<T>(
 function resolveFlowAgentLogger(
   base: Logger,
   flowAgentId: string,
-  overrides?: FlowAgentOverrides
+  overrides?: FlowAgentOverrides,
 ): Logger {
-  const override = overrides && overrides.logger
-  return (override ?? base).child({ flowAgentId })
+  const override = overrides && overrides.logger;
+  return (override ?? base).child({ flowAgentId });
 }
 
 /**
@@ -57,12 +54,12 @@ function resolveFlowAgentLogger(
 function augmentStepBuilder(
   base: StepBuilder,
   ctx: Context,
-  internal: InternalFlowAgentOptions | undefined
+  internal: InternalFlowAgentOptions | undefined,
 ): StepBuilder {
   if (internal && internal.augment$) {
-    return internal.augment$(base, ctx)
+    return internal.augment$(base, ctx);
   }
-  return base
+  return base;
 }
 
 /**
@@ -125,32 +122,32 @@ function augmentStepBuilder(
 export function flowAgent<TInput, TOutput>(
   config: FlowAgentConfig<TInput, TOutput>,
   handler: FlowAgentHandler<TInput, TOutput>,
-  _internal?: InternalFlowAgentOptions
+  _internal?: InternalFlowAgentOptions,
 ): FlowAgent<TInput, TOutput> {
-  const baseLogger = config.logger ?? createDefaultLogger()
+  const baseLogger = config.logger ?? createDefaultLogger();
 
   async function generate(
     input: TInput,
-    overrides?: FlowAgentOverrides
+    overrides?: FlowAgentOverrides,
   ): Promise<Result<FlowAgentGenerateResult<TOutput>>> {
-    const inputParsed = config.input.safeParse(input)
+    const inputParsed = config.input.safeParse(input);
     if (!inputParsed.success) {
       return {
         ok: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: "VALIDATION_ERROR",
           message: `Input validation failed: ${inputParsed.error.message}`,
         },
-      }
+      };
     }
 
-    const startedAt = Date.now()
-    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides)
+    const startedAt = Date.now();
+    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
 
-    const signal = (overrides && overrides.signal) || new AbortController().signal
-    const trace: TraceEntry[] = []
-    const messages: Message[] = []
-    const ctx: Context = { signal, log, trace, messages }
+    const signal = (overrides && overrides.signal) || new AbortController().signal;
+    const trace: TraceEntry[] = [];
+    const messages: Message[] = [];
+    const ctx: Context = { signal, log, trace, messages };
 
     const base$ = createStepBuilder({
       ctx,
@@ -158,113 +155,113 @@ export function flowAgent<TInput, TOutput>(
         onStepStart: config.onStepStart,
         onStepFinish: config.onStepFinish,
       },
-    })
+    });
 
-    const $ = augmentStepBuilder(base$, ctx, _internal)
+    const $ = augmentStepBuilder(base$, ctx, _internal);
 
     // Push user message
-    messages.push(createUserMessage(input))
+    messages.push(createUserMessage(input));
 
     await fireHooks(
       log,
       wrapHook(config.onStart, { input }),
-      wrapHook(overrides && overrides.onStart, { input })
-    )
+      wrapHook(overrides && overrides.onStart, { input }),
+    );
 
-    log.debug('flowAgent.generate start', { name: config.name })
+    log.debug("flowAgent.generate start", { name: config.name });
 
     try {
-      const output = await handler({ input, $, log })
+      const output = await handler({ input, $, log });
 
-      const outputParsed = config.output.safeParse(output)
+      const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {
         return {
           ok: false,
           error: {
-            code: 'VALIDATION_ERROR',
+            code: "VALIDATION_ERROR",
             message: `Output validation failed: ${outputParsed.error.message}`,
           },
-        }
+        };
       }
 
-      const duration = Date.now() - startedAt
+      const duration = Date.now() - startedAt;
 
       // Push final assistant message
-      messages.push(createAssistantMessage(output))
+      messages.push(createAssistantMessage(output));
 
-      const usage = sumTokenUsage(collectUsages(trace))
-      const frozenTrace = snapshotTrace(trace)
+      const usage = sumTokenUsage(collectUsages(trace));
+      const frozenTrace = snapshotTrace(trace);
 
       const result: FlowAgentGenerateResult<TOutput> = {
         output,
         messages: [...messages],
         usage,
-        finishReason: 'stop',
+        finishReason: "stop",
         trace: frozenTrace,
         duration,
-      }
+      };
 
       await fireHooks(
         log,
         wrapHook(config.onFinish, { input, result, duration }),
         wrapHook(overrides && overrides.onFinish, {
           input,
-          result: result as import('@/core/agents/base/types.js').GenerateResult,
+          result: result as import("@/core/agents/base/types.js").GenerateResult,
           duration,
-        })
-      )
+        }),
+      );
 
-      log.debug('flowAgent.generate finish', { name: config.name, duration })
+      log.debug("flowAgent.generate finish", { name: config.name, duration });
 
-      return { ok: true, ...result }
+      return { ok: true, ...result };
     } catch (thrown) {
-      const error = toError(thrown)
-      const duration = Date.now() - startedAt
+      const error = toError(thrown);
+      const duration = Date.now() - startedAt;
 
-      log.error('flowAgent.generate error', { name: config.name, error: error.message, duration })
+      log.error("flowAgent.generate error", { name: config.name, error: error.message, duration });
 
       await fireHooks(
         log,
         wrapHook(config.onError, { input, error }),
-        wrapHook(overrides && overrides.onError, { input, error })
-      )
+        wrapHook(overrides && overrides.onError, { input, error }),
+      );
 
       return {
         ok: false,
         error: {
-          code: 'FLOW_AGENT_ERROR',
+          code: "FLOW_AGENT_ERROR",
           message: error.message,
           cause: error,
         },
-      }
+      };
     }
   }
 
   async function stream(
     input: TInput,
-    overrides?: FlowAgentOverrides
-  ): Promise<Result<import('@/core/agents/base/types.js').StreamResult<TOutput>>> {
-    const inputParsed = config.input.safeParse(input)
+    overrides?: FlowAgentOverrides,
+  ): Promise<Result<import("@/core/agents/base/types.js").StreamResult<TOutput>>> {
+    const inputParsed = config.input.safeParse(input);
     if (!inputParsed.success) {
       return {
         ok: false,
         error: {
-          code: 'VALIDATION_ERROR',
+          code: "VALIDATION_ERROR",
           message: `Input validation failed: ${inputParsed.error.message}`,
         },
-      }
+      };
     }
 
-    const startedAt = Date.now()
-    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides)
+    const startedAt = Date.now();
+    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
 
-    const signal = (overrides && overrides.signal) || new AbortController().signal
-    const trace: TraceEntry[] = []
-    const messages: Message[] = []
-    const ctx: Context = { signal, log, trace, messages }
+    const signal = (overrides && overrides.signal) || new AbortController().signal;
+    const trace: TraceEntry[] = [];
+    const messages: Message[] = [];
+    const ctx: Context = { signal, log, trace, messages };
 
-    const { readable, writable } = new TransformStream<StreamPart, StreamPart>()
-    const writer = writable.getWriter()
+    const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
+    const writer = writable.getWriter();
 
     const base$ = createStepBuilder({
       ctx,
@@ -273,118 +270,118 @@ export function flowAgent<TInput, TOutput>(
         onStepFinish: config.onStepFinish,
       },
       writer,
-    })
+    });
 
-    const $ = augmentStepBuilder(base$, ctx, _internal)
+    const $ = augmentStepBuilder(base$, ctx, _internal);
 
     // Push user message
-    messages.push(createUserMessage(input))
+    messages.push(createUserMessage(input));
 
     await fireHooks(
       log,
       wrapHook(config.onStart, { input }),
-      wrapHook(overrides && overrides.onStart, { input })
-    )
+      wrapHook(overrides && overrides.onStart, { input }),
+    );
 
-    log.debug('flowAgent.stream start', { name: config.name })
+    log.debug("flowAgent.stream start", { name: config.name });
 
     // Run handler in background, piping results through stream
     const done = (async () => {
       try {
-        const output = await handler({ input, $, log })
+        const output = await handler({ input, $, log });
 
-        const outputParsed = config.output.safeParse(output)
+        const outputParsed = config.output.safeParse(output);
         if (!outputParsed.success) {
-          throw new Error(`Output validation failed: ${outputParsed.error.message}`)
+          throw new Error(`Output validation failed: ${outputParsed.error.message}`);
         }
 
-        const duration = Date.now() - startedAt
+        const duration = Date.now() - startedAt;
 
         // Push final assistant message
-        messages.push(createAssistantMessage(output))
+        messages.push(createAssistantMessage(output));
 
-        const usage = sumTokenUsage(collectUsages(trace))
+        const usage = sumTokenUsage(collectUsages(trace));
 
         const result: FlowAgentGenerateResult<TOutput> = {
           output,
           messages: [...messages],
           usage,
-          finishReason: 'stop',
+          finishReason: "stop",
           trace: snapshotTrace(trace),
           duration,
-        }
+        };
 
         await fireHooks(
           log,
           wrapHook(config.onFinish, { input, result, duration }),
           wrapHook(overrides && overrides.onFinish, {
             input,
-            result: result as import('@/core/agents/base/types.js').GenerateResult,
+            result: result as import("@/core/agents/base/types.js").GenerateResult,
             duration,
-          })
-        )
+          }),
+        );
 
-        log.debug('flowAgent.stream finish', { name: config.name, duration })
+        log.debug("flowAgent.stream finish", { name: config.name, duration });
 
         // Emit finish event and close the stream
         await writer.write({
-          type: 'finish',
-          finishReason: 'stop',
+          type: "finish",
+          finishReason: "stop",
           rawFinishReason: undefined,
           totalUsage: {
             inputTokens: usage.inputTokens,
             outputTokens: usage.outputTokens,
             totalTokens: usage.totalTokens,
           },
-        } as StreamPart)
-        await writer.close()
+        } as StreamPart);
+        await writer.close();
 
-        return result
+        return result;
       } catch (thrown) {
-        const error = toError(thrown)
-        const duration = Date.now() - startedAt
+        const error = toError(thrown);
+        const duration = Date.now() - startedAt;
 
-        log.error('flowAgent.stream error', { name: config.name, error: error.message, duration })
+        log.error("flowAgent.stream error", { name: config.name, error: error.message, duration });
 
         // Emit error event and close the stream
-        await writer.write({ type: 'error', error } as StreamPart).catch(() => {})
-        await writer.close().catch(() => {})
+        await writer.write({ type: "error", error } as StreamPart).catch(() => {});
+        await writer.close().catch(() => {});
 
         await fireHooks(
           log,
           wrapHook(config.onError, { input, error }),
-          wrapHook(overrides && overrides.onError, { input, error })
-        )
+          wrapHook(overrides && overrides.onError, { input, error }),
+        );
 
-        throw error
+        throw error;
       }
-    })()
+    })();
 
     // Catch stream errors to prevent unhandled rejections
-    done.catch(() => {})
+    done.catch(() => {});
 
-    const streamResult: import('@/core/agents/base/types.js').StreamResult<TOutput> = {
+    const streamResult: import("@/core/agents/base/types.js").StreamResult<TOutput> = {
       output: done.then((r) => r.output),
       messages: done.then((r) => r.messages),
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
-    }
+    };
 
-    return { ok: true, ...streamResult }
+    return { ok: true, ...streamResult };
   }
 
   const agent: FlowAgent<TInput, TOutput> = {
     generate,
     stream,
     fn: () => generate,
-  }
+  };
 
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-  ;(agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
+  (agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
     name: config.name,
     inputSchema: config.input,
-  } satisfies RunnableMeta
+  } satisfies RunnableMeta;
 
-  return agent
+  return agent;
 }

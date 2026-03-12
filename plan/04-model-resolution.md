@@ -6,10 +6,10 @@ Today, `resolveModel()` in `src/core/agent/utils.ts` hardcodes OpenRouter:
 
 ```typescript
 export function resolveModel(ref: Model): LanguageModel {
-  if (typeof ref === 'string') {
-    return openrouter(ref)  // hardcoded
+  if (typeof ref === "string") {
+    return openrouter(ref); // hardcoded
   }
-  return ref as LanguageModel
+  return ref as LanguageModel;
 }
 ```
 
@@ -22,18 +22,18 @@ Users who want `@ai-sdk/anthropic` or `@ai-sdk/openai` still pull in OpenRouter.
 
 ```typescript
 // config.ts — new file in @funkai/agents
-import type { LanguageModel } from 'ai'
+import type { LanguageModel } from "ai";
 
-type ModelResolver = (id: string) => LanguageModel
+type ModelResolver = (id: string) => LanguageModel;
 
-let _resolver: ModelResolver | undefined
+let _resolver: ModelResolver | undefined;
 
 export function configure(options: { resolveModel: ModelResolver }): void {
-  _resolver = options.resolveModel
+  _resolver = options.resolveModel;
 }
 
 export function getModelResolver(): ModelResolver | undefined {
-  return _resolver
+  return _resolver;
 }
 ```
 
@@ -41,29 +41,29 @@ export function getModelResolver(): ModelResolver | undefined {
 
 ```typescript
 // agent/utils.ts
-import { getModelResolver } from '@/core/config.js'
+import { getModelResolver } from "@/core/config.js";
 
 export function resolveModel(ref: Model): LanguageModel {
-  if (typeof ref === 'string') {
-    const resolver = getModelResolver()
+  if (typeof ref === "string") {
+    const resolver = getModelResolver();
     if (!resolver) {
       throw new Error(
         `String model ID "${ref}" requires a model resolver. ` +
-        'Either pass a LanguageModel instance directly, or call ' +
-        'configure({ resolveModel: ... }) first.\n\n' +
-        'Example with OpenRouter:\n' +
-        '  import { configure } from "@funkai/agents"\n' +
-        '  import { openrouter } from "@funkai/openrouter"\n' +
-        '  configure({ resolveModel: openrouter })\n\n' +
-        'Example with OpenAI:\n' +
-        '  import { configure } from "@funkai/agents"\n' +
-        '  import { openai } from "@ai-sdk/openai"\n' +
-        '  configure({ resolveModel: (id) => openai(id) })'
-      )
+          "Either pass a LanguageModel instance directly, or call " +
+          "configure({ resolveModel: ... }) first.\n\n" +
+          "Example with OpenRouter:\n" +
+          '  import { configure } from "@funkai/agents"\n' +
+          '  import { openrouter } from "@funkai/openrouter"\n' +
+          "  configure({ resolveModel: openrouter })\n\n" +
+          "Example with OpenAI:\n" +
+          '  import { configure } from "@funkai/agents"\n' +
+          '  import { openai } from "@ai-sdk/openai"\n' +
+          "  configure({ resolveModel: (id) => openai(id) })",
+      );
     }
-    return resolver(ref)
+    return resolver(ref);
   }
-  return ref as LanguageModel
+  return ref as LanguageModel;
 }
 ```
 
@@ -71,40 +71,40 @@ export function resolveModel(ref: Model): LanguageModel {
 
 ```typescript
 // Option 1: Configure once at app startup
-import { configure, agent } from '@funkai/agents'
-import { openrouter } from '@funkai/openrouter'
+import { configure, agent } from "@funkai/agents";
+import { openrouter } from "@funkai/openrouter";
 
-configure({ resolveModel: openrouter })
+configure({ resolveModel: openrouter });
 
 const a = agent({
-  name: 'helper',
-  model: 'openai/gpt-4.1',  // string ID works via configured resolver
-  system: 'You are helpful.',
-})
+  name: "helper",
+  model: "openai/gpt-4.1", // string ID works via configured resolver
+  system: "You are helpful.",
+});
 
 // Option 2: Pass LanguageModel directly (no config needed)
-import { agent } from '@funkai/agents'
-import { anthropic } from '@ai-sdk/anthropic'
+import { agent } from "@funkai/agents";
+import { anthropic } from "@ai-sdk/anthropic";
 
 const a = agent({
-  name: 'helper',
-  model: anthropic('claude-sonnet-4-5-20250929'),  // always works
-  system: 'You are helpful.',
-})
+  name: "helper",
+  model: anthropic("claude-sonnet-4-5-20250929"), // always works
+  system: "You are helpful.",
+});
 
 // Option 3: Custom resolver
-import { configure, agent } from '@funkai/agents'
-import { openai } from '@ai-sdk/openai'
+import { configure, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 configure({
   resolveModel: (id) => openai(id),
-})
+});
 
 const a = agent({
-  name: 'helper',
-  model: 'gpt-4.1',  // resolved by custom function
-  system: 'You are helpful.',
-})
+  name: "helper",
+  model: "gpt-4.1", // resolved by custom function
+  system: "You are helpful.",
+});
 ```
 
 ### Per-agent override (optional, future consideration)
@@ -114,11 +114,11 @@ the global resolver. This is not required for the initial implementation.
 
 ```typescript
 const a = agent({
-  name: 'helper',
-  model: 'gpt-4.1',
-  resolveModel: (id) => openai(id),  // override global
-  system: 'You are helpful.',
-})
+  name: "helper",
+  model: "gpt-4.1",
+  resolveModel: (id) => openai(id), // override global
+  system: "You are helpful.",
+});
 ```
 
 ## `@funkai/openrouter` convenience
@@ -127,9 +127,9 @@ The `openrouter` function already has the right signature — it takes a
 string model ID and returns a `LanguageModel`. So setup is one line:
 
 ```typescript
-import { configure } from '@funkai/agents'
-import { openrouter } from '@funkai/openrouter'
-configure({ resolveModel: openrouter })
+import { configure } from "@funkai/agents";
+import { openrouter } from "@funkai/openrouter";
+configure({ resolveModel: openrouter });
 ```
 
 ## Impact
@@ -146,15 +146,15 @@ resolver on import:
 
 ```typescript
 // funkai/src/index.ts
-import { configure } from '@funkai/agents'
-import { openrouter } from '@funkai/openrouter'
+import { configure } from "@funkai/agents";
+import { openrouter } from "@funkai/openrouter";
 
-configure({ resolveModel: openrouter })
+configure({ resolveModel: openrouter });
 
-export * from '@funkai/agents'
-export * from '@funkai/models'
-export * from '@funkai/openrouter'
-export * from '@funkai/prompts'
+export * from "@funkai/agents";
+export * from "@funkai/models";
+export * from "@funkai/openrouter";
+export * from "@funkai/prompts";
 ```
 
 This means `funkai` users get the current behavior with zero config changes.

@@ -1,6 +1,6 @@
-import type { Message } from '@/core/agents/base/types.js'
-import type { Logger } from '@/core/logger.js'
-import type { TraceEntry } from '@/lib/trace.js'
+import type { Message } from "@/core/agents/base/types.js";
+import type { Logger } from "@/core/logger.js";
+import type { TraceEntry } from "@/lib/trace.js";
 
 /**
  * Public execution context for custom step factories.
@@ -10,8 +10,8 @@ import type { TraceEntry } from '@/lib/trace.js'
  * The mutable trace is internal-only.
  */
 export interface ExecutionContext {
-  readonly signal: AbortSignal
-  readonly log: Logger
+  readonly signal: AbortSignal;
+  readonly log: Logger;
 }
 
 /**
@@ -33,7 +33,7 @@ export interface Context extends ExecutionContext {
    * Read this after workflow/flow agent completion to inspect the full
    * execution graph.
    */
-  readonly trace: TraceEntry[]
+  readonly trace: TraceEntry[];
 
   /**
    * Synthetic messages produced by `$` steps.
@@ -45,5 +45,5 @@ export interface Context extends ExecutionContext {
    *
    * Used by `flowAgent` to populate `GenerateResult.messages`.
    */
-  readonly messages: Message[]
+  readonly messages: Message[];
 }

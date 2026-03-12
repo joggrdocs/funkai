@@ -13,18 +13,18 @@ All bindings must be `const`. No reassignment, no mutation. Mutable state inside
 #### Correct
 
 ```ts
-const timeout = 5000
-const steps = workflow.steps.filter(isEnabled)
+const timeout = 5000;
+const steps = workflow.steps.filter(isEnabled);
 ```
 
 #### Incorrect
 
 ```ts
-let timeout = 5000
-timeout = 10000
+let timeout = 5000;
+timeout = 10000;
 
-let steps: Step[] = []
-steps.push(newStep)
+let steps: Step[] = [];
+steps.push(newStep);
 ```
 
 ### No Loops
@@ -34,17 +34,17 @@ Use `map`, `filter`, `reduce`, `flatMap`, and `es-toolkit` utilities instead of 
 #### Correct
 
 ```ts
-const names = steps.map((s) => s.name)
-const enabled = steps.filter((s) => s.enabled)
-const total = items.reduce((sum, item) => sum + item.count, 0)
+const names = steps.map((s) => s.name);
+const enabled = steps.filter((s) => s.enabled);
+const total = items.reduce((sum, item) => sum + item.count, 0);
 ```
 
 #### Incorrect
 
 ```ts
-const names: string[] = []
+const names: string[] = [];
 for (const step of steps) {
-  names.push(step.name)
+  names.push(step.name);
 }
 ```
 
@@ -63,7 +63,7 @@ Use plain objects, closures, and factory functions. Classes are permitted only w
 
 ```ts
 export function capitalize(s: string) {
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 ```
 
@@ -72,7 +72,7 @@ export function capitalize(s: string) {
 ```ts
 class StringUtils {
   static capitalize(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1)
+    return s.charAt(0).toUpperCase() + s.slice(1);
   }
 }
 ```
@@ -89,7 +89,7 @@ Do not mutate objects or arrays after creation. Return new values from every tra
 
 ```ts
 function addStep(steps: readonly Step[], step: Step): readonly Step[] {
-  return [...steps, step]
+  return [...steps, step];
 }
 ```
 
@@ -97,7 +97,7 @@ function addStep(steps: readonly Step[], step: Step): readonly Step[] {
 
 ```ts
 function addStep(steps: Step[], step: Step) {
-  steps.push(step)
+  steps.push(step);
 }
 ```
 
@@ -110,9 +110,9 @@ Use `unknown`, generics, or proper types. Narrow with type guards when needed.
 ```ts
 function parse(data: unknown): Result<AgentConfig, ParseError> {
   if (!isPlainObject(data)) {
-    return [{ type: 'parse_error', message: 'Expected object' }, null]
+    return [{ type: "parse_error", message: "Expected object" }, null];
   }
-  return [null, validateConfig(data)]
+  return [null, validateConfig(data)];
 }
 ```
 
@@ -120,7 +120,7 @@ function parse(data: unknown): Result<AgentConfig, ParseError> {
 
 ```ts
 function parse(data: any): AgentConfig {
-  return data
+  return data;
 }
 ```
 
@@ -131,15 +131,15 @@ When passing a named function to a higher-order function, pass it directly inste
 #### Correct
 
 ```ts
-const valid = steps.filter(isEnabled)
-const names = items.map(getName)
+const valid = steps.filter(isEnabled);
+const names = items.map(getName);
 ```
 
 #### Incorrect
 
 ```ts
-const valid = steps.filter((s) => isEnabled(s))
-const names = items.map((item) => getName(item))
+const valid = steps.filter((s) => isEnabled(s));
+const names = items.map((item) => getName(item));
 ```
 
 ### ESM Only
@@ -149,17 +149,17 @@ Use ES module syntax with `verbatimModuleSyntax`. Use `import type` for type-onl
 #### Correct
 
 ```ts
-import type { AgentConfig } from './types'
-import { readFile } from 'node:fs/promises'
-import { createAgent } from './lib/agent'
+import type { AgentConfig } from "./types";
+import { readFile } from "node:fs/promises";
+import { createAgent } from "./lib/agent";
 ```
 
 #### Incorrect
 
 ```ts
-const fs = require('fs')
-import { AgentConfig } from './types' // should use import type
-import { readFile } from 'fs' // should use node: protocol
+const fs = require("fs");
+import { AgentConfig } from "./types"; // should use import type
+import { readFile } from "fs"; // should use node: protocol
 ```
 
 ### No IIFEs
@@ -177,7 +177,7 @@ async function execute(options: Options): Promise<void> {
 }
 
 function start(options: Options): void {
-  void execute(options)
+  void execute(options);
 }
 ```
 
@@ -187,7 +187,7 @@ function start(options: Options): void {
 function start(options: Options): void {
   void (async () => {
     // ...
-  })()
+  })();
 }
 ```
 
@@ -202,27 +202,27 @@ Organize imports into three groups separated by blank lines, sorted alphabetical
 #### Correct
 
 ```ts
-import { readdir } from 'node:fs/promises'
-import { basename, resolve } from 'node:path'
+import { readdir } from "node:fs/promises";
+import { basename, resolve } from "node:path";
 
-import { isPlainObject } from 'es-toolkit'
-import { match } from 'ts-pattern'
+import { isPlainObject } from "es-toolkit";
+import { match } from "ts-pattern";
 
-import type { AgentConfig } from '../types.js'
-import { createProvider } from '../lib/provider.js'
-import { resolveModel } from './models.js'
-import type { ResolvedTool } from './tools.js'
+import type { AgentConfig } from "../types.js";
+import { createProvider } from "../lib/provider.js";
+import { resolveModel } from "./models.js";
+import type { ResolvedTool } from "./tools.js";
 ```
 
 #### Incorrect
 
 ```ts
-import { match } from 'ts-pattern'
-import { readdir } from 'node:fs/promises' // node: should be first
-import { resolveModel } from './models.js'
-import type { AgentConfig } from '../types.js' // ../ should come before ./
-import { isPlainObject } from 'es-toolkit'
-import { createProvider, type Provider } from '../lib/provider.js' // no inline type specifiers
+import { match } from "ts-pattern";
+import { readdir } from "node:fs/promises"; // node: should be first
+import { resolveModel } from "./models.js";
+import type { AgentConfig } from "../types.js"; // ../ should come before ./
+import { isPlainObject } from "es-toolkit";
+import { createProvider, type Provider } from "../lib/provider.js"; // no inline type specifiers
 ```
 
 ### File Structure
@@ -240,9 +240,9 @@ Exported functions appear first so readers see the public API without scrolling.
 #### Correct
 
 ```ts
-import type { AgentConfig } from '../types.js'
+import type { AgentConfig } from "../types.js";
 
-const DEFAULT_MODEL = 'openai/gpt-4o'
+const DEFAULT_MODEL = "openai/gpt-4o";
 
 /**
  * Load and validate an agent configuration.
@@ -251,8 +251,8 @@ const DEFAULT_MODEL = 'openai/gpt-4o'
  * @returns The validated agent configuration.
  */
 export function loadConfig(path: string): AgentConfig {
-  const raw = readRawConfig(path)
-  return validateConfig(raw)
+  const raw = readRawConfig(path);
+  return validateConfig(raw);
 }
 
 // ---------------------------------------------------------------------------
@@ -294,8 +294,8 @@ function validateConfig(raw: string): AgentConfig {
 }
 
 export function loadConfig(path: string): AgentConfig {
-  const raw = readRawConfig(path)
-  return validateConfig(raw)
+  const raw = readRawConfig(path);
+  return validateConfig(raw);
 }
 ```
 

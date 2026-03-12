@@ -14,45 +14,45 @@ Use factory functions to encapsulate state instead of classes. Factories avoid `
 
 ```ts
 interface Agent {
-  run: (input: string) => Promise<AgentResult>
-  stop: () => void
-  isRunning: () => boolean
+  run: (input: string) => Promise<AgentResult>;
+  stop: () => void;
+  isRunning: () => boolean;
 }
 
 function createAgent(config: AgentConfig): Agent {
-  let running = false
+  let running = false;
 
   return {
     run: async (input) => {
-      running = true
-      const result = await execute(input, config)
-      running = false
-      return result
+      running = true;
+      const result = await execute(input, config);
+      running = false;
+      return result;
     },
     stop: () => {
-      running = false
+      running = false;
     },
     isRunning: () => running,
-  }
+  };
 }
 
 // Usage
-const agent = createAgent({ model: 'gpt-4o' })
-await agent.run('Summarize this document')
+const agent = createAgent({ model: "gpt-4o" });
+await agent.run("Summarize this document");
 ```
 
 ```ts
 // Factory can return different implementations
-function createProvider(type: 'openrouter' | 'local') {
-  if (type === 'openrouter') {
+function createProvider(type: "openrouter" | "local") {
+  if (type === "openrouter") {
     return {
       generate: (prompt: string) => callOpenRouter(prompt),
-    }
+    };
   }
 
   return {
     generate: (prompt: string) => callLocal(prompt),
-  }
+  };
 }
 ```
 
@@ -60,21 +60,21 @@ function createProvider(type: 'openrouter' | 'local') {
 
 ```ts
 class Agent {
-  private running = false
+  private running = false;
 
   constructor(private config: AgentConfig) {}
 
   async run(input: string) {
-    this.running = true
-    const result = await execute(input, this.config)
-    this.running = false
-    return result
+    this.running = true;
+    const result = await execute(input, this.config);
+    this.running = false;
+    return result;
   }
 }
 
-const agent = new Agent({ model: 'gpt-4o' })
-const fn = agent.run
-fn('input') // `this` is lost!
+const agent = new Agent({ model: "gpt-4o" });
+const fn = agent.run;
+fn("input"); // `this` is lost!
 ```
 
 ### Transform Data Through Pipelines
@@ -88,14 +88,14 @@ Transform data through pure pipelines. Avoid shared mutable state by returning n
 const result = steps
   .filter((step) => step.enabled)
   .map((step) => step.name)
-  .join(', ')
+  .join(", ");
 
 // Explicit transformations
 function processPrompt(raw: RawPrompt): ProcessedPrompt {
-  const parsed = parseTemplate(raw.content)
-  const validated = validateSchema(parsed)
-  const resolved = resolvePartials(validated)
-  return resolved
+  const parsed = parseTemplate(raw.content);
+  const validated = validateSchema(parsed);
+  const resolved = resolvePartials(validated);
+  return resolved;
 }
 ```
 
@@ -103,15 +103,15 @@ function processPrompt(raw: RawPrompt): ProcessedPrompt {
 
 ```ts
 // Mutating shared state
-const steps: Step[] = []
+const steps: Step[] = [];
 
 function addStep(step: Step) {
-  steps.push(step) // Mutation!
+  steps.push(step); // Mutation!
 }
 
 // Return new state instead
 function addStep(steps: readonly Step[], step: Step): Step[] {
-  return [...steps, step]
+  return [...steps, step];
 }
 ```
 
@@ -123,24 +123,24 @@ Combine small, focused interfaces and factory functions instead of building inhe
 
 ```ts
 interface Runnable {
-  run: () => Promise<void>
+  run: () => Promise<void>;
 }
 
 interface Configurable {
-  configure: (config: Record<string, unknown>) => void
+  configure: (config: Record<string, unknown>) => void;
 }
 
 function createWorkflow(name: string): Runnable & Configurable {
-  let workflowConfig: Record<string, unknown> = {}
+  let workflowConfig: Record<string, unknown> = {};
 
   return {
     run: async () => {
-      await execute(name, workflowConfig)
+      await execute(name, workflowConfig);
     },
     configure: (config) => {
-      workflowConfig = { ...config }
+      workflowConfig = { ...config };
     },
-  }
+  };
 }
 ```
 

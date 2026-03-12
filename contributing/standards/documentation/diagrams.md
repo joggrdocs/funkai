@@ -8,12 +8,12 @@ All diagrams use **Mermaid** with the **Catppuccin Mocha** color theme. This cre
 
 ### Choose the Right Diagram Type
 
-| Concept                                      | Diagram Type      | Example                                 |
-| -------------------------------------------- | ----------------- | --------------------------------------- |
-| System architecture, data pipelines, routing | Flowchart         | Agent orchestration, workflow routing    |
-| Request/response flows, multi-step protocols | Sequence diagram  | Agent execution, tool call lifecycle    |
-| Database models, entity relationships        | ER diagram        | Data model, schema relationships        |
-| Directory layouts                            | File tree (ASCII) | Repository structure                    |
+| Concept                                      | Diagram Type      | Example                               |
+| -------------------------------------------- | ----------------- | ------------------------------------- |
+| System architecture, data pipelines, routing | Flowchart         | Agent orchestration, workflow routing |
+| Request/response flows, multi-step protocols | Sequence diagram  | Agent execution, tool call lifecycle  |
+| Database models, entity relationships        | ER diagram        | Data model, schema relationships      |
+| Directory layouts                            | File tree (ASCII) | Repository structure                  |
 
 Rule of thumb:
 
@@ -218,12 +218,12 @@ Guidelines:
 
 **Control Flow Fragments:**
 
-| Fragment       | Usage           | Example                                   |
-| -------------- | --------------- | ----------------------------------------- |
-| `alt` / `else` | Branching paths | `alt Tool found` / `else Tool not found`  |
-| `loop`         | Iteration       | `loop For each step`                      |
-| `opt`          | Optional step   | `opt If result cached`                    |
-| `Note over`    | Annotations     | `Note over Agent,Tool: Async processing`  |
+| Fragment       | Usage           | Example                                  |
+| -------------- | --------------- | ---------------------------------------- |
+| `alt` / `else` | Branching paths | `alt Tool found` / `else Tool not found` |
+| `loop`         | Iteration       | `loop For each step`                     |
+| `opt`          | Optional step   | `opt If result cached`                   |
+| `Note over`    | Annotations     | `Note over Agent,Tool: Async processing` |
 
 Guidelines:
 

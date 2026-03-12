@@ -23,11 +23,11 @@ packages/
 
 ## Plan Documents
 
-| File | Topic |
-|------|-------|
-| `01-packages.md` | Package split details + dependency graph |
-| `02-flow-agent.md` | `flowAgent()` API design + steps-as-tool-calls |
-| `03-streaming.md` | Streaming architecture for flowAgent |
-| `04-model-resolution.md` | Pluggable model resolution (remove OpenRouter hardcoding) |
-| `05-migration.md` | Migration path from current `workflow()` API |
-| `06-implementation-order.md` | Ordered implementation phases |
+| File                         | Topic                                                     |
+| ---------------------------- | --------------------------------------------------------- |
+| `01-packages.md`             | Package split details + dependency graph                  |
+| `02-flow-agent.md`           | `flowAgent()` API design + steps-as-tool-calls            |
+| `03-streaming.md`            | Streaming architecture for flowAgent                      |
+| `04-model-resolution.md`     | Pluggable model resolution (remove OpenRouter hardcoding) |
+| `05-migration.md`            | Migration path from current `workflow()` API              |
+| `06-implementation-order.md` | Ordered implementation phases                             |
