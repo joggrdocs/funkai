@@ -1,4 +1,5 @@
 import { generateText, streamText, stepCountIs } from 'ai'
+import type { AsyncIterableStream } from 'ai'
 
 import { resolveOutput } from '@/core/agents/base/output.js'
 import type {
@@ -7,6 +8,7 @@ import type {
   AgentOverrides,
   GenerateResult,
   Message,
+  StreamPart,
   StreamResult,
   SubAgents,
 } from '@/core/agents/base/types.js'
@@ -396,13 +398,13 @@ export function agent<
         },
       })
 
-      const { readable, writable } = new TransformStream<string, string>()
+      const { readable, writable } = new TransformStream<StreamPart, StreamPart>()
 
       const done = (async () => {
         const writer = writable.getWriter()
         try {
-          for await (const chunk of aiResult.textStream) {
-            await writer.write(chunk)
+          for await (const part of aiResult.fullStream) {
+            await writer.write(part as StreamPart)
           }
         } finally {
           await writer.close()
@@ -465,7 +467,7 @@ export function agent<
         messages: done.then((r) => r.messages),
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
-        stream: readable,
+        fullStream: readable as AsyncIterableStream<StreamPart>,
       }
 
       return { ok: true, ...streamResult }

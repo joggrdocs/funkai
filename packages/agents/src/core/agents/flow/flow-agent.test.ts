@@ -493,13 +493,13 @@ describe('generate() overrides', () => {
 // ---------------------------------------------------------------------------
 
 describe('stream() success', () => {
-  it('returns ok: true with stream, output, messages, usage, and finishReason', async () => {
+  it('returns ok: true with fullStream, output, messages, usage, and finishReason', async () => {
     const fa = createSimpleFlowAgent()
     const result = await fa.stream({ x: 5 })
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.stream).toBeInstanceOf(ReadableStream)
+    expect(result.fullStream).toBeInstanceOf(ReadableStream)
     expect(result.output).toBeInstanceOf(Promise)
     expect(result.messages).toBeInstanceOf(Promise)
     expect(result.usage).toBeInstanceOf(Promise)
@@ -514,7 +514,7 @@ describe('stream() success', () => {
     if (!result.ok) return
 
     // Drain the stream
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -524,25 +524,26 @@ describe('stream() success', () => {
     expect(output).toEqual({ y: 8 })
   })
 
-  it('stream emits final output text', async () => {
+  it('fullStream emits a finish event on success', async () => {
     const fa = createSimpleFlowAgent()
     const result = await fa.stream({ x: 2 })
 
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    const chunks: string[] = []
-    const reader = result.stream.getReader()
+    const parts: unknown[] = []
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done, value } = await reader.read()
       if (done) break
-      chunks.push(value)
+      parts.push(value)
     }
 
-    // Last chunk should be the JSON-stringified output
-    expect(chunks.length).toBeGreaterThanOrEqual(1)
-    const lastChunk = chunks[chunks.length - 1]
-    expect(lastChunk).toBe('{"y":4}')
+    // Last part should be a finish event
+    expect(parts.length).toBeGreaterThanOrEqual(1)
+    const lastPart = parts[parts.length - 1] as Record<string, unknown>
+    expect(lastPart.type).toBe('finish')
+    expect(lastPart.finishReason).toBe('stop')
   })
 
   it('messages promise resolves after stream completes', async () => {
@@ -553,7 +554,7 @@ describe('stream() success', () => {
     if (!result.ok) return
 
     // Drain the stream
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -572,7 +573,7 @@ describe('stream() success', () => {
     if (!result.ok) return
 
     // Drain
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -597,7 +598,7 @@ describe('stream() success', () => {
     if (!result.ok) return
 
     // Drain
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -613,7 +614,7 @@ describe('stream() success', () => {
 // ---------------------------------------------------------------------------
 
 describe('stream() with steps', () => {
-  it('emits tool-call and tool-result events through the stream', async () => {
+  it('emits typed tool-call and tool-result events through fullStream', async () => {
     const fa = flowAgent<{ x: number }, { y: number }>(
       {
         name: 'stream-step-flow',
@@ -636,34 +637,29 @@ describe('stream() with steps', () => {
     expect(result.ok).toBe(true)
     if (!result.ok) return
 
-    const chunks: string[] = []
-    const reader = result.stream.getReader()
+    const parts: Record<string, unknown>[] = []
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done, value } = await reader.read()
       if (done) break
-      chunks.push(value)
+      parts.push(value as Record<string, unknown>)
     }
 
-    // Should have tool-call event, tool-result event, and final output
-    expect(chunks.length).toBeGreaterThanOrEqual(3)
+    // Should have tool-call event, tool-result event, and finish event
+    expect(parts.length).toBeGreaterThanOrEqual(3)
 
-    const toolCallChunk = chunks.find((c) => {
-      try {
-        return JSON.parse(c).type === 'tool-call'
-      } catch {
-        return false
-      }
-    })
-    expect(toolCallChunk).toBeDefined()
+    const toolCallPart = parts.find((p) => p.type === 'tool-call')
+    expect(toolCallPart).toBeDefined()
+    expect(toolCallPart?.toolName).toBe('compute')
 
-    const toolResultChunk = chunks.find((c) => {
-      try {
-        return JSON.parse(c).type === 'tool-result'
-      } catch {
-        return false
-      }
-    })
-    expect(toolResultChunk).toBeDefined()
+    const toolResultPart = parts.find((p) => p.type === 'tool-result')
+    expect(toolResultPart).toBeDefined()
+    expect(toolResultPart?.toolName).toBe('compute')
+    expect(toolResultPart?.result).toBe(6)
+
+    const finishPart = parts.find((p) => p.type === 'finish')
+    expect(finishPart).toBeDefined()
+    expect(finishPart?.finishReason).toBe('stop')
   })
 })
 
@@ -706,7 +702,7 @@ describe('stream() error handling', () => {
     result.finishReason.catch(() => {})
 
     // Drain the stream (should close after error)
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -741,7 +737,7 @@ describe('stream() hooks', () => {
     if (!result.ok) return
 
     // Drain
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break
@@ -769,7 +765,7 @@ describe('stream() hooks', () => {
     result.finishReason.catch(() => {})
 
     // Drain
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       const { done } = await reader.read()
       if (done) break

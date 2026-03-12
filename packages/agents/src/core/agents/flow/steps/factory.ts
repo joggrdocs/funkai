@@ -1,9 +1,8 @@
+import type { StreamPart } from '@/core/agents/base/types.js'
 import {
   buildToolCallId,
   createToolCallMessage,
   createToolResultMessage,
-  formatToolCallEvent,
-  formatToolResultEvent,
 } from '@/core/agents/flow/messages.js'
 import type { StepInfo } from '@/core/agents/flow/types.js'
 import type { AgentStepConfig } from '@/core/agents/flow/steps/agent.js'
@@ -48,13 +47,13 @@ export interface StepBuilderOptions {
   }
 
   /**
-   * Stream writer for emitting serialized tool-call events.
+   * Stream writer for emitting typed `StreamPart` events.
    *
-   * When provided, step start/finish events are written as JSON
-   * strings to this writer. Used by `flowAgent.stream()` to pipe
+   * When provided, step start/finish events are written as typed
+   * AI SDK stream events. Used by `flowAgent.stream()` to pipe
    * step events through the readable stream.
    */
-  writer?: WritableStreamDefaultWriter<string>
+  writer?: WritableStreamDefaultWriter<StreamPart>
 }
 
 /**
@@ -140,7 +139,12 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
     // Write tool-call event to stream if writer is available
     if (writer != null) {
-      writer.write(formatToolCallEvent(toolCallId, id, input)).catch(() => {})
+      writer.write({
+        type: 'tool-call',
+        toolCallId,
+        toolName: id,
+        args: input ?? {},
+      } as StreamPart).catch(() => {})
     }
 
     const onStartHook = buildHookCallback(onStart, (fn) => fn({ id }))
@@ -165,7 +169,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
       // Write tool-result event to stream
       if (writer != null) {
-        writer.write(formatToolResultEvent(toolCallId, id, value)).catch(() => {})
+        writer.write({
+          type: 'tool-result',
+          toolCallId,
+          toolName: id,
+          args: input ?? {},
+          result: value ?? null,
+        } as StreamPart).catch(() => {})
       }
 
       const onFinishHook = buildHookCallback(onFinish, (fn) =>
@@ -199,9 +209,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
       // Write error tool-result event to stream
       if (writer != null) {
-        writer.write(
-          formatToolResultEvent(toolCallId, id, { error: error.message }, true)
-        ).catch(() => {})
+        writer.write({
+          type: 'tool-result',
+          toolCallId,
+          toolName: id,
+          args: input ?? {},
+          result: { error: error.message },
+        } as StreamPart).catch(() => {})
       }
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }))
@@ -234,7 +248,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         }
 
         // When stream: true and a writer is available, use agent.stream()
-        // to pipe text through the parent flow's stream
+        // to pipe events through the parent flow's stream
         if (config.stream && writer != null) {
           const streamResult = await config.agent.stream(config.input, agentConfig)
           if (!streamResult.ok) {
@@ -244,16 +258,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
             ok: true
           }
 
-          // Pipe text chunks through the parent writer
-          const reader = full.stream.getReader()
-          try {
-            while (true) {
-              const { done: readerDone, value: chunk } = await reader.read()
-              if (readerDone) break
-              await writer.write(chunk)
+          // Forward text-delta events from sub-agent to parent stream
+          for await (const part of full.fullStream) {
+            if (part.type === 'text-delta') {
+              await writer.write(part)
             }
-          } finally {
-            reader.releaseLock()
           }
 
           // Await the final results

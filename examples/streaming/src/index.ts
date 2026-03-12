@@ -1,14 +1,13 @@
 import { agent, flowAgent, model, tool } from '@funkai/agents'
-import type { Message } from '@funkai/agents'
+import type { Message, StreamPart } from '@funkai/agents'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
-// 1. Agent streaming with tool call observation via onStepFinish
+// 1. Agent streaming with fullStream
 //
-// The agent stream (`ReadableStream<string>`) only delivers text deltas.
-// Tool calls are processed internally by the tool loop. To observe them
-// as they happen, use the `onStepFinish` hook. After the stream completes,
-// the full tool call/result history is available via `messages`.
+// The agent's `fullStream` emits typed `StreamPart` events — text deltas,
+// tool calls, tool results, step boundaries, and finish events. Use
+// `part.type` to discriminate between event types.
 // ---------------------------------------------------------------------------
 
 const lookupTool = tool({
@@ -61,52 +60,42 @@ const streamResult = await geographyAgent.stream(
 )
 
 if (streamResult.ok) {
-  // Stream text deltas to stdout as they arrive
-  const reader = streamResult.stream.getReader()
+  // Consume typed stream events as they arrive
   process.stdout.write('Response: ')
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    process.stdout.write(value)
-  }
-  console.log('\n')
-
-  // After stream completes, inspect the full message history
-  const messages: Message[] = await streamResult.messages
-  console.log('--- Full Message History ---')
-  for (const msg of messages) {
-    if (msg.role === 'assistant' && Array.isArray(msg.content)) {
-      for (const part of msg.content) {
-        if (typeof part === 'object' && 'type' in part && part.type === 'tool-call') {
-          console.log(`  [assistant] tool-call: ${part.toolName}(${JSON.stringify(part.args)})`)
-        }
-      }
-    }
-    if (msg.role === 'tool' && Array.isArray(msg.content)) {
-      for (const part of msg.content) {
-        if (typeof part === 'object' && 'type' in part && part.type === 'tool-result') {
-          console.log(`  [tool]      result: ${JSON.stringify(part.result)}`)
-        }
-      }
+  for await (const part of streamResult.fullStream) {
+    switch (part.type) {
+      case 'text-delta':
+        process.stdout.write(part.textDelta)
+        break
+      case 'tool-call':
+        console.log(`\n  [tool-call] ${part.toolName}(${JSON.stringify(part.args)})`)
+        break
+      case 'tool-result':
+        console.log(`  [tool-result] ${part.toolName} → ${JSON.stringify(part.result)}`)
+        break
+      case 'finish':
+        console.log(`\n  [finish] reason: ${part.finishReason}`)
+        break
+      case 'error':
+        console.error(`  [error]`, part.error)
+        break
     }
   }
+  console.log()
 
   const usage = await streamResult.usage
-  console.log(`\nTotal usage: ${usage.inputTokens} in / ${usage.outputTokens} out / ${usage.totalTokens} total`)
+  console.log(`Total usage: ${usage.inputTokens} in / ${usage.outputTokens} out / ${usage.totalTokens} total`)
 } else {
   console.error('Error:', streamResult.error)
 }
 
 // ---------------------------------------------------------------------------
-// 2. Flow agent streaming — step events as tool-call/tool-result pairs
+// 2. Flow agent streaming — typed StreamPart events
 //
-// When a flow agent streams, `$.agent({ stream: true })` pipes the
-// sub-agent's text through the flow's stream. The flow also emits
-// synthetic tool-call and tool-result messages for each `$` step,
-// available in `result.messages` after completion.
-//
-// The flow's `onStepStart` / `onStepFinish` hooks give real-time
-// visibility into step execution.
+// When a flow agent streams, each `$` step emits typed `tool-call` and
+// `tool-result` events. `$.agent({ stream: true })` pipes the sub-agent's
+// `text-delta` events through the flow's stream. A `finish` event is
+// emitted when the flow completes.
 // ---------------------------------------------------------------------------
 
 console.log('\n=== Flow Agent Streaming ===\n')
@@ -168,17 +157,27 @@ const flowResult = await researchFlow.stream({
 })
 
 if (flowResult.ok) {
-  // Read text deltas from sub-agents piped through the flow stream
-  const reader = flowResult.stream.getReader()
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    process.stdout.write(value)
+  // Consume typed stream events from the flow
+  for await (const part of flowResult.fullStream) {
+    switch (part.type) {
+      case 'text-delta':
+        process.stdout.write(part.textDelta)
+        break
+      case 'tool-call':
+        console.log(`  [step] ${part.toolName} started`)
+        break
+      case 'tool-result':
+        console.log(`  [step] ${part.toolName} completed`)
+        break
+      case 'finish':
+        console.log(`\nDone: ${part.finishReason}`)
+        break
+      case 'error':
+        console.error('Error:', part.error)
+        break
+    }
   }
-  console.log()
 
-  // After completion, the flow's messages contain synthetic tool-call/result
-  // pairs for every $ step — useful for observability and replay
   const output = await flowResult.output
   console.log('\nFindings:', JSON.stringify(output, null, 2))
 

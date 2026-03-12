@@ -265,9 +265,9 @@ export interface FlowAgent<TInput, TOutput> {
   /**
    * Run the flow agent with streaming step progress.
    *
-   * Returns immediately with a stream that emits serialized tool-call
-   * events for each step. `output`, `messages`, and `usage` are
-   * promises that resolve after the flow completes.
+   * Returns immediately with `fullStream` — an `AsyncIterableStream`
+   * of typed `StreamPart` events for each step. `output`, `messages`,
+   * and `usage` are promises that resolve after the flow completes.
    *
    * @param input - Raw input (validated against the `input` Zod schema).
    * @param config - Optional per-call overrides.

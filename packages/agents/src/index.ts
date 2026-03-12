@@ -10,6 +10,7 @@ export { agentUsage, flowAgentUsage, sumTokenUsage } from '@/core/provider/usage
 export { createStepBuilder } from '@/core/agents/flow/steps/factory.js'
 
 export type { Runnable, Model, ModelRef } from '@/core/types.js'
+export type { TextStreamPart, AsyncIterableStream, ToolSet } from 'ai'
 export { toError, safeStringify, safeStringifyJSON } from '@/utils/error.js'
 export { ok, err, isOk, isErr } from '@/utils/result.js'
 export type { Result, ResultError } from '@/utils/result.js'
@@ -26,6 +27,7 @@ export type {
   AgentOverrides,
   GenerateResult,
   StreamResult,
+  StreamPart,
 } from '@/core/agents/base/types.js'
 
 export type {

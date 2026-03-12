@@ -1,4 +1,4 @@
-import type { ModelMessage } from 'ai'
+import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from 'ai'
 import type { ZodType } from 'zod'
 
 import type { OutputParam } from '@/core/agents/base/output.js'
@@ -7,6 +7,15 @@ import type { TokenUsage } from '@/core/provider/types.js'
 import type { Tool } from '@/core/tool.js'
 import type { Model } from '@/core/types.js'
 import type { Result } from '@/utils/result.js'
+
+/**
+ * Concrete stream event type re-exported from the Vercel AI SDK.
+ *
+ * This is `TextStreamPart<ToolSet>` — the discriminated union of all
+ * possible stream events (`text-delta`, `tool-call`, `tool-result`,
+ * `finish`, `error`, etc.). Use `part.type` to discriminate.
+ */
+export type StreamPart = TextStreamPart<ToolSet>
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SubAgents = Record<string, Agent<any, any, any, any>>
@@ -73,7 +82,11 @@ export interface GenerateResult<TOutput = string> {
 /**
  * Result of a streaming agent generation.
  *
- * The `stream` provides text deltas as they arrive from the model.
+ * The `fullStream` emits typed `StreamPart` events as they arrive —
+ * text deltas, tool calls, tool results, step boundaries, finish,
+ * and errors. Implements both `AsyncIterable` and `ReadableStream`
+ * so consumers can use `for await...of` or `.getReader()`.
+ *
  * `output` and `messages` are promises that resolve once the stream
  * has been fully consumed.
  *
@@ -113,12 +126,16 @@ export interface StreamResult<TOutput = string> {
   finishReason: Promise<string>
 
   /**
-   * The readable stream of text deltas.
+   * The full stream of typed events.
    *
-   * Consume this to receive output incrementally as the model
-   * generates it. The stream closes when generation is complete.
+   * Emits `StreamPart` events (a discriminated union from the AI SDK)
+   * including `text-delta`, `tool-call`, `tool-result`, `finish`,
+   * `error`, and more. Use `part.type` to discriminate.
+   *
+   * Supports both `for await (const part of fullStream)` and
+   * `fullStream.getReader()`.
    */
-  stream: ReadableStream<string>
+  fullStream: AsyncIterableStream<StreamPart>
 }
 
 /**
@@ -449,15 +466,15 @@ export interface Agent<
   /**
    * Run the agent with streaming output.
    *
-   * Returns immediately with a live `ReadableStream<string>` that
-   * emits text chunks as they arrive. `output` and `messages` are
+   * Returns immediately with `fullStream` — an `AsyncIterableStream`
+   * of typed `StreamPart` events. `output` and `messages` are
    * promises that resolve after the stream completes.
    *
    * @param input - Typed input (when `input` schema is configured)
    *   or `string | Message[]` in simple mode.
    * @param config - Optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`. On success,
-   *   consume `result.stream` for incremental output; await
+   *   consume `result.fullStream` for typed events; await
    *   `result.output` / `result.messages` after the stream ends.
    */
   stream(

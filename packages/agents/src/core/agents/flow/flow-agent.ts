@@ -1,4 +1,6 @@
-import type { Message } from '@/core/agents/base/types.js'
+import type { AsyncIterableStream } from 'ai'
+
+import type { Message, StreamPart } from '@/core/agents/base/types.js'
 import {
   createAssistantMessage,
   createUserMessage,
@@ -261,7 +263,7 @@ export function flowAgent<TInput, TOutput>(
     const messages: Message[] = []
     const ctx: Context = { signal, log, trace, messages }
 
-    const { readable, writable } = new TransformStream<string, string>()
+    const { readable, writable } = new TransformStream<StreamPart, StreamPart>()
     const writer = writable.getWriter()
 
     const base$ = createStepBuilder({
@@ -296,11 +298,6 @@ export function flowAgent<TInput, TOutput>(
           throw new Error(`Output validation failed: ${outputParsed.error.message}`)
         }
 
-        // Emit final output as text
-        const outputText = typeof output === 'string' ? output : JSON.stringify(output)
-        await writer.write(outputText)
-        await writer.close()
-
         const duration = Date.now() - startedAt
 
         // Push final assistant message
@@ -329,6 +326,19 @@ export function flowAgent<TInput, TOutput>(
 
         log.debug('flowAgent.stream finish', { name: config.name, duration })
 
+        // Emit finish event and close the stream
+        await writer.write({
+          type: 'finish',
+          finishReason: 'stop',
+          usage: {
+            promptTokens: usage.inputTokens,
+            completionTokens: usage.outputTokens,
+            totalTokens: usage.totalTokens,
+          },
+          providerMetadata: undefined,
+        } as StreamPart)
+        await writer.close()
+
         return result
       } catch (thrown) {
         const error = toError(thrown)
@@ -336,6 +346,8 @@ export function flowAgent<TInput, TOutput>(
 
         log.error('flowAgent.stream error', { name: config.name, error: error.message, duration })
 
+        // Emit error event and close the stream
+        await writer.write({ type: 'error', error } as StreamPart).catch(() => {})
         await writer.close().catch(() => {})
 
         await fireHooks(
@@ -356,7 +368,7 @@ export function flowAgent<TInput, TOutput>(
       messages: done.then((r) => r.messages),
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
-      stream: readable,
+      fullStream: readable as AsyncIterableStream<StreamPart>,
     }
 
     return { ok: true, ...streamResult }

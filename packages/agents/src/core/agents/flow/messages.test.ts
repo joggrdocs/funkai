@@ -6,8 +6,6 @@ import {
   createToolCallMessage,
   createToolResultMessage,
   createUserMessage,
-  formatToolCallEvent,
-  formatToolResultEvent,
 } from '@/core/agents/flow/messages.js'
 
 // ---------------------------------------------------------------------------
@@ -129,66 +127,3 @@ describe('createAssistantMessage', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// formatToolCallEvent
-// ---------------------------------------------------------------------------
-
-describe('formatToolCallEvent', () => {
-  it('returns a JSON string with type tool-call', () => {
-    const event = formatToolCallEvent('call-1', 'my-step', { x: 1 })
-    const parsed = JSON.parse(event)
-
-    expect(parsed).toEqual({
-      type: 'tool-call',
-      toolCallId: 'call-1',
-      toolName: 'my-step',
-      args: { x: 1 },
-    })
-  })
-
-  it('defaults args to {} when undefined', () => {
-    const event = formatToolCallEvent('call-1', 'step', undefined)
-    const parsed = JSON.parse(event)
-
-    expect(parsed.args).toEqual({})
-  })
-})
-
-// ---------------------------------------------------------------------------
-// formatToolResultEvent
-// ---------------------------------------------------------------------------
-
-describe('formatToolResultEvent', () => {
-  it('returns a JSON string with type tool-result', () => {
-    const event = formatToolResultEvent('call-1', 'my-step', { ok: true })
-    const parsed = JSON.parse(event)
-
-    expect(parsed).toEqual({
-      type: 'tool-result',
-      toolCallId: 'call-1',
-      toolName: 'my-step',
-      result: { ok: true },
-    })
-  })
-
-  it('includes isError when true', () => {
-    const event = formatToolResultEvent('call-1', 'step', 'err', true)
-    const parsed = JSON.parse(event)
-
-    expect(parsed.isError).toBe(true)
-  })
-
-  it('omits isError when falsy', () => {
-    const event = formatToolResultEvent('call-1', 'step', 'ok')
-    const parsed = JSON.parse(event)
-
-    expect(parsed.isError).toBeUndefined()
-  })
-
-  it('defaults result to null when undefined', () => {
-    const event = formatToolResultEvent('call-1', 'step', undefined)
-    const parsed = JSON.parse(event)
-
-    expect(parsed.result).toBeNull()
-  })
-})

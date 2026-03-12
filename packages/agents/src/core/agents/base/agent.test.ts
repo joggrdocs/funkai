@@ -87,14 +87,14 @@ function createMockStreamResult(overrides?: {
   const chunks = merged.chunks
   const textValue = merged.text ?? chunks.join('')
 
-  async function* makeTextStream() {
+  async function* makeFullStream() {
     for (const chunk of chunks) {
-      yield chunk
+      yield { type: 'text-delta' as const, textDelta: chunk }
     }
   }
 
   return {
-    textStream: makeTextStream(),
+    fullStream: makeFullStream(),
     text: Promise.resolve(textValue),
     output: Promise.resolve(merged.output),
     response: Promise.resolve(
@@ -731,7 +731,7 @@ describe('generate() overrides', () => {
 // ---------------------------------------------------------------------------
 
 describe('stream() success', () => {
-  it('returns ok: true with stream, output, messages, usage, and finishReason', async () => {
+  it('returns ok: true with fullStream, output, messages, usage, and finishReason', async () => {
     const a = createSimpleAgent()
     const result = await a.stream('hello')
 
@@ -739,14 +739,14 @@ describe('stream() success', () => {
     if (!result.ok) {
       return
     }
-    expect(result.stream).toBeInstanceOf(ReadableStream)
+    expect(result.fullStream).toBeInstanceOf(ReadableStream)
     expect(result.output).toBeInstanceOf(Promise)
     expect(result.messages).toBeInstanceOf(Promise)
     expect(result.usage).toBeInstanceOf(Promise)
     expect(result.finishReason).toBeInstanceOf(Promise)
   })
 
-  it('stream emits text chunks from textStream', async () => {
+  it('fullStream emits typed StreamPart events', async () => {
     mockStreamText.mockReturnValue(createMockStreamResult({ chunks: ['chunk1', 'chunk2'] }))
 
     const a = createSimpleAgent()
@@ -757,18 +757,21 @@ describe('stream() success', () => {
       return
     }
 
-    const chunks: string[] = []
-    const reader = result.stream.getReader()
+    const parts: unknown[] = []
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done, value } = await reader.read()
       if (done) {
         break
       }
-      chunks.push(value)
+      parts.push(value)
     }
 
-    expect(chunks).toEqual(['chunk1', 'chunk2'])
+    expect(parts).toEqual([
+      { type: 'text-delta', textDelta: 'chunk1' },
+      { type: 'text-delta', textDelta: 'chunk2' },
+    ])
   })
 
   it('output promise resolves to text after stream completes', async () => {
@@ -783,7 +786,7 @@ describe('stream() success', () => {
     }
 
     // Drain the stream to complete
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done } = await reader.read()
@@ -811,7 +814,7 @@ describe('stream() success', () => {
     }
 
     // Drain the stream to complete
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done } = await reader.read()
@@ -834,7 +837,7 @@ describe('stream() success', () => {
     }
 
     // Drain the stream to complete
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done } = await reader.read()
@@ -916,7 +919,7 @@ describe('stream() hooks', () => {
     }
 
     // Drain the stream to trigger onFinish
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done } = await reader.read()
@@ -965,7 +968,7 @@ describe('stream() hooks', () => {
     }
 
     // Drain the stream
-    const reader = result.stream.getReader()
+    const reader = result.fullStream.getReader()
     for (;;) {
       // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
       const { done } = await reader.read()
