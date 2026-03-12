@@ -64,7 +64,7 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Default hook: fires when any flow agent finishes.
    */
-  onFinish?: (event: { input: unknown; output: unknown; duration: number }) => void | Promise<void>;
+  onFinish?: (event: { input: unknown; result: unknown; duration: number }) => void | Promise<void>;
 
   /**
    * Default hook: fires when any flow agent errors.
@@ -185,7 +185,11 @@ export function createFlowEngine<
 >(engineConfig: FlowEngineConfig<TCustomSteps>): FlowFactory<TCustomSteps> {
   return function engineCreateFlowAgent<TInput, TOutput>(
     flowConfig: FlowAgentConfig<TInput, TOutput>,
-    handler: FlowAgentHandler<TInput, TOutput>,
+    handler: (params: {
+      input: TInput;
+      $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+      log: Logger;
+    }) => Promise<TOutput>,
   ): FlowAgent<TInput, TOutput> {
     const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
 
