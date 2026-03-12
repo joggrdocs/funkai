@@ -31,13 +31,13 @@
   },
   "devDependencies": {
     "@clack/prompts": "^1.1.0",
-    "@types/node": "^25.4.0",
+    "@types/node": "^25.5.0",
     "@types/yargs": "^17.0.35",
     "picocolors": "^1.1.1",
     "ts-pattern": "^5.9.0",
     "tsdown": "^0.21.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18",
+    "vitest": "^4.1.0",
     "yaml": "^2.8.2",
     "yargs": "^18.0.0"
   },

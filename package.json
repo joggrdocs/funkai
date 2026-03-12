@@ -1,18 +1,26 @@
 {
   "name": "funkai",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "check-types": "turbo check-types",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo build && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.4",
-    "turbo": "^2.5.3"
+    "@changesets/cli": "^2.30.0",
+    "oxfmt": "^0.40.0",
+    "turbo": "^2.8.16"
   }
 }

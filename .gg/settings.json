@@ -1,0 +1,29 @@
+{
+  "schema": "0",
+  "agents": {
+    "researcher": {
+      "mode": "teams",
+      "model": "opus"
+    },
+    "codebase-researcher": {
+      "mode": "teams",
+      "model": "inherit"
+    },
+    "planner": {
+      "mode": "foreground",
+      "model": "opus"
+    },
+    "executor": {
+      "mode": "teams",
+      "model": "opus"
+    },
+    "verifier": {
+      "mode": "teams",
+      "model": "inherit"
+    },
+    "migrator": {
+      "mode": "background",
+      "model": "opus"
+    }
+  }
+}
