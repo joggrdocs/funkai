@@ -315,8 +315,17 @@ Both `Agent` and `FlowAgent` satisfy `Runnable`:
 ```typescript
 interface Runnable<TInput, TOutput> {
   generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>
-  stream(input: TInput, config?: any): Promise<Result<{ output: Promise<TOutput>; stream: ReadableStream<string> }>>
+  stream(input: TInput, config?: any): Promise<Result<StreamResult<TOutput>>>
   fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>
+}
+
+// StreamResult uses AI SDK types directly:
+interface StreamResult<TOutput> {
+  output: Promise<TOutput>
+  messages: Promise<Message[]>
+  usage: Promise<TokenUsage>
+  finishReason: Promise<string>
+  fullStream: AsyncIterableStream<StreamPart>  // typed events, not raw strings
 }
 ```
 

@@ -330,12 +330,12 @@ export function flowAgent<TInput, TOutput>(
         await writer.write({
           type: 'finish',
           finishReason: 'stop',
-          usage: {
-            promptTokens: usage.inputTokens,
-            completionTokens: usage.outputTokens,
+          rawFinishReason: undefined,
+          totalUsage: {
+            inputTokens: usage.inputTokens,
+            outputTokens: usage.outputTokens,
             totalTokens: usage.totalTokens,
           },
-          providerMetadata: undefined,
         } as StreamPart)
         await writer.close()
 

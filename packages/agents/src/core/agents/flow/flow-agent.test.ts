@@ -188,7 +188,7 @@ describe('generate() with steps', () => {
       (m) =>
         m.role === 'assistant' &&
         Array.isArray(m.content) &&
-        m.content.some((p: Record<string, unknown>) => p.type === 'tool-call')
+        (m.content as Array<{ type: string }>).some((p) => p.type === 'tool-call')
     )
     expect(toolCallMsg).toBeDefined()
 
@@ -196,7 +196,7 @@ describe('generate() with steps', () => {
       (m) =>
         m.role === 'tool' &&
         Array.isArray(m.content) &&
-        m.content.some((p: Record<string, unknown>) => p.type === 'tool-result')
+        (m.content as Array<{ type: string }>).some((p) => p.type === 'tool-result')
     )
     expect(toolResultMsg).toBeDefined()
   })
@@ -655,7 +655,7 @@ describe('stream() with steps', () => {
     const toolResultPart = parts.find((p) => p.type === 'tool-result')
     expect(toolResultPart).toBeDefined()
     expect(toolResultPart?.toolName).toBe('compute')
-    expect(toolResultPart?.result).toBe(6)
+    expect(toolResultPart?.output).toBe(6)
 
     const finishPart = parts.find((p) => p.type === 'finish')
     expect(finishPart).toBeDefined()

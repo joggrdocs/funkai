@@ -7,7 +7,8 @@
     "start": "tsx src/index.ts"
   },
   "dependencies": {
-    "@funkai/agents": "workspace:*"
+    "@funkai/agents": "workspace:*",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "tsx": "^4.21.0",

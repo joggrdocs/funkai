@@ -406,8 +406,10 @@ export function agent<
           for await (const part of aiResult.fullStream) {
             await writer.write(part as StreamPart)
           }
-        } finally {
           await writer.close()
+        } catch (error) {
+          await writer.abort(error).catch(() => {})
+          throw error
         }
 
         const finalOutput = pickByOutput(

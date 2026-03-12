@@ -1,5 +1,6 @@
-import type { LanguageModel } from "ai";
+import type { AsyncIterableStream, LanguageModel } from "ai";
 
+import type { StreamPart } from "@/core/agents/base/types.js";
 import type { Result } from "@/utils/result.js";
 
 /**
@@ -59,7 +60,7 @@ export interface Runnable<TInput = unknown, TOutput = unknown> {
   stream(
     input: TInput,
     config?: any,
-  ): Promise<Result<{ output: Promise<TOutput>; stream: ReadableStream<string> }>>;
+  ): Promise<Result<{ output: Promise<TOutput>; fullStream: AsyncIterableStream<StreamPart> }>>;
   fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

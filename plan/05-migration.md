@@ -56,10 +56,10 @@ result.output  // TOutput (resolved)
 result.trace   // TraceEntry[] (resolved)
 
 // After
-result.stream  // ReadableStream<string> (tool-call events as text)
-result.output  // Promise<TOutput>
-result.messages // Promise<Message[]>
-result.usage   // Promise<TokenUsage>
+result.fullStream  // AsyncIterableStream<StreamPart> (typed events)
+result.output      // Promise<TOutput>
+result.messages    // Promise<Message[]>
+result.usage       // Promise<TokenUsage>
 ```
 
 ### 4. String model IDs require `configure()`

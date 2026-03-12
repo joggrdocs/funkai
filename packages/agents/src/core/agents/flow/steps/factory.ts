@@ -143,8 +143,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         type: 'tool-call',
         toolCallId,
         toolName: id,
-        args: input ?? {},
-      } as StreamPart).catch(() => {})
+        input: input ?? {},
+      } as StreamPart).catch((err) => {
+        ctx.log.debug({ err, toolCallId }, 'failed to write tool-call event to stream')
+      })
     }
 
     const onStartHook = buildHookCallback(onStart, (fn) => fn({ id }))
@@ -173,9 +175,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           type: 'tool-result',
           toolCallId,
           toolName: id,
-          args: input ?? {},
-          result: value ?? null,
-        } as StreamPart).catch(() => {})
+          input: input ?? {},
+          output: value ?? null,
+        } as StreamPart).catch((err) => {
+          ctx.log.debug({ err, toolCallId }, 'failed to write tool-result event to stream')
+        })
       }
 
       const onFinishHook = buildHookCallback(onFinish, (fn) =>
@@ -213,9 +217,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           type: 'tool-result',
           toolCallId,
           toolName: id,
-          args: input ?? {},
-          result: { error: error.message },
-        } as StreamPart).catch(() => {})
+          input: input ?? {},
+          output: { error: error.message },
+        } as StreamPart).catch((err) => {
+          ctx.log.debug({ err, toolCallId }, 'failed to write error tool-result event to stream')
+        })
       }
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }))
@@ -254,6 +260,8 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message)
           }
+          // Safe after the `!streamResult.ok` guard above — the Result union
+          // doesn't spread StreamResult props at the type level, so we cast.
           const full = streamResult as unknown as import('@/core/agents/base/types.js').StreamResult & {
             ok: true
           }

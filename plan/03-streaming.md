@@ -17,18 +17,23 @@ rendering for free.
 ### StreamResult — identical to Agent
 
 ```typescript
+import type { AsyncIterableStream, TextStreamPart, ToolSet } from 'ai'
+
+type StreamPart = TextStreamPart<ToolSet>
+
 interface StreamResult<TOutput> {
   output: Promise<TOutput>
   messages: Promise<Message[]>
   usage: Promise<TokenUsage>
   finishReason: Promise<string>
-  stream: ReadableStream<string>
+  fullStream: AsyncIterableStream<StreamPart>
 }
 ```
 
-The `stream` field is `ReadableStream<string>` for API compatibility with
-the `Agent` interface. The stream content is structured as serialized
-events that match the AI SDK's data stream protocol.
+The `fullStream` field uses the AI SDK's `AsyncIterableStream<StreamPart>`
+type directly — a dual interface supporting both `for await...of` and
+`.getReader()`. Events are typed discriminated unions (`text-delta`,
+`tool-call`, `tool-result`, `finish`, `error`), not serialized strings.
 
 ### What the stream emits
 
@@ -41,25 +46,32 @@ For each step, the stream emits tool-call events:
 [flow finishes] → text event (serialized final output)
 ```
 
-Concretely, using Vercel AI SDK's data stream format:
+Concretely, emitting typed `StreamPart` objects:
 
 ```typescript
 // Step start — emitted when $.step/$.agent/$.map/etc begins
-writer.write(formatToolCall({
+writer.write({
+  type: 'tool-call',
   toolCallId: 'scan-repo-0',
   toolName: 'scan-repo',
   args: { repo: 'github.com/...' },
-}))
+} as StreamPart)
 
 // Step finish — emitted when step completes
-writer.write(formatToolResult({
+writer.write({
+  type: 'tool-result',
   toolCallId: 'scan-repo-0',
   toolName: 'scan-repo',
+  args: { repo: 'github.com/...' },
   result: { files: ['README.md', 'src/index.ts'] },
-}))
+} as StreamPart)
 
-// Final output — emitted as text at the end
-writer.write(formatTextDelta(JSON.stringify(output)))
+// Flow finish — emitted at the end
+writer.write({
+  type: 'finish',
+  finishReason: 'stop',
+  usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+} as StreamPart)
 ```
 
 ### Sub-agent text streaming
@@ -105,7 +117,7 @@ async function stream(
   if (!parsed.success) return err(...)
 
   const startedAt = Date.now()
-  const { readable, writable } = new TransformStream<string, string>()
+  const { readable, writable } = new TransformStream<StreamPart, StreamPart>()
   const writer = writable.getWriter()
   const messages: Message[] = []
   const trace: TraceEntry[] = []
@@ -116,7 +128,7 @@ async function stream(
     log: resolveLogger(...),
     trace,
     messages,
-    writer,   // step builder uses this to emit tool-call events
+    writer,   // step builder uses this to emit typed StreamPart events
   }
 
   const $ = createStepBuilder({ ctx, ... })
@@ -130,20 +142,22 @@ async function stream(
       const outputParsed = config.output.safeParse(output)
       if (!outputParsed.success) throw new Error(...)
 
-      // Emit final output as text
-      await writer.write(JSON.stringify(output))
-      await writer.close()
-
       const duration = Date.now() - startedAt
       const usage = sumTokenUsage(collectUsages(trace))
+
+      // Emit typed finish event
+      await writer.write({ type: 'finish', finishReason: 'stop', usage } as StreamPart)
+      await writer.close()
 
       // Add final assistant message
       messages.push({ role: 'assistant', content: JSON.stringify(output) })
 
       return { output, messages: [...messages], usage, finishReason: 'stop' as const }
     } catch (thrown) {
+      const error = toError(thrown)
+      await writer.write({ type: 'error', error } as StreamPart)
       await writer.close()
-      throw thrown
+      throw error
     }
   })()
 
@@ -153,7 +167,7 @@ async function stream(
     messages: done.then(r => r.messages),
     usage: done.then(r => r.usage),
     finishReason: done.then(r => r.finishReason),
-    stream: readable,
+    fullStream: readable as AsyncIterableStream<StreamPart>,
   }
 }
 ```
@@ -194,8 +208,8 @@ const result = await w.stream({ text: '...' })
 
 ```typescript
 const result = await analyze.stream({ text: '...' })
-// result.stream is ReadableStream<string>
-// Emits AI SDK-compatible tool-call and text events
+// result.fullStream is AsyncIterableStream<StreamPart> (typed events)
+// Emits AI SDK tool-call, tool-result, text-delta, finish, error events
 // Standard UI components render steps as tool calls automatically
 // result.messages resolves to full message array with synthetic tool calls
 ```

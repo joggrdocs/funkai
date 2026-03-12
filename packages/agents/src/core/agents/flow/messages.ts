@@ -1,4 +1,5 @@
 import type { Message } from '@/core/agents/base/types.js'
+import { safeStringify } from '@/utils/error.js'
 
 /**
  * Build the `toolCallId` for a step.
@@ -17,7 +18,7 @@ export function buildToolCallId(stepId: string, index: number): string {
 /**
  * Create an assistant message containing a synthetic tool-call part.
  *
- * Emitted when a `$` step starts execution. The `args` field captures
+ * Emitted when a `$` step starts execution. The `input` field captures
  * the step's input snapshot (or `{}` when no input is available).
  *
  * @param toolCallId - Unique tool call identifier.
@@ -37,7 +38,7 @@ export function createToolCallMessage(
         type: 'tool-call',
         toolCallId,
         toolName,
-        args: args ?? {},
+        input: args ?? {},
       },
     ],
   }
@@ -62,19 +63,36 @@ export function createToolResultMessage(
   result: unknown,
   isError?: boolean
 ): Message {
-  const toolResult: Record<string, unknown> = {
-    type: 'tool-result',
-    toolCallId,
-    toolName,
-    result: result ?? null,
-  }
-  if (isError) {
-    toolResult.isError = true
-  }
+  // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
   return {
     role: 'tool',
-    content: [toolResult],
+    content: [
+      {
+        type: 'tool-result',
+        toolCallId,
+        toolName,
+        output: result ?? {},
+        ...(isError ? { isError: true } : {}),
+      },
+    ],
+  } as Message
+}
+
+/**
+ * Safely serialize a value to a string for message content.
+ *
+ * Returns the value as-is when it's already a string. Otherwise
+ * delegates to {@link safeStringify} which handles circular refs,
+ * Maps, Sets, bigints, and other non-JSON-serializable types.
+ *
+ * @param value - The value to serialize.
+ * @returns A string representation of the value.
+ */
+function serializeMessageContent(value: unknown): string {
+  if (typeof value === 'string') {
+    return value
   }
+  return safeStringify(value ?? null)
 }
 
 /**
@@ -87,8 +105,7 @@ export function createToolResultMessage(
  * @returns A `Message` with role `user`.
  */
 export function createUserMessage(input: unknown): Message {
-  const content = typeof input === 'string' ? input : JSON.stringify(input)
-  return { role: 'user', content }
+  return { role: 'user', content: serializeMessageContent(input) }
 }
 
 /**
@@ -101,7 +118,6 @@ export function createUserMessage(input: unknown): Message {
  * @returns A `Message` with role `assistant`.
  */
 export function createAssistantMessage(output: unknown): Message {
-  const content = typeof output === 'string' ? output : JSON.stringify(output)
-  return { role: 'assistant', content }
+  return { role: 'assistant', content: serializeMessageContent(output) }
 }
 

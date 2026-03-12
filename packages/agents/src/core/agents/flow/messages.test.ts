@@ -33,16 +33,16 @@ describe('createToolCallMessage', () => {
         type: 'tool-call',
         toolCallId: 'call-1',
         toolName: 'my-step',
-        args: { x: 42 },
+        input: { x: 42 },
       },
     ])
   })
 
-  it('defaults args to {} when null/undefined', () => {
+  it('defaults input to {} when null/undefined', () => {
     const msg = createToolCallMessage('call-1', 'step', undefined)
 
-    const part = (msg.content as Array<{ args: unknown }>)[0]
-    expect(part?.args).toEqual({})
+    const part = (msg.content as Array<{ input: unknown }>)[0]
+    expect(part?.input).toEqual({})
   })
 })
 
@@ -60,7 +60,7 @@ describe('createToolResultMessage', () => {
         type: 'tool-result',
         toolCallId: 'call-1',
         toolName: 'my-step',
-        result: { result: 'ok' },
+        output: { result: 'ok' },
       },
     ])
   })
@@ -79,11 +79,11 @@ describe('createToolResultMessage', () => {
     expect(part?.isError).toBeUndefined()
   })
 
-  it('defaults result to null when undefined', () => {
+  it('defaults output to empty object when undefined', () => {
     const msg = createToolResultMessage('call-1', 'step', undefined)
 
-    const part = (msg.content as Array<{ result: unknown }>)[0]
-    expect(part?.result).toBeNull()
+    const part = (msg.content as Array<{ output: unknown }>)[0]
+    expect(part?.output).toEqual({})
   })
 })
 
@@ -105,6 +105,21 @@ describe('createUserMessage', () => {
     expect(msg.role).toBe('user')
     expect(msg.content).toBe('{"topic":"TypeScript"}')
   })
+
+  it('does not throw for non-serializable input', () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+
+    expect(() => createUserMessage(circular)).not.toThrow()
+    expect(createUserMessage(circular).role).toBe('user')
+  })
+
+  it('serializes undefined input as "null"', () => {
+    const msg = createUserMessage(undefined)
+
+    expect(msg.role).toBe('user')
+    expect(msg.content).toBe('null')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -124,6 +139,14 @@ describe('createAssistantMessage', () => {
 
     expect(msg.role).toBe('assistant')
     expect(msg.content).toBe('{"docs":["a","b"]}')
+  })
+
+  it('does not throw for non-serializable output', () => {
+    const circular: Record<string, unknown> = {}
+    circular.self = circular
+
+    expect(() => createAssistantMessage(circular)).not.toThrow()
+    expect(createAssistantMessage(circular).role).toBe('assistant')
   })
 })
 
