@@ -68,9 +68,9 @@ Each module exports a default object conforming to `PromptModule`:
 
 Aggregates all per-prompt modules into a single entry point:
 
-| Export    | Type                    | Description                                                              |
-| --------- | ----------------------- | ------------------------------------------------------------------------ |
-| `prompts` | `PromptRegistry<...>`   | Deep-frozen const object with dot-access, nested by group. Use `typeof prompts` for type-level access. |
+| Export    | Type                  | Description                                                                                            |
+| --------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| `prompts` | `PromptRegistry<...>` | Deep-frozen const object with dot-access, nested by group. Use `typeof prompts` for type-level access. |
 
 ## Output Directory
 

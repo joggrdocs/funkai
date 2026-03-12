@@ -1,4 +1,4 @@
-import type { PromptNamespace, PromptRegistry } from './types.js'
+import type { PromptNamespace, PromptRegistry } from "./types.js";
 
 /**
  * Check whether a value looks like a PromptModule leaf.
@@ -6,12 +6,12 @@ import type { PromptNamespace, PromptRegistry } from './types.js'
  */
 function isPromptModule(value: unknown): boolean {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'render' in value &&
-    'schema' in value &&
-    'name' in value
-  )
+    "render" in value &&
+    "schema" in value &&
+    "name" in value
+  );
 }
 
 /**
@@ -23,13 +23,18 @@ function isPromptModule(value: unknown): boolean {
  * @returns The frozen object cast to its deep-readonly type.
  */
 function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
-  Object.freeze(obj)
+  Object.freeze(obj);
   for (const value of Object.values(obj)) {
-    if (typeof value === 'object' && value !== null && !Object.isFrozen(value) && !isPromptModule(value)) {
-      deepFreeze(value as PromptNamespace)
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      !Object.isFrozen(value) &&
+      !isPromptModule(value)
+    ) {
+      deepFreeze(value as PromptNamespace);
     }
   }
-  return obj as PromptRegistry<T>
+  return obj as PromptRegistry<T>;
 }
 
 /**
@@ -51,8 +56,6 @@ function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
  * prompts.agents.coverageAssessor.render({ scope: 'full' })
  * ```
  */
-export function createPromptRegistry<T extends PromptNamespace>(
-  modules: T
-): PromptRegistry<T> {
-  return deepFreeze({ ...modules })
+export function createPromptRegistry<T extends PromptNamespace>(modules: T): PromptRegistry<T> {
+  return deepFreeze({ ...modules });
 }

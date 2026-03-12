@@ -1,31 +1,31 @@
-import type { LanguageModelUsage } from 'ai'
-import { tool } from 'ai'
-import { match, P } from 'ts-pattern'
-import type { ZodType } from 'zod'
-import { z } from 'zod'
+import type { LanguageModelUsage } from "ai";
+import { tool } from "ai";
+import { match, P } from "ts-pattern";
+import type { ZodType } from "zod";
+import { z } from "zod";
 
-import type { Agent, Message } from '@/core/agent/types.js'
-import { openrouter } from '@/core/provider/provider.js'
-import type { LanguageModel, TokenUsage } from '@/core/provider/types.js'
-import type { Tool } from '@/core/tool.js'
-import type { Model } from '@/core/types.js'
-import { RUNNABLE_META, type RunnableMeta } from '@/lib/runnable.js'
+import type { Agent, Message } from "@/core/agent/types.js";
+import { openrouter } from "@/core/provider/provider.js";
+import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
+import type { Tool } from "@/core/tool.js";
+import type { Model } from "@/core/types.js";
+import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 
 function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
   if (meta != null && meta.name != null) {
-    return meta.name
+    return meta.name;
   }
-  return fallback
+  return fallback;
 }
 
 /**
  * Resolve a {@link Model} to an AI SDK `LanguageModel`.
  */
 export function resolveModel(ref: Model): LanguageModel {
-  if (typeof ref === 'string') {
-    return openrouter(ref)
+  if (typeof ref === "string") {
+    return openrouter(ref);
   }
-  return ref as LanguageModel
+  return ref as LanguageModel;
 }
 
 /**
@@ -43,15 +43,15 @@ export function resolveModel(ref: Model): LanguageModel {
 export function buildAITools(
   tools?: Record<string, Tool>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  agents?: Record<string, Agent<any, any, any, any>>
+  agents?: Record<string, Agent<any, any, any, any>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result: Record<string, any> = {}
-  const hasInitialTools = tools != null && Object.keys(tools).length > 0
+  const result: Record<string, any> = {};
+  const hasInitialTools = tools != null && Object.keys(tools).length > 0;
 
   if (tools) {
-    Object.assign(result, tools)
+    Object.assign(result, tools);
   }
 
   if (agents) {
@@ -59,8 +59,8 @@ export function buildAITools(
       // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
       const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
         | RunnableMeta
-        | undefined
-      const toolName = resolveToolName(meta, name)
+        | undefined;
+      const toolName = resolveToolName(meta, name);
 
       if (meta != null && meta.inputSchema != null) {
         // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
@@ -68,35 +68,35 @@ export function buildAITools(
           description: `Delegate to ${toolName}`,
           inputSchema: meta.inputSchema,
           execute: async (input, { abortSignal }) => {
-            const r = await runnable.generate(input, { signal: abortSignal, tools })
+            const r = await runnable.generate(input, { signal: abortSignal, tools });
             if (!r.ok) {
-              throw new Error(r.error.message)
+              throw new Error(r.error.message);
             }
-            return r.output
+            return r.output;
           },
-        })
+        });
       } else {
         // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
         result[name] = tool({
           description: `Delegate to ${toolName}`,
-          inputSchema: z.object({ prompt: z.string().describe('The prompt to send') }),
+          inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
           execute: async (input: { prompt: string }, { abortSignal }) => {
-            const r = await runnable.generate(input.prompt, { signal: abortSignal, tools })
+            const r = await runnable.generate(input.prompt, { signal: abortSignal, tools });
             if (!r.ok) {
-              throw new Error(r.error.message)
+              throw new Error(r.error.message);
             }
-            return r.output
+            return r.output;
           },
-        })
+        });
       }
     }
   }
 
-  const hasAgents = agents != null && Object.keys(agents).length > 0
+  const hasAgents = agents != null && Object.keys(agents).length > 0;
   if (hasInitialTools || hasAgents) {
-    return result
+    return result;
   }
-  return undefined
+  return undefined;
 }
 
 /**
@@ -104,15 +104,15 @@ export function buildAITools(
  */
 export function resolveSystem<TInput>(
   system: string | ((params: { input: TInput }) => string) | undefined,
-  input: TInput
+  input: TInput,
 ): string | undefined {
   if (system == null) {
-    return undefined
+    return undefined;
   }
-  if (typeof system === 'function') {
-    return system({ input })
+  if (typeof system === "function") {
+    return system({ input });
   }
-  return system
+  return system;
 }
 
 /**
@@ -124,37 +124,37 @@ export function resolveSystem<TInput>(
 export function buildPrompt<TInput>(
   input: TInput,
   config: {
-    input?: ZodType<TInput>
-    prompt?: (params: { input: TInput }) => string | Message[]
-  }
+    input?: ZodType<TInput>;
+    prompt?: (params: { input: TInput }) => string | Message[];
+  },
 ): { prompt: string } | { messages: Message[] } {
-  const hasInput = Boolean(config.input)
-  const hasPrompt = Boolean(config.prompt)
+  const hasInput = Boolean(config.input);
+  const hasPrompt = Boolean(config.prompt);
 
   return match({ hasInput, hasPrompt })
     .with({ hasInput: true, hasPrompt: false }, () => {
       throw new Error(
-        'Agent has `input` schema but no `prompt` function — both are required for typed mode'
-      )
+        "Agent has `input` schema but no `prompt` function — both are required for typed mode",
+      );
     })
     .with({ hasInput: false, hasPrompt: true }, () => {
       throw new Error(
-        'Agent has `prompt` function but no `input` schema — both are required for typed mode'
-      )
+        "Agent has `prompt` function but no `input` schema — both are required for typed mode",
+      );
     })
     .with({ hasInput: true, hasPrompt: true }, () => {
       // config.prompt is guaranteed non-null by the match
-      const promptFn = config.prompt as NonNullable<typeof config.prompt>
-      const built = promptFn({ input })
-      return match(typeof built === 'string')
+      const promptFn = config.prompt as NonNullable<typeof config.prompt>;
+      const built = promptFn({ input });
+      return match(typeof built === "string")
         .with(true, () => ({ prompt: built as string }))
-        .otherwise(() => ({ messages: built as Message[] }))
+        .otherwise(() => ({ messages: built as Message[] }));
     })
     .otherwise(() =>
-      match(typeof input === 'string')
+      match(typeof input === "string")
         .with(true, () => ({ prompt: input as string }))
-        .otherwise(() => ({ messages: input as Message[] }))
-    )
+        .otherwise(() => ({ messages: input as Message[] })),
+    );
 }
 
 /**
@@ -172,13 +172,13 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
       cacheReadTokens: d.cacheReadTokens ?? 0,
       cacheWriteTokens: d.cacheWriteTokens ?? 0,
     }))
-    .otherwise(() => ({ cacheReadTokens: 0, cacheWriteTokens: 0 }))
+    .otherwise(() => ({ cacheReadTokens: 0, cacheWriteTokens: 0 }));
 
   const outputDetails = match(usage.outputTokenDetails)
     .with(P.nonNullable, (d) => ({
       reasoningTokens: d.reasoningTokens ?? 0,
     }))
-    .otherwise(() => ({ reasoningTokens: 0 }))
+    .otherwise(() => ({ reasoningTokens: 0 }));
 
   return {
     inputTokens: usage.inputTokens ?? 0,
@@ -187,5 +187,5 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
     cacheReadTokens: inputDetails.cacheReadTokens,
     cacheWriteTokens: inputDetails.cacheWriteTokens,
     reasoningTokens: outputDetails.reasoningTokens,
-  }
+  };
 }

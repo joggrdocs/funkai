@@ -44,10 +44,10 @@ These are available on `$.step`, `$.agent`, `$.map`, `$.each`, `$.reduce`, `$.wh
 Agent per-call hooks are set on `AgentOverrides` (the second parameter to `.generate()` or `.stream()`). They have the same names as the base hooks but fire **after** the base hooks.
 
 ```ts
-await myAgent.generate('hello', {
-  onStart: ({ input }) => console.log('call-level start'),
+await myAgent.generate("hello", {
+  onStart: ({ input }) => console.log("call-level start"),
   onFinish: ({ result, duration }) => console.log(`call done in ${duration}ms`),
-})
+});
 ```
 
 ## Hook Merging

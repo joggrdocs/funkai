@@ -19,14 +19,14 @@ export interface Logger {
    * @param msg - Human-readable log message.
    * @param meta - Optional structured metadata merged into the log entry.
    */
-  debug(msg: string, meta?: Record<string, unknown>): void
+  debug(msg: string, meta?: Record<string, unknown>): void;
   /**
    * Log a message at the DEBUG level (pino object-first overload).
    *
    * @param meta - Structured metadata merged into the log entry.
    * @param msg - Human-readable log message.
    */
-  debug(meta: Record<string, unknown>, msg: string): void
+  debug(meta: Record<string, unknown>, msg: string): void;
 
   /**
    * Log a message at the INFO level.
@@ -37,14 +37,14 @@ export interface Logger {
    * @param msg - Human-readable log message.
    * @param meta - Optional structured metadata merged into the log entry.
    */
-  info(msg: string, meta?: Record<string, unknown>): void
+  info(msg: string, meta?: Record<string, unknown>): void;
   /**
    * Log a message at the INFO level (pino object-first overload).
    *
    * @param meta - Structured metadata merged into the log entry.
    * @param msg - Human-readable log message.
    */
-  info(meta: Record<string, unknown>, msg: string): void
+  info(meta: Record<string, unknown>, msg: string): void;
 
   /**
    * Log a message at the WARN level.
@@ -55,14 +55,14 @@ export interface Logger {
    * @param msg - Human-readable log message.
    * @param meta - Optional structured metadata merged into the log entry.
    */
-  warn(msg: string, meta?: Record<string, unknown>): void
+  warn(msg: string, meta?: Record<string, unknown>): void;
   /**
    * Log a message at the WARN level (pino object-first overload).
    *
    * @param meta - Structured metadata merged into the log entry.
    * @param msg - Human-readable log message.
    */
-  warn(meta: Record<string, unknown>, msg: string): void
+  warn(meta: Record<string, unknown>, msg: string): void;
 
   /**
    * Log a message at the ERROR level.
@@ -74,14 +74,14 @@ export interface Logger {
    * @param msg - Human-readable log message.
    * @param meta - Optional structured metadata merged into the log entry.
    */
-  error(msg: string, meta?: Record<string, unknown>): void
+  error(msg: string, meta?: Record<string, unknown>): void;
   /**
    * Log a message at the ERROR level (pino object-first overload).
    *
    * @param meta - Structured metadata merged into the log entry.
    * @param msg - Human-readable log message.
    */
-  error(meta: Record<string, unknown>, msg: string): void
+  error(meta: Record<string, unknown>, msg: string): void;
 
   /**
    * Create a child logger that inherits all parent bindings.
@@ -95,7 +95,7 @@ export interface Logger {
    *   produced by the child (and its descendants).
    * @returns A new {@link Logger} with the accumulated bindings.
    */
-  child(bindings: Record<string, unknown>): Logger
+  child(bindings: Record<string, unknown>): Logger;
 }
 
 /**
@@ -107,24 +107,24 @@ export interface Logger {
  * Used as the default when no pino-compatible logger is injected.
  */
 export function createDefaultLogger(bindings?: Record<string, unknown>): Logger {
-  const prefix = bindings ?? {}
+  const prefix = bindings ?? {};
   return {
     debug(first: string | Record<string, unknown>, second?: string | Record<string, unknown>) {
-      writeLog(prefix, 'debug', first, second)
+      writeLog(prefix, "debug", first, second);
     },
     info(first: string | Record<string, unknown>, second?: string | Record<string, unknown>) {
-      writeLog(prefix, 'info', first, second)
+      writeLog(prefix, "info", first, second);
     },
     warn(first: string | Record<string, unknown>, second?: string | Record<string, unknown>) {
-      writeLog(prefix, 'warn', first, second)
+      writeLog(prefix, "warn", first, second);
     },
     error(first: string | Record<string, unknown>, second?: string | Record<string, unknown>) {
-      writeLog(prefix, 'error', first, second)
+      writeLog(prefix, "error", first, second);
     },
     child(childBindings: Record<string, unknown>): Logger {
-      return createDefaultLogger({ ...prefix, ...childBindings })
+      return createDefaultLogger({ ...prefix, ...childBindings });
     },
-  }
+  };
 }
 
 /**
@@ -137,16 +137,16 @@ export function createDefaultLogger(bindings?: Record<string, unknown>): Logger 
  */
 function writeLog(
   bindings: Record<string, unknown>,
-  level: 'debug' | 'info' | 'warn' | 'error',
+  level: "debug" | "info" | "warn" | "error",
   first: string | Record<string, unknown>,
-  second?: string | Record<string, unknown>
+  second?: string | Record<string, unknown>,
 ): void {
-  if (typeof first === 'string') {
-    const meta = second as Record<string, unknown> | undefined
+  if (typeof first === "string") {
+    const meta = second as Record<string, unknown> | undefined;
     // eslint-disable-next-line security/detect-object-injection -- Log level is a controlled string from the logger, not user input
-    console[level]({ ...bindings, ...meta }, first)
+    console[level]({ ...bindings, ...meta }, first);
   } else {
     // eslint-disable-next-line security/detect-object-injection -- Log level is a controlled string from the logger, not user input
-    console[level]({ ...bindings, ...first }, second as string)
+    console[level]({ ...bindings, ...first }, second as string);
   }
 }

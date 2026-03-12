@@ -1,6 +1,6 @@
-import { Liquid } from 'liquidjs'
+import { Liquid } from "liquidjs";
 
-import type { CreateEngineOptions } from './types.js'
+import type { CreateEngineOptions } from "./types.js";
 
 /**
  * Create a LiquidJS engine with custom options.
@@ -12,12 +12,12 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
   return new Liquid({
     root: [partialsDir],
     partials: [partialsDir],
-    extname: '.prompt',
+    extname: ".prompt",
     cache: true,
     strictFilters: true,
     ownPropertyOnly: true,
     ...options,
-  })
+  });
 }
 
 /**
@@ -30,4 +30,4 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
 export const engine = new Liquid({
   strictFilters: true,
   ownPropertyOnly: true,
-})
+});

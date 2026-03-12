@@ -10,6 +10,6 @@
 // Update: pnpm --filter=@pkg/agent-sdk generate:models
 // ──────────────────────────────────────────────────────────────
 
-import { OPENAI_MODELS } from './openai.js'
+import { OPENAI_MODELS } from "./openai.js";
 
-export const MODELS = [...OPENAI_MODELS] as const
+export const MODELS = [...OPENAI_MODELS] as const;

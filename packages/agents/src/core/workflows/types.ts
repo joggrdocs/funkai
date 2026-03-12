@@ -1,4 +1,4 @@
-import type { OperationType } from '@/lib/trace.js'
+import type { OperationType } from "@/lib/trace.js";
 
 /**
  * Information about a workflow step.
@@ -12,7 +12,7 @@ export interface StepInfo {
    *
    * Matches the `id` field on the step config that produced this event.
    */
-  id: string
+  id: string;
 
   /**
    * Auto-incrementing index within the workflow execution.
@@ -20,14 +20,14 @@ export interface StepInfo {
    * Starts at `0` for the first `$` call and increments for each
    * subsequent tracked operation.
    */
-  index: number
+  index: number;
 
   /**
    * What kind of `$` call produced this step.
    *
    * Discriminant for filtering or grouping step events.
    */
-  type: OperationType
+  type: OperationType;
 }
 
 /**
@@ -41,63 +41,63 @@ export type StepEvent =
       /**
        * Event type discriminant — a step has started.
        */
-      type: 'step:start'
+      type: "step:start";
 
       /**
        * Information about the step that started.
        */
-      step: StepInfo
+      step: StepInfo;
     }
   | {
       /**
        * Event type discriminant — a step has finished.
        */
-      type: 'step:finish'
+      type: "step:finish";
 
       /**
        * Information about the step that finished.
        */
-      step: StepInfo
+      step: StepInfo;
 
       /**
        * The result produced by the step.
        */
-      result: unknown
+      result: unknown;
 
       /**
        * Wall-clock time for this step in milliseconds.
        */
-      duration: number
+      duration: number;
     }
   | {
       /**
        * Event type discriminant — a step encountered an error.
        */
-      type: 'step:error'
+      type: "step:error";
 
       /**
        * Information about the step that errored.
        */
-      step: StepInfo
+      step: StepInfo;
 
       /**
        * The error that occurred.
        */
-      error: Error
+      error: Error;
     }
   | {
       /**
        * Event type discriminant — the workflow has finished.
        */
-      type: 'workflow:finish'
+      type: "workflow:finish";
 
       /**
        * The final workflow output.
        */
-      output: unknown
+      output: unknown;
 
       /**
        * Total wall-clock time for the workflow in milliseconds.
        */
-      duration: number
-    }
+      duration: number;
+    };

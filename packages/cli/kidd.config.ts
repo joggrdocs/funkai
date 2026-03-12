@@ -1,7 +1,7 @@
-import { defineConfig } from '@kidd-cli/core'
+import { defineConfig } from "@kidd-cli/core";
 
 export default defineConfig({
-  build: { out: './dist' },
-  commands: './commands',
-  entry: './index.ts',
-})
+  build: { out: "./dist" },
+  commands: "./commands",
+  entry: "./index.ts",
+});

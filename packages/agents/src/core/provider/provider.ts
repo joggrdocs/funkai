@@ -2,10 +2,10 @@ import {
   createOpenRouter as baseCreateOpenRouter,
   type OpenRouterProvider,
   type OpenRouterProviderSettings,
-} from '@openrouter/ai-sdk-provider'
+} from "@openrouter/ai-sdk-provider";
 
-import type { ModelId } from '@/core/models/index.js'
-import { type LanguageModel } from '@/core/provider/types.js'
+import type { ModelId } from "@/core/models/index.js";
+import { type LanguageModel } from "@/core/provider/types.js";
 
 /**
  * Create an OpenRouter provider instance with automatic API key resolution.
@@ -23,18 +23,18 @@ import { type LanguageModel } from '@/core/provider/types.js'
  * ```
  */
 export function createOpenRouter(options?: OpenRouterProviderSettings): OpenRouterProvider {
-  const apiKey = resolveApiKey(options)
+  const apiKey = resolveApiKey(options);
   return baseCreateOpenRouter({
     ...options,
     apiKey,
-  })
+  });
 }
 
 function resolveApiKey(options: OpenRouterProviderSettings | undefined): string {
   if (options != null && options.apiKey != null) {
-    return options.apiKey
+    return options.apiKey;
   }
-  return getOpenRouterApiKey()
+  return getOpenRouterApiKey();
 }
 
 /**
@@ -58,15 +58,15 @@ function resolveApiKey(options: OpenRouterProviderSettings | undefined): string 
 const _cache: { provider: OpenRouterProvider | undefined; apiKey: string | undefined } = {
   provider: undefined,
   apiKey: undefined,
-}
+};
 
 export function openrouter(modelId: ModelId): LanguageModel {
-  const apiKey = getOpenRouterApiKey()
+  const apiKey = getOpenRouterApiKey();
   if (!_cache.provider || _cache.apiKey !== apiKey) {
-    _cache.provider = baseCreateOpenRouter({ apiKey })
-    _cache.apiKey = apiKey
+    _cache.provider = baseCreateOpenRouter({ apiKey });
+    _cache.apiKey = apiKey;
   }
-  return _cache.provider(modelId)
+  return _cache.provider(modelId);
 }
 
 /**
@@ -75,12 +75,12 @@ export function openrouter(modelId: ModelId): LanguageModel {
  * @throws {Error} If `OPENROUTER_API_KEY` is not set.
  */
 function getOpenRouterApiKey(): string {
-  const apiKey = process.env.OPENROUTER_API_KEY
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error(
-      'OPENROUTER_API_KEY environment variable is required. ' +
-        'Set it in your .env file or environment.'
-    )
+      "OPENROUTER_API_KEY environment variable is required. " +
+        "Set it in your .env file or environment.",
+    );
   }
-  return apiKey
+  return apiKey;
 }

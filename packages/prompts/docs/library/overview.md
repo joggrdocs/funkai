@@ -35,9 +35,9 @@ The shared `engine` instance is configured with `ownPropertyOnly: true` and `str
 const prompts = createPromptRegistry({
   agents: { coverageAssessor },
   greeting,
-})
-prompts.agents.coverageAssessor.render({ scope: 'full' })
-prompts.greeting.render()
+});
+prompts.agents.coverageAssessor.render({ scope: "full" });
+prompts.greeting.render();
 ```
 
 Nesting is driven by the `group` field in frontmatter. Each `/`-separated segment becomes a nesting level, with all names converted to camelCase. The registry is frozen at creation time to prevent mutation.
@@ -47,13 +47,13 @@ Nesting is driven by the `group` field in frontmatter. Each `/`-separated segmen
 The generated `index.ts` calls `createPromptRegistry` with all prompt modules organized by group and exports a `prompts` const object. Consumers import via the `~prompts` tsconfig alias:
 
 ```ts
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
 // Flat (no group)
-const text = prompts.greeting.render()
+const text = prompts.greeting.render();
 
 // Nested (group: agents)
-const text = prompts.agents.coverageAssessor.render({ scope: 'full' })
+const text = prompts.agents.coverageAssessor.render({ scope: "full" });
 ```
 
 Types are inferred from the object structure, giving full type safety on `render` and `validate` arguments at every nesting level.

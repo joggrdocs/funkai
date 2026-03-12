@@ -39,11 +39,11 @@ Validate `.prompt` files without generating output.
 prompts lint --roots prompts src/agents
 ```
 
-| Flag         | Description                                             |
-| ------------ | ------------------------------------------------------- |
-| `--roots`    | Directories to scan                                     |
+| Flag         | Description                                              |
+| ------------ | -------------------------------------------------------- |
+| `--roots`    | Directories to scan                                      |
 | `--partials` | Custom partials directory (default: `.prompts/partials`) |
-| `--silent`   | Suppress output except errors                           |
+| `--silent`   | Suppress output except errors                            |
 
 Reports:
 

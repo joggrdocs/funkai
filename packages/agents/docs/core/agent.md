@@ -6,8 +6,8 @@
 
 ```ts
 function agent<TInput, TOutput, TTools, TSubAgents>(
-  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>
-): Agent<TInput, TOutput, TTools, TSubAgents>
+  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
+): Agent<TInput, TOutput, TTools, TSubAgents>;
 ```
 
 ## AgentConfig
@@ -55,16 +55,16 @@ The `output` field accepts an AI SDK `Output` strategy or a raw Zod schema:
 interface Agent<TInput, TOutput, TTools, TSubAgents> {
   generate(
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<Result<GenerateResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<Result<GenerateResult<TOutput>>>;
   stream(
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ): Promise<Result<StreamResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ): Promise<Result<StreamResult<TOutput>>>;
   fn(): (
     input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>
-  ) => Promise<Result<GenerateResult<TOutput>>>
+    config?: AgentOverrides<TTools, TSubAgents>,
+  ) => Promise<Result<GenerateResult<TOutput>>>;
 }
 ```
 
@@ -74,10 +74,10 @@ Runs the agent to completion. Returns `Result<GenerateResult<TOutput>>`.
 
 ```ts
 interface GenerateResult<TOutput = string> {
-  output: TOutput // the generation output
-  messages: Message[] // full message history including tool calls
-  usage: TokenUsage // aggregated token usage across all tool-loop steps
-  finishReason: string // why the model stopped ('stop', 'length', 'tool-calls', etc.)
+  output: TOutput; // the generation output
+  messages: Message[]; // full message history including tool calls
+  usage: TokenUsage; // aggregated token usage across all tool-loop steps
+  finishReason: string; // why the model stopped ('stop', 'length', 'tool-calls', etc.)
 }
 ```
 
@@ -89,11 +89,11 @@ Runs the agent with streaming output. Returns `Result<StreamResult<TOutput>>`.
 
 ```ts
 interface StreamResult<TOutput = string> {
-  output: Promise<TOutput> // resolves after stream completes
-  messages: Promise<Message[]> // resolves after stream completes
-  usage: Promise<TokenUsage> // resolves after stream completes
-  finishReason: Promise<string> // resolves after stream completes
-  stream: ReadableStream<string> // live text deltas
+  output: Promise<TOutput>; // resolves after stream completes
+  messages: Promise<Message[]>; // resolves after stream completes
+  usage: Promise<TokenUsage>; // resolves after stream completes
+  finishReason: Promise<string>; // resolves after stream completes
+  stream: ReadableStream<string>; // live text deltas
 }
 ```
 
@@ -130,17 +130,17 @@ Agents declared in the `agents` field are automatically wrapped as tools that th
 
 ```ts
 const researcher = agent({
-  name: 'researcher',
-  model: 'openai/gpt-4.1',
-  system: 'You research topics thoroughly.',
-})
+  name: "researcher",
+  model: "openai/gpt-4.1",
+  system: "You research topics thoroughly.",
+});
 
 const writer = agent({
-  name: 'writer',
-  model: 'openai/gpt-4.1',
-  system: 'You are a technical writer. Delegate research to the researcher agent.',
+  name: "writer",
+  model: "openai/gpt-4.1",
+  system: "You are a technical writer. Delegate research to the researcher agent.",
   agents: { researcher },
-})
+});
 ```
 
 ## Examples
@@ -149,14 +149,14 @@ const writer = agent({
 
 ```ts
 const helper = agent({
-  name: 'helper',
-  model: 'openai/gpt-4.1',
-  system: 'You are a helpful assistant.',
-})
+  name: "helper",
+  model: "openai/gpt-4.1",
+  system: "You are a helpful assistant.",
+});
 
-const result = await helper.generate('What is TypeScript?')
+const result = await helper.generate("What is TypeScript?");
 if (result.ok) {
-  console.log(result.output) // string
+  console.log(result.output); // string
 }
 ```
 
@@ -164,63 +164,63 @@ if (result.ok) {
 
 ```ts
 const summarizer = agent({
-  name: 'summarizer',
-  model: 'openai/gpt-4.1',
+  name: "summarizer",
+  model: "openai/gpt-4.1",
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize the following:\n\n${input.text}`,
-})
+});
 
-const result = await summarizer.generate({ text: 'Long article...' })
+const result = await summarizer.generate({ text: "Long article..." });
 ```
 
 ### Agent with tools
 
 ```ts
 const search = tool({
-  description: 'Search the web',
+  description: "Search the web",
   inputSchema: z.object({ query: z.string() }),
   execute: async ({ query }) => webSearch(query),
-})
+});
 
 const assistant = agent({
-  name: 'assistant',
-  model: 'openai/gpt-4.1',
-  system: 'You are a helpful assistant with web search.',
+  name: "assistant",
+  model: "openai/gpt-4.1",
+  system: "You are a helpful assistant with web search.",
   tools: { search },
-})
+});
 ```
 
 ### Agent with subagents
 
 ```ts
 const analyst = agent({
-  name: 'analyst',
-  model: 'openai/gpt-4.1',
-  system: 'You analyze data. Delegate searches to the searcher.',
+  name: "analyst",
+  model: "openai/gpt-4.1",
+  system: "You analyze data. Delegate searches to the searcher.",
   agents: { searcher: searchAgent },
-})
+});
 ```
 
 ### Streaming
 
 ```ts
-const result = await helper.stream('Tell me a story')
+const result = await helper.stream("Tell me a story");
 if (result.ok) {
   for await (const chunk of result.stream) {
-    process.stdout.write(chunk)
+    process.stdout.write(chunk);
   }
-  const finalOutput = await result.output
+  const finalOutput = await result.output;
 }
 ```
 
 ### Inline overrides
 
 ```ts
-const result = await helper.generate('Explain quantum computing', {
-  model: 'anthropic/claude-sonnet-4',
+const result = await helper.generate("Explain quantum computing", {
+  model: "anthropic/claude-sonnet-4",
   maxSteps: 5,
   onFinish: ({ duration }) => console.log(`Took ${duration}ms`),
-})
+});
 ```
 
 ## References

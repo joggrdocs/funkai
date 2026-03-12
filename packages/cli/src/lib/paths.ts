@@ -1,14 +1,14 @@
-import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs'
-import { basename, extname, join, resolve } from 'node:path'
+import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
+import { basename, extname, join, resolve } from "node:path";
 
-const MAX_DEPTH = 5
-const PROMPT_EXT = '.prompt'
-const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/
-const NAME_RE = /^[a-z0-9-]+$/
+const MAX_DEPTH = 5;
+const PROMPT_EXT = ".prompt";
+const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+const NAME_RE = /^[a-z0-9-]+$/;
 
 export interface DiscoveredPrompt {
-  name: string
-  filePath: string
+  name: string;
+  filePath: string;
 }
 
 /**
@@ -18,18 +18,18 @@ export interface DiscoveredPrompt {
  * It looks for `name: <value>` in the frontmatter block.
  */
 function extractName(content: string): string | undefined {
-  const match = content.match(FRONTMATTER_RE)
+  const match = content.match(FRONTMATTER_RE);
   if (!match) {
-    return undefined
+    return undefined;
   }
 
-  const frontmatter = match[1]
-  const nameLine = frontmatter.split('\n').find((line) => line.startsWith('name:'))
+  const frontmatter = match[1];
+  const nameLine = frontmatter.split("\n").find((line) => line.startsWith("name:"));
   if (!nameLine) {
-    return undefined
+    return undefined;
   }
 
-  return nameLine.slice('name:'.length).trim()
+  return nameLine.slice("name:".length).trim();
 }
 
 /**
@@ -39,11 +39,11 @@ function extractName(content: string): string | undefined {
  * Otherwise uses the file stem (e.g. `my-agent.prompt` -> `my-agent`).
  */
 function deriveNameFromPath(filePath: string): string {
-  const stem = basename(filePath, PROMPT_EXT)
-  if (stem === 'prompt') {
-    return basename(resolve(filePath, '..'))
+  const stem = basename(filePath, PROMPT_EXT);
+  if (stem === "prompt") {
+    return basename(resolve(filePath, ".."));
   }
-  return stem
+  return stem;
 }
 
 /**
@@ -51,51 +51,51 @@ function deriveNameFromPath(filePath: string): string {
  */
 function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
   if (depth > MAX_DEPTH) {
-    return []
+    return [];
   }
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: directory traversal for prompt discovery
   if (!existsSync(dir)) {
-    return []
+    return [];
   }
 
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: stat check on traversed directory
-  const stat = lstatSync(dir)
+  const stat = lstatSync(dir);
   if (!stat.isDirectory() || stat.isSymbolicLink()) {
-    return []
+    return [];
   }
 
-  const results: DiscoveredPrompt[] = []
+  const results: DiscoveredPrompt[] = [];
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading entries from traversed directory
-  const entries = readdirSync(dir, { withFileTypes: true })
+  const entries = readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
-    const fullPath = join(dir, entry.name)
+    const fullPath = join(dir, entry.name);
 
     if (entry.isSymbolicLink()) {
-      continue
+      continue;
     }
 
     if (entry.isFile() && extname(entry.name) === PROMPT_EXT) {
       // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading prompt file content for name extraction
-      const content = readFileSync(fullPath, 'utf-8')
-      const name = extractName(content) ?? deriveNameFromPath(fullPath)
+      const content = readFileSync(fullPath, "utf-8");
+      const name = extractName(content) ?? deriveNameFromPath(fullPath);
 
       if (!NAME_RE.test(name)) {
         throw new Error(
           `Invalid prompt name "${name}" from ${fullPath}. ` +
-            'Names must be lowercase alphanumeric with hyphens only.'
-        )
+            "Names must be lowercase alphanumeric with hyphens only.",
+        );
       }
 
-      results.push({ name, filePath: fullPath })
+      results.push({ name, filePath: fullPath });
     }
 
     if (entry.isDirectory()) {
-      results.push(...scanDirectory(fullPath, depth + 1))
+      results.push(...scanDirectory(fullPath, depth + 1));
     }
   }
 
-  return results
+  return results;
 }
 
 /**
@@ -106,29 +106,29 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
  * @throws If duplicate prompt names are found across roots.
  */
 export function discoverPrompts(roots: string[]): DiscoveredPrompt[] {
-  const all: DiscoveredPrompt[] = []
+  const all: DiscoveredPrompt[] = [];
 
   for (const root of roots) {
-    const resolved = resolve(root)
-    all.push(...scanDirectory(resolved, 0))
+    const resolved = resolve(root);
+    all.push(...scanDirectory(resolved, 0));
   }
 
-  const byName = new Map<string, DiscoveredPrompt[]>()
+  const byName = new Map<string, DiscoveredPrompt[]>();
   for (const prompt of all) {
-    const existing = byName.get(prompt.name)
+    const existing = byName.get(prompt.name);
     if (existing) {
-      existing.push(prompt)
+      existing.push(prompt);
     } else {
-      byName.set(prompt.name, [prompt])
+      byName.set(prompt.name, [prompt]);
     }
   }
 
   for (const [name, prompts] of byName) {
     if (prompts.length > 1) {
-      const paths = prompts.map((p) => p.filePath).join('\n  ')
-      throw new Error(`Duplicate prompt name "${name}" found in:\n  ${paths}`)
+      const paths = prompts.map((p) => p.filePath).join("\n  ");
+      throw new Error(`Duplicate prompt name "${name}" found in:\n  ${paths}`);
     }
   }
 
-  return all.toSorted((a, b) => a.name.localeCompare(b.name))
+  return all.toSorted((a, b) => a.name.localeCompare(b.name));
 }

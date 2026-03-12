@@ -1,4 +1,4 @@
-import { attempt, isError, isMap, isNil, isPrimitive, isSet, isString } from 'es-toolkit'
+import { attempt, isError, isMap, isNil, isPrimitive, isSet, isString } from "es-toolkit";
 
 /**
  * Coerces an unknown thrown value into a proper `Error` instance.
@@ -24,12 +24,12 @@ import { attempt, isError, isMap, isNil, isPrimitive, isSet, isString } from 'es
  */
 export function toError(thrown: unknown): Error {
   if (isError(thrown)) {
-    return thrown
+    return thrown;
   }
   if (isString(thrown)) {
-    return new Error(thrown, { cause: thrown })
+    return new Error(thrown, { cause: thrown });
   }
-  return new Error(safeStringify(thrown), { cause: thrown })
+  return new Error(safeStringify(thrown), { cause: thrown });
 }
 
 /**
@@ -54,9 +54,9 @@ export function toError(thrown: unknown): Error {
  */
 export function safeStringify(value: unknown): string {
   if (isNil(value) || isPrimitive(value)) {
-    return String(value)
+    return String(value);
   }
-  return safeStringifyJSON(value) || String(value)
+  return safeStringifyJSON(value) || String(value);
 }
 
 /**
@@ -77,12 +77,12 @@ export function safeStringify(value: unknown): string {
  * ```
  */
 export function safeStringifyJSON(value: unknown): string {
-  const serializable = toSerializable(value)
-  const [error, json] = attempt(() => JSON.stringify(serializable) as string | undefined)
+  const serializable = toSerializable(value);
+  const [error, json] = attempt(() => JSON.stringify(serializable) as string | undefined);
   if (!isNil(error) || isNil(json)) {
-    return ''
+    return "";
   }
-  return json
+  return json;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,10 +103,10 @@ export function safeStringifyJSON(value: unknown): string {
  */
 function toSerializable(value: unknown): unknown {
   if (isMap(value)) {
-    return Array.from(value.entries())
+    return Array.from(value.entries());
   }
   if (isSet(value)) {
-    return Array.from(value)
+    return Array.from(value);
   }
-  return value
+  return value;
 }

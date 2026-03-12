@@ -1,28 +1,28 @@
-import { match } from 'ts-pattern'
+import { match } from "ts-pattern";
 
-import type { SchemaVariable } from './frontmatter.js'
+import type { SchemaVariable } from "./frontmatter.js";
 
 /**
  * Fully parsed prompt ready for code generation.
  */
 export interface ParsedPrompt {
-  name: string
-  group?: string
-  schema: SchemaVariable[]
-  template: string
-  sourcePath: string
+  name: string;
+  group?: string;
+  schema: SchemaVariable[];
+  template: string;
+  sourcePath: string;
 }
 
 function toPascalCase(name: string): string {
   return name
-    .split('-')
+    .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('')
+    .join("");
 }
 
 function toCamelCase(name: string): string {
-  const pascal = toPascalCase(name)
-  return pascal.charAt(0).toLowerCase() + pascal.slice(1)
+  const pascal = toPascalCase(name);
+  return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
 
 /**
@@ -31,7 +31,7 @@ function toCamelCase(name: string): string {
  * Backticks, `${`, and backslashes must be escaped.
  */
 function escapeTemplateLiteral(str: string): string {
-  return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
+  return str.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
 }
 
 /**
@@ -39,32 +39,32 @@ function escapeTemplateLiteral(str: string): string {
  */
 function generateSchemaExpression(vars: SchemaVariable[]): string {
   if (vars.length === 0) {
-    return 'z.object({})'
+    return "z.object({})";
   }
 
   const fields = vars
     .map((v) => {
-      const base = 'z.string()'
+      const base = "z.string()";
       const expr = match(v.required)
         .with(true, () => base)
-        .otherwise(() => `${base}.optional()`)
-      return `  ${v.name}: ${expr},`
+        .otherwise(() => `${base}.optional()`);
+      return `  ${v.name}: ${expr},`;
     })
-    .join('\n')
+    .join("\n");
 
-  return `z.object({\n${fields}\n})`
+  return `z.object({\n${fields}\n})`;
 }
 
 const HEADER = [
-  '/*',
-  '|==========================================================================',
-  '| AUTO-GENERATED — DO NOT EDIT',
-  '|==========================================================================',
-  '|',
-  '| Run `pnpm prompts:generate` to regenerate.',
-  '|',
-  '*/',
-].join('\n')
+  "/*",
+  "|==========================================================================",
+  "| AUTO-GENERATED — DO NOT EDIT",
+  "|==========================================================================",
+  "|",
+  "| Run `pnpm prompts:generate` to regenerate.",
+  "|",
+  "*/",
+].join("\n");
 
 /**
  * Generate a per-prompt TypeScript module with a default export.
@@ -73,51 +73,51 @@ const HEADER = [
  * `render` / `validate` functions.
  */
 export function generatePromptModule(prompt: ParsedPrompt): string {
-  const escaped = escapeTemplateLiteral(prompt.template)
-  const schemaExpr = generateSchemaExpression(prompt.schema)
+  const escaped = escapeTemplateLiteral(prompt.template);
+  const schemaExpr = generateSchemaExpression(prompt.schema);
   const groupValue = match(prompt.group != null)
     .with(true, () => `'${prompt.group}' as const`)
-    .otherwise(() => 'undefined')
+    .otherwise(() => "undefined");
 
   const lines: string[] = [
     HEADER,
     `// Source: ${prompt.sourcePath}`,
-    '',
+    "",
     "import { z } from 'zod'",
     "import { engine } from '@pkg/prompts-sdk'",
-    '',
+    "",
     `const schema = ${schemaExpr}`,
-    '',
-    'type Variables = z.infer<typeof schema>',
-    '',
+    "",
+    "type Variables = z.infer<typeof schema>",
+    "",
     `const template = \`${escaped}\``,
-    '',
-    'export default {',
+    "",
+    "export default {",
     `  name: '${prompt.name}' as const,`,
     `  group: ${groupValue},`,
-    '  schema,',
+    "  schema,",
     ...match(prompt.schema.length)
       .with(0, () => [
-        '  render(variables?: undefined): string {',
-        '    return engine.parseAndRenderSync(template, {})',
-        '  },',
-        '  validate(variables?: undefined): Variables {',
-        '    return schema.parse(variables ?? {})',
-        '  },',
+        "  render(variables?: undefined): string {",
+        "    return engine.parseAndRenderSync(template, {})",
+        "  },",
+        "  validate(variables?: undefined): Variables {",
+        "    return schema.parse(variables ?? {})",
+        "  },",
       ])
       .otherwise(() => [
-        '  render(variables: Variables): string {',
-        '    return engine.parseAndRenderSync(template, schema.parse(variables))',
-        '  },',
-        '  validate(variables: unknown): Variables {',
-        '    return schema.parse(variables)',
-        '  },',
+        "  render(variables: Variables): string {",
+        "    return engine.parseAndRenderSync(template, schema.parse(variables))",
+        "  },",
+        "  validate(variables: unknown): Variables {",
+        "    return schema.parse(variables)",
+        "  },",
       ]),
-    '}',
-    '',
-  ]
+    "}",
+    "",
+  ];
 
-  return lines.join('\n')
+  return lines.join("\n");
 }
 
 /**
@@ -125,8 +125,8 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
  * Leaves hold the camelCase import name; branches hold nested nodes.
  */
 type TreeNode = {
-  readonly [key: string]: string | TreeNode
-}
+  readonly [key: string]: string | TreeNode;
+};
 
 /**
  * Build a nested tree from sorted prompts, grouped by their `group` field.
@@ -136,40 +136,38 @@ type TreeNode = {
  * @throws If a prompt name collides with a group namespace at the same level.
  */
 function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
-  const root: Record<string, unknown> = {}
+  const root: Record<string, unknown> = {};
 
   for (const prompt of prompts) {
-    const importName = toCamelCase(prompt.name)
-    const segments = prompt.group
-      ? prompt.group.split('/').map(toCamelCase)
-      : []
+    const importName = toCamelCase(prompt.name);
+    const segments = prompt.group ? prompt.group.split("/").map(toCamelCase) : [];
 
-    let current = root
+    let current = root;
     for (const segment of segments) {
-      const existing = current[segment]
-      if (typeof existing === 'string') {
+      const existing = current[segment];
+      if (typeof existing === "string") {
         throw new Error(
           `Collision: prompt "${existing}" and group namespace "${segment}" ` +
-            'share the same key at the same level.'
-        )
+            "share the same key at the same level.",
+        );
       }
       if (existing == null) {
-        current[segment] = {}
+        current[segment] = {};
       }
-      current = current[segment] as Record<string, unknown>
+      current = current[segment] as Record<string, unknown>;
     }
 
-    if (typeof current[importName] === 'object' && current[importName] !== null) {
+    if (typeof current[importName] === "object" && current[importName] !== null) {
       throw new Error(
         `Collision: prompt "${importName}" conflicts with existing group namespace ` +
-          `"${importName}" at the same level.`
-      )
+          `"${importName}" at the same level.`,
+      );
     }
 
-    current[importName] = importName
+    current[importName] = importName;
   }
 
-  return root as TreeNode
+  return root as TreeNode;
 }
 
 /**
@@ -180,20 +178,20 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
  * @returns Array of source lines forming the object literal body.
  */
 function serializeTree(node: TreeNode, indent: number): string[] {
-  const pad = '  '.repeat(indent)
-  const lines: string[] = []
+  const pad = "  ".repeat(indent);
+  const lines: string[] = [];
 
   for (const [key, value] of Object.entries(node)) {
-    if (typeof value === 'string') {
-      lines.push(`${pad}${key},`)
+    if (typeof value === "string") {
+      lines.push(`${pad}${key},`);
     } else {
-      lines.push(`${pad}${key}: {`)
-      lines.push(...serializeTree(value, indent + 1))
-      lines.push(`${pad}},`)
+      lines.push(`${pad}${key}: {`);
+      lines.push(...serializeTree(value, indent + 1));
+      lines.push(`${pad}},`);
     }
   }
 
-  return lines
+  return lines;
 }
 
 /**
@@ -204,26 +202,26 @@ function serializeTree(node: TreeNode, indent: number): string[] {
  * `group` field, with each `/`-separated segment becoming a nesting level.
  */
 export function generateRegistry(prompts: ParsedPrompt[]): string {
-  const sorted = [...prompts].toSorted((a, b) => a.name.localeCompare(b.name))
+  const sorted = [...prompts].toSorted((a, b) => a.name.localeCompare(b.name));
 
   const imports = sorted
     .map((p) => `import ${toCamelCase(p.name)} from './${p.name}.js'`)
-    .join('\n')
+    .join("\n");
 
-  const tree = buildTree(sorted)
-  const treeLines = serializeTree(tree, 1)
+  const tree = buildTree(sorted);
+  const treeLines = serializeTree(tree, 1);
 
   const lines: string[] = [
     HEADER,
-    '',
+    "",
     "import { createPromptRegistry } from '@pkg/prompts-sdk'",
     imports,
-    '',
-    'export const prompts = createPromptRegistry({',
+    "",
+    "export const prompts = createPromptRegistry({",
     ...treeLines,
-    '})',
-    '',
-  ]
+    "})",
+    "",
+  ];
 
-  return lines.join('\n')
+  return lines.join("\n");
 }

@@ -10,17 +10,17 @@
 // Update: pnpm --filter=@pkg/agent-sdk generate:models
 // ──────────────────────────────────────────────────────────────
 
-import { P, match } from 'ts-pattern'
-import type { LiteralUnion } from 'type-fest'
+import { P, match } from "ts-pattern";
+import type { LiteralUnion } from "type-fest";
 
-import { OPENAI_MODELS } from '@/core/models/providers/openai.js'
+import { OPENAI_MODELS } from "@/core/models/providers/openai.js";
 
-const GENERATED_MODELS = [...OPENAI_MODELS] as const
+const GENERATED_MODELS = [...OPENAI_MODELS] as const;
 
 /**
  * Supported OpenRouter model identifiers, derived from the generated {@link MODELS} array.
  */
-export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]['id']
+export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]["id"];
 
 /**
  * A model identifier that suggests known OpenRouter models but accepts any string.
@@ -28,12 +28,12 @@ export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]['id']
  * Provides autocomplete for cataloged models while allowing arbitrary
  * model IDs for new or custom models not yet in the catalog.
  */
-export type ModelId = LiteralUnion<OpenRouterLanguageModelId, string>
+export type ModelId = LiteralUnion<OpenRouterLanguageModelId, string>;
 
 /**
  * Model category for classification and filtering.
  */
-export type ModelCategory = 'chat' | 'coding' | 'reasoning'
+export type ModelCategory = "chat" | "coding" | "reasoning";
 
 /**
  * Per-model pricing in USD per token.
@@ -44,31 +44,31 @@ export type ModelCategory = 'chat' | 'coding' | 'reasoning'
  */
 export interface ModelPricing {
   /** Cost per input (prompt) token. */
-  prompt: number
+  prompt: number;
 
   /** Cost per output (completion) token. */
-  completion: number
+  completion: number;
 
   /** Cost per cached input token (read). */
-  inputCacheRead?: number
+  inputCacheRead?: number;
 
   /** Cost per cached input token (write). */
-  inputCacheWrite?: number
+  inputCacheWrite?: number;
 
   /** Cost per web search request. */
-  webSearch?: number
+  webSearch?: number;
 
   /** Cost per internal reasoning token. */
-  internalReasoning?: number
+  internalReasoning?: number;
 
   /** Cost per image input token. */
-  image?: number
+  image?: number;
 
   /** Cost per audio input second. */
-  audio?: number
+  audio?: number;
 
   /** Cost per audio output second. */
-  audioOutput?: number
+  audioOutput?: number;
 }
 
 /**
@@ -76,19 +76,19 @@ export interface ModelPricing {
  */
 export interface ModelDefinition {
   /** OpenRouter model identifier (e.g. `"openai/gpt-5.2-codex"`). */
-  id: string
+  id: string;
 
   /** Model category for classification. */
-  category: ModelCategory
+  category: ModelCategory;
 
   /** Token pricing rates. */
-  pricing: ModelPricing
+  pricing: ModelPricing;
 }
 
 /**
  * Supported OpenRouter models with pricing data.
  */
-export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[]
+export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
 /**
  * Look up a model definition by its identifier.
@@ -105,11 +105,11 @@ export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[]
  * ```
  */
 export function model(id: ModelId): ModelDefinition {
-  const found = MODELS.find((m) => m.id === id)
+  const found = MODELS.find((m) => m.id === id);
   if (!found) {
-    throw new Error(`Unknown model: ${id}`)
+    throw new Error(`Unknown model: ${id}`);
   }
-  return found
+  return found;
 }
 
 /**
@@ -130,7 +130,7 @@ export function model(id: ModelId): ModelDefinition {
  * ```
  */
 export function tryModel(id: ModelId): ModelDefinition | undefined {
-  return MODELS.find((m) => m.id === id)
+  return MODELS.find((m) => m.id === id);
 }
 
 /**
@@ -148,5 +148,5 @@ export function tryModel(id: ModelId): ModelDefinition | undefined {
 export function models(filter?: (m: ModelDefinition) => boolean): readonly ModelDefinition[] {
   return match(filter)
     .with(P.nullish, () => MODELS)
-    .otherwise((fn) => MODELS.filter(fn))
+    .otherwise((fn) => MODELS.filter(fn));
 }

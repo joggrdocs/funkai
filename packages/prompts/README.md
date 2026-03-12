@@ -109,16 +109,16 @@ Add the `~prompts` alias to your `tsconfig.json` (or run `prompts setup`):
 Import and use:
 
 ```typescript
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
 // Render a prompt (validates variables via Zod)
-const instructions = prompts.agents.coverageAssessor.coverageAssessor.render({ scope: 'full' })
+const instructions = prompts.agents.coverageAssessor.coverageAssessor.render({ scope: "full" });
 
 // Access the schema
-const schema = prompts.agents.coverageAssessor.coverageAssessor.schema
+const schema = prompts.agents.coverageAssessor.coverageAssessor.schema;
 
 // Validate without rendering
-const vars = prompts.agents.coverageAssessor.coverageAssessor.validate({ scope: 'full' })
+const vars = prompts.agents.coverageAssessor.coverageAssessor.validate({ scope: "full" });
 ```
 
 ### Nesting with Groups
@@ -126,16 +126,16 @@ const vars = prompts.agents.coverageAssessor.coverageAssessor.validate({ scope: 
 Prompts are organized by their `group` field. Each `/`-separated segment becomes a nesting level, with all names converted to camelCase:
 
 ```typescript
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
 // No group — top-level access
-prompts.greeting.render()
+prompts.greeting.render();
 
 // group: agents
-prompts.agents.coverageAssessor.render({ scope: 'full' })
+prompts.agents.coverageAssessor.render({ scope: "full" });
 
 // group: agents/specialized
-prompts.agents.specialized.deepAnalyzer.render({ target: 'api' })
+prompts.agents.specialized.deepAnalyzer.render({ target: "api" });
 ```
 
 ### Types
@@ -143,9 +143,9 @@ prompts.agents.specialized.deepAnalyzer.render({ target: 'api' })
 The generated registry exports a `prompts` const object. Use `typeof prompts` for type-level access:
 
 ```typescript
-import { prompts } from '~prompts'
+import { prompts } from "~prompts";
 
-type AllPrompts = typeof prompts
+type AllPrompts = typeof prompts;
 ```
 
 Prompts with no schema variables accept `render()` with no arguments.

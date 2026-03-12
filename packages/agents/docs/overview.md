@@ -89,13 +89,13 @@ Create tools for AI agent function calling. Wraps the AI SDK's `tool()` with `zo
 
 ```ts
 const fetchPage = tool({
-  description: 'Fetch the contents of a web page by URL',
+  description: "Fetch the contents of a web page by URL",
   inputSchema: z.object({ url: z.url() }),
   execute: async ({ url }) => {
-    const res = await fetch(url)
-    return { url, status: res.status, body: await res.text() }
+    const res = await fetch(url);
+    return { url, status: res.status, body: await res.text() };
   },
-})
+});
 ```
 
 ### `agent()`
@@ -109,15 +109,15 @@ Create an agent with typed input, prompt template, tools, subagents, hooks, and 
 
 ```ts
 const summarizer = agent({
-  name: 'summarizer',
-  model: 'openai/gpt-4.1',
+  name: "summarizer",
+  model: "openai/gpt-4.1",
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
-})
+});
 
-const result = await summarizer.generate({ text: '...' })
+const result = await summarizer.generate({ text: "..." });
 if (result.ok) {
-  console.log(result.output)
+  console.log(result.output);
 }
 ```
 
@@ -130,25 +130,25 @@ Create a workflow with typed I/O, `$` step builder, hooks, and execution trace. 
 ```ts
 const wf = workflow(
   {
-    name: 'analyze',
+    name: "analyze",
     input: InputSchema,
     output: OutputSchema,
   },
   async ({ input, $ }) => {
     const data = await $.step({
-      id: 'fetch-data',
+      id: "fetch-data",
       execute: async () => fetchData(input.id),
-    })
+    });
 
     const result = await $.agent({
-      id: 'analyze',
+      id: "analyze",
       agent: myAgent,
       input: { data: data.value },
-    })
+    });
 
-    return { data: data.value, analysis: result.ok ? result.output : null }
-  }
-)
+    return { data: data.value, analysis: result.ok ? result.output : null };
+  },
+);
 ```
 
 The `$` step builder provides tracked operations:
@@ -176,7 +176,7 @@ const engine = createWorkflowEngine({
     },
   },
   onStart: ({ input }) => telemetry.trackStart(input),
-})
+});
 ```
 
 ## Key Types
@@ -186,7 +186,7 @@ const engine = createWorkflowEngine({
 Every public method returns `Result<T>` instead of throwing:
 
 ```ts
-type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError }
+type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 ```
 
 Error codes: `VALIDATION_ERROR`, `AGENT_ERROR`, `WORKFLOW_ERROR`, `ABORT_ERROR`. Helpers: `ok()`, `err()`, `isOk()`, `isErr()`.

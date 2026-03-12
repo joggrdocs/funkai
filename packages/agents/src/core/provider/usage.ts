@@ -1,12 +1,12 @@
-import { groupBy, sumBy } from 'es-toolkit'
-import { match, P } from 'ts-pattern'
+import { groupBy, sumBy } from "es-toolkit";
+import { match, P } from "ts-pattern";
 
 import type {
   TokenUsage,
   TokenUsageRecord,
   AgentTokenUsage,
   WorkflowTokenUsage,
-} from '@/core/provider/types.js'
+} from "@/core/provider/types.js";
 
 /**
  * Aggregate token counts across multiple raw tracking records.
@@ -21,7 +21,7 @@ function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
     cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens ?? 0),
     cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens ?? 0),
     reasoningTokens: sumBy(usages, (u) => u.reasoningTokens ?? 0),
-  }
+  };
 }
 
 /**
@@ -36,17 +36,17 @@ function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
  */
 export function agentUsage(
   agentId: string,
-  records: TokenUsageRecord | TokenUsageRecord[]
+  records: TokenUsageRecord | TokenUsageRecord[],
 ): AgentTokenUsage {
   const arr = match(records)
     .when(Array.isArray, (r) => r)
-    .otherwise((r) => [r])
-  const tokens = aggregateTokens(arr)
+    .otherwise((r) => [r]);
+  const tokens = aggregateTokens(arr);
 
   return {
     agentId,
     ...tokens,
-  }
+  };
 }
 
 /**
@@ -64,16 +64,16 @@ export function workflowUsage(records: TokenUsageRecord[]): WorkflowTokenUsage {
       .with(P.nonNullable, (s) =>
         match(s.agentId)
           .with(P.string, (id) => id)
-          .otherwise(() => 'unknown')
+          .otherwise(() => "unknown"),
       )
-      .otherwise(() => 'unknown')
-  )
+      .otherwise(() => "unknown"),
+  );
 
-  const usages = Object.entries(grouped).map(([id, group]) => agentUsage(id, group))
+  const usages = Object.entries(grouped).map(([id, group]) => agentUsage(id, group));
 
   return {
     usages,
-  }
+  };
 }
 
 /**
@@ -93,5 +93,5 @@ export function sumTokenUsage(usages: TokenUsage[]): TokenUsage {
     cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens),
     cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens),
     reasoningTokens: sumBy(usages, (u) => u.reasoningTokens),
-  }
+  };
 }

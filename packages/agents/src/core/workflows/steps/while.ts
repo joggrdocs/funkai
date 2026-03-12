@@ -1,4 +1,4 @@
-import type { StepBuilder } from '@/core/workflows/steps/builder.js'
+import type { StepBuilder } from "@/core/workflows/steps/builder.js";
 
 /**
  * Configuration for `$.while()` — conditional loop.
@@ -16,7 +16,7 @@ export interface WhileConfig<T> {
    * Appears in the execution trace. Individual iterations appear
    * as children of this entry.
    */
-  id: string
+  id: string;
 
   /**
    * Loop condition — evaluated before each iteration.
@@ -30,7 +30,7 @@ export interface WhileConfig<T> {
    * @param params.index - The zero-based iteration index.
    * @returns `true` to continue looping, `false` to stop.
    */
-  condition: (params: { value: T | undefined; index: number }) => boolean
+  condition: (params: { value: T | undefined; index: number }) => boolean;
 
   /**
    * Execute one iteration.
@@ -40,7 +40,7 @@ export interface WhileConfig<T> {
    * @param params.$ - The step builder for nesting further operations.
    * @returns The value for this iteration.
    */
-  execute: (params: { index: number; $: StepBuilder }) => Promise<T>
+  execute: (params: { index: number; $: StepBuilder }) => Promise<T>;
 
   /**
    * Hook: fires when the while loop starts.
@@ -48,7 +48,7 @@ export interface WhileConfig<T> {
    * @param event - Event containing the step id.
    * @param event.id - The step's unique identifier.
    */
-  onStart?: (event: { id: string }) => void | Promise<void>
+  onStart?: (event: { id: string }) => void | Promise<void>;
 
   /**
    * Hook: fires when the while loop finishes.
@@ -59,10 +59,10 @@ export interface WhileConfig<T> {
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
-    id: string
-    result: T | undefined
-    duration: number
-  }) => void | Promise<void>
+    id: string;
+    result: T | undefined;
+    duration: number;
+  }) => void | Promise<void>;
 
   /**
    * Hook: fires if the while loop encounters an error.
@@ -71,5 +71,5 @@ export interface WhileConfig<T> {
    * @param event.id - The step's unique identifier.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { id: string; error: Error }) => void | Promise<void>
+  onError?: (event: { id: string; error: Error }) => void | Promise<void>;
 }

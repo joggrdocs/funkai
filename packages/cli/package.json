@@ -2,8 +2,8 @@
   "name": "@funkai/cli",
   "version": "0.4.0",
   "private": false,
-  "license": "MIT",
   "description": "CLI for the funkai prompt SDK",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",

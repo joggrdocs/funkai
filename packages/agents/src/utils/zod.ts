@@ -1,13 +1,13 @@
-import type { ZodType } from 'zod'
-import { z } from 'zod'
+import type { ZodType } from "zod";
+import { z } from "zod";
 
-type JSONSchema = z.core.JSONSchema.JSONSchema
+type JSONSchema = z.core.JSONSchema.JSONSchema;
 
 /**
  * Convert a Zod schema to a JSON Schema object.
  */
 export function toJsonSchema(schema: ZodType): JSONSchema {
-  return z.toJSONSchema(schema)
+  return z.toJSONSchema(schema);
 }
 
 /**
@@ -17,7 +17,7 @@ export function toJsonSchema(schema: ZodType): JSONSchema {
  * wrapped schemas (transforms, refinements, pipes).
  */
 export function isZodObject(schema: ZodType): boolean {
-  return toJsonSchema(schema).type === 'object'
+  return toJsonSchema(schema).type === "object";
 }
 
 /**
@@ -27,5 +27,5 @@ export function isZodObject(schema: ZodType): boolean {
  * wrapped schemas (transforms, refinements, pipes).
  */
 export function isZodArray(schema: ZodType): boolean {
-  return toJsonSchema(schema).type === 'array'
+  return toJsonSchema(schema).type === "array";
 }

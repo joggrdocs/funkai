@@ -12,10 +12,5 @@
     "deps",
     "revert"
   ],
-  "scopes": [
-    "packages/agents",
-    "packages/prompts",
-    "workspace",
-    "tooling"
-  ]
+  "scopes": ["packages/agents", "packages/prompts", "workspace", "tooling"]
 }
