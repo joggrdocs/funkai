@@ -2,14 +2,14 @@
   <img src="./banner.svg" alt="Prompts SDK" width="100%" />
 </p>
 
-# @pkg/prompts-sdk
+# @funkai/prompts
 
 Prompt SDK for authoring `.prompt` files with LiquidJS templating and Zod validation. The CLI generates typed TypeScript modules from `.prompt` sources so prompts are statically typed and validated at build time.
 
 ## Install
 
 ```bash
-pnpm add @pkg/prompts-sdk --workspace
+pnpm add @funkai/prompts --workspace
 ```
 
 ## `.prompt` File Format
@@ -112,13 +112,13 @@ Import and use:
 import { prompts } from "~prompts";
 
 // Render a prompt (validates variables via Zod)
-const instructions = prompts.agents.coverageAssessor.coverageAssessor.render({ scope: "full" });
+const instructions = prompts.agents.coverageAssessor.render({ scope: "full" });
 
 // Access the schema
-const schema = prompts.agents.coverageAssessor.coverageAssessor.schema;
+const schema = prompts.agents.coverageAssessor.schema;
 
 // Validate without rendering
-const vars = prompts.agents.coverageAssessor.coverageAssessor.validate({ scope: "full" });
+const vars = prompts.agents.coverageAssessor.validate({ scope: "full" });
 ```
 
 ### Nesting with Groups

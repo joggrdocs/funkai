@@ -37,11 +37,11 @@ To override a built-in partial, create a file with the same name in `.prompts/pa
 
 ## Built-in Partials
 
-Built-in partials require access to the `@pkg/prompts-sdk` source.
+Built-in partials require access to the `@funkai/prompts` source.
 
 ### Steps
 
-1. Create `packages/prompts-sdk/src/prompts/<name>.prompt`.
+1. Create `packages/prompts/src/prompts/<name>.prompt`.
 
 2. Write the partial template — use XML-style wrapper tags and Liquid variables:
 

@@ -1,0 +1,12 @@
+{
+  "extends": "@pkg/tsconfig/node",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "paths": {
+      "~prompts": ["./.prompts/client/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

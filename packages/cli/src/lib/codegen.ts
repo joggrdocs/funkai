@@ -84,7 +84,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
     `// Source: ${prompt.sourcePath}`,
     "",
     "import { z } from 'zod'",
-    "import { engine } from '@pkg/prompts-sdk'",
+    "import { engine } from '@funkai/prompts'",
     "",
     `const schema = ${schemaExpr}`,
     "",
@@ -214,7 +214,7 @@ export function generateRegistry(prompts: ParsedPrompt[]): string {
   const lines: string[] = [
     HEADER,
     "",
-    "import { createPromptRegistry } from '@pkg/prompts-sdk'",
+    "import { createPromptRegistry } from '@funkai/prompts'",
     imports,
     "",
     "export const prompts = createPromptRegistry({",

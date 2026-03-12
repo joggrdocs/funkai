@@ -1,4 +1,4 @@
-# @pkg/prompts-sdk
+# @funkai/prompts
 
 ## 0.4.0
 

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- `@pkg/prompts-sdk` installed
+- `@funkai/prompts` installed
 - Project configured ([Setup guide](setup-project.md))
 
 ## Steps
