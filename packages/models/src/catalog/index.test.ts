@@ -48,8 +48,10 @@ describe("model()", () => {
     expect(typeof result.pricing.completion).toBe("number");
   });
 
-  it("throws for an unknown model ID", () => {
-    expect(() => model("nonexistent/model-99")).toThrow("Unknown model: nonexistent/model-99");
+  it("throws for an unknown model ID with context", () => {
+    expect(() => model("nonexistent/model-99")).toThrow(
+      /Unknown model: "nonexistent\/model-99" \(\d+ models in catalog\)/,
+    );
   });
 
   it("returns correct category for reasoning models", () => {

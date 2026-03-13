@@ -39,10 +39,7 @@
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.3.0",
     "ai": "^6.0.116",
-    "es-toolkit": "catalog:",
-    "ts-pattern": "catalog:",
-    "type-fest": "^5.4.4",
-    "zod": "catalog:"
+    "type-fest": "^5.4.4"
   },
   "devDependencies": {
     "@openrouter/sdk": "^0.9.11",

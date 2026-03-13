@@ -79,6 +79,10 @@ export function createModelResolver(config?: ModelResolverConfig): ModelResolver
   const fallback = config?.fallbackToOpenRouter !== false;
 
   return (modelId: ModelId): LanguageModel => {
+    if (!modelId.trim()) {
+      throw new Error("Cannot resolve model: model ID is empty");
+    }
+
     const slashIndex = modelId.indexOf("/");
 
     if (slashIndex === -1) {

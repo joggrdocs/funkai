@@ -124,4 +124,16 @@ describe("createModelResolver()", () => {
       fakeModel("meta-llama/llama-4-scout/extended"),
     );
   });
+
+  it("throws for empty model ID", () => {
+    const resolve = createModelResolver();
+
+    expect(() => resolve("")).toThrow("Cannot resolve model: model ID is empty");
+  });
+
+  it("throws for whitespace-only model ID", () => {
+    const resolve = createModelResolver();
+
+    expect(() => resolve("   ")).toThrow("Cannot resolve model: model ID is empty");
+  });
 });

@@ -54,6 +54,8 @@ function resolveApiKey(options: OpenRouterProviderSettings | undefined): string 
  *
  * @private
  */
+// Cache mutation is safe: JS is single-threaded and baseCreateOpenRouter is synchronous.
+// If this were refactored to async initialization, a lock or re-architecture would be needed.
 function createCachedOpenRouter(): (modelId: ModelId) => LanguageModel {
   const cache: { provider: OpenRouterProvider | undefined; apiKey: string | undefined } = {
     provider: undefined,

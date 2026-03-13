@@ -1,4 +1,3 @@
-import { match, P } from "ts-pattern";
 import type { LiteralUnion } from "type-fest";
 
 import type { ModelCategory, ModelDefinition, ModelPricing } from "./types.js";
@@ -41,7 +40,9 @@ export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 export function model(id: ModelId): ModelDefinition {
   const found = MODELS.find((m) => m.id === id);
   if (!found) {
-    throw new Error(`Unknown model: ${id}`);
+    throw new Error(
+      `Unknown model: "${id}" (${MODELS.length} models in catalog). Use tryModel() for a non-throwing lookup.`,
+    );
   }
   return found;
 }
@@ -80,7 +81,5 @@ export function tryModel(id: ModelId): ModelDefinition | undefined {
  * ```
  */
 export function models(filter?: (m: ModelDefinition) => boolean): readonly ModelDefinition[] {
-  return match(filter)
-    .with(P.nullish, () => MODELS)
-    .otherwise((fn) => MODELS.filter(fn));
+  return filter ? MODELS.filter(filter) : MODELS;
 }

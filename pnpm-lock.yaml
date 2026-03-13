@@ -372,18 +372,9 @@ importers:
       ai:
         specifier: ^6.0.116
         version: 6.0.116(zod@4.3.6)
-      es-toolkit:
-        specifier: 'catalog:'
-        version: 1.45.1
-      ts-pattern:
-        specifier: 'catalog:'
-        version: 5.9.0
       type-fest:
         specifier: ^5.4.4
         version: 5.4.4
-      zod:
-        specifier: 'catalog:'
-        version: 4.3.6
     devDependencies:
       '@openrouter/sdk':
         specifier: ^0.9.11

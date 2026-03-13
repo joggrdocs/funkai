@@ -70,7 +70,7 @@ function toConstName(provider: string): string {
 /**
  * Build the pricing object string for a model, including only non-zero fields.
  */
-function buildPricing(apiPricing: Record<string, string | undefined>): string {
+function buildPricing(modelId: string, apiPricing: Record<string, string | undefined>): string {
   const parts: string[] = [];
   for (const [apiKey, ourKey] of Object.entries(PRICING_FIELDS)) {
     // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration over a static config object
@@ -79,6 +79,9 @@ function buildPricing(apiPricing: Record<string, string | undefined>): string {
       continue;
     }
     const value = parseFloat(raw);
+    if (Number.isNaN(value)) {
+      throw new Error(`Invalid pricing value for "${modelId}" field "${apiKey}": "${raw}"`);
+    }
     if (value === 0) {
       continue;
     }
@@ -153,6 +156,7 @@ async function main(): Promise<void> {
       }
 
       const pricing = buildPricing(
+        entry.id,
         apiModel.pricing as unknown as Record<string, string | undefined>,
       );
 
