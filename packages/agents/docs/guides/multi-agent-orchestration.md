@@ -4,7 +4,7 @@ Patterns for coordinating multiple agents: sequential chains, parallel execution
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - Familiarity with `agent()`, `workflow()`, `$.agent`, `$.map`, `$.all`, and `$.race`
 - Understanding of subagents (the `agents` field on `AgentConfig`)
 
@@ -15,7 +15,7 @@ Patterns for coordinating multiple agents: sequential chains, parallel execution
 Pass the output of one agent as input to the next using `$.agent` steps in sequence.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const researcher = agent({
@@ -77,7 +77,7 @@ const pipeline = workflow(
 Process multiple inputs concurrently with the same agent using `$.map`.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const translator = agent({
@@ -126,7 +126,7 @@ const batchTranslate = workflow(
 When different agents need to run concurrently on different tasks, use `$.all`.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const sentimentAgent = agent({
@@ -194,7 +194,7 @@ const analyze = workflow(
 Declare agents in the `agents` field to let the parent delegate tasks via function calling. The parent agent decides when to invoke the subagent.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { z } from "zod";
 
 const codeWriter = agent({
@@ -230,7 +230,7 @@ const result = await techLead.generate("Build a rate limiter module");
 Race or poll multiple models and select the most common answer.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const OutputSchema = z.object({
@@ -319,7 +319,7 @@ const voter = workflow(
 Use `$.race` to get the first successful response from multiple providers or models.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const fastAgent = agent({
@@ -367,7 +367,7 @@ const racingWorkflow = workflow(
 Combine subagents with workflows for multi-level delegation. Each level can have its own subagents.
 
 ```ts
-import { agent, workflow } from "@pkg/agent-sdk";
+import { agent, workflow } from "@funkai/agents";
 import { z } from "zod";
 
 // Level 2: Specialist agents

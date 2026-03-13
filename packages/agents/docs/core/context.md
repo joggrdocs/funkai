@@ -101,7 +101,7 @@ controller.abort();
 
 The framework creates child loggers at each scope boundary using `log.child()`. This means log output automatically includes execution context without manual threading:
 
-```
+```text
 flowAgentId: "content-pipeline"
   stepId: "fetch-sources"
     agentId: "researcher"

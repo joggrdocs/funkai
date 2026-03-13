@@ -4,7 +4,7 @@ Track token usage, calculate costs, enforce budgets, and optimize model selectio
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - `@funkai/models` installed (provides `calculateCost`, `model`, `models`)
 - Familiarity with `agent()`, `workflow()`, and hooks
 
@@ -15,7 +15,7 @@ Track token usage, calculate costs, enforce budgets, and optimize model selectio
 Every successful `agent.generate()` returns `result.usage` with resolved token counts. All fields are `number` (0 when the provider does not report a field).
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 
 const helper = agent({
   name: "helper",
@@ -40,7 +40,7 @@ if (result.ok) {
 Use `calculateCost()` to convert token counts into USD amounts. Look up model pricing with `model()`.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 
 const summarizer = agent({
@@ -68,7 +68,7 @@ if (result.ok) {
 Use the `onFinish` hook to track cumulative cost and abort when a budget is exceeded.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 
 const modelId = "openai/gpt-4.1";
@@ -98,7 +98,7 @@ const helper = agent({
 Use per-call overrides to select cheaper models for simple tasks and more capable models for complex ones.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { z } from "zod";
 
 const assistant = agent({
@@ -125,7 +125,7 @@ const result = await assistant.generate(
 Workflow results include `result.usage` with aggregated token counts from all `$.agent()` calls. Combine with `calculateCost()` for the total workflow cost.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
@@ -156,16 +156,19 @@ const pipeline = workflow(
           agent: analyzer,
           input: { text: item },
         });
-        return result.ok ? result.value.output : "Analysis failed";
+        return {
+          analysis: result.ok ? result.value.output : "Analysis failed",
+          tokens: result.ok ? result.value.usage.totalTokens : 0,
+        };
       },
     });
 
     const totalTokens = results.ok
-      ? results.value.reduce((sum, r) => sum + r.usage.totalTokens, 0)
+      ? results.value.reduce((sum, r) => sum + r.tokens, 0)
       : 0;
 
     return {
-      analyses: results.ok ? results.value : [],
+      analyses: results.ok ? results.value.map((r) => r.analysis) : [],
       totalTokens,
     };
   },
@@ -202,7 +205,7 @@ for (const m of sorted.slice(0, 5)) {
 Use `onStepFinish` to calculate and log the cost of each agent step as it completes.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 

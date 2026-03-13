@@ -4,20 +4,21 @@ Patterns for unit testing agents, workflows, and tools with mocked models and de
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - Vitest configured (`pnpm test --filter=@funkai/agents`)
 - Familiarity with `agent()`, `workflow()`, and `tool()` APIs
 
 ## Steps
 
-### 1. Mock the model with per-call overrides
+### 1. Use per-call model overrides for integration smoke tests
 
-Agents accept a `model` override on each `.generate()` call. Swap the real model for a test double that returns a fixed response. Use the `ai` SDK's `simulateReadableStream` or a plain mock.
+Agents accept a `model` override on each `.generate()` call. This is useful for low-cost integration smoke tests. For deterministic unit tests, use a fixed mock model/test double.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
+import { simulateReadableStream } from "ai";
 
 const summarizer = agent({
   name: "summarizer",
@@ -28,14 +29,23 @@ const summarizer = agent({
 
 describe("summarizer", () => {
   it("returns a summary", async () => {
+    // Create a mock model that returns a fixed response
+    const mockModel = {
+      doGenerate: async () => ({
+        text: "This is a fixed test summary",
+        finishReason: "stop",
+        usage: { promptTokens: 10, completionTokens: 5 },
+      }),
+    };
+
     const result = await summarizer.generate(
       { text: "Long article content..." },
-      { model: "openai/gpt-4.1-nano" },
+      { model: mockModel as any },
     );
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(typeof result.output).toBe("string");
+      expect(result.output).toBe("This is a fixed test summary");
     }
   });
 });
@@ -46,7 +56,7 @@ describe("summarizer", () => {
 Every agent and workflow returns `Result<T>`. Test both success and error paths by checking `result.ok`.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
@@ -87,7 +97,7 @@ describe("helper", () => {
 When an agent has an `output` schema, assert on the typed shape of `result.output`.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
@@ -123,9 +133,11 @@ describe("classifier", () => {
 Tools are plain functions with input validation. Test them independently of any agent by calling `execute` directly.
 
 ```ts
-import { tool } from "@pkg/agent-sdk";
+import { tool } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
+
+const add = async ({ a, b }: { a: number; b: number }) => ({ result: a + b });
 
 const calculator = tool({
   description: "Add two numbers",
@@ -133,14 +145,12 @@ const calculator = tool({
     a: z.number(),
     b: z.number(),
   }),
-  execute: async ({ a, b }) => ({ result: a + b }),
+  execute: add,
 });
 
 describe("calculator tool", () => {
   it("adds two numbers", async () => {
-    // Tools can be tested via direct invocation if you extract the execute function.
-    // Or test them through an agent that uses them.
-    const result = { result: 2 + 3 };
+    const result = await add({ a: 2, b: 3 });
     expect(result).toEqual({ result: 5 });
   });
 });
@@ -151,7 +161,7 @@ describe("calculator tool", () => {
 Workflows have typed input/output schemas. Test the full pipeline or individual steps by checking `result.ok`, `result.output`, and `result.trace`.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
@@ -201,7 +211,7 @@ describe("text-stats workflow", () => {
 Verify that failing steps produce `ok: false` with meaningful error codes.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
@@ -250,7 +260,7 @@ describe("error paths", () => {
 Verify that `result.usage` contains expected token counts after generation.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
@@ -277,7 +287,7 @@ describe("usage tracking", () => {
 Capture lifecycle events with hooks to verify execution order and timing.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 

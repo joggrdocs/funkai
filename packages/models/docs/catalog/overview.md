@@ -69,12 +69,12 @@ Each model has the following fields:
 
 ### ModelPricing
 
-| Field        | Type     | Description           |
-| ------------ | -------- | --------------------- | ----------------------------------- |
-| `input`      | `number` | Cost per input token  |
-| `output`     | `number` | Cost per output token |
-| `cacheRead`  | `number` | `undefined`           | Cost per cached input token (read)  |
-| `cacheWrite` | `number` | `undefined`           | Cost per cached input token (write) |
+| Field        | Type                  | Description                         |
+| ------------ | --------------------- | ----------------------------------- |
+| `input`      | `number`              | Cost per input token                |
+| `output`     | `number`              | Cost per output token               |
+| `cacheRead`  | `number \| undefined` | Cost per cached input token (read)  |
+| `cacheWrite` | `number \| undefined` | Cost per cached input token (write) |
 
 ### ModelCapabilities
 

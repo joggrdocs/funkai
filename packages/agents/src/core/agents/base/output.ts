@@ -38,7 +38,7 @@ export type OutputParam = OutputSpec | ZodType;
  * @example
  * ```typescript
  * import { z } from 'zod'
- * import { resolveOutput } from '@funkai/agents'
+ * import { resolveOutput } from './output.js'
  *
  * const objectOutput = resolveOutput(z.object({ title: z.string() }))
  * // Equivalent to Output.object({ schema: z.object({ title: z.string() }) })

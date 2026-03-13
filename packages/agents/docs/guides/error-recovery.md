@@ -4,7 +4,7 @@ Patterns for building resilient agents and workflows that recover gracefully fro
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - Familiarity with `workflow()`, `$.step`, `$.while`, `$.map`, and hooks
 - Understanding of `StepResult` and `Result` types
 
@@ -15,7 +15,7 @@ Patterns for building resilient agents and workflows that recover gracefully fro
 Every `$` method returns `StepResult<T>` with an `ok` field. Check it before accessing `.value` and provide a fallback when the step fails.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 
 const resilient = workflow(
@@ -60,7 +60,7 @@ const resilient = workflow(
 Use `$.while` for retry logic with a bounded iteration count. The condition receives the last value and iteration index.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 
 const retryable = workflow(
@@ -103,7 +103,7 @@ const retryable = workflow(
 When processing multiple items, some may fail while others succeed. Check each item's result independently rather than failing the entire batch.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const summarizer = agent({
@@ -165,7 +165,7 @@ const batchSummarizer = workflow(
 Track consecutive failures and stop processing when a threshold is reached.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 
 interface CircuitState {
@@ -229,7 +229,7 @@ const circuitBreaker = workflow(
 Use workflow and step hooks to capture errors for logging and observability without interrupting the execution flow.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 
 const observed = workflow(
@@ -268,7 +268,7 @@ const observed = workflow(
 Chain fallback, retry, and logging into a single workflow.
 
 ```ts
-import { workflow, agent } from "@pkg/agent-sdk";
+import { workflow, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const analyzer = agent({

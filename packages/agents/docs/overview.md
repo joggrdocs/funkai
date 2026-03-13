@@ -1,6 +1,6 @@
 # Agent SDK
 
-`@pkg/agent-sdk` is a lightweight agent orchestration framework built on the [Vercel AI SDK](https://ai-sdk.dev). It provides typed primitives for creating AI agents, tools, and multi-step workflows with observable execution traces.
+`@funkai/agents` is a lightweight agent orchestration framework built on the [Vercel AI SDK](https://ai-sdk.dev). It provides typed primitives for creating AI agents, tools, and multi-step workflows with observable execution traces.
 
 ## Design Principles
 

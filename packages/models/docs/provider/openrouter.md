@@ -89,7 +89,9 @@ Additional options are forwarded directly to the underlying `@openrouter/ai-sdk-
 
 | Variable             | Required | Description        |
 | -------------------- | -------- | ------------------ |
-| `OPENROUTER_API_KEY` | Yes      | OpenRouter API key |
+| `OPENROUTER_API_KEY` | No*      | OpenRouter API key |
+
+*Required when `apiKey` is not provided to `createOpenRouter(...)`.
 
 ## Resources
 

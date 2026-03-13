@@ -21,12 +21,12 @@ Token counts from a model invocation:
 
 Per-token pricing rates from the model catalog:
 
-| Field        | Type     | Description                 |
-| ------------ | -------- | --------------------------- | --------------------------------- |
-| `input`      | `number` | Cost per input token (USD)  |
-| `output`     | `number` | Cost per output token (USD) |
-| `cacheRead`  | `number` | `undefined`                 | Cost per cached read token (USD)  |
-| `cacheWrite` | `number` | `undefined`                 | Cost per cached write token (USD) |
+| Field        | Type                  | Description                         |
+| ------------ | --------------------- | ----------------------------------- |
+| `input`      | `number`              | Cost per input token (USD)          |
+| `output`     | `number`              | Cost per output token (USD)         |
+| `cacheRead`  | `number \| undefined` | Cost per cached read token (USD)    |
+| `cacheWrite` | `number \| undefined` | Cost per cached write token (USD)   |
 
 Pricing rates are stored per-token in the catalog (converted from per-million at generation time). No runtime conversion is needed.
 
@@ -109,7 +109,7 @@ const totalCost = runs.reduce((sum, run) => {
 
 ## Calculation Formula
 
-```
+```text
 input      = inputTokens      * pricing.input
 output     = outputTokens     * pricing.output
 cacheRead  = cacheReadTokens  * (pricing.cacheRead  ?? 0)

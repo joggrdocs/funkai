@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - `OPENROUTER_API_KEY` environment variable set
 - Familiarity with Zod schemas
 
@@ -13,7 +13,7 @@
 A workflow has typed `input` and `output` Zod schemas and a handler function. The handler receives validated input and a `$` step builder for tracked operations.
 
 ```ts
-import { workflow } from "@pkg/agent-sdk";
+import { workflow } from "@funkai/agents";
 import { z } from "zod";
 
 const myWorkflow = workflow(
@@ -76,7 +76,7 @@ if (result.ok) {
 Run an agent as a tracked workflow step. The framework records the agent name, input, and output in the trace.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 
 const analyzer = agent({
   name: "analyzer",
@@ -271,7 +271,7 @@ const wf = workflow(
 ## Full example
 
 ```ts
-import { agent, workflow, tool } from "@pkg/agent-sdk";
+import { agent, workflow, tool } from "@funkai/agents";
 import { z } from "zod";
 
 // Define tools

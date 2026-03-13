@@ -18,7 +18,7 @@
 
 ## Unknown model
 
-**Fix:** Use `tryModel()` for safe lookup, or add the model to `models.config.json` and run `pnpm --filter=@pkg/agent-sdk generate:models`.
+**Fix:** Use `tryModel()` for safe lookup, or add the model to `models.config.json` and run `pnpm --filter=@funkai/agents generate:models`.
 
 ## StepResult access
 

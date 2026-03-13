@@ -30,8 +30,8 @@ while IFS= read -r file; do
   # Look for exports without JSDoc (simple heuristic)
   if grep -Pzo '(?<!/\*\*)\nexport (function|const|type|interface)' "$file" > /dev/null 2>&1; then
     echo -e "${YELLOW}⚠️  Possible missing JSDoc in: $file${NC}"
-    ((WARNINGS++))
-    ((MISSING_JSDOC++))
+    ((WARNINGS+=1))
+    ((MISSING_JSDOC+=1))
   fi
 done < <(find packages/*/src -name "*.ts" -not -path "*/test/*" -not -path "*/__tests__/*" 2>/dev/null || true)
 
@@ -67,8 +67,8 @@ while IFS= read -r mdfile; do
     # Check if target exists
     if [ ! -e "$target_path" ] && [ ! -e "$REPO_ROOT/$link" ]; then
       echo -e "${RED}✗ Broken link in $mdfile: $link${NC}"
-      ((ERRORS++))
-      ((BROKEN_LINKS++))
+      ((ERRORS+=1))
+      ((BROKEN_LINKS+=1))
     fi
   done < <(grep -oP '\]\(\K[^)]+' "$mdfile" 2>/dev/null || true)
 done < <(find packages contributing -name "*.md" 2>/dev/null || true)
@@ -89,12 +89,25 @@ while IFS= read -r mdfile; do
     # Basic syntax check - look for common issues
     if grep -P '(// \.\.\.|/\/ placeholder|foo|bar(?!e))' "$mdfile" > /dev/null 2>&1; then
       echo -e "${YELLOW}⚠️  Possible placeholder/example code in: $mdfile${NC}"
-      ((WARNINGS++))
+      ((WARNINGS+=1))
     fi
   fi
 done < <(find packages contributing -name "*.md" 2>/dev/null || true)
 
-echo -e "${GREEN}✓ Code examples checked (run 'pnpm typecheck' for full validation)${NC}"
+# Run actual typecheck if available
+if command -v pnpm > /dev/null 2>&1; then
+  echo "Running TypeScript validation..."
+  if pnpm typecheck > /dev/null 2>&1; then
+    echo -e "${GREEN}✓ TypeScript code examples passed validation${NC}"
+  else
+    echo -e "${RED}✗ TypeScript validation failed${NC}"
+    echo "Run 'pnpm typecheck' for details"
+    ((ERRORS+=1))
+    ((CODE_ERRORS+=1))
+  fi
+else
+  echo -e "${GREEN}✓ Code examples checked (run 'pnpm typecheck' for full validation)${NC}"
+fi
 echo ""
 
 # Check 4: Mermaid diagram theme
@@ -102,19 +115,21 @@ echo "4️⃣  Checking Mermaid diagrams use Catppuccin theme..."
 THEME_ERRORS=0
 
 while IFS= read -r mdfile; do
-  # Find mermaid blocks
+  # Find mermaid blocks and check each one
   if grep -Pzo '```mermaid' "$mdfile" > /dev/null 2>&1; then
-    # Check if they have %%{init: ... theme in the block
-    if ! grep -Pzo '```mermaid.*?%%\{init:.*?theme' "$mdfile" > /dev/null 2>&1; then
-      echo -e "${RED}✗ Missing Catppuccin theme in Mermaid diagram: $mdfile${NC}"
-      ((ERRORS++))
-      ((THEME_ERRORS++))
+    # Check if file has any mermaid blocks without theme
+    # More specific check: look for %%{init: and 'catppuccin' or theme config
+    if ! grep -Pzo '```mermaid.*?%%\{init:.*?(catppuccin|theme)' "$mdfile" > /dev/null 2>&1; then
+      echo -e "${RED}✗ Missing Catppuccin theme config in Mermaid diagram: $mdfile${NC}"
+      echo -e "${YELLOW}  Mermaid blocks should include: %%{init: {'theme': 'base', 'themeVariables': {...}}}${NC}"
+      ((ERRORS+=1))
+      ((THEME_ERRORS+=1))
     fi
   fi
 done < <(find packages contributing -name "*.md" 2>/dev/null || true)
 
 if [ $THEME_ERRORS -eq 0 ]; then
-  echo -e "${GREEN}✓ All Mermaid diagrams use themed init blocks${NC}"
+  echo -e "${GREEN}✓ All Mermaid diagrams use Catppuccin theme config${NC}"
 fi
 echo ""
 
@@ -131,8 +146,8 @@ while IFS= read -r mdfile; do
   if grep -iE '(TODO|FIXME|XXX|placeholder|coming soon)' "$mdfile" > /dev/null 2>&1; then
     echo -e "${RED}✗ Found TODO/placeholder in: $mdfile${NC}"
     grep -inE '(TODO|FIXME|XXX|placeholder|coming soon)' "$mdfile" | head -3
-    ((ERRORS++))
-    ((PLACEHOLDERS++))
+    ((ERRORS+=1))
+    ((PLACEHOLDERS+=1))
   fi
 done < <(find packages contributing -name "*.md" 2>/dev/null || true)
 

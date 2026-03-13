@@ -178,14 +178,16 @@ Combine `collectUsages()` with `calculateCost()` from `@funkai/models`:
 
 ```ts
 import { collectUsages } from "@funkai/agents";
-import { calculateCost } from "@funkai/models";
+import { calculateCost, model } from "@funkai/models";
 
 const result = await myFlowAgent.generate(input);
 
 if (result.ok) {
   const usages = collectUsages(result.trace);
+  const m = model("openai/gpt-4.1");
+  if (!m) throw new Error("Model not found in catalog");
   const totalCost = usages.reduce((sum, usage) => {
-    const cost = calculateCost("openai/gpt-4.1", usage);
+    const cost = calculateCost(usage, m.pricing);
     return sum + cost.total;
   }, 0);
   console.log(`Total cost: $${totalCost.toFixed(4)}`);
