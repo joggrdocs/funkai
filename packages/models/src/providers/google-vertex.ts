@@ -18,12 +18,12 @@ import { GOOGLE_VERTEX_MODELS } from '../catalog/providers/google-vertex.js'
 /**
  * Known model identifiers for Google Vertex AI.
  */
-export type ModelId = (typeof GOOGLE_VERTEX_MODELS)[number]['id']
+export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]['id']
 
 /**
  * All Google Vertex AI models in the catalog.
  */
-export const models = GOOGLE_VERTEX_MODELS
+export const googleVertexModels = GOOGLE_VERTEX_MODELS
 
 /**
  * Look up a Google Vertex AI model by ID.
@@ -31,6 +31,6 @@ export const models = GOOGLE_VERTEX_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function googleVertexModel(id: LiteralUnion<GoogleVertexModelId, string>): ModelDefinition | null {
   return GOOGLE_VERTEX_MODELS.find((m) => m.id === id) ?? null
 }

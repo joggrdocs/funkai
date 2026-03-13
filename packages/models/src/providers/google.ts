@@ -18,12 +18,12 @@ import { GOOGLE_MODELS } from '../catalog/providers/google.js'
 /**
  * Known model identifiers for Google.
  */
-export type ModelId = (typeof GOOGLE_MODELS)[number]['id']
+export type GoogleModelId = (typeof GOOGLE_MODELS)[number]['id']
 
 /**
  * All Google models in the catalog.
  */
-export const models = GOOGLE_MODELS
+export const googleModels = GOOGLE_MODELS
 
 /**
  * Look up a Google model by ID.
@@ -31,6 +31,6 @@ export const models = GOOGLE_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function googleModel(id: LiteralUnion<GoogleModelId, string>): ModelDefinition | null {
   return GOOGLE_MODELS.find((m) => m.id === id) ?? null
 }

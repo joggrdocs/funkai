@@ -18,12 +18,12 @@ import { PERPLEXITY_MODELS } from '../catalog/providers/perplexity.js'
 /**
  * Known model identifiers for Perplexity.
  */
-export type ModelId = (typeof PERPLEXITY_MODELS)[number]['id']
+export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]['id']
 
 /**
  * All Perplexity models in the catalog.
  */
-export const models = PERPLEXITY_MODELS
+export const perplexityModels = PERPLEXITY_MODELS
 
 /**
  * Look up a Perplexity model by ID.
@@ -31,6 +31,6 @@ export const models = PERPLEXITY_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function perplexityModel(id: LiteralUnion<PerplexityModelId, string>): ModelDefinition | null {
   return PERPLEXITY_MODELS.find((m) => m.id === id) ?? null
 }

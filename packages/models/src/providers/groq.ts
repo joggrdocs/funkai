@@ -18,12 +18,12 @@ import { GROQ_MODELS } from '../catalog/providers/groq.js'
 /**
  * Known model identifiers for Groq.
  */
-export type ModelId = (typeof GROQ_MODELS)[number]['id']
+export type GroqModelId = (typeof GROQ_MODELS)[number]['id']
 
 /**
  * All Groq models in the catalog.
  */
-export const models = GROQ_MODELS
+export const groqModels = GROQ_MODELS
 
 /**
  * Look up a Groq model by ID.
@@ -31,6 +31,6 @@ export const models = GROQ_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function groqModel(id: LiteralUnion<GroqModelId, string>): ModelDefinition | null {
   return GROQ_MODELS.find((m) => m.id === id) ?? null
 }

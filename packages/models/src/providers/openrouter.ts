@@ -18,12 +18,12 @@ import { OPENROUTER_MODELS } from '../catalog/providers/openrouter.js'
 /**
  * Known model identifiers for OpenRouter.
  */
-export type ModelId = (typeof OPENROUTER_MODELS)[number]['id']
+export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]['id']
 
 /**
  * All OpenRouter models in the catalog.
  */
-export const models = OPENROUTER_MODELS
+export const openRouterModels = OPENROUTER_MODELS
 
 /**
  * Look up a OpenRouter model by ID.
@@ -31,6 +31,6 @@ export const models = OPENROUTER_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function openRouterModel(id: LiteralUnion<OpenRouterModelId, string>): ModelDefinition | null {
   return OPENROUTER_MODELS.find((m) => m.id === id) ?? null
 }

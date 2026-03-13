@@ -18,12 +18,12 @@ import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
 /**
  * Known model identifiers for DeepInfra.
  */
-export type ModelId = (typeof DEEPINFRA_MODELS)[number]['id']
+export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
 
 /**
  * All DeepInfra models in the catalog.
  */
-export const models = DEEPINFRA_MODELS
+export const deepInfraModels = DEEPINFRA_MODELS
 
 /**
  * Look up a DeepInfra model by ID.
@@ -31,6 +31,6 @@ export const models = DEEPINFRA_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function deepInfraModel(id: LiteralUnion<DeepInfraModelId, string>): ModelDefinition | null {
   return DEEPINFRA_MODELS.find((m) => m.id === id) ?? null
 }

@@ -18,12 +18,12 @@ import { INCEPTION_MODELS } from '../catalog/providers/inception.js'
 /**
  * Known model identifiers for Inception (Mercury).
  */
-export type ModelId = (typeof INCEPTION_MODELS)[number]['id']
+export type InceptionModelId = (typeof INCEPTION_MODELS)[number]['id']
 
 /**
  * All Inception (Mercury) models in the catalog.
  */
-export const models = INCEPTION_MODELS
+export const inceptionModels = INCEPTION_MODELS
 
 /**
  * Look up a Inception (Mercury) model by ID.
@@ -31,6 +31,6 @@ export const models = INCEPTION_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function inceptionModel(id: LiteralUnion<InceptionModelId, string>): ModelDefinition | null {
   return INCEPTION_MODELS.find((m) => m.id === id) ?? null
 }

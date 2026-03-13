@@ -18,12 +18,12 @@ import { ALIBABA_MODELS } from '../catalog/providers/alibaba.js'
 /**
  * Known model identifiers for Alibaba (Qwen).
  */
-export type ModelId = (typeof ALIBABA_MODELS)[number]['id']
+export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
 
 /**
  * All Alibaba (Qwen) models in the catalog.
  */
-export const models = ALIBABA_MODELS
+export const alibabaModels = ALIBABA_MODELS
 
 /**
  * Look up a Alibaba (Qwen) model by ID.
@@ -31,6 +31,6 @@ export const models = ALIBABA_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function alibabaModel(id: LiteralUnion<AlibabaModelId, string>): ModelDefinition | null {
   return ALIBABA_MODELS.find((m) => m.id === id) ?? null
 }

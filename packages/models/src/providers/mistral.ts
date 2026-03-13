@@ -18,12 +18,12 @@ import { MISTRAL_MODELS } from '../catalog/providers/mistral.js'
 /**
  * Known model identifiers for Mistral.
  */
-export type ModelId = (typeof MISTRAL_MODELS)[number]['id']
+export type MistralModelId = (typeof MISTRAL_MODELS)[number]['id']
 
 /**
  * All Mistral models in the catalog.
  */
-export const models = MISTRAL_MODELS
+export const mistralModels = MISTRAL_MODELS
 
 /**
  * Look up a Mistral model by ID.
@@ -31,6 +31,6 @@ export const models = MISTRAL_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function mistralModel(id: LiteralUnion<MistralModelId, string>): ModelDefinition | null {
   return MISTRAL_MODELS.find((m) => m.id === id) ?? null
 }

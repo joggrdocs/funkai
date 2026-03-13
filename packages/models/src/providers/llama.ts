@@ -18,12 +18,12 @@ import { LLAMA_MODELS } from '../catalog/providers/llama.js'
 /**
  * Known model identifiers for Meta Llama.
  */
-export type ModelId = (typeof LLAMA_MODELS)[number]['id']
+export type LlamaModelId = (typeof LLAMA_MODELS)[number]['id']
 
 /**
  * All Meta Llama models in the catalog.
  */
-export const models = LLAMA_MODELS
+export const llamaModels = LLAMA_MODELS
 
 /**
  * Look up a Meta Llama model by ID.
@@ -31,6 +31,6 @@ export const models = LLAMA_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function llamaModel(id: LiteralUnion<LlamaModelId, string>): ModelDefinition | null {
   return LLAMA_MODELS.find((m) => m.id === id) ?? null
 }

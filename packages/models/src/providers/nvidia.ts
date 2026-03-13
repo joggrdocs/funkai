@@ -18,12 +18,12 @@ import { NVIDIA_MODELS } from '../catalog/providers/nvidia.js'
 /**
  * Known model identifiers for NVIDIA NIM.
  */
-export type ModelId = (typeof NVIDIA_MODELS)[number]['id']
+export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]['id']
 
 /**
  * All NVIDIA NIM models in the catalog.
  */
-export const models = NVIDIA_MODELS
+export const nvidiaModels = NVIDIA_MODELS
 
 /**
  * Look up a NVIDIA NIM model by ID.
@@ -31,6 +31,6 @@ export const models = NVIDIA_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function nvidiaModel(id: LiteralUnion<NvidiaModelId, string>): ModelDefinition | null {
   return NVIDIA_MODELS.find((m) => m.id === id) ?? null
 }

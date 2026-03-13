@@ -39,6 +39,7 @@ const BANNER = `// ────────────────────�
 
 interface ProviderEntry {
   name: string;
+  prefix: string;
   sdk: string;
 }
 
@@ -71,6 +72,23 @@ interface ApiProvider {
  */
 function toConstName(provider: string): string {
   return `${provider.toUpperCase().replace(/[^A-Z0-9]/g, "_")}_MODELS`;
+}
+
+/**
+ * Convert a PascalCase prefix to camelCase.
+ * e.g. "OpenAI" → "openAI", "GoogleVertex" → "googleVertex"
+ */
+function toCamelPrefix(prefix: string): string {
+  // Lowercase leading uppercase run: "XAI" → "xai", "OpenAI" → "openAI"
+  let i = 0;
+  while (i < prefix.length && prefix[i] === prefix[i]!.toUpperCase() && prefix[i] !== prefix[i]!.toLowerCase()) {
+    i++;
+  }
+  // If entire string is uppercase (e.g. "XAI"), lowercase all of it
+  if (i === prefix.length) return prefix.toLowerCase();
+  // If multiple leading uppercase chars (e.g. "OpenAI"), lowercase only the first
+  if (i <= 1) return prefix[0]!.toLowerCase() + prefix.slice(1);
+  return prefix[0]!.toLowerCase() + prefix.slice(1);
 }
 
 /**
@@ -237,6 +255,8 @@ ${lines.join("\n")}
     writeFileSync(catalogPath, catalogContent, "utf-8");
 
     // Write per-provider entry point
+    const prefix = providers[providerKey]!.prefix;
+    const camel = toCamelPrefix(prefix);
     const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
@@ -246,12 +266,12 @@ import { ${constName} } from '../catalog/providers/${providerKey}.js'
 /**
  * Known model identifiers for ${escapeStr(providers[providerKey]!.name)}.
  */
-export type ModelId = (typeof ${constName})[number]['id']
+export type ${prefix}ModelId = (typeof ${constName})[number]['id']
 
 /**
  * All ${escapeStr(providers[providerKey]!.name)} models in the catalog.
  */
-export const models = ${constName}
+export const ${camel}Models = ${constName}
 
 /**
  * Look up a ${escapeStr(providers[providerKey]!.name)} model by ID.
@@ -259,7 +279,7 @@ export const models = ${constName}
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or \`null\`.
  */
-export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
+export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): ModelDefinition | null {
   return ${constName}.find((m) => m.id === id) ?? null
 }
 `;
