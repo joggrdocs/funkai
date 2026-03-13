@@ -75,20 +75,11 @@ function toConstName(provider: string): string {
 }
 
 /**
- * Convert a PascalCase prefix to camelCase.
- * e.g. "OpenAI" → "openAI", "GoogleVertex" → "googleVertex"
+ * Lowercase the first character of a string, preserving the rest as-is.
+ * e.g. "OpenAI" → "openAI", "GoogleVertex" → "googleVertex", "XAI" → "xAI"
  */
-function toCamelPrefix(prefix: string): string {
-  // Lowercase leading uppercase run: "XAI" → "xai", "OpenAI" → "openAI"
-  let i = 0;
-  while (i < prefix.length && prefix[i] === prefix[i]!.toUpperCase() && prefix[i] !== prefix[i]!.toLowerCase()) {
-    i++;
-  }
-  // If entire string is uppercase (e.g. "XAI"), lowercase all of it
-  if (i === prefix.length) return prefix.toLowerCase();
-  // If multiple leading uppercase chars (e.g. "OpenAI"), lowercase only the first
-  if (i <= 1) return prefix[0]!.toLowerCase() + prefix.slice(1);
-  return prefix[0]!.toLowerCase() + prefix.slice(1);
+function lowerFirst(s: string): string {
+  return s.length === 0 ? s : s[0]!.toLowerCase() + s.slice(1);
 }
 
 /**
@@ -256,7 +247,7 @@ ${lines.join("\n")}
 
     // Write per-provider entry point
     const prefix = providers[providerKey]!.prefix;
-    const camel = toCamelPrefix(prefix);
+    const camel = lowerFirst(prefix);
     const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
