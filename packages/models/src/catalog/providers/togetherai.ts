@@ -1,0 +1,34 @@
+// ──────────────────────────────────────────────────────────────
+// ███████╗██╗   ██╗███╗   ██╗██╗  ██╗ █████╗ ██╗
+// ██╔════╝██║   ██║████╗  ██║██║ ██╔╝██╔══██╗██║
+// █████╗  ██║   ██║██╔██╗ ██║█████╔╝ ███████║██║
+// ██╔══╝  ██║   ██║██║╚██╗██║██╔═██╗ ██╔══██║██║
+// ██║     ╚██████╔╝██║ ╚████║██║  ██╗██║  ██║██║
+// ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
+//
+// AUTO-GENERATED — DO NOT EDIT
+// Source: https://models.dev
+// Update: pnpm --filter=@funkai/models generate:models
+// ──────────────────────────────────────────────────────────────
+
+import type { ModelDefinition } from '../types.js'
+
+export const TOGETHERAI_MODELS: readonly ModelDefinition[] = [
+  { id: 'zai-org/GLM-4.6', name: 'GLM 4.6', provider: 'togetherai', family: 'glm', pricing: { input: 6e-7, output: 0.0000022 }, contextWindow: 200000, maxOutput: 200000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'zai-org/GLM-4.7', name: 'GLM-4.7', provider: 'togetherai', family: 'glm', pricing: { input: 4.5000000000000003e-7, output: 0.000002 }, contextWindow: 200000, maxOutput: 200000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'zai-org/GLM-5', name: 'GLM-5', provider: 'togetherai', family: 'glm', pricing: { input: 0.000001, output: 0.0000032000000000000003 }, contextWindow: 202752, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
+  { id: 'essentialai/Rnj-1-Instruct', name: 'Rnj-1 Instruct', provider: 'togetherai', family: 'rnj', pricing: { input: 1.5e-7, output: 1.5e-7 }, contextWindow: 32768, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'MiniMaxAI/MiniMax-M2.5', name: 'MiniMax-M2.5', provider: 'togetherai', family: 'minimax', pricing: { input: 3e-7, output: 0.0000012, cacheRead: 6e-8 }, contextWindow: 204800, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'deepseek-ai/DeepSeek-V3-1', name: 'DeepSeek V3.1', provider: 'togetherai', family: 'deepseek', pricing: { input: 6e-7, output: 0.0000017 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'deepseek-ai/DeepSeek-R1', name: 'DeepSeek R1', provider: 'togetherai', family: 'deepseek-thinking', pricing: { input: 0.000003, output: 0.000007 }, contextWindow: 163839, maxOutput: 163839, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek V3', provider: 'togetherai', family: 'deepseek', pricing: { input: 0.00000125, output: 0.00000125 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'moonshotai/Kimi-K2-Instruct', name: 'Kimi K2 Instruct', provider: 'togetherai', family: 'kimi', pricing: { input: 0.000001, output: 0.000003 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'moonshotai/Kimi-K2.5', name: 'Kimi K2.5', provider: 'togetherai', family: 'kimi', pricing: { input: 5e-7, output: 0.0000028 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', name: 'Llama 3.3 70B', provider: 'togetherai', family: 'llama', pricing: { input: 8.8e-7, output: 8.8e-7 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'Qwen/Qwen3-Next-80B-A3B-Instruct', name: 'Qwen3-Next-80B-A3B-Instruct', provider: 'togetherai', family: 'qwen', pricing: { input: 1.5e-7, output: 0.0000015 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'Qwen/Qwen3-235B-A22B-Instruct-2507-tput', name: 'Qwen3 235B A22B Instruct 2507 FP8', provider: 'togetherai', family: 'qwen', pricing: { input: 2.0000000000000002e-7, output: 6e-7 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'Qwen/Qwen3.5-397B-A17B', name: 'Qwen3.5 397B A17B', provider: 'togetherai', family: 'qwen', pricing: { input: 6e-7, output: 0.0000036000000000000003 }, contextWindow: 262144, maxOutput: 130000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'Qwen/Qwen3-Coder-Next-FP8', name: 'Qwen3 Coder Next FP8', provider: 'togetherai', family: 'qwen', pricing: { input: 5e-7, output: 0.0000012 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8', name: 'Qwen3 Coder 480B A35B Instruct', provider: 'togetherai', family: 'qwen', pricing: { input: 0.000002, output: 0.000002 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'togetherai', family: 'gpt-oss', pricing: { input: 1.5e-7, output: 6e-7 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+] as const

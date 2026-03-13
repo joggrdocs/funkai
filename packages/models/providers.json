@@ -1,0 +1,23 @@
+{
+  "openai": { "name": "OpenAI", "sdk": "@ai-sdk/openai" },
+  "anthropic": { "name": "Anthropic", "sdk": "@ai-sdk/anthropic" },
+  "google": { "name": "Google", "sdk": "@ai-sdk/google" },
+  "google-vertex": { "name": "Google Vertex AI", "sdk": "@ai-sdk/google-vertex" },
+  "mistral": { "name": "Mistral", "sdk": "@ai-sdk/mistral" },
+  "amazon-bedrock": { "name": "Amazon Bedrock", "sdk": "@ai-sdk/amazon-bedrock" },
+  "groq": { "name": "Groq", "sdk": "@ai-sdk/groq" },
+  "deepseek": { "name": "DeepSeek", "sdk": "@ai-sdk/deepseek" },
+  "xai": { "name": "xAI", "sdk": "@ai-sdk/xai" },
+  "cohere": { "name": "Cohere", "sdk": "@ai-sdk/cohere" },
+  "fireworks-ai": { "name": "Fireworks AI", "sdk": "@ai-sdk/fireworks" },
+  "togetherai": { "name": "Together AI", "sdk": "@ai-sdk/togetherai" },
+  "deepinfra": { "name": "DeepInfra", "sdk": "@ai-sdk/deepinfra" },
+  "cerebras": { "name": "Cerebras", "sdk": "@ai-sdk/cerebras" },
+  "perplexity": { "name": "Perplexity", "sdk": "@ai-sdk/perplexity" },
+  "openrouter": { "name": "OpenRouter", "sdk": "@openrouter/ai-sdk-provider" },
+  "llama": { "name": "Meta Llama", "sdk": "@ai-sdk/openai-compatible" },
+  "alibaba": { "name": "Alibaba (Qwen)", "sdk": "@ai-sdk/alibaba" },
+  "nvidia": { "name": "NVIDIA NIM", "sdk": "@ai-sdk/openai-compatible" },
+  "huggingface": { "name": "Hugging Face", "sdk": "@ai-sdk/huggingface" },
+  "inception": { "name": "Inception (Mercury)", "sdk": "@ai-sdk/openai-compatible" }
+}

@@ -5,10 +5,10 @@ import type { ZodType } from "zod";
 import { z } from "zod";
 
 import type { Agent, Message } from "@/core/agents/base/types.js";
-import { openrouter } from "@/core/provider/provider.js";
 import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
+import type { ModelResolver } from "@funkai/models";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 
 /**
@@ -30,10 +30,24 @@ function resolveToolName(meta: RunnableMeta | undefined, fallback: string): stri
 
 /**
  * Resolve a {@link Model} to an AI SDK `LanguageModel`.
+ *
+ * When `ref` is already a `LanguageModel`, it is returned as-is.
+ * When `ref` is a string model ID, the optional `resolver` is used
+ * to convert it. If no resolver is provided, an error is thrown.
+ *
+ * @param ref - A string model ID or an AI SDK `LanguageModel` instance.
+ * @param resolver - Optional resolver for string model IDs.
+ * @returns The resolved `LanguageModel`.
  */
-export function resolveModel(ref: Model): LanguageModel {
+export function resolveModel(ref: Model, resolver?: ModelResolver): LanguageModel {
   if (typeof ref === "string") {
-    return openrouter(ref);
+    if (!resolver) {
+      throw new Error(
+        `Cannot resolve string model ID "${ref}": no resolver configured. ` +
+          `Pass a ModelResolver via agent config, or pass an AI SDK LanguageModel instance directly.`,
+      );
+    }
+    return resolver(ref);
   }
   return ref as LanguageModel;
 }

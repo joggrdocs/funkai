@@ -1,9 +1,11 @@
 // Catalog
-export { model, tryModel, models, MODELS } from "@/catalog/index.js";
+export { model, models, MODELS } from "@/catalog/index.js";
 export type {
+  KnownModelId,
   OpenRouterLanguageModelId,
   ModelId,
-  ModelCategory,
+  ModelCapabilities,
+  ModelModalities,
   ModelPricing,
   ModelDefinition,
 } from "@/catalog/index.js";
@@ -21,4 +23,4 @@ export type { LanguageModel, TokenUsage } from "@/provider/types.js";
 
 // Cost
 export { calculateCost } from "@/cost/calculate.js";
-export type { CostBreakdown } from "@/cost/types.js";
+export type { UsageCost } from "@/cost/types.js";

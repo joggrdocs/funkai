@@ -240,7 +240,7 @@ export function agent<
     try {
       const overrideModel = readOverride(overrides, "model");
       const modelRef = overrideModel ?? config.model;
-      const baseModel = resolveModel(modelRef);
+      const baseModel = resolveModel(modelRef, config.resolver);
       const model = await withModelMiddleware({ model: baseModel });
 
       const overrideTools = readOverride(overrides, "tools");
@@ -367,7 +367,7 @@ export function agent<
     try {
       const overrideModel = readOverride(overrides, "model");
       const modelRef = overrideModel ?? config.model;
-      const baseModel = resolveModel(modelRef);
+      const baseModel = resolveModel(modelRef, config.resolver);
       const model = await withModelMiddleware({ model: baseModel });
 
       const overrideTools = readOverride(overrides, "tools");

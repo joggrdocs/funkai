@@ -27,6 +27,90 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./openai": {
+      "types": "./dist/providers/openai.d.mts",
+      "import": "./dist/providers/openai.mjs"
+    },
+    "./anthropic": {
+      "types": "./dist/providers/anthropic.d.mts",
+      "import": "./dist/providers/anthropic.mjs"
+    },
+    "./google": {
+      "types": "./dist/providers/google.d.mts",
+      "import": "./dist/providers/google.mjs"
+    },
+    "./google-vertex": {
+      "types": "./dist/providers/google-vertex.d.mts",
+      "import": "./dist/providers/google-vertex.mjs"
+    },
+    "./mistral": {
+      "types": "./dist/providers/mistral.d.mts",
+      "import": "./dist/providers/mistral.mjs"
+    },
+    "./amazon-bedrock": {
+      "types": "./dist/providers/amazon-bedrock.d.mts",
+      "import": "./dist/providers/amazon-bedrock.mjs"
+    },
+    "./groq": {
+      "types": "./dist/providers/groq.d.mts",
+      "import": "./dist/providers/groq.mjs"
+    },
+    "./deepseek": {
+      "types": "./dist/providers/deepseek.d.mts",
+      "import": "./dist/providers/deepseek.mjs"
+    },
+    "./xai": {
+      "types": "./dist/providers/xai.d.mts",
+      "import": "./dist/providers/xai.mjs"
+    },
+    "./cohere": {
+      "types": "./dist/providers/cohere.d.mts",
+      "import": "./dist/providers/cohere.mjs"
+    },
+    "./fireworks-ai": {
+      "types": "./dist/providers/fireworks-ai.d.mts",
+      "import": "./dist/providers/fireworks-ai.mjs"
+    },
+    "./togetherai": {
+      "types": "./dist/providers/togetherai.d.mts",
+      "import": "./dist/providers/togetherai.mjs"
+    },
+    "./deepinfra": {
+      "types": "./dist/providers/deepinfra.d.mts",
+      "import": "./dist/providers/deepinfra.mjs"
+    },
+    "./cerebras": {
+      "types": "./dist/providers/cerebras.d.mts",
+      "import": "./dist/providers/cerebras.mjs"
+    },
+    "./perplexity": {
+      "types": "./dist/providers/perplexity.d.mts",
+      "import": "./dist/providers/perplexity.mjs"
+    },
+    "./openrouter": {
+      "types": "./dist/providers/openrouter.d.mts",
+      "import": "./dist/providers/openrouter.mjs"
+    },
+    "./llama": {
+      "types": "./dist/providers/llama.d.mts",
+      "import": "./dist/providers/llama.mjs"
+    },
+    "./alibaba": {
+      "types": "./dist/providers/alibaba.d.mts",
+      "import": "./dist/providers/alibaba.mjs"
+    },
+    "./nvidia": {
+      "types": "./dist/providers/nvidia.d.mts",
+      "import": "./dist/providers/nvidia.mjs"
+    },
+    "./huggingface": {
+      "types": "./dist/providers/huggingface.d.mts",
+      "import": "./dist/providers/huggingface.mjs"
+    },
+    "./inception": {
+      "types": "./dist/providers/inception.d.mts",
+      "import": "./dist/providers/inception.mjs"
     }
   },
   "scripts": {
@@ -42,7 +126,6 @@
     "type-fest": "^5.4.4"
   },
   "devDependencies": {
-    "@openrouter/sdk": "^0.9.11",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",

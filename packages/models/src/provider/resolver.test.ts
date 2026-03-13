@@ -1,14 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { createModelResolver } from "@/provider/resolver.js";
 import type { LanguageModel } from "@/provider/types.js";
-
-// Mock the openrouter module so resolver fallback doesn't need a real API key
-const mockOpenRouter = vi.fn();
-vi.mock("@/provider/openrouter.js", () => ({
-  openrouter: mockOpenRouter,
-}));
-
-const { createModelResolver } = await import("@/provider/resolver.js");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -27,21 +20,20 @@ function fakeFactory(prefix: string): (modelName: string) => LanguageModel {
 // ---------------------------------------------------------------------------
 
 describe("createModelResolver()", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockOpenRouter.mockImplementation((id: string) => fakeModel(id));
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("falls back to openrouter when no providers are configured", () => {
+  it("throws when no providers or fallback are configured for prefixed ID", () => {
     const resolve = createModelResolver();
-    const result = resolve("openai/gpt-4.1");
 
-    expect(mockOpenRouter).toHaveBeenCalledWith("openai/gpt-4.1");
-    expect(result).toEqual(fakeModel("openai/gpt-4.1"));
+    expect(() => resolve("openai/gpt-4.1")).toThrow(
+      'Cannot resolve model "openai/gpt-4.1": no provider mapped for "openai" and no fallback configured',
+    );
+  });
+
+  it("throws when no providers or fallback are configured for unprefixed ID", () => {
+    const resolve = createModelResolver();
+
+    expect(() => resolve("gpt-4.1")).toThrow(
+      'Cannot resolve model "gpt-4.1": no provider prefix and no fallback configured',
+    );
   });
 
   it("uses a mapped provider when prefix matches", () => {
@@ -53,44 +45,37 @@ describe("createModelResolver()", () => {
     const result = resolve("openai/gpt-4.1");
 
     expect(openaiFactory).toHaveBeenCalledWith("gpt-4.1");
-    expect(mockOpenRouter).not.toHaveBeenCalled();
     expect(result).toEqual(fakeModel("openai/gpt-4.1"));
   });
 
-  it("falls back to openrouter for unmapped prefixes", () => {
+  it("falls back to fallback for unmapped prefixes", () => {
+    const fallback = vi.fn((id: string) => fakeModel(id));
     const resolve = createModelResolver({
       providers: { openai: fakeFactory("openai") },
+      fallback,
     });
 
     resolve("anthropic/claude-sonnet-4-20250514");
 
-    expect(mockOpenRouter).toHaveBeenCalledWith("anthropic/claude-sonnet-4-20250514");
+    expect(fallback).toHaveBeenCalledWith("anthropic/claude-sonnet-4-20250514");
   });
 
-  it("handles model IDs without a slash via openrouter fallback", () => {
-    const resolve = createModelResolver();
+  it("handles model IDs without a slash via fallback", () => {
+    const fallback = vi.fn((id: string) => fakeModel(id));
+    const resolve = createModelResolver({ fallback });
 
     resolve("gpt-4.1");
 
-    expect(mockOpenRouter).toHaveBeenCalledWith("gpt-4.1");
+    expect(fallback).toHaveBeenCalledWith("gpt-4.1");
   });
 
-  it("throws for model IDs without a slash when fallback is disabled", () => {
-    const resolve = createModelResolver({ fallbackToOpenRouter: false });
-
-    expect(() => resolve("gpt-4.1")).toThrow(
-      'Cannot resolve model "gpt-4.1": no provider prefix and OpenRouter fallback is disabled',
-    );
-  });
-
-  it("throws for unmapped prefixes when fallback is disabled", () => {
+  it("throws for unmapped prefixes when no fallback is configured", () => {
     const resolve = createModelResolver({
       providers: { openai: fakeFactory("openai") },
-      fallbackToOpenRouter: false,
     });
 
     expect(() => resolve("anthropic/claude-sonnet-4-20250514")).toThrow(
-      'Cannot resolve model "anthropic/claude-sonnet-4-20250514": no provider mapped for "anthropic" and OpenRouter fallback is disabled',
+      'Cannot resolve model "anthropic/claude-sonnet-4-20250514": no provider mapped for "anthropic" and no fallback configured',
     );
   });
 
@@ -110,7 +95,6 @@ describe("createModelResolver()", () => {
 
     expect(openaiFactory).toHaveBeenCalledWith("gpt-4.1");
     expect(anthropicFactory).toHaveBeenCalledWith("claude-sonnet-4-20250514");
-    expect(mockOpenRouter).not.toHaveBeenCalled();
   });
 
   it("handles model IDs with multiple slashes correctly", () => {
@@ -135,5 +119,20 @@ describe("createModelResolver()", () => {
     const resolve = createModelResolver();
 
     expect(() => resolve("   ")).toThrow("Cannot resolve model: model ID is empty");
+  });
+
+  it("prefers mapped provider over fallback", () => {
+    const openaiFactory = vi.fn(fakeFactory("openai"));
+    const fallback = vi.fn((id: string) => fakeModel(id));
+
+    const resolve = createModelResolver({
+      providers: { openai: openaiFactory },
+      fallback,
+    });
+
+    resolve("openai/gpt-4.1");
+
+    expect(openaiFactory).toHaveBeenCalledWith("gpt-4.1");
+    expect(fallback).not.toHaveBeenCalled();
   });
 });

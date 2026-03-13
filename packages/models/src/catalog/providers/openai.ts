@@ -7,78 +7,55 @@
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
 //
 // AUTO-GENERATED — DO NOT EDIT
+// Source: https://models.dev
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-export const OPENAI_MODELS = [
-  {
-    id: "openai/gpt-5.2-codex",
-    category: "coding",
-    pricing: { prompt: 0.00000175, completion: 0.000014, inputCacheRead: 1.75e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-5.2",
-    category: "chat",
-    pricing: { prompt: 0.00000175, completion: 0.000014, inputCacheRead: 1.75e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-5.1",
-    category: "chat",
-    pricing: { prompt: 0.00000125, completion: 0.00001, inputCacheRead: 1.25e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-5",
-    category: "chat",
-    pricing: { prompt: 0.00000125, completion: 0.00001, inputCacheRead: 1.25e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-5-mini",
-    category: "chat",
-    pricing: { prompt: 2.5e-7, completion: 0.000002, inputCacheRead: 2.5e-8, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-5-nano",
-    category: "chat",
-    pricing: { prompt: 5e-8, completion: 4e-7, inputCacheRead: 5e-9, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-4.1",
-    category: "chat",
-    pricing: { prompt: 0.000002, completion: 0.000008, inputCacheRead: 5e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-4.1-mini",
-    category: "chat",
-    pricing: { prompt: 4e-7, completion: 0.0000016, inputCacheRead: 1e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-4.1-nano",
-    category: "chat",
-    pricing: { prompt: 1e-7, completion: 4e-7, inputCacheRead: 2.5e-8, webSearch: 0.01 },
-  },
-  {
-    id: "openai/gpt-4o",
-    category: "chat",
-    pricing: { prompt: 0.0000025, completion: 0.00001, inputCacheRead: 0.00000125 },
-  },
-  {
-    id: "openai/gpt-4o-mini",
-    category: "chat",
-    pricing: { prompt: 1.5e-7, completion: 6e-7, inputCacheRead: 7.5e-8 },
-  },
-  {
-    id: "openai/o3",
-    category: "reasoning",
-    pricing: { prompt: 0.000002, completion: 0.000008, inputCacheRead: 5e-7, webSearch: 0.01 },
-  },
-  {
-    id: "openai/o3-mini",
-    category: "reasoning",
-    pricing: { prompt: 0.0000011, completion: 0.0000044, inputCacheRead: 5.5e-7 },
-  },
-  {
-    id: "openai/o4-mini",
-    category: "reasoning",
-    pricing: { prompt: 0.0000011, completion: 0.0000044, inputCacheRead: 2.75e-7, webSearch: 0.01 },
-  },
-] as const;
+import type { ModelDefinition } from '../types.js'
+
+export const OPENAI_MODELS: readonly ModelDefinition[] = [
+  { id: 'gpt-4o-2024-11-20', name: 'GPT-4o (2024-11-20)', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.00001, cacheRead: 0.00000125 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.3-codex', name: 'GPT-5.3 Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5-codex', name: 'GPT-5-Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
+  { id: 'gpt-5-pro', name: 'GPT-5 Pro', provider: 'openai', family: 'gpt-pro', pricing: { input: 0.000015, output: 0.00012 }, contextWindow: 400000, maxOutput: 272000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4o-mini', name: 'GPT-4o mini', provider: 'openai', family: 'gpt-mini', pricing: { input: 1.5e-7, output: 6e-7, cacheRead: 8e-8 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'text-embedding-ada-002', name: 'text-embedding-ada-002', provider: 'openai', family: 'text-embedding', pricing: { input: 1.0000000000000001e-7, output: 0 }, contextWindow: 8192, maxOutput: 1536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'gpt-5-chat-latest', name: 'GPT-5 Chat (latest)', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: true, structuredOutput: true } },
+  { id: 'codex-mini-latest', name: 'Codex Mini', provider: 'openai', family: 'gpt-codex-mini', pricing: { input: 0.0000015, output: 0.000006, cacheRead: 3.75e-7 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'gpt-5.1-codex-max', name: 'GPT-5.1 Codex Max', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4o-2024-05-13', name: 'GPT-4o (2024-05-13)', provider: 'openai', family: 'gpt', pricing: { input: 0.000005, output: 0.000015 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.2-chat-latest', name: 'GPT-5.2 Chat', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.2-codex', name: 'GPT-5.2 Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o3-deep-research', name: 'o3-deep-research', provider: 'openai', family: 'o', pricing: { input: 0.00001, output: 0.00004, cacheRead: 0.0000025 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'o1', name: 'o1', provider: 'openai', family: 'o', pricing: { input: 0.000015, output: 0.00006, cacheRead: 0.0000075 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.1', name: 'GPT-5.1', provider: 'openai', family: 'gpt', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.3e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o4-mini-deep-research', name: 'o4-mini-deep-research', provider: 'openai', family: 'o-mini', pricing: { input: 0.000002, output: 0.000008, cacheRead: 5e-7 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'gpt-5.3-codex-spark', name: 'GPT-5.3 Codex Spark', provider: 'openai', family: 'gpt-codex-spark', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 128000, maxOutput: 32000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o3', name: 'o3', provider: 'openai', family: 'o', pricing: { input: 0.000002, output: 0.000008, cacheRead: 5e-7 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'text-embedding-3-small', name: 'text-embedding-3-small', provider: 'openai', family: 'text-embedding', pricing: { input: 2e-8, output: 0 }, contextWindow: 8191, maxOutput: 1536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'gpt-4.1-nano', name: 'GPT-4.1 nano', provider: 'openai', family: 'gpt-nano', pricing: { input: 1.0000000000000001e-7, output: 4.0000000000000003e-7, cacheRead: 3e-8 }, contextWindow: 1047576, maxOutput: 32768, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'text-embedding-3-large', name: 'text-embedding-3-large', provider: 'openai', family: 'text-embedding', pricing: { input: 1.3e-7, output: 0 }, contextWindow: 8191, maxOutput: 3072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'gpt-3.5-turbo', name: 'GPT-3.5-turbo', provider: 'openai', family: 'gpt', pricing: { input: 5e-7, output: 0.0000015, cacheRead: 0.00000125 }, contextWindow: 16385, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'gpt-5.1-codex-mini', name: 'GPT-5.1 Codex mini', provider: 'openai', family: 'gpt-codex', pricing: { input: 2.5e-7, output: 0.000002, cacheRead: 2.5000000000000002e-8 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.2', name: 'GPT-5.2', provider: 'openai', family: 'gpt', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'openai', family: 'gpt', pricing: { input: 0.000002, output: 0.000008, cacheRead: 5e-7 }, contextWindow: 1047576, maxOutput: 32768, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o3-pro', name: 'o3-pro', provider: 'openai', family: 'o-pro', pricing: { input: 0.00002, output: 0.00008 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', provider: 'openai', family: 'gpt', pricing: { input: 0.00001, output: 0.00003 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'gpt-5', name: 'GPT-5', provider: 'openai', family: 'gpt', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o4-mini', name: 'o4-mini', provider: 'openai', family: 'o-mini', pricing: { input: 0.0000011, output: 0.0000044, cacheRead: 2.8e-7 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4.1-mini', name: 'GPT-4.1 mini', provider: 'openai', family: 'gpt-mini', pricing: { input: 4.0000000000000003e-7, output: 0.0000016000000000000001, cacheRead: 1.0000000000000001e-7 }, contextWindow: 1047576, maxOutput: 32768, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.4', name: 'GPT-5.4', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.000015, cacheRead: 2.5e-7 }, contextWindow: 1050000, maxOutput: 128000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o1-preview', name: 'o1-preview', provider: 'openai', family: 'o', pricing: { input: 0.000015, output: 0.00006, cacheRead: 0.0000075 }, contextWindow: 128000, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: false, structuredOutput: false } },
+  { id: 'gpt-5.4-pro', name: 'GPT-5.4 Pro', provider: 'openai', family: 'gpt-pro', pricing: { input: 0.00003, output: 0.00018 }, contextWindow: 1050000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'o1-pro', name: 'o1-pro', provider: 'openai', family: 'o-pro', pricing: { input: 0.00015, output: 0.0006 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.1-codex', name: 'GPT-5.1 Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.2-pro', name: 'GPT-5.2 Pro', provider: 'openai', family: 'gpt-pro', pricing: { input: 0.000021, output: 0.000168 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'o3-mini', name: 'o3-mini', provider: 'openai', family: 'o-mini', pricing: { input: 0.0000011, output: 0.0000044, cacheRead: 5.5e-7 }, contextWindow: 200000, maxOutput: 100000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
+  { id: 'gpt-4o-2024-08-06', name: 'GPT-4o (2024-08-06)', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.00001, cacheRead: 0.00000125 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5-mini', name: 'GPT-5 Mini', provider: 'openai', family: 'gpt-mini', pricing: { input: 2.5e-7, output: 0.000002, cacheRead: 2.5000000000000002e-8 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-5.1-chat-latest', name: 'GPT-5.1 Chat', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'gpt-4', name: 'GPT-4', provider: 'openai', family: 'gpt', pricing: { input: 0.00003, output: 0.00006 }, contextWindow: 8192, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
+  { id: 'gpt-5-nano', name: 'GPT-5 Nano', provider: 'openai', family: 'gpt-nano', pricing: { input: 5.0000000000000004e-8, output: 4.0000000000000003e-7, cacheRead: 5e-9 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
+  { id: 'o1-mini', name: 'o1-mini', provider: 'openai', family: 'o-mini', pricing: { input: 0.0000011, output: 0.0000044, cacheRead: 5.5e-7 }, contextWindow: 128000, maxOutput: 65536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: false, structuredOutput: true } },
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.00001, cacheRead: 0.00000125 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
+] as const

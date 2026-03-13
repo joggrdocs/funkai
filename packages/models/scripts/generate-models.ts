@@ -3,32 +3,18 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { OpenRouter } from "@openrouter/sdk";
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = join(__dirname, "..");
-const CONFIG_PATH = join(PACKAGE_ROOT, "models.config.json");
-const PROVIDERS_DIR = join(PACKAGE_ROOT, "src", "catalog", "providers");
+const PROVIDERS_PATH = join(PACKAGE_ROOT, "providers.json");
+const CATALOG_DIR = join(PACKAGE_ROOT, "src", "catalog", "providers");
+const ENTRY_DIR = join(PACKAGE_ROOT, "src", "providers");
 const GENERATED_DIR = join(PACKAGE_ROOT, ".generated");
 const REQ_PATH = join(GENERATED_DIR, "req.txt");
+const ENTRIES_PATH = join(GENERATED_DIR, "entries.json");
+const PACKAGE_JSON_PATH = join(PACKAGE_ROOT, "package.json");
 
+const API_URL = "https://models.dev/api.json";
 const STALE_MS = 24 * 60 * 60 * 1000;
-
-/**
- * Pricing fields we extract from the OpenRouter API.
- * Maps API field name → our camelCase field name.
- */
-const PRICING_FIELDS: Record<string, string> = {
-  prompt: "prompt",
-  completion: "completion",
-  inputCacheRead: "inputCacheRead",
-  inputCacheWrite: "inputCacheWrite",
-  webSearch: "webSearch",
-  internalReasoning: "internalReasoning",
-  image: "image",
-  audio: "audio",
-  audioOutput: "audioOutput",
-};
 
 // ---------------------------------------------------------------------------
 // Banner
@@ -43,6 +29,7 @@ const BANNER = `// ────────────────────�
 // ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
 //
 // AUTO-GENERATED — DO NOT EDIT
+// Source: https://models.dev
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────`;
 
@@ -50,9 +37,28 @@ const BANNER = `// ────────────────────�
 // Types
 // ---------------------------------------------------------------------------
 
-interface ConfigEntry {
+interface ProviderEntry {
+  name: string;
+  sdk: string;
+}
+
+interface ApiModel {
   id: string;
-  category: string;
+  name?: string;
+  family?: string;
+  reasoning?: boolean;
+  tool_call?: boolean;
+  attachment?: boolean;
+  structured_output?: boolean;
+  modalities?: { input?: string[]; output?: string[] };
+  cost?: { input?: number; output?: number; cache_read?: number; cache_write?: number };
+  limit?: { context?: number; output?: number };
+}
+
+interface ApiProvider {
+  id: string;
+  name: string;
+  models: Record<string, ApiModel>;
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +66,7 @@ interface ConfigEntry {
 // ---------------------------------------------------------------------------
 
 /**
- * Convert a provider key to a constant name.
+ * Convert a provider key to a TypeScript constant name.
  * e.g. "openai" → "OPENAI_MODELS", "meta-llama" → "META_LLAMA_MODELS"
  */
 function toConstName(provider: string): string {
@@ -68,26 +74,66 @@ function toConstName(provider: string): string {
 }
 
 /**
- * Build the pricing object string for a model, including only non-zero fields.
+ * Convert per-million-token rate to per-token rate.
  */
-function buildPricing(modelId: string, apiPricing: Record<string, string | undefined>): string {
-  const parts: string[] = [];
-  for (const [apiKey, ourKey] of Object.entries(PRICING_FIELDS)) {
-    // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration over a static config object
-    const raw = apiPricing[apiKey];
-    if (!raw) {
-      continue;
-    }
-    const value = parseFloat(raw);
-    if (Number.isNaN(value)) {
-      throw new Error(`Invalid pricing value for "${modelId}" field "${apiKey}": "${raw}"`);
-    }
-    if (value === 0) {
-      continue;
-    }
-    parts.push(`${ourKey}: ${value}`);
+function toPerToken(perMillion: number): number {
+  return perMillion / 1_000_000;
+}
+
+/**
+ * Format a number for codegen output, using scientific notation for
+ * very small values.
+ */
+function fmtNum(n: number): string {
+  if (n === 0) return "0";
+  if (n < 0.0000001) return n.toExponential();
+  return String(n);
+}
+
+/**
+ * Build the pricing object literal string for a model.
+ */
+function buildPricing(cost: ApiModel["cost"]): string {
+  const input = toPerToken(cost?.input ?? 0);
+  const output = toPerToken(cost?.output ?? 0);
+  const parts: string[] = [`input: ${fmtNum(input)}`, `output: ${fmtNum(output)}`];
+
+  if (cost?.cache_read != null && cost.cache_read > 0) {
+    parts.push(`cacheRead: ${fmtNum(toPerToken(cost.cache_read))}`);
   }
+  if (cost?.cache_write != null && cost.cache_write > 0) {
+    parts.push(`cacheWrite: ${fmtNum(toPerToken(cost.cache_write))}`);
+  }
+
   return `{ ${parts.join(", ")} }`;
+}
+
+/**
+ * Build the modalities object literal string.
+ */
+function buildModalities(modalities: ApiModel["modalities"]): string {
+  const input = JSON.stringify(modalities?.input ?? ["text"]);
+  const output = JSON.stringify(modalities?.output ?? ["text"]);
+  return `{ input: ${input}, output: ${output} }`;
+}
+
+/**
+ * Build the capabilities object literal string.
+ */
+function buildCapabilities(m: ApiModel): string {
+  return [
+    `reasoning: ${Boolean(m.reasoning)}`,
+    `toolCall: ${Boolean(m.tool_call)}`,
+    `attachment: ${Boolean(m.attachment)}`,
+    `structuredOutput: ${Boolean(m.structured_output)}`,
+  ].join(", ");
+}
+
+/**
+ * Escape a string for use in a TypeScript single-quoted string literal.
+ */
+function escapeStr(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 }
 
 // ---------------------------------------------------------------------------
@@ -119,72 +165,114 @@ async function main(): Promise<void> {
     return;
   }
 
-  const config: Record<string, ConfigEntry[]> = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  // Read provider config
+  const providers: Record<string, ProviderEntry> = JSON.parse(readFileSync(PROVIDERS_PATH, "utf-8"));
+  const providerKeys = Object.keys(providers);
 
-  const providers = Object.keys(config);
-  if (providers.length === 0) {
-    throw new Error("models.config.json has no providers");
+  if (providerKeys.length === 0) {
+    throw new Error("providers.json has no providers");
   }
 
-  console.log("generate-models: fetching models from OpenRouter SDK");
-  const client = new OpenRouter();
-  const response = await client.models.list();
-  const apiModels = response.data ?? [];
-  const modelMap = new Map(apiModels.map((m) => [m.id, m]));
-
-  console.log(`generate-models: ${apiModels.length} models from API`);
+  // Fetch models.dev API
+  console.log("generate-models: fetching models from models.dev");
+  const response = await fetch(API_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${API_URL}: ${response.status} ${response.statusText}`);
+  }
+  const apiData: Record<string, ApiProvider> = await response.json();
+  console.log(`generate-models: ${Object.keys(apiData).length} providers from API`);
 
   mkdirSync(GENERATED_DIR, { recursive: true });
 
-  // Clean and recreate providers dir (all provider files are generated)
-  rmSync(PROVIDERS_DIR, { recursive: true, force: true });
-  mkdirSync(PROVIDERS_DIR, { recursive: true });
+  // Clean and recreate catalog providers dir
+  rmSync(CATALOG_DIR, { recursive: true, force: true });
+  mkdirSync(CATALOG_DIR, { recursive: true });
 
-  const providerFiles: { provider: string; constName: string }[] = [];
+  // Clean and recreate entry points dir
+  rmSync(ENTRY_DIR, { recursive: true, force: true });
+  mkdirSync(ENTRY_DIR, { recursive: true });
 
-  for (const provider of providers) {
-    // eslint-disable-next-line security/detect-object-injection -- Provider key from controlled iteration, not user input
-    const entries = config[provider];
-    const constName = toConstName(provider);
-    const lines: string[] = [];
+  const providerFiles: { provider: string; constName: string; count: number }[] = [];
 
-    for (const entry of entries) {
-      const apiModel = modelMap.get(entry.id);
-      if (!apiModel) {
-        console.warn(`  ⚠ ${entry.id} not found in OpenRouter API — skipping`);
-        continue;
-      }
-
-      const pricing = buildPricing(
-        entry.id,
-        apiModel.pricing as unknown as Record<string, string | undefined>,
-      );
-
-      lines.push(`  { id: '${entry.id}', category: '${entry.category}', pricing: ${pricing} },`);
+  for (const providerKey of providerKeys) {
+    // eslint-disable-next-line security/detect-object-injection -- Key from controlled iteration
+    const apiProvider = apiData[providerKey];
+    if (!apiProvider) {
+      console.warn(`  ⚠ provider "${providerKey}" not found in models.dev API — skipping`);
+      continue;
     }
 
-    const content = `${BANNER}
+    const apiModels = apiProvider.models ?? {};
+    const constName = toConstName(providerKey);
+    const lines: string[] = [];
 
-export const ${constName} = [
+    for (const [, m] of Object.entries(apiModels)) {
+      const id = escapeStr(m.id);
+      const name = escapeStr(m.name ?? m.id);
+      const family = escapeStr(m.family ?? "");
+      const pricing = buildPricing(m.cost);
+      const contextWindow = m.limit?.context ?? 0;
+      const maxOutput = m.limit?.output ?? 0;
+      const modalities = buildModalities(m.modalities);
+      const capabilities = buildCapabilities(m);
+
+      lines.push(
+        `  { id: '${id}', name: '${name}', provider: '${providerKey}', family: '${family}', ` +
+          `pricing: ${pricing}, contextWindow: ${contextWindow}, maxOutput: ${maxOutput}, ` +
+          `modalities: ${modalities}, capabilities: { ${capabilities} } },`,
+      );
+    }
+
+    // Write catalog provider file
+    const catalogContent = `${BANNER}
+
+import type { ModelDefinition } from '../types.js'
+
+export const ${constName}: readonly ModelDefinition[] = [
 ${lines.join("\n")}
 ] as const
 `;
 
-    const filePath = join(PROVIDERS_DIR, `${provider}.ts`);
-    writeFileSync(filePath, content, "utf-8");
-    console.log(`  ✓ providers/${provider}.ts (${lines.length} models)`);
+    const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
+    writeFileSync(catalogPath, catalogContent, "utf-8");
 
-    providerFiles.push({ provider, constName });
+    // Write per-provider entry point
+    const entryContent = `${BANNER}
+
+import type { ModelDefinition } from '../catalog/types.js'
+import { ${constName} } from '../catalog/providers/${providerKey}.js'
+
+/**
+ * All ${escapeStr(providers[providerKey]!.name)} models in the catalog.
+ */
+export const models: readonly ModelDefinition[] = ${constName}
+
+/**
+ * Look up a ${escapeStr(providers[providerKey]!.name)} model by ID.
+ *
+ * @param id - The provider-native model identifier.
+ * @returns The matching model definition, or \`null\`.
+ */
+export function model(id: string): ModelDefinition | null {
+  return ${constName}.find((m) => m.id === id) ?? null
+}
+`;
+
+    const entryPath = join(ENTRY_DIR, `${providerKey}.ts`);
+    writeFileSync(entryPath, entryContent, "utf-8");
+
+    console.log(`  ✓ ${providerKey} (${lines.length} models)`);
+    providerFiles.push({ provider: providerKey, constName, count: lines.length });
   }
 
-  // Providers barrel
+  // Catalog barrel
   const imports = providerFiles
     .map((p) => `import { ${p.constName} } from './${p.provider}.js'`)
     .join("\n");
 
   const spreads = providerFiles.map((p) => `  ...${p.constName},`).join("\n");
 
-  const providersBarrel = `${BANNER}
+  const catalogBarrel = `${BANNER}
 
 ${imports}
 
@@ -193,13 +281,41 @@ ${spreads}
 ] as const
 `;
 
-  writeFileSync(join(PROVIDERS_DIR, "index.ts"), providersBarrel, "utf-8");
-  console.log("  ✓ providers/index.ts (barrel)");
+  writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf-8");
+  console.log("  ✓ catalog/providers/index.ts (barrel)");
+
+  // Write generated entries list for tsdown config
+  const entryPoints = providerFiles.map((p) => `src/providers/${p.provider}.ts`);
+  writeFileSync(ENTRIES_PATH, JSON.stringify(entryPoints, null, 2), "utf-8");
+  console.log("  ✓ .generated/entries.json");
+
+  // Update package.json exports map
+  const pkgRaw = readFileSync(PACKAGE_JSON_PATH, "utf-8");
+  const pkg = JSON.parse(pkgRaw);
+
+  const exportsMap: Record<string, { types: string; import: string }> = {
+    ".": {
+      types: "./dist/index.d.mts",
+      import: "./dist/index.mjs",
+    },
+  };
+
+  for (const p of providerFiles) {
+    exportsMap[`./${p.provider}`] = {
+      types: `./dist/providers/${p.provider}.d.mts`,
+      import: `./dist/providers/${p.provider}.mjs`,
+    };
+  }
+
+  pkg.exports = exportsMap;
+  writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+  console.log("  ✓ package.json exports map updated");
 
   // Staleness timestamp
   writeFileSync(REQ_PATH, new Date().toISOString(), "utf-8");
 
-  console.log("generate-models: done");
+  const totalModels = providerFiles.reduce((sum, p) => sum + p.count, 0);
+  console.log(`generate-models: done (${providerFiles.length} providers, ${totalModels} models)`);
 }
 
 main().catch((err) => {

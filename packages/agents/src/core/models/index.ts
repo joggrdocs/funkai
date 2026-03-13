@@ -1,9 +1,11 @@
 // Re-export model catalog from @funkai/models
-export { model, tryModel, models, MODELS } from "@funkai/models";
+export { model, models, MODELS } from "@funkai/models";
 export type {
+  KnownModelId,
   OpenRouterLanguageModelId,
   ModelId,
-  ModelCategory,
+  ModelCapabilities,
+  ModelModalities,
   ModelPricing,
   ModelDefinition,
 } from "@funkai/models";

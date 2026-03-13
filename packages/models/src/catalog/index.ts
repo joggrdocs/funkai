@@ -1,14 +1,22 @@
 import type { LiteralUnion } from "type-fest";
 
-import type { ModelCategory, ModelDefinition, ModelPricing } from "./types.js";
+import type {
+  ModelCapabilities,
+  ModelDefinition,
+  ModelModalities,
+  ModelPricing,
+} from "./types.js";
 import { MODELS as GENERATED_MODELS } from "@/catalog/providers/index.js";
 
-export type { ModelCategory, ModelDefinition, ModelPricing };
+export type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing };
 
 /**
- * Supported model identifiers, derived from the generated {@link MODELS} array.
+ * Known model identifiers from the generated catalog.
  */
-export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]["id"];
+export type KnownModelId = (typeof GENERATED_MODELS)[number]["id"];
+
+/** @deprecated Use {@link KnownModelId} instead. */
+export type OpenRouterLanguageModelId = KnownModelId;
 
 /**
  * A model identifier that suggests known models but accepts any string.
@@ -16,56 +24,33 @@ export type OpenRouterLanguageModelId = (typeof GENERATED_MODELS)[number]["id"];
  * Provides autocomplete for cataloged models while allowing arbitrary
  * model IDs for new or custom models not yet in the catalog.
  */
-export type ModelId = LiteralUnion<OpenRouterLanguageModelId, string>;
+export type ModelId = LiteralUnion<KnownModelId, string>;
 
 /**
- * All supported models with pricing data.
+ * All supported models with pricing and capability data.
  */
 export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
 /**
  * Look up a model definition by its identifier.
  *
+ * Returns `null` when the ID is not in the catalog — callers should
+ * handle missing models gracefully (e.g. custom or newly released models).
+ *
  * @param id - The model identifier to look up.
- * @returns The matching model definition.
- * @throws {Error} If no model matches the given ID.
+ * @returns The matching model definition, or `null`.
  *
  * @example
  * ```typescript
- * const m = model('openai/gpt-5.2-codex')
- * console.log(m.pricing.prompt) // 0.00000175
- * console.log(m.category)       // 'coding'
- * ```
- */
-export function model(id: ModelId): ModelDefinition {
-  const found = MODELS.find((m) => m.id === id);
-  if (!found) {
-    throw new Error(
-      `Unknown model: "${id}" (${MODELS.length} models in catalog). Use tryModel() for a non-throwing lookup.`,
-    );
-  }
-  return found;
-}
-
-/**
- * Look up a model definition by its identifier, returning `undefined` if not found.
- *
- * Unlike {@link model}, this does not throw for unknown IDs — useful when
- * the caller can gracefully handle missing pricing (e.g. custom models).
- *
- * @param id - The model identifier to look up.
- * @returns The matching model definition, or `undefined`.
- *
- * @example
- * ```typescript
- * const m = tryModel('anthropic/claude-sonnet-4-20250514')
+ * const m = model('gpt-4.1')
  * if (m) {
- *   console.log(m.pricing.prompt)
+ *   console.log(m.pricing.input)
+ *   console.log(m.capabilities.reasoning)
  * }
  * ```
  */
-export function tryModel(id: ModelId): ModelDefinition | undefined {
-  return MODELS.find((m) => m.id === id);
+export function model(id: ModelId): ModelDefinition | null {
+  return MODELS.find((m) => m.id === id) ?? null;
 }
 
 /**
@@ -77,7 +62,8 @@ export function tryModel(id: ModelId): ModelDefinition | undefined {
  * @example
  * ```typescript
  * const all = models()
- * const reasoning = models((m) => m.category === 'reasoning')
+ * const reasoning = models((m) => m.capabilities.reasoning)
+ * const vision = models((m) => m.modalities.input.includes('image'))
  * ```
  */
 export function models(filter?: (m: ModelDefinition) => boolean): readonly ModelDefinition[] {

@@ -1,6 +1,8 @@
 import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from "ai";
 import type { ZodType } from "zod";
 
+import type { ModelResolver } from "@funkai/models";
+
 import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
@@ -292,12 +294,40 @@ export interface AgentConfig<
   /**
    * Model to use for generation.
    *
-   * Accepts a string model ID (resolved via OpenRouter) or an
+   * Accepts a string model ID (resolved via `resolver`) or an
    * AI SDK `LanguageModel` instance — including middleware-wrapped models.
+   *
+   * When passing a string, a `resolver` must also be configured.
    *
    * @see {@link Model}
    */
   model: Model;
+
+  /**
+   * Model resolver for string model IDs.
+   *
+   * Required when `model` is a string. Created via `createModelResolver()`
+   * from `@funkai/models`.
+   *
+   * @example
+   * ```typescript
+   * import { createModelResolver, openrouter } from '@funkai/models'
+   * import { createOpenAI } from '@ai-sdk/openai'
+   *
+   * const resolver = createModelResolver({
+   *   providers: { openai: createOpenAI({ apiKey: '...' }) },
+   *   fallback: openrouter,
+   * })
+   *
+   * const myAgent = agent({
+   *   name: 'my-agent',
+   *   model: 'openai/gpt-4.1',
+   *   resolver,
+   *   system: 'You are helpful.',
+   * })
+   * ```
+   */
+  resolver?: ModelResolver;
 
   /**
    * Zod schema for the agent's typed input.

@@ -18,16 +18,15 @@ const ZERO_USAGE: TokenUsage = {
 };
 
 const BASIC_PRICING: ModelPricing = {
-  prompt: 0.000002,
-  completion: 0.000008,
+  input: 0.000002,
+  output: 0.000008,
 };
 
 const FULL_PRICING: ModelPricing = {
-  prompt: 0.000002,
-  completion: 0.000008,
-  inputCacheRead: 0.0000005,
-  inputCacheWrite: 0.000001,
-  internalReasoning: 0.000004,
+  input: 0.000002,
+  output: 0.000008,
+  cacheRead: 0.0000005,
+  cacheWrite: 0.000001,
 };
 
 // ---------------------------------------------------------------------------
@@ -38,15 +37,14 @@ describe("calculateCost()", () => {
   it("returns all zeros for zero usage", () => {
     const result = calculateCost(ZERO_USAGE, FULL_PRICING);
 
-    expect(result.prompt).toBe(0);
-    expect(result.completion).toBe(0);
+    expect(result.input).toBe(0);
+    expect(result.output).toBe(0);
     expect(result.cacheRead).toBe(0);
     expect(result.cacheWrite).toBe(0);
-    expect(result.reasoning).toBe(0);
     expect(result.total).toBe(0);
   });
 
-  it("calculates prompt and completion costs", () => {
+  it("calculates input and output costs", () => {
     const usage: TokenUsage = {
       ...ZERO_USAGE,
       inputTokens: 1000,
@@ -56,8 +54,8 @@ describe("calculateCost()", () => {
 
     const result = calculateCost(usage, BASIC_PRICING);
 
-    expect(result.prompt).toBeCloseTo(0.002);
-    expect(result.completion).toBeCloseTo(0.004);
+    expect(result.input).toBeCloseTo(0.002);
+    expect(result.output).toBeCloseTo(0.004);
     expect(result.total).toBeCloseTo(0.006);
   });
 
@@ -73,10 +71,9 @@ describe("calculateCost()", () => {
 
     const result = calculateCost(usage, BASIC_PRICING);
 
-    // Optional pricing fields default to 0, so cache and reasoning cost nothing
+    // Optional pricing fields default to 0, so cache costs nothing
     expect(result.cacheRead).toBe(0);
     expect(result.cacheWrite).toBe(0);
-    expect(result.reasoning).toBe(0);
     expect(result.total).toBeCloseTo(0.006);
   });
 
@@ -92,12 +89,11 @@ describe("calculateCost()", () => {
 
     const result = calculateCost(usage, FULL_PRICING);
 
-    expect(result.prompt).toBeCloseTo(0.002);
-    expect(result.completion).toBeCloseTo(0.004);
+    expect(result.input).toBeCloseTo(0.002);
+    expect(result.output).toBeCloseTo(0.004);
     expect(result.cacheRead).toBeCloseTo(0.0001);
     expect(result.cacheWrite).toBeCloseTo(0.0001);
-    expect(result.reasoning).toBeCloseTo(0.0012);
-    expect(result.total).toBeCloseTo(0.0074);
+    expect(result.total).toBeCloseTo(0.0062);
   });
 
   it("total equals sum of all fields", () => {
@@ -111,8 +107,7 @@ describe("calculateCost()", () => {
     };
 
     const result = calculateCost(usage, FULL_PRICING);
-    const expectedTotal =
-      result.prompt + result.completion + result.cacheRead + result.cacheWrite + result.reasoning;
+    const expectedTotal = result.input + result.output + result.cacheRead + result.cacheWrite;
 
     expect(result.total).toBeCloseTo(expectedTotal);
   });

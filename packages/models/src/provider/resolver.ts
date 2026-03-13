@@ -1,5 +1,4 @@
 import type { ModelId } from "@/catalog/index.js";
-import { openrouter } from "@/provider/openrouter.js";
 import type { LanguageModel } from "@/provider/types.js";
 
 /**
@@ -35,11 +34,22 @@ export interface ModelResolverConfig {
   readonly providers?: ProviderMap;
 
   /**
-   * Whether to fall back to OpenRouter for unmapped providers.
+   * A fallback factory used when no mapped provider matches.
    *
-   * @defaultValue true
+   * Receives the full model ID string. Useful for routing unmapped
+   * providers through an aggregator like OpenRouter.
+   *
+   * @example
+   * ```typescript
+   * import { openrouter } from '@funkai/models'
+   *
+   * const resolve = createModelResolver({
+   *   providers: { openai: createOpenAI({ apiKey: '...' }) },
+   *   fallback: openrouter,
+   * })
+   * ```
    */
-  readonly fallbackToOpenRouter?: boolean;
+  readonly fallback?: (modelId: string) => LanguageModel;
 }
 
 /**
@@ -53,7 +63,8 @@ export type ModelResolver = (modelId: ModelId) => LanguageModel;
  * When a model ID like `"openai/gpt-4.1"` is resolved:
  * 1. The provider prefix (`"openai"`) is extracted
  * 2. If a direct provider is mapped for that prefix, it receives the model portion (`"gpt-4.1"`)
- * 3. Otherwise, OpenRouter is used with the full ID
+ * 3. Otherwise, the fallback is called with the full ID (if configured)
+ * 4. If no fallback, an error is thrown
  *
  * @param config - Provider mappings and fallback configuration.
  * @returns A resolver function that maps model IDs to {@link LanguageModel} instances.
@@ -71,12 +82,12 @@ export type ModelResolver = (modelId: ModelId) => LanguageModel;
  * })
  *
  * const m1 = resolve('openai/gpt-4.1')           // uses @ai-sdk/openai directly
- * const m2 = resolve('meta-llama/llama-4-scout')  // falls back to OpenRouter
+ * const m2 = resolve('anthropic/claude-sonnet-4') // uses @ai-sdk/anthropic directly
  * ```
  */
 export function createModelResolver(config?: ModelResolverConfig): ModelResolver {
   const providers = config?.providers ?? {};
-  const fallback = config?.fallbackToOpenRouter !== false;
+  const fallback = config?.fallback;
 
   return (modelId: ModelId): LanguageModel => {
     if (!modelId.trim()) {
@@ -87,10 +98,10 @@ export function createModelResolver(config?: ModelResolverConfig): ModelResolver
 
     if (slashIndex === -1) {
       if (fallback) {
-        return openrouter(modelId);
+        return fallback(modelId);
       }
       throw new Error(
-        `Cannot resolve model "${modelId}": no provider prefix and OpenRouter fallback is disabled`,
+        `Cannot resolve model "${modelId}": no provider prefix and no fallback configured`,
       );
     }
 
@@ -104,11 +115,11 @@ export function createModelResolver(config?: ModelResolverConfig): ModelResolver
     }
 
     if (fallback) {
-      return openrouter(modelId);
+      return fallback(modelId);
     }
 
     throw new Error(
-      `Cannot resolve model "${modelId}": no provider mapped for "${prefix}" and OpenRouter fallback is disabled`,
+      `Cannot resolve model "${modelId}": no provider mapped for "${prefix}" and no fallback configured`,
     );
   };
 }

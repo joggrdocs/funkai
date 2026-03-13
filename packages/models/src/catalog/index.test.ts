@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { model, models, MODELS, tryModel } from "@/catalog/index.js";
+import { model, models, MODELS } from "@/catalog/index.js";
 
 // ---------------------------------------------------------------------------
 // MODELS constant
@@ -15,22 +15,29 @@ describe("MODELS", () => {
     for (const m of MODELS) {
       expect(typeof m.id).toBe("string");
       expect(m.id.length).toBeGreaterThan(0);
-      expect(["chat", "coding", "reasoning"]).toContain(m.category);
-      expect(typeof m.pricing.prompt).toBe("number");
-      expect(typeof m.pricing.completion).toBe("number");
+      expect(typeof m.provider).toBe("string");
+      expect(typeof m.pricing.input).toBe("number");
+      expect(typeof m.pricing.output).toBe("number");
+      expect(Array.isArray(m.modalities.input)).toBe(true);
+      expect(Array.isArray(m.modalities.output)).toBe(true);
+      expect(typeof m.capabilities.reasoning).toBe("boolean");
     }
   });
 
   it("contains known model IDs", () => {
     const ids = MODELS.map((m) => m.id);
-    expect(ids).toContain("openai/gpt-5.2-codex");
-    expect(ids).toContain("openai/o4-mini");
+    expect(ids).toContain("gpt-4o-mini");
+    expect(ids).toContain("o1");
   });
 
-  it("has no duplicate IDs", () => {
-    const ids = MODELS.map((m) => m.id);
-    const unique = new Set(ids);
-    expect(unique.size).toBe(ids.length);
+  it("has no duplicate IDs within the same provider", () => {
+    const seen = new Map<string, Set<string>>();
+    for (const m of MODELS) {
+      const providerSet = seen.get(m.provider) ?? new Set<string>();
+      expect(providerSet.has(m.id)).toBe(false);
+      providerSet.add(m.id);
+      seen.set(m.provider, providerSet);
+    }
   });
 });
 
@@ -40,56 +47,34 @@ describe("MODELS", () => {
 
 describe("model()", () => {
   it("returns the model definition for a known ID", () => {
-    const result = model("openai/gpt-5.2-codex");
+    const result = model("gpt-4o-mini");
 
-    expect(result.id).toBe("openai/gpt-5.2-codex");
-    expect(result.category).toBe("coding");
-    expect(typeof result.pricing.prompt).toBe("number");
-    expect(typeof result.pricing.completion).toBe("number");
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe("gpt-4o-mini");
+    expect(result!.provider).toBe("openai");
+    expect(typeof result!.pricing.input).toBe("number");
+    expect(typeof result!.pricing.output).toBe("number");
   });
 
-  it("throws for an unknown model ID with context", () => {
-    expect(() => model("nonexistent/model-99")).toThrow(
-      /Unknown model: "nonexistent\/model-99" \(\d+ models in catalog\)/,
-    );
+  it("returns null for an unknown model ID", () => {
+    const result = model("nonexistent-model-99");
+
+    expect(result).toBeNull();
   });
 
-  it("returns correct category for reasoning models", () => {
-    const result = model("openai/o3");
+  it("returns model with reasoning capability", () => {
+    const result = model("o1");
 
-    expect(result.category).toBe("reasoning");
+    expect(result).not.toBeNull();
+    expect(result!.capabilities.reasoning).toBe(true);
   });
 
-  it("returns correct category for chat models", () => {
-    const result = model("openai/gpt-5.2");
+  it("returns model with correct modalities", () => {
+    const result = model("gpt-4o-mini");
 
-    expect(result.category).toBe("chat");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// tryModel()
-// ---------------------------------------------------------------------------
-
-describe("tryModel()", () => {
-  it("returns the model definition for a known ID", () => {
-    const result = tryModel("openai/gpt-5.2-codex");
-
-    expect(result).toBeDefined();
-    if (!result) {
-      throw new Error("Expected result to be defined");
-    }
-    expect(result.id).toBe("openai/gpt-5.2-codex");
-  });
-
-  it("returns undefined for an unknown model ID", () => {
-    const result = tryModel("nonexistent/model-99");
-
-    expect(result).toBeUndefined();
-  });
-
-  it("does not throw for unknown IDs", () => {
-    expect(() => tryModel("nonexistent/model-99")).not.toThrow();
+    expect(result).not.toBeNull();
+    expect(result!.modalities.input).toContain("text");
+    expect(result!.modalities.output).toContain("text");
   });
 });
 
@@ -104,21 +89,21 @@ describe("models()", () => {
     expect(result.length).toBe(MODELS.length);
   });
 
-  it("filters models by category", () => {
-    const codingModels = models((m) => m.category === "coding");
-
-    expect(codingModels.length).toBeGreaterThan(0);
-    for (const m of codingModels) {
-      expect(m.category).toBe("coding");
-    }
-  });
-
-  it("returns reasoning models when filtered", () => {
-    const reasoningModels = models((m) => m.category === "reasoning");
+  it("filters models by capability", () => {
+    const reasoningModels = models((m) => m.capabilities.reasoning);
 
     expect(reasoningModels.length).toBeGreaterThan(0);
     for (const m of reasoningModels) {
-      expect(m.category).toBe("reasoning");
+      expect(m.capabilities.reasoning).toBe(true);
+    }
+  });
+
+  it("filters models by modality", () => {
+    const imageModels = models((m) => m.modalities.input.includes("image"));
+
+    expect(imageModels.length).toBeGreaterThan(0);
+    for (const m of imageModels) {
+      expect(m.modalities.input).toContain("image");
     }
   });
 
@@ -129,11 +114,11 @@ describe("models()", () => {
   });
 
   it("supports arbitrary filter predicates", () => {
-    const result = models((m) => m.pricing.prompt > 0.000001);
+    const result = models((m) => m.pricing.input > 0.000001);
 
     expect(result.length).toBeGreaterThan(0);
     for (const m of result) {
-      expect(m.pricing.prompt).toBeGreaterThan(0.000001);
+      expect(m.pricing.input).toBeGreaterThan(0.000001);
     }
   });
 });

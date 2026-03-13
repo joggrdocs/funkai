@@ -28,13 +28,11 @@ jobs:
 
       - name: Generate models
         run: pnpm --filter=@funkai/models generate:models --force
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
 
       - name: Check for changes
         id: changes
         run: |
-          git diff --quiet packages/models/src/catalog/providers/ || echo "changed=true" >> "$GITHUB_OUTPUT"
+          git diff --quiet packages/models/src/catalog/providers/ packages/models/src/providers/ packages/models/package.json || echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Validate generated data
         if: steps.changes.outputs.changed == 'true'
@@ -49,7 +47,7 @@ jobs:
           "@funkai/models": patch
           ---
 
-          Update model catalog with latest pricing from OpenRouter
+          Update model catalog with latest data from models.dev
           CHANGESET_EOF
 
       - name: Commit and push
@@ -57,6 +55,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/models/src/catalog/providers/ .changeset/
+          git add packages/models/src/catalog/providers/ packages/models/src/providers/ packages/models/package.json .changeset/
           git commit -m "chore(packages/models): update model catalog"
           git push

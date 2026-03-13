@@ -1,54 +1,83 @@
 /**
- * Model category for classification and filtering.
- */
-export type ModelCategory = "chat" | "coding" | "reasoning";
-
-/**
  * Per-model pricing in USD per token.
  *
- * Field names match the OpenRouter API convention. All values are
- * per-token (or per-unit) rates as numbers. Optional fields are
- * omitted when the provider does not support them.
+ * All rates are per-token. The generation script converts models.dev
+ * per-million-token rates at code-gen time so runtime {@link calculateCost}
+ * can multiply directly.
  */
 export interface ModelPricing {
-  /** Cost per input (prompt) token. */
-  readonly prompt: number;
+  /** Cost per input token. */
+  readonly input: number;
 
-  /** Cost per output (completion) token. */
-  readonly completion: number;
+  /** Cost per output token. */
+  readonly output: number;
 
   /** Cost per cached input token (read). */
-  readonly inputCacheRead?: number;
+  readonly cacheRead?: number;
 
   /** Cost per cached input token (write). */
-  readonly inputCacheWrite?: number;
-
-  /** Cost per web search request. */
-  readonly webSearch?: number;
-
-  /** Cost per internal reasoning token. */
-  readonly internalReasoning?: number;
-
-  /** Cost per image input token. */
-  readonly image?: number;
-
-  /** Cost per audio input second. */
-  readonly audio?: number;
-
-  /** Cost per audio output second. */
-  readonly audioOutput?: number;
+  readonly cacheWrite?: number;
 }
 
 /**
- * Model definition with metadata and pricing.
+ * Model input/output modality descriptors.
+ *
+ * Values come directly from the models.dev API (e.g. `"text"`,
+ * `"image"`, `"audio"`, `"video"`, `"pdf"`).
+ */
+export interface ModelModalities {
+  /** Accepted input modalities. */
+  readonly input: readonly string[];
+
+  /** Produced output modalities. */
+  readonly output: readonly string[];
+}
+
+/**
+ * Boolean capability flags for a model.
+ */
+export interface ModelCapabilities {
+  /** Supports chain-of-thought / extended thinking. */
+  readonly reasoning: boolean;
+
+  /** Supports tool (function) calling. */
+  readonly toolCall: boolean;
+
+  /** Supports file/image attachments. */
+  readonly attachment: boolean;
+
+  /** Supports structured (JSON) output. */
+  readonly structuredOutput: boolean;
+}
+
+/**
+ * Model definition with metadata, pricing, and capabilities.
  */
 export interface ModelDefinition {
-  /** Model identifier (e.g. `"openai/gpt-5.2-codex"`). */
+  /** Provider-native model identifier (e.g. `"gpt-4.1"`, `"claude-sonnet-4"`). */
   readonly id: string;
 
-  /** Model category for classification. */
-  readonly category: ModelCategory;
+  /** Human-readable display name (e.g. `"GPT-4.1"`). */
+  readonly name: string;
 
-  /** Token pricing rates. */
+  /** Provider slug matching the key in `providers.json` (e.g. `"openai"`). */
+  readonly provider: string;
+
+  /** Model family (e.g. `"gpt"`, `"claude-sonnet"`). */
+  readonly family: string;
+
+  /** Token pricing rates (per-token, converted from per-million at generation time). */
   readonly pricing: ModelPricing;
+
+  /** Maximum context window size in tokens. */
+  readonly contextWindow: number;
+
+  /** Maximum output tokens. */
+  readonly maxOutput: number;
+
+  /** Supported input/output modalities. */
+  readonly modalities: ModelModalities;
+
+  /** Model capability flags. */
+  readonly capabilities: ModelCapabilities;
 }

@@ -4,7 +4,7 @@ export { resolveOutput } from "@/core/agents/base/output.js";
 export { flowAgent } from "@/core/agents/flow/flow-agent.js";
 export { createFlowEngine } from "@/core/agents/flow/engine.js";
 export { createDefaultLogger } from "@/core/logger.js";
-export { model, tryModel, models } from "@/core/models/index.js";
+export { model, models } from "@/core/models/index.js";
 export { createOpenRouter, openrouter } from "@/core/provider/provider.js";
 export { agentUsage, flowAgentUsage, sumTokenUsage } from "@/core/provider/usage.js";
 export { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
@@ -64,9 +64,11 @@ export type { AllConfig, EntryFactory } from "@/core/agents/flow/steps/all.js";
 export type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 
 export type {
+  KnownModelId,
   OpenRouterLanguageModelId,
   ModelId,
-  ModelCategory,
+  ModelCapabilities,
+  ModelModalities,
   ModelPricing,
   ModelDefinition,
 } from "@/core/models/index.js";
@@ -86,7 +88,7 @@ export type {
   ProviderMap,
   ModelResolverConfig,
   ModelResolver,
-  CostBreakdown,
+  UsageCost,
 } from "@funkai/models";
 
 export type { Output } from "ai";

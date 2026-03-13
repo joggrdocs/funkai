@@ -1,0 +1,30 @@
+// ──────────────────────────────────────────────────────────────
+// ███████╗██╗   ██╗███╗   ██╗██╗  ██╗ █████╗ ██╗
+// ██╔════╝██║   ██║████╗  ██║██║ ██╔╝██╔══██╗██║
+// █████╗  ██║   ██║██╔██╗ ██║█████╔╝ ███████║██║
+// ██╔══╝  ██║   ██║██║╚██╗██║██╔═██╗ ██╔══██║██║
+// ██║     ╚██████╔╝██║ ╚████║██║  ██╗██║  ██║██║
+// ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
+//
+// AUTO-GENERATED — DO NOT EDIT
+// Source: https://models.dev
+// Update: pnpm --filter=@funkai/models generate:models
+// ──────────────────────────────────────────────────────────────
+
+import type { ModelDefinition } from '../catalog/types.js'
+import { HUGGINGFACE_MODELS } from '../catalog/providers/huggingface.js'
+
+/**
+ * All Hugging Face models in the catalog.
+ */
+export const models: readonly ModelDefinition[] = HUGGINGFACE_MODELS
+
+/**
+ * Look up a Hugging Face model by ID.
+ *
+ * @param id - The provider-native model identifier.
+ * @returns The matching model definition, or `null`.
+ */
+export function model(id: string): ModelDefinition | null {
+  return HUGGINGFACE_MODELS.find((m) => m.id === id) ?? null
+}

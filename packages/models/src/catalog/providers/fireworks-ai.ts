@@ -1,0 +1,30 @@
+// ──────────────────────────────────────────────────────────────
+// ███████╗██╗   ██╗███╗   ██╗██╗  ██╗ █████╗ ██╗
+// ██╔════╝██║   ██║████╗  ██║██║ ██╔╝██╔══██╗██║
+// █████╗  ██║   ██║██╔██╗ ██║█████╔╝ ███████║██║
+// ██╔══╝  ██║   ██║██║╚██╗██║██╔═██╗ ██╔══██║██║
+// ██║     ╚██████╔╝██║ ╚████║██║  ██╗██║  ██║██║
+// ╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝
+//
+// AUTO-GENERATED — DO NOT EDIT
+// Source: https://models.dev
+// Update: pnpm --filter=@funkai/models generate:models
+// ──────────────────────────────────────────────────────────────
+
+import type { ModelDefinition } from '../types.js'
+
+export const FIREWORKS_AI_MODELS: readonly ModelDefinition[] = [
+  { id: 'accounts/fireworks/models/kimi-k2-instruct', name: 'Kimi K2 Instruct', provider: 'fireworks-ai', family: 'kimi', pricing: { input: 0.000001, output: 0.000003 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/glm-4p7', name: 'GLM 4.7', provider: 'fireworks-ai', family: 'glm', pricing: { input: 6e-7, output: 0.0000022, cacheRead: 3e-7 }, contextWindow: 198000, maxOutput: 198000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/glm-5', name: 'GLM 5', provider: 'fireworks-ai', family: 'glm', pricing: { input: 0.000001, output: 0.0000032000000000000003, cacheRead: 5e-7 }, contextWindow: 202752, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/deepseek-v3p1', name: 'DeepSeek V3.1', provider: 'fireworks-ai', family: 'deepseek', pricing: { input: 5.6e-7, output: 0.00000168 }, contextWindow: 163840, maxOutput: 163840, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/minimax-m2p1', name: 'MiniMax-M2.1', provider: 'fireworks-ai', family: 'minimax', pricing: { input: 3e-7, output: 0.0000012, cacheRead: 3e-8 }, contextWindow: 200000, maxOutput: 200000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/glm-4p5-air', name: 'GLM 4.5 Air', provider: 'fireworks-ai', family: 'glm-air', pricing: { input: 2.2e-7, output: 8.8e-7 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/deepseek-v3p2', name: 'DeepSeek V3.2', provider: 'fireworks-ai', family: 'deepseek', pricing: { input: 5.6e-7, output: 0.00000168, cacheRead: 2.8e-7 }, contextWindow: 160000, maxOutput: 160000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/minimax-m2p5', name: 'MiniMax-M2.5', provider: 'fireworks-ai', family: 'minimax', pricing: { input: 3e-7, output: 0.0000012, cacheRead: 3e-8 }, contextWindow: 196608, maxOutput: 196608, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'fireworks-ai', family: 'gpt-oss', pricing: { input: 1.5e-7, output: 6e-7 }, contextWindow: 131072, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/kimi-k2p5', name: 'Kimi K2.5', provider: 'fireworks-ai', family: 'kimi-thinking', pricing: { input: 6e-7, output: 0.000003, cacheRead: 1.0000000000000001e-7 }, contextWindow: 256000, maxOutput: 256000, modalities: { input: ["text","image","video"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/kimi-k2-thinking', name: 'Kimi K2 Thinking', provider: 'fireworks-ai', family: 'kimi-thinking', pricing: { input: 6e-7, output: 0.0000025, cacheRead: 3e-7 }, contextWindow: 256000, maxOutput: 256000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/glm-4p5', name: 'GLM 4.5', provider: 'fireworks-ai', family: 'glm', pricing: { input: 5.5e-7, output: 0.0000021899999999999998 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+  { id: 'accounts/fireworks/models/gpt-oss-20b', name: 'GPT OSS 20B', provider: 'fireworks-ai', family: 'gpt-oss', pricing: { input: 5.0000000000000004e-8, output: 2.0000000000000002e-7 }, contextWindow: 131072, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
+] as const

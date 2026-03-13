@@ -1,0 +1,23 @@
+[
+  "src/providers/openai.ts",
+  "src/providers/anthropic.ts",
+  "src/providers/google.ts",
+  "src/providers/google-vertex.ts",
+  "src/providers/mistral.ts",
+  "src/providers/amazon-bedrock.ts",
+  "src/providers/groq.ts",
+  "src/providers/deepseek.ts",
+  "src/providers/xai.ts",
+  "src/providers/cohere.ts",
+  "src/providers/fireworks-ai.ts",
+  "src/providers/togetherai.ts",
+  "src/providers/deepinfra.ts",
+  "src/providers/cerebras.ts",
+  "src/providers/perplexity.ts",
+  "src/providers/openrouter.ts",
+  "src/providers/llama.ts",
+  "src/providers/alibaba.ts",
+  "src/providers/nvidia.ts",
+  "src/providers/huggingface.ts",
+  "src/providers/inception.ts"
+]
