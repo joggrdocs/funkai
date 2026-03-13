@@ -15,9 +15,6 @@ export type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing 
  */
 export type KnownModelId = (typeof GENERATED_MODELS)[number]["id"];
 
-/** @deprecated Use {@link KnownModelId} instead. */
-export type OpenRouterLanguageModelId = KnownModelId;
-
 /**
  * A model identifier that suggests known models but accepts any string.
  *

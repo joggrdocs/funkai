@@ -2,7 +2,6 @@
 export { model, models, MODELS } from "@funkai/models";
 export type {
   KnownModelId,
-  OpenRouterLanguageModelId,
   ModelId,
   ModelCapabilities,
   ModelModalities,

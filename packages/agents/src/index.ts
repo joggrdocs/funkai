@@ -65,7 +65,6 @@ export type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 
 export type {
   KnownModelId,
-  OpenRouterLanguageModelId,
   ModelId,
   ModelCapabilities,
   ModelModalities,
@@ -83,13 +82,7 @@ export type {
 
 // Re-export new @funkai/models features
 export { createModelResolver, calculateCost } from "@funkai/models";
-export type {
-  ProviderFactory,
-  ProviderMap,
-  ModelResolverConfig,
-  ModelResolver,
-  UsageCost,
-} from "@funkai/models";
+export type { ModelResolverConfig, ModelResolver, UsageCost } from "@funkai/models";
 
 export type { Output } from "ai";
 
