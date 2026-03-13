@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const GROQ_MODELS: readonly ModelDefinition[] = [
+export const GROQ_MODELS = [
   { id: 'llama3-70b-8192', name: 'Llama 3 70B', provider: 'groq', family: 'llama', pricing: { input: 5.9e-7, output: 7.900000000000001e-7 }, contextWindow: 8192, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'qwen-qwq-32b', name: 'Qwen QwQ 32B', provider: 'groq', family: 'qwen', pricing: { input: 2.9e-7, output: 3.9e-7 }, contextWindow: 131072, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant', provider: 'groq', family: 'llama', pricing: { input: 5.0000000000000004e-8, output: 8e-8 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
@@ -31,4 +31,4 @@ export const GROQ_MODELS: readonly ModelDefinition[] = [
   { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick 17B', provider: 'groq', family: 'llama', pricing: { input: 2.0000000000000002e-7, output: 6e-7 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: true } },
   { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'groq', family: 'gpt-oss', pricing: { input: 1.5e-7, output: 6e-7 }, contextWindow: 131072, maxOutput: 65536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
   { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', provider: 'groq', family: 'gpt-oss', pricing: { input: 7.5e-8, output: 3e-7 }, contextWindow: 131072, maxOutput: 65536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
-] as const
+] as const satisfies readonly ModelDefinition[]

@@ -11,13 +11,19 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
+import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
 import { GOOGLE_MODELS } from '../catalog/providers/google.js'
 
 /**
+ * Known model identifiers for Google.
+ */
+export type ModelId = (typeof GOOGLE_MODELS)[number]['id']
+
+/**
  * All Google models in the catalog.
  */
-export const models: readonly ModelDefinition[] = GOOGLE_MODELS
+export const models = GOOGLE_MODELS
 
 /**
  * Look up a Google model by ID.
@@ -25,6 +31,6 @@ export const models: readonly ModelDefinition[] = GOOGLE_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: string): ModelDefinition | null {
+export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
   return GOOGLE_MODELS.find((m) => m.id === id) ?? null
 }

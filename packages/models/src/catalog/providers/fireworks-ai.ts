@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const FIREWORKS_AI_MODELS: readonly ModelDefinition[] = [
+export const FIREWORKS_AI_MODELS = [
   { id: 'accounts/fireworks/models/kimi-k2-instruct', name: 'Kimi K2 Instruct', provider: 'fireworks-ai', family: 'kimi', pricing: { input: 0.000001, output: 0.000003 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'accounts/fireworks/models/glm-4p7', name: 'GLM 4.7', provider: 'fireworks-ai', family: 'glm', pricing: { input: 6e-7, output: 0.0000022, cacheRead: 3e-7 }, contextWindow: 198000, maxOutput: 198000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'accounts/fireworks/models/glm-5', name: 'GLM 5', provider: 'fireworks-ai', family: 'glm', pricing: { input: 0.000001, output: 0.0000032000000000000003, cacheRead: 5e-7 }, contextWindow: 202752, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
@@ -27,4 +27,4 @@ export const FIREWORKS_AI_MODELS: readonly ModelDefinition[] = [
   { id: 'accounts/fireworks/models/kimi-k2-thinking', name: 'Kimi K2 Thinking', provider: 'fireworks-ai', family: 'kimi-thinking', pricing: { input: 6e-7, output: 0.0000025, cacheRead: 3e-7 }, contextWindow: 256000, maxOutput: 256000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'accounts/fireworks/models/glm-4p5', name: 'GLM 4.5', provider: 'fireworks-ai', family: 'glm', pricing: { input: 5.5e-7, output: 0.0000021899999999999998 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'accounts/fireworks/models/gpt-oss-20b', name: 'GPT OSS 20B', provider: 'fireworks-ai', family: 'gpt-oss', pricing: { input: 5.0000000000000004e-8, output: 2.0000000000000002e-7 }, contextWindow: 131072, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

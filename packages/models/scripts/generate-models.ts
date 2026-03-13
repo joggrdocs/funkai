@@ -228,9 +228,9 @@ async function main(): Promise<void> {
 
 import type { ModelDefinition } from '../types.js'
 
-export const ${constName}: readonly ModelDefinition[] = [
+export const ${constName} = [
 ${lines.join("\n")}
-] as const
+] as const satisfies readonly ModelDefinition[]
 `;
 
     const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
@@ -239,13 +239,19 @@ ${lines.join("\n")}
     // Write per-provider entry point
     const entryContent = `${BANNER}
 
+import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
 import { ${constName} } from '../catalog/providers/${providerKey}.js'
 
 /**
+ * Known model identifiers for ${escapeStr(providers[providerKey]!.name)}.
+ */
+export type ModelId = (typeof ${constName})[number]['id']
+
+/**
  * All ${escapeStr(providers[providerKey]!.name)} models in the catalog.
  */
-export const models: readonly ModelDefinition[] = ${constName}
+export const models = ${constName}
 
 /**
  * Look up a ${escapeStr(providers[providerKey]!.name)} model by ID.
@@ -253,7 +259,7 @@ export const models: readonly ModelDefinition[] = ${constName}
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or \`null\`.
  */
-export function model(id: string): ModelDefinition | null {
+export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
   return ${constName}.find((m) => m.id === id) ?? null
 }
 `;
@@ -274,11 +280,12 @@ export function model(id: string): ModelDefinition | null {
 
   const catalogBarrel = `${BANNER}
 
+import type { ModelDefinition } from '../types.js'
 ${imports}
 
 export const MODELS = [
 ${spreads}
-] as const
+] as const satisfies readonly ModelDefinition[]
 `;
 
   writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf-8");

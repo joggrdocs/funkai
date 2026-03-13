@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const COHERE_MODELS: readonly ModelDefinition[] = [
+export const COHERE_MODELS = [
   { id: 'c4ai-aya-expanse-32b', name: 'Aya Expanse 32B', provider: 'cohere', family: '', pricing: { input: 0, output: 0 }, contextWindow: 128000, maxOutput: 4000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'command-a-03-2025', name: 'Command A', provider: 'cohere', family: 'command-a', pricing: { input: 0.0000025, output: 0.00001 }, contextWindow: 256000, maxOutput: 8000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'command-r7b-arabic-02-2025', name: 'Command R7B Arabic', provider: 'cohere', family: 'command-r', pricing: { input: 3.75e-8, output: 1.5e-7 }, contextWindow: 128000, maxOutput: 4000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
@@ -26,4 +26,4 @@ export const COHERE_MODELS: readonly ModelDefinition[] = [
   { id: 'c4ai-aya-vision-32b', name: 'Aya Vision 32B', provider: 'cohere', family: '', pricing: { input: 0, output: 0 }, contextWindow: 16000, maxOutput: 4000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'command-r7b-12-2024', name: 'Command R7B', provider: 'cohere', family: 'command-r', pricing: { input: 3.75e-8, output: 1.5e-7 }, contextWindow: 128000, maxOutput: 4000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'command-a-vision-07-2025', name: 'Command A Vision', provider: 'cohere', family: 'command-a', pricing: { input: 0.0000025, output: 0.00001 }, contextWindow: 128000, maxOutput: 8000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

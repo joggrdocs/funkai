@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const TOGETHERAI_MODELS: readonly ModelDefinition[] = [
+export const TOGETHERAI_MODELS = [
   { id: 'zai-org/GLM-4.6', name: 'GLM 4.6', provider: 'togetherai', family: 'glm', pricing: { input: 6e-7, output: 0.0000022 }, contextWindow: 200000, maxOutput: 200000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-4.7', name: 'GLM-4.7', provider: 'togetherai', family: 'glm', pricing: { input: 4.5000000000000003e-7, output: 0.000002 }, contextWindow: 200000, maxOutput: 200000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-5', name: 'GLM-5', provider: 'togetherai', family: 'glm', pricing: { input: 0.000001, output: 0.0000032000000000000003 }, contextWindow: 202752, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
@@ -31,4 +31,4 @@ export const TOGETHERAI_MODELS: readonly ModelDefinition[] = [
   { id: 'Qwen/Qwen3-Coder-Next-FP8', name: 'Qwen3 Coder Next FP8', provider: 'togetherai', family: 'qwen', pricing: { input: 5e-7, output: 0.0000012 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8', name: 'Qwen3 Coder 480B A35B Instruct', provider: 'togetherai', family: 'qwen', pricing: { input: 0.000002, output: 0.000002 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', provider: 'togetherai', family: 'gpt-oss', pricing: { input: 1.5e-7, output: 6e-7 }, contextWindow: 131072, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

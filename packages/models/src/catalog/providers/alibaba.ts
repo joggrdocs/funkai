@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const ALIBABA_MODELS: readonly ModelDefinition[] = [
+export const ALIBABA_MODELS = [
   { id: 'qwen-vl-plus', name: 'Qwen-VL Plus', provider: 'alibaba', family: 'qwen', pricing: { input: 2.1e-7, output: 6.3e-7 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'qwen-vl-max', name: 'Qwen-VL Max', provider: 'alibaba', family: 'qwen', pricing: { input: 8.000000000000001e-7, output: 0.0000032000000000000003 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'qwen3-next-80b-a3b-thinking', name: 'Qwen3-Next 80B-A3B (Thinking)', provider: 'alibaba', family: 'qwen', pricing: { input: 5e-7, output: 0.000006 }, contextWindow: 131072, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
@@ -55,4 +55,4 @@ export const ALIBABA_MODELS: readonly ModelDefinition[] = [
   { id: 'qwen3-vl-235b-a22b', name: 'Qwen3-VL 235B-A22B', provider: 'alibaba', family: 'qwen', pricing: { input: 7e-7, output: 0.0000028 }, contextWindow: 131072, maxOutput: 32768, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'qwen-plus-character-ja', name: 'Qwen Plus Character (Japanese)', provider: 'alibaba', family: 'qwen', pricing: { input: 5e-7, output: 0.0000014 }, contextWindow: 8192, maxOutput: 512, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'qwen-mt-turbo', name: 'Qwen-MT Turbo', provider: 'alibaba', family: 'qwen', pricing: { input: 1.6e-7, output: 4.9e-7 }, contextWindow: 16384, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

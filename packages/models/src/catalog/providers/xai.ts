@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const XAI_MODELS: readonly ModelDefinition[] = [
+export const XAI_MODELS = [
   { id: 'grok-2-1212', name: 'Grok 2 (1212)', provider: 'xai', family: 'grok', pricing: { input: 0.000002, output: 0.00001, cacheRead: 0.000002 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'grok-4.20-beta-latest-non-reasoning', name: 'Grok 4.20 Beta (Non-Reasoning)', provider: 'xai', family: 'grok', pricing: { input: 0.000002, output: 0.000006, cacheRead: 2.0000000000000002e-7 }, contextWindow: 2000000, maxOutput: 30000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'grok-2', name: 'Grok 2', provider: 'xai', family: 'grok', pricing: { input: 0.000002, output: 0.00001, cacheRead: 0.000002 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
@@ -39,4 +39,4 @@ export const XAI_MODELS: readonly ModelDefinition[] = [
   { id: 'grok-vision-beta', name: 'Grok Vision Beta', provider: 'xai', family: 'grok-vision', pricing: { input: 0.000005, output: 0.000015, cacheRead: 0.000005 }, contextWindow: 8192, maxOutput: 4096, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'grok-3-fast', name: 'Grok 3 Fast', provider: 'xai', family: 'grok', pricing: { input: 0.000005, output: 0.000025, cacheRead: 0.00000125 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'grok-4.20-beta-latest-reasoning', name: 'Grok 4.20 Beta (Reasoning)', provider: 'xai', family: 'grok', pricing: { input: 0.000002, output: 0.000006, cacheRead: 2.0000000000000002e-7 }, contextWindow: 2000000, maxOutput: 30000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

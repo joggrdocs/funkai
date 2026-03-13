@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const DEEPINFRA_MODELS: readonly ModelDefinition[] = [
+export const DEEPINFRA_MODELS = [
   { id: 'zai-org/GLM-4.7-Flash', name: 'GLM-4.7-Flash', provider: 'deepinfra', family: 'glm-flash', pricing: { input: 6e-8, output: 4.0000000000000003e-7 }, contextWindow: 202752, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-4.6', name: 'GLM-4.6', provider: 'deepinfra', family: 'glm', pricing: { input: 4.3e-7, output: 0.00000174, cacheRead: 8e-8 }, contextWindow: 204800, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-4.7', name: 'GLM-4.7', provider: 'deepinfra', family: 'glm', pricing: { input: 4.3e-7, output: 0.00000175, cacheRead: 8e-8 }, contextWindow: 202752, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
@@ -35,4 +35,4 @@ export const DEEPINFRA_MODELS: readonly ModelDefinition[] = [
   { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', provider: 'deepinfra', family: 'gpt-oss', pricing: { input: 3e-8, output: 1.4e-7 }, contextWindow: 131072, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'anthropic/claude-3-7-sonnet-latest', name: 'Claude Sonnet 3.7 (Latest)', provider: 'deepinfra', family: 'claude-sonnet', pricing: { input: 0.0000032999999999999997, output: 0.0000165, cacheRead: 3.3e-7 }, contextWindow: 200000, maxOutput: 64000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'anthropic/claude-4-opus', name: 'Claude Opus 4', provider: 'deepinfra', family: 'claude-opus', pricing: { input: 0.0000165, output: 0.0000825 }, contextWindow: 200000, maxOutput: 32000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

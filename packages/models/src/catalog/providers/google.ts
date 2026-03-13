@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const GOOGLE_MODELS: readonly ModelDefinition[] = [
+export const GOOGLE_MODELS = [
   { id: 'gemini-embedding-001', name: 'Gemini Embedding 001', provider: 'google', family: 'gemini', pricing: { input: 1.5e-7, output: 0 }, contextWindow: 2048, maxOutput: 3072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
   { id: 'gemini-2.5-flash-lite-preview-09-2025', name: 'Gemini 2.5 Flash Lite Preview 09-25', provider: 'google', family: 'gemini-flash-lite', pricing: { input: 1.0000000000000001e-7, output: 4.0000000000000003e-7, cacheRead: 2.5000000000000002e-8 }, contextWindow: 1048576, maxOutput: 65536, modalities: { input: ["text","image","audio","video","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'gemini-3.1-pro-preview-customtools', name: 'Gemini 3.1 Pro Preview Custom Tools', provider: 'google', family: 'gemini-pro', pricing: { input: 0.000002, output: 0.000012, cacheRead: 2.0000000000000002e-7 }, contextWindow: 1048576, maxOutput: 65536, modalities: { input: ["text","image","video","audio","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
@@ -44,4 +44,4 @@ export const GOOGLE_MODELS: readonly ModelDefinition[] = [
   { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google', family: 'gemini-pro', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 3.1e-7 }, contextWindow: 1048576, maxOutput: 65536, modalities: { input: ["text","image","audio","video","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'google', family: 'gemini-flash', pricing: { input: 1.0000000000000001e-7, output: 4.0000000000000003e-7, cacheRead: 2.5000000000000002e-8 }, contextWindow: 1048576, maxOutput: 8192, modalities: { input: ["text","image","audio","video","pdf"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', provider: 'google', family: 'gemini-pro', pricing: { input: 0.00000125, output: 0.000005, cacheRead: 3.125e-7 }, contextWindow: 1000000, maxOutput: 8192, modalities: { input: ["text","image","audio","video"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

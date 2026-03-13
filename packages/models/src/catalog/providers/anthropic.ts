@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const ANTHROPIC_MODELS: readonly ModelDefinition[] = [
+export const ANTHROPIC_MODELS = [
   { id: 'claude-opus-4-5-20251101', name: 'Claude Opus 4.5', provider: 'anthropic', family: 'claude-opus', pricing: { input: 0.000005, output: 0.000025, cacheRead: 5e-7, cacheWrite: 0.00000625 }, contextWindow: 200000, maxOutput: 64000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'claude-3-5-haiku-latest', name: 'Claude Haiku 3.5 (latest)', provider: 'anthropic', family: 'claude-haiku', pricing: { input: 8.000000000000001e-7, output: 0.000004, cacheRead: 8e-8, cacheWrite: 0.000001 }, contextWindow: 200000, maxOutput: 8192, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'claude-opus-4-1', name: 'Claude Opus 4.1 (latest)', provider: 'anthropic', family: 'claude-opus', pricing: { input: 0.000015, output: 0.000075, cacheRead: 0.0000015, cacheWrite: 0.00001875 }, contextWindow: 200000, maxOutput: 32000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
@@ -37,4 +37,4 @@ export const ANTHROPIC_MODELS: readonly ModelDefinition[] = [
   { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5 (latest)', provider: 'anthropic', family: 'claude-sonnet', pricing: { input: 0.000003, output: 0.000015, cacheRead: 3e-7, cacheWrite: 0.00000375 }, contextWindow: 200000, maxOutput: 64000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4', provider: 'anthropic', family: 'claude-sonnet', pricing: { input: 0.000003, output: 0.000015, cacheRead: 3e-7, cacheWrite: 0.00000375 }, contextWindow: 200000, maxOutput: 64000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
   { id: 'claude-opus-4-1-20250805', name: 'Claude Opus 4.1', provider: 'anthropic', family: 'claude-opus', pricing: { input: 0.000015, output: 0.000075, cacheRead: 0.0000015, cacheWrite: 0.00001875 }, contextWindow: 200000, maxOutput: 32000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

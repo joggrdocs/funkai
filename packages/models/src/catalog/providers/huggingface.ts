@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const HUGGINGFACE_MODELS: readonly ModelDefinition[] = [
+export const HUGGINGFACE_MODELS = [
   { id: 'zai-org/GLM-4.7-Flash', name: 'GLM-4.7-Flash', provider: 'huggingface', family: 'glm', pricing: { input: 0, output: 0 }, contextWindow: 200000, maxOutput: 128000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-4.7', name: 'GLM-4.7', provider: 'huggingface', family: 'glm', pricing: { input: 6e-7, output: 0.0000022, cacheRead: 1.1e-7 }, contextWindow: 204800, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'zai-org/GLM-5', name: 'GLM-5', provider: 'huggingface', family: 'glm', pricing: { input: 0.000001, output: 0.0000032000000000000003, cacheRead: 2.0000000000000002e-7 }, contextWindow: 202752, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
@@ -34,4 +34,4 @@ export const HUGGINGFACE_MODELS: readonly ModelDefinition[] = [
   { id: 'Qwen/Qwen3-Embedding-4B', name: 'Qwen 3 Embedding 4B', provider: 'huggingface', family: 'qwen', pricing: { input: 1e-8, output: 0 }, contextWindow: 32000, maxOutput: 2048, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
   { id: 'Qwen/Qwen3-Embedding-8B', name: 'Qwen 3 Embedding 8B', provider: 'huggingface', family: 'qwen', pricing: { input: 1e-8, output: 0 }, contextWindow: 32000, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
   { id: 'Qwen/Qwen3-Next-80B-A3B-Thinking', name: 'Qwen3-Next-80B-A3B-Thinking', provider: 'huggingface', family: 'qwen', pricing: { input: 3e-7, output: 0.000002 }, contextWindow: 262144, maxOutput: 131072, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

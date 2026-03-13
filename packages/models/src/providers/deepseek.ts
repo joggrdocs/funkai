@@ -11,13 +11,19 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
+import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
 import { DEEPSEEK_MODELS } from '../catalog/providers/deepseek.js'
 
 /**
+ * Known model identifiers for DeepSeek.
+ */
+export type ModelId = (typeof DEEPSEEK_MODELS)[number]['id']
+
+/**
  * All DeepSeek models in the catalog.
  */
-export const models: readonly ModelDefinition[] = DEEPSEEK_MODELS
+export const models = DEEPSEEK_MODELS
 
 /**
  * Look up a DeepSeek model by ID.
@@ -25,6 +31,6 @@ export const models: readonly ModelDefinition[] = DEEPSEEK_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: string): ModelDefinition | null {
+export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
   return DEEPSEEK_MODELS.find((m) => m.id === id) ?? null
 }

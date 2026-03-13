@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const MISTRAL_MODELS: readonly ModelDefinition[] = [
+export const MISTRAL_MODELS = [
   { id: 'devstral-medium-2507', name: 'Devstral Medium', provider: 'mistral', family: 'devstral', pricing: { input: 4.0000000000000003e-7, output: 0.000002 }, contextWindow: 128000, maxOutput: 128000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'labs-devstral-small-2512', name: 'Devstral Small 2', provider: 'mistral', family: 'devstral', pricing: { input: 0, output: 0 }, contextWindow: 256000, maxOutput: 256000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'devstral-medium-latest', name: 'Devstral 2 (latest)', provider: 'mistral', family: 'devstral', pricing: { input: 4.0000000000000003e-7, output: 0.000002 }, contextWindow: 262144, maxOutput: 262144, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
@@ -40,4 +40,4 @@ export const MISTRAL_MODELS: readonly ModelDefinition[] = [
   { id: 'mistral-medium-latest', name: 'Mistral Medium (latest)', provider: 'mistral', family: 'mistral-medium', pricing: { input: 4.0000000000000003e-7, output: 0.000002 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'devstral-small-2507', name: 'Devstral Small', provider: 'mistral', family: 'devstral', pricing: { input: 1.0000000000000001e-7, output: 3e-7 }, contextWindow: 128000, maxOutput: 128000, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'magistral-medium-latest', name: 'Magistral Medium (latest)', provider: 'mistral', family: 'magistral-medium', pricing: { input: 0.000002, output: 0.000005 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

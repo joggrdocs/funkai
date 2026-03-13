@@ -11,13 +11,19 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
+import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
 import { LLAMA_MODELS } from '../catalog/providers/llama.js'
 
 /**
+ * Known model identifiers for Meta Llama.
+ */
+export type ModelId = (typeof LLAMA_MODELS)[number]['id']
+
+/**
  * All Meta Llama models in the catalog.
  */
-export const models: readonly ModelDefinition[] = LLAMA_MODELS
+export const models = LLAMA_MODELS
 
 /**
  * Look up a Meta Llama model by ID.
@@ -25,6 +31,6 @@ export const models: readonly ModelDefinition[] = LLAMA_MODELS
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
  */
-export function model(id: string): ModelDefinition | null {
+export function model(id: LiteralUnion<ModelId, string>): ModelDefinition | null {
   return LLAMA_MODELS.find((m) => m.id === id) ?? null
 }

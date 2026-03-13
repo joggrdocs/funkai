@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const AMAZON_BEDROCK_MODELS: readonly ModelDefinition[] = [
+export const AMAZON_BEDROCK_MODELS = [
   { id: 'deepseek.r1-v1:0', name: 'DeepSeek-R1', provider: 'amazon-bedrock', family: 'deepseek-thinking', pricing: { input: 0.00000135, output: 0.0000054 }, contextWindow: 128000, maxOutput: 32768, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'meta.llama3-1-70b-instruct-v1:0', name: 'Llama 3.1 70B Instruct', provider: 'amazon-bedrock', family: 'llama', pricing: { input: 7.2e-7, output: 7.2e-7 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'anthropic.claude-instant-v1', name: 'Claude Instant', provider: 'amazon-bedrock', family: 'claude', pricing: { input: 8.000000000000001e-7, output: 0.0000024 }, contextWindow: 100000, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
@@ -110,4 +110,4 @@ export const AMAZON_BEDROCK_MODELS: readonly ModelDefinition[] = [
   { id: 'moonshotai.kimi-k2.5', name: 'Kimi K2.5', provider: 'amazon-bedrock', family: 'kimi', pricing: { input: 6e-7, output: 0.000003 }, contextWindow: 256000, maxOutput: 256000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'mistral.voxtral-mini-3b-2507', name: 'Voxtral Mini 3B 2507', provider: 'amazon-bedrock', family: 'mistral', pricing: { input: 4e-8, output: 4e-8 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["audio","text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'global.anthropic.claude-sonnet-4-5-20250929-v1:0', name: 'Claude Sonnet 4.5 (Global)', provider: 'amazon-bedrock', family: 'claude-sonnet', pricing: { input: 0.000003, output: 0.000015, cacheRead: 3e-7, cacheWrite: 0.00000375 }, contextWindow: 200000, maxOutput: 64000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const NVIDIA_MODELS: readonly ModelDefinition[] = [
+export const NVIDIA_MODELS = [
   { id: 'nvidia/llama-3.1-nemotron-70b-instruct', name: 'Llama 3.1 Nemotron 70b Instruct', provider: 'nvidia', family: '', pricing: { input: 0, output: 0 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: true } },
   { id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1', name: 'Llama-3.1-Nemotron-Ultra-253B-v1', provider: 'nvidia', family: 'llama', pricing: { input: 0, output: 0 }, contextWindow: 131072, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: false } },
   { id: 'nvidia/llama-3.1-nemotron-51b-instruct', name: 'Llama 3.1 Nemotron 51b Instruct', provider: 'nvidia', family: '', pricing: { input: 0, output: 0 }, contextWindow: 128000, maxOutput: 4096, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: false, structuredOutput: true } },
@@ -87,4 +87,4 @@ export const NVIDIA_MODELS: readonly ModelDefinition[] = [
   { id: 'openai/gpt-oss-120b', name: 'GPT-OSS-120B', provider: 'nvidia', family: 'gpt-oss', pricing: { input: 0, output: 0 }, contextWindow: 128000, maxOutput: 8192, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: true, structuredOutput: false } },
   { id: 'openai/whisper-large-v3', name: 'Whisper Large v3', provider: 'nvidia', family: 'whisper', pricing: { input: 0, output: 0 }, contextWindow: 0, maxOutput: 4096, modalities: { input: ["audio"], output: ["text"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
   { id: 'black-forest-labs/flux.1-dev', name: 'FLUX.1-dev', provider: 'nvidia', family: 'flux', pricing: { input: 0, output: 0 }, contextWindow: 4096, maxOutput: 0, modalities: { input: ["text"], output: ["image"] }, capabilities: { reasoning: false, toolCall: false, attachment: false, structuredOutput: false } },
-] as const
+] as const satisfies readonly ModelDefinition[]

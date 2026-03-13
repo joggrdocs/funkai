@@ -13,7 +13,7 @@
 
 import type { ModelDefinition } from '../types.js'
 
-export const OPENAI_MODELS: readonly ModelDefinition[] = [
+export const OPENAI_MODELS = [
   { id: 'gpt-4o-2024-11-20', name: 'GPT-4o (2024-11-20)', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.00001, cacheRead: 0.00000125 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'gpt-5.3-codex', name: 'GPT-5.3 Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000175, output: 0.000014, cacheRead: 1.75e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image","pdf"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'gpt-5-codex', name: 'GPT-5-Codex', provider: 'openai', family: 'gpt-codex', pricing: { input: 0.00000125, output: 0.00001, cacheRead: 1.25e-7 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: false, structuredOutput: true } },
@@ -58,4 +58,4 @@ export const OPENAI_MODELS: readonly ModelDefinition[] = [
   { id: 'gpt-5-nano', name: 'GPT-5 Nano', provider: 'openai', family: 'gpt-nano', pricing: { input: 5.0000000000000004e-8, output: 4.0000000000000003e-7, cacheRead: 5e-9 }, contextWindow: 400000, maxOutput: 128000, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: true, toolCall: true, attachment: true, structuredOutput: true } },
   { id: 'o1-mini', name: 'o1-mini', provider: 'openai', family: 'o-mini', pricing: { input: 0.0000011, output: 0.0000044, cacheRead: 5.5e-7 }, contextWindow: 128000, maxOutput: 65536, modalities: { input: ["text"], output: ["text"] }, capabilities: { reasoning: true, toolCall: false, attachment: false, structuredOutput: true } },
   { id: 'gpt-4o', name: 'GPT-4o', provider: 'openai', family: 'gpt', pricing: { input: 0.0000025, output: 0.00001, cacheRead: 0.00000125 }, contextWindow: 128000, maxOutput: 16384, modalities: { input: ["text","image"], output: ["text"] }, capabilities: { reasoning: false, toolCall: true, attachment: true, structuredOutput: true } },
-] as const
+] as const satisfies readonly ModelDefinition[]

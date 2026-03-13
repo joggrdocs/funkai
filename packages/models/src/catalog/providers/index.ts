@@ -11,6 +11,7 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
+import type { ModelDefinition } from '../types.js'
 import { OPENAI_MODELS } from './openai.js'
 import { ANTHROPIC_MODELS } from './anthropic.js'
 import { GOOGLE_MODELS } from './google.js'
@@ -55,4 +56,4 @@ export const MODELS = [
   ...NVIDIA_MODELS,
   ...HUGGINGFACE_MODELS,
   ...INCEPTION_MODELS,
-] as const
+] as const satisfies readonly ModelDefinition[]
