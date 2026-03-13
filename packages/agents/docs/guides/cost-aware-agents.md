@@ -163,9 +163,7 @@ const pipeline = workflow(
       },
     });
 
-    const totalTokens = results.ok
-      ? results.value.reduce((sum, r) => sum + r.tokens, 0)
-      : 0;
+    const totalTokens = results.ok ? results.value.reduce((sum, r) => sum + r.tokens, 0) : 0;
 
     return {
       analyses: results.ok ? results.value.map((r) => r.analysis) : [],
