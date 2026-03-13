@@ -1,5 +1,13 @@
 # @funkai/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- 1beb2d2: Update package README documentation
+- Updated dependencies [1beb2d2]
+  - @funkai/prompts@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
