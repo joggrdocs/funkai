@@ -22,6 +22,15 @@ export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]['id']
 
 /**
  * All Google Vertex AI models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { googleVertexModels } from '@funkai/models/google-vertex'
+ *
+ * for (const m of googleVertexModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const googleVertexModels = GOOGLE_VERTEX_MODELS
 
@@ -30,6 +39,16 @@ export const googleVertexModels = GOOGLE_VERTEX_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { googleVertexModel } from '@funkai/models/google-vertex'
+ *
+ * const m = googleVertexModel('gemini-embedding-001')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function googleVertexModel(id: LiteralUnion<GoogleVertexModelId, string>): ModelDefinition | null {
   return GOOGLE_VERTEX_MODELS.find((m) => m.id === id) ?? null

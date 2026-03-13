@@ -22,6 +22,15 @@ export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]['id']
 
 /**
  * All Cerebras models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { cerebrasModels } from '@funkai/models/cerebras'
+ *
+ * for (const m of cerebrasModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const cerebrasModels = CEREBRAS_MODELS
 
@@ -30,6 +39,16 @@ export const cerebrasModels = CEREBRAS_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { cerebrasModel } from '@funkai/models/cerebras'
+ *
+ * const m = cerebrasModel('qwen-3-235b-a22b-instruct-2507')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function cerebrasModel(id: LiteralUnion<CerebrasModelId, string>): ModelDefinition | null {
   return CEREBRAS_MODELS.find((m) => m.id === id) ?? null

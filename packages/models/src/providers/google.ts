@@ -22,6 +22,15 @@ export type GoogleModelId = (typeof GOOGLE_MODELS)[number]['id']
 
 /**
  * All Google models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { googleModels } from '@funkai/models/google'
+ *
+ * for (const m of googleModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const googleModels = GOOGLE_MODELS
 
@@ -30,6 +39,16 @@ export const googleModels = GOOGLE_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { googleModel } from '@funkai/models/google'
+ *
+ * const m = googleModel('gemini-embedding-001')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function googleModel(id: LiteralUnion<GoogleModelId, string>): ModelDefinition | null {
   return GOOGLE_MODELS.find((m) => m.id === id) ?? null

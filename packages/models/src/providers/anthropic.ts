@@ -22,6 +22,15 @@ export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]['id']
 
 /**
  * All Anthropic models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { anthropicModels } from '@funkai/models/anthropic'
+ *
+ * for (const m of anthropicModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const anthropicModels = ANTHROPIC_MODELS
 
@@ -30,6 +39,16 @@ export const anthropicModels = ANTHROPIC_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { anthropicModel } from '@funkai/models/anthropic'
+ *
+ * const m = anthropicModel('claude-opus-4-5-20251101')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function anthropicModel(id: LiteralUnion<AnthropicModelId, string>): ModelDefinition | null {
   return ANTHROPIC_MODELS.find((m) => m.id === id) ?? null

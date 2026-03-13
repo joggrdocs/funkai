@@ -22,6 +22,15 @@ export type OpenAIModelId = (typeof OPENAI_MODELS)[number]['id']
 
 /**
  * All OpenAI models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { openAIModels } from '@funkai/models/openai'
+ *
+ * for (const m of openAIModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const openAIModels = OPENAI_MODELS
 
@@ -30,6 +39,16 @@ export const openAIModels = OPENAI_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { openAIModel } from '@funkai/models/openai'
+ *
+ * const m = openAIModel('gpt-4o-2024-11-20')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function openAIModel(id: LiteralUnion<OpenAIModelId, string>): ModelDefinition | null {
   return OPENAI_MODELS.find((m) => m.id === id) ?? null

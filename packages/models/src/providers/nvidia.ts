@@ -22,6 +22,15 @@ export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]['id']
 
 /**
  * All NVIDIA NIM models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { nvidiaModels } from '@funkai/models/nvidia'
+ *
+ * for (const m of nvidiaModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const nvidiaModels = NVIDIA_MODELS
 
@@ -30,6 +39,16 @@ export const nvidiaModels = NVIDIA_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { nvidiaModel } from '@funkai/models/nvidia'
+ *
+ * const m = nvidiaModel('nvidia/llama-3.1-nemotron-70b-instruct')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function nvidiaModel(id: LiteralUnion<NvidiaModelId, string>): ModelDefinition | null {
   return NVIDIA_MODELS.find((m) => m.id === id) ?? null

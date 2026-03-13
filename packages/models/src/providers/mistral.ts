@@ -22,6 +22,15 @@ export type MistralModelId = (typeof MISTRAL_MODELS)[number]['id']
 
 /**
  * All Mistral models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { mistralModels } from '@funkai/models/mistral'
+ *
+ * for (const m of mistralModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const mistralModels = MISTRAL_MODELS
 
@@ -30,6 +39,16 @@ export const mistralModels = MISTRAL_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { mistralModel } from '@funkai/models/mistral'
+ *
+ * const m = mistralModel('devstral-medium-2507')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function mistralModel(id: LiteralUnion<MistralModelId, string>): ModelDefinition | null {
   return MISTRAL_MODELS.find((m) => m.id === id) ?? null

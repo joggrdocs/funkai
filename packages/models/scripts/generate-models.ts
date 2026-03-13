@@ -142,7 +142,11 @@ function buildCapabilities(m: ApiModel): string {
  * Escape a string for use in a TypeScript single-quoted string literal.
  */
 function escapeStr(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
 }
 
 // ---------------------------------------------------------------------------
@@ -184,7 +188,7 @@ async function main(): Promise<void> {
 
   // Fetch models.dev API
   console.log("generate-models: fetching models from models.dev");
-  const response = await fetch(API_URL);
+  const response = await fetch(API_URL, { signal: AbortSignal.timeout(30_000) });
   if (!response.ok) {
     throw new Error(`Failed to fetch ${API_URL}: ${response.status} ${response.statusText}`);
   }
@@ -248,6 +252,7 @@ ${lines.join("\n")}
     // Write per-provider entry point
     const prefix = providers[providerKey]!.prefix;
     const camel = lowerFirst(prefix);
+    const exampleId = escapeStr(Object.values(apiModels)[0]?.id ?? "example-id");
     const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
@@ -261,6 +266,15 @@ export type ${prefix}ModelId = (typeof ${constName})[number]['id']
 
 /**
  * All ${escapeStr(providers[providerKey]!.name)} models in the catalog.
+ *
+ * @example
+ * \`\`\`typescript
+ * import { ${camel}Models } from '@funkai/models/${providerKey}'
+ *
+ * for (const m of ${camel}Models) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * \`\`\`
  */
 export const ${camel}Models = ${constName}
 
@@ -269,6 +283,16 @@ export const ${camel}Models = ${constName}
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or \`null\`.
+ *
+ * @example
+ * \`\`\`typescript
+ * import { ${camel}Model } from '@funkai/models/${providerKey}'
+ *
+ * const m = ${camel}Model('${exampleId}')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * \`\`\`
  */
 export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): ModelDefinition | null {
   return ${constName}.find((m) => m.id === id) ?? null

@@ -22,6 +22,15 @@ export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]['id']
 
 /**
  * All Perplexity models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { perplexityModels } from '@funkai/models/perplexity'
+ *
+ * for (const m of perplexityModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const perplexityModels = PERPLEXITY_MODELS
 
@@ -30,6 +39,16 @@ export const perplexityModels = PERPLEXITY_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { perplexityModel } from '@funkai/models/perplexity'
+ *
+ * const m = perplexityModel('sonar-reasoning-pro')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function perplexityModel(id: LiteralUnion<PerplexityModelId, string>): ModelDefinition | null {
   return PERPLEXITY_MODELS.find((m) => m.id === id) ?? null

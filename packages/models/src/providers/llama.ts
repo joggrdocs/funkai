@@ -22,6 +22,15 @@ export type LlamaModelId = (typeof LLAMA_MODELS)[number]['id']
 
 /**
  * All Meta Llama models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { llamaModels } from '@funkai/models/llama'
+ *
+ * for (const m of llamaModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const llamaModels = LLAMA_MODELS
 
@@ -30,6 +39,16 @@ export const llamaModels = LLAMA_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { llamaModel } from '@funkai/models/llama'
+ *
+ * const m = llamaModel('cerebras-llama-4-maverick-17b-128e-instruct')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function llamaModel(id: LiteralUnion<LlamaModelId, string>): ModelDefinition | null {
   return LLAMA_MODELS.find((m) => m.id === id) ?? null

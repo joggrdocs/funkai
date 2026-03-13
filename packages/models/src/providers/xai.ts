@@ -22,15 +22,34 @@ export type XAIModelId = (typeof XAI_MODELS)[number]['id']
 
 /**
  * All xAI models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { xAIModels } from '@funkai/models/xai'
+ *
+ * for (const m of xAIModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
-export const xaiModels = XAI_MODELS
+export const xAIModels = XAI_MODELS
 
 /**
  * Look up a xAI model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { xAIModel } from '@funkai/models/xai'
+ *
+ * const m = xAIModel('grok-2-1212')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
-export function xaiModel(id: LiteralUnion<XAIModelId, string>): ModelDefinition | null {
+export function xAIModel(id: LiteralUnion<XAIModelId, string>): ModelDefinition | null {
   return XAI_MODELS.find((m) => m.id === id) ?? null
 }

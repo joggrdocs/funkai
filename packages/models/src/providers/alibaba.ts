@@ -22,6 +22,15 @@ export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
 
 /**
  * All Alibaba (Qwen) models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { alibabaModels } from '@funkai/models/alibaba'
+ *
+ * for (const m of alibabaModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const alibabaModels = ALIBABA_MODELS
 
@@ -30,6 +39,16 @@ export const alibabaModels = ALIBABA_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { alibabaModel } from '@funkai/models/alibaba'
+ *
+ * const m = alibabaModel('qwen-vl-plus')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function alibabaModel(id: LiteralUnion<AlibabaModelId, string>): ModelDefinition | null {
   return ALIBABA_MODELS.find((m) => m.id === id) ?? null

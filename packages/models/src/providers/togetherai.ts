@@ -22,6 +22,15 @@ export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]['id']
 
 /**
  * All Together AI models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { togetherModels } from '@funkai/models/togetherai'
+ *
+ * for (const m of togetherModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const togetherModels = TOGETHERAI_MODELS
 
@@ -30,6 +39,16 @@ export const togetherModels = TOGETHERAI_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { togetherModel } from '@funkai/models/togetherai'
+ *
+ * const m = togetherModel('zai-org/GLM-4.6')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function togetherModel(id: LiteralUnion<TogetherModelId, string>): ModelDefinition | null {
   return TOGETHERAI_MODELS.find((m) => m.id === id) ?? null

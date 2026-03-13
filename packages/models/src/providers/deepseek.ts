@@ -22,6 +22,15 @@ export type DeepSeekModelId = (typeof DEEPSEEK_MODELS)[number]['id']
 
 /**
  * All DeepSeek models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { deepSeekModels } from '@funkai/models/deepseek'
+ *
+ * for (const m of deepSeekModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const deepSeekModels = DEEPSEEK_MODELS
 
@@ -30,6 +39,16 @@ export const deepSeekModels = DEEPSEEK_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { deepSeekModel } from '@funkai/models/deepseek'
+ *
+ * const m = deepSeekModel('deepseek-reasoner')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function deepSeekModel(id: LiteralUnion<DeepSeekModelId, string>): ModelDefinition | null {
   return DEEPSEEK_MODELS.find((m) => m.id === id) ?? null

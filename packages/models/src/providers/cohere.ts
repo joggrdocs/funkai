@@ -22,6 +22,15 @@ export type CohereModelId = (typeof COHERE_MODELS)[number]['id']
 
 /**
  * All Cohere models in the catalog.
+ *
+ * @example
+ * ```typescript
+ * import { cohereModels } from '@funkai/models/cohere'
+ *
+ * for (const m of cohereModels) {
+ *   console.log(m.id, m.pricing.input)
+ * }
+ * ```
  */
 export const cohereModels = COHERE_MODELS
 
@@ -30,6 +39,16 @@ export const cohereModels = COHERE_MODELS
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
+ *
+ * @example
+ * ```typescript
+ * import { cohereModel } from '@funkai/models/cohere'
+ *
+ * const m = cohereModel('c4ai-aya-expanse-32b')
+ * if (m) {
+ *   console.log(m.pricing.input)
+ * }
+ * ```
  */
 export function cohereModel(id: LiteralUnion<CohereModelId, string>): ModelDefinition | null {
   return COHERE_MODELS.find((m) => m.id === id) ?? null

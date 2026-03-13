@@ -43,12 +43,12 @@ jobs:
         run: |
           CHANGESET_ID=$(pnpm tsx packages/models/scripts/changeset-id.ts)
           cat > ".changeset/${CHANGESET_ID}.md" << 'CHANGESET_EOF'
-          ---
-          "@funkai/models": patch
-          ---
+---
+"@funkai/models": patch
+---
 
-          Update model catalog with latest data from models.dev
-          CHANGESET_EOF
+Update model catalog with latest data from models.dev
+CHANGESET_EOF
 
       - name: Commit and push
         if: steps.changes.outputs.changed == 'true'
