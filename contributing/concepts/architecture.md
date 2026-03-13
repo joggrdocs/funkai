@@ -13,13 +13,15 @@ The codebase follows a functional, immutable, composition-first design. There ar
 ```
 packages/
 ├── agents/          # @funkai/agents -- Workflow and agent orchestration
+├── models/          # @funkai/models -- Model catalog, provider resolution, cost calculation
 └── prompts/         # @funkai/prompts -- Prompt SDK with templating and validation
 ```
 
-| Package           | Purpose                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------- |
-| `@funkai/agents`  | Agent and workflow orchestration: agents, workflows, steps, tools, hooks, provider |
-| `@funkai/prompts` | Prompt authoring SDK: LiquidJS templating, Zod validation, CLI, codegen            |
+| Package           | Purpose                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| `@funkai/agents`  | Agent and workflow orchestration: agents, workflows, steps, tools, hooks, provider           |
+| `@funkai/models`  | Model catalog, provider resolution, cost calculation, and nightly model data synchronization |
+| `@funkai/prompts` | Prompt authoring SDK: LiquidJS templating, Zod validation, CLI, codegen                      |
 
 ## Agents Package
 
@@ -87,6 +89,31 @@ sequenceDiagram
     end
 ```
 
+## Models Package
+
+The models package provides the model catalog, provider resolution, and cost calculation.
+
+### Core Modules
+
+| Module   | Purpose                                                              |
+| -------- | -------------------------------------------------------------------- |
+| Catalog  | Model definitions with pricing data, lookup by ID, filtered queries  |
+| Provider | OpenRouter integration, `createModelResolver()` for multi-provider   |
+| Cost     | `calculateCost()` to compute dollar costs from token usage + pricing |
+
+### Generated Data
+
+Model catalog data (pricing, categories) is auto-generated from the OpenRouter API:
+
+- **Script**: `pnpm --filter=@funkai/models generate:models`
+- **Config**: `packages/models/models.config.json` defines which models to include per provider
+- **Output**: `src/catalog/providers/*.ts` — one file per provider, plus a barrel
+- **Automation**: A nightly GitHub Action runs the script and auto-commits if data changes
+
+### Dependency Direction
+
+`@funkai/agents` depends on `@funkai/models` and re-exports its types for backward compatibility. Pure token/pricing types live in models; agent-specific usage types (`TokenUsageRecord`, `AgentTokenUsage`) stay in agents.
+
 ## Prompts Package
 
 The prompts package provides a prompt authoring SDK with two surfaces:
@@ -115,7 +142,7 @@ The prompts package provides a prompt authoring SDK with two surfaces:
 4. **Type-driven** -- Discriminated unions, branded types, exhaustive matching via ts-pattern
 5. **Zod at boundaries** -- Runtime validation for configs, user input, and external data
 6. **Vercel AI SDK foundation** -- Built on `ai` package for model interaction, tool calling, and streaming
-7. **OpenRouter provider** -- Default model routing through OpenRouter for multi-provider access
+7. **Multi-provider support** -- Model resolution via `createModelResolver()` with OpenRouter as default fallback
 8. **Composition over inheritance** -- Small, focused interfaces composed together
 
 ## Package Conventions

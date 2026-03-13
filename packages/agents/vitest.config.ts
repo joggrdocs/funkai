@@ -17,7 +17,7 @@ export default defineConfig({
         "src/**/*.test-d.ts",
         "src/**/index.ts",
         "src/lib/mocks/**",
-        "src/models/**",
+
         "src/core/types.ts",
         "src/core/agents/base/types.ts",
         "src/core/agents/flow/types.ts",

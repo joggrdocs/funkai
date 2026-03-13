@@ -28,9 +28,7 @@ vi.mock("@/lib/middleware.js", () => ({
   withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
 }));
 
-vi.mock("@/core/provider/provider.js", () => ({
-  openrouter: vi.fn(() => ({ modelId: "mock-model" })),
-}));
+const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1381,18 +1379,34 @@ describe("edge cases", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("model string ID is resolved via openrouter", async () => {
+  it("model string ID is resolved via configured resolver", async () => {
     const a = agent({
       name: "string-model-agent",
       model: "openai/gpt-4.1",
+      resolver: mockResolver,
       system: "test",
       logger: createMockLogger(),
     });
 
     await a.generate("test");
 
-    const { openrouter: mockOpenrouter } = await import("@/core/provider/provider.js");
-    expect(mockOpenrouter).toHaveBeenCalledWith("openai/gpt-4.1");
+    expect(mockResolver).toHaveBeenCalledWith("openai/gpt-4.1");
+  });
+
+  it("throws when string model ID is used without a resolver", async () => {
+    const a = agent({
+      name: "no-resolver-agent",
+      model: "openai/gpt-4.1",
+      system: "test",
+      logger: createMockLogger(),
+    });
+
+    const result = await a.generate("test");
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain("no resolver configured");
+    }
   });
 
   it("uses default logger when none provided", async () => {

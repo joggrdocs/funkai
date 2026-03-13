@@ -7,21 +7,27 @@ import type { Result } from "@/utils/result.js";
  * A model reference.
  *
  * Accepts either:
- * - A **string model ID** (e.g. `'openai/gpt-4.1'`) resolved via
- *   OpenRouter at runtime.
+ * - A **string model ID** (e.g. `'openai/gpt-4.1'`) resolved via a
+ *   configured `ModelResolver` at runtime.
  * - An **AI SDK `LanguageModel` instance** — including models wrapped
  *   with middleware via `wrapLanguageModel()`.
  *
+ * When using a string, a `resolver` must be configured on the agent.
+ *
  * @example
  * ```typescript
- * // String ID — resolved via OpenRouter
+ * // String ID — resolved via a configured resolver
+ * import { createModelResolver, openrouter } from '@funkai/models'
+ *
+ * const resolver = createModelResolver({ fallback: openrouter })
  * const agent1 = agent({
  *   name: 'my-agent',
  *   model: 'openai/gpt-4.1',
+ *   resolver,
  *   system: 'You are helpful.',
  * })
  *
- * // AI SDK provider instance
+ * // AI SDK provider instance (no resolver needed)
  * import { openai } from '@ai-sdk/openai'
  * const agent2 = agent({
  *   name: 'my-agent',

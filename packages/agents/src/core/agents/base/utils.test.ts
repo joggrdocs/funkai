@@ -11,24 +11,35 @@ import {
 } from "@/core/agents/base/utils.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
-vi.mock("@/core/provider/provider.js", () => ({
-  openrouter: vi.fn((id: string) => ({ modelId: id })),
-}));
-
 // ---------------------------------------------------------------------------
 // resolveModel
 // ---------------------------------------------------------------------------
 
 describe("resolveModel", () => {
-  it("calls openrouter for a string model ID", () => {
-    const result = resolveModel("openai/gpt-4.1");
+  it("resolves a string model ID using the provided resolver", () => {
+    const resolver = vi.fn((id: string) => ({ modelId: id }) as never);
+    const result = resolveModel("openai/gpt-4.1", resolver);
+    expect(resolver).toHaveBeenCalledWith("openai/gpt-4.1");
     expect(result).toEqual({ modelId: "openai/gpt-4.1" });
+  });
+
+  it("throws when a string model ID is passed without a resolver", () => {
+    expect(() => resolveModel("openai/gpt-4.1")).toThrow(
+      'Cannot resolve string model ID "openai/gpt-4.1": no resolver configured',
+    );
   });
 
   it("returns a LanguageModel object as-is", () => {
     const model = { modelId: "custom-model" } as never;
     const result = resolveModel(model);
     expect(result).toBe(model);
+  });
+
+  it("does not call resolver when ref is a LanguageModel", () => {
+    const resolver = vi.fn();
+    const model = { modelId: "custom-model" } as never;
+    resolveModel(model, resolver);
+    expect(resolver).not.toHaveBeenCalled();
   });
 });
 

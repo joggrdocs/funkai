@@ -23,5 +23,5 @@
     "order": "asc"
   },
   "sortPackageJson": true,
-  "ignorePatterns": ["**/CHANGELOG.md"]
+  "ignorePatterns": ["**/CHANGELOG.md", ".github/workflows/generate-models.yml"]
 }

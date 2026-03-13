@@ -30,23 +30,20 @@
     }
   },
   "scripts": {
-    "generate:models": "tsx scripts/generate-models.ts",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --typecheck",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.3.0",
+    "@funkai/models": "workspace:*",
     "ai": "^6.0.116",
     "es-toolkit": "catalog:",
     "ts-pattern": "catalog:",
-    "type-fest": "^5.4.4",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@ai-sdk/devtools": "^0.0.15",
-    "@openrouter/sdk": "^0.9.11",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",
