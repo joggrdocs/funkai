@@ -2,7 +2,7 @@
 
 The SDK includes a model catalog with metadata and pricing for supported OpenRouter models. Used for cost calculation and model selection.
 
-Model data is auto-generated from the OpenRouter API. Run `pnpm --filter=@pkg/agent-sdk generate:models` to refresh.
+Model data is auto-generated from the OpenRouter API. Run `pnpm --filter=@funkai/agents generate:models` to refresh.
 
 ## Model Definition
 
@@ -35,7 +35,7 @@ Three functions:
 - `models(filter?)` -- Returns model definitions, optionally filtered by a predicate.
 
 ```ts
-import { model, tryModel, models } from "@pkg/agent-sdk";
+import { model, tryModel, models } from "@funkai/agents";
 
 const m = model("openai/gpt-4.1");
 console.log(m.pricing.prompt); // cost per input token
@@ -47,7 +47,7 @@ const reasoning = models((m) => m.category === "reasoning");
 
 ## Adding a Model
 
-Add an entry to `models.config.json` at the package root with the OpenRouter model ID and category, then run `pnpm --filter=@pkg/agent-sdk generate:models` to fetch pricing from the API.
+Add an entry to `models.config.json` at the package root with the OpenRouter model ID and category, then run `pnpm --filter=@funkai/agents generate:models` to fetch pricing from the API.
 
 ## References
 

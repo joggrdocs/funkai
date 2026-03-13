@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - Familiarity with Zod schemas
 
 ## Steps
@@ -12,7 +12,7 @@
 A tool wraps a function for AI agent function calling. Provide a `description`, an `inputSchema`, and an `execute` function.
 
 ```ts
-import { tool } from "@pkg/agent-sdk";
+import { tool } from "@funkai/agents";
 import { z } from "zod";
 
 const fetchPage = tool({
@@ -32,7 +32,7 @@ The `execute` function receives the validated input directly -- not wrapped in a
 Pass tools as a record on the agent config. The tool's name comes from the object key, not from the tool definition itself.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 
 const researcher = agent({
   name: "researcher",

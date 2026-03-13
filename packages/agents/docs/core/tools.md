@@ -83,7 +83,7 @@ const searchTool = tool({
   }),
   inputExamples: [
     { input: { query: "function handleError", fileType: "ts" } },
-    { input: { query: "TODO:" } },
+    { input: { query: "export const createAgent" } },
   ],
   execute: async ({ query, fileType }) => {
     return await searchCodebase(query, fileType);

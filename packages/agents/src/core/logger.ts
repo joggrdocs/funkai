@@ -105,6 +105,20 @@ export interface Logger {
  * Each log call prepends the accumulated bindings to the output.
  *
  * Used as the default when no pino-compatible logger is injected.
+ *
+ * @param bindings - Optional key-value pairs merged into every log entry.
+ * @returns A {@link Logger} that writes to `console` with accumulated bindings.
+ *
+ * @example
+ * ```typescript
+ * import { createDefaultLogger } from '@funkai/agents'
+ *
+ * const logger = createDefaultLogger({ service: 'my-app' })
+ * const child = logger.child({ requestId: 'abc-123' })
+ *
+ * // Logs include both { service: 'my-app', requestId: 'abc-123' }
+ * child.info('request received')
+ * ```
  */
 export function createDefaultLogger(bindings?: Record<string, unknown>): Logger {
   const prefix = bindings ?? {};

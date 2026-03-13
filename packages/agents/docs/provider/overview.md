@@ -7,7 +7,7 @@ The provider module integrates with OpenRouter for model access and provides a m
 All models are accessed via OpenRouter. The `openrouter()` function creates a language model from a model ID.
 
 ```ts
-import { openrouter } from "@pkg/agent-sdk";
+import { openrouter } from "@funkai/agents";
 
 const m = openrouter("openai/gpt-4.1");
 ```
@@ -20,7 +20,7 @@ Resolved from the `OPENROUTER_API_KEY` environment variable. Throws if not set.
 
 ```ts
 // Override with a custom provider instance
-import { createOpenRouter } from "@pkg/agent-sdk";
+import { createOpenRouter } from "@funkai/agents";
 
 const provider = createOpenRouter({ apiKey: "sk-..." });
 const m = provider("openai/gpt-4.1");
@@ -31,7 +31,7 @@ const m = provider("openai/gpt-4.1");
 Models are defined in `models.config.json` and auto-generated into provider-specific files. Use the catalog functions to look up model definitions and pricing.
 
 ```ts
-import { model, tryModel, models } from "@pkg/agent-sdk";
+import { model, tryModel, models } from "@funkai/agents";
 
 // Look up a model (throws if not found)
 const gpt4 = model("openai/gpt-4.1");
@@ -50,7 +50,7 @@ const reasoningModels = models((m) => m.category === "reasoning");
 Aggregate token counts across agent and workflow executions.
 
 ```ts
-import { agentUsage, workflowUsage } from "@pkg/agent-sdk";
+import { agentUsage, workflowUsage } from "@funkai/agents";
 
 // Single agent usage
 const usage = agentUsage("my-agent", tokenRecords);
@@ -80,7 +80,7 @@ for (const entry of wfUsage.usages) {
 String model IDs passed to `agent()` or `openrouter()` are resolved via OpenRouter at runtime. You can also pass an AI SDK `LanguageModel` instance directly.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 
 // String ID -- resolved via OpenRouter
 const a1 = agent({
