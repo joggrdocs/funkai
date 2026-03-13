@@ -10,7 +10,7 @@
 ## Features
 
 - :gear: **Code generation** — Generate typed TypeScript modules from `.prompt` files.
-- :mag: **Linting** — Validate prompt files for undefined and unused variables.
+- :mag: **Validation** — Validate prompt files for undefined and unused variables.
 - :sparkles: **Scaffolding** — Create new `.prompt` files and partials with a single command.
 - :wrench: **Project setup** — Configure VSCode, `.gitignore`, and `tsconfig.json` interactively.
 

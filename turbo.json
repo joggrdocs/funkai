@@ -21,8 +21,12 @@
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"]
     },
-    "typecheck": {
+    "prompts:generate": {
       "dependsOn": ["^build"],
+      "outputs": [".prompts/client/**"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "prompts:generate"],
       "outputs": []
     },
     "docs:build": {

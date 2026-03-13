@@ -9,7 +9,7 @@
 
 ## Features
 
-- :pencil2: **LiquidJS templating** — Write prompts as Liquid templates with YAML frontmatter.
+- :pencil2: **built-in templating** — Write prompts as Liquid templates (in `.prompt` format) with YAML frontmatter.
 - :shield: **Zod validation** — Schema variables are validated at render time.
 - :package: **Codegen** — Generate typed TypeScript modules from `.prompt` files.
 - :jigsaw: **Partials** — Reusable prompt fragments with `{% render %}` tags, flattened at build time.

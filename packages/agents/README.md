@@ -11,7 +11,7 @@
 
 - :zap: **Functions all the way down** — `agent`, `tool`, `workflow` are functions that return plain objects.
 - :jigsaw: **Composition over configuration** — Combine small pieces instead of configuring large ones.
-- :shield: **Result, never throw** — Every public method returns `Result<T>`. Pattern-match on `ok` instead of try/catch.
+- :shield: **Result, never ~~panic~~ throw** — Every public method returns `Result<T>`. Pattern-match on `ok` instead of try/catch.
 - :lock: **Closures are state** — Workflow state is just `let` variables in your handler.
 - :mag: **`$` is optional sugar** — The `$` helpers register data flow for observability; plain imperative code works too.
 
