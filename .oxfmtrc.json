@@ -22,5 +22,6 @@
     "ignoreCase": true,
     "order": "asc"
   },
-  "sortPackageJson": true
+  "sortPackageJson": true,
+  "ignorePatterns": ["**/CHANGELOG.md"]
 }
