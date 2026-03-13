@@ -17,7 +17,7 @@ For detailed TypeScript standards, see [`contributing/standards/typescript/`](co
 
 ## Always
 
-- Read relevant docs before modifying code — `packages/agents/docs/` for agent SDK, `packages/prompts/docs/` for prompt SDK, `contributing/` for coding standards.
+- Read relevant docs before modifying code — `packages/models/docs/` for model catalog/providers, `packages/agents/docs/` for agent SDK, `packages/prompts/docs/` for prompt SDK, `contributing/` for coding standards.
 - Run commands from root with filters (e.g., `pnpm test --filter=@funkai/agents`). Never `cd` into package directories.
 - Validate before commit — `pnpm typecheck && pnpm build`.
 - Conventional Commits format — `type(scope): description`. See [commit standards](contributing/standards/git-commits.md).
@@ -92,6 +92,7 @@ For details, see [Commit Standards](contributing/standards/git-commits.md) and [
 
 ## Documentation
 
+- `packages/models/docs/` — Model catalog and provider resolution (catalog, providers, cost tracking, guides)
 - `packages/agents/docs/` — Agent SDK documentation (core concepts, guides, provider info)
 - `packages/prompts/docs/` — Prompt SDK documentation (CLI, file format, codegen, guides)
 - `contributing/` — Contributing docs ([standards](contributing/README.md#standards), [concepts](contributing/README.md#concepts), [guides](contributing/README.md#guides))

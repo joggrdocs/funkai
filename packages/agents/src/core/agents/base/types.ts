@@ -18,6 +18,39 @@ import type { Result } from "@/utils/result.js";
  */
 export type StreamPart = TextStreamPart<ToolSet>;
 
+/**
+ * Record of named subagents available for delegation.
+ *
+ * Each entry maps a subagent name to an {@link Agent} instance. When
+ * passed to an agent's `agents` config, each subagent is automatically
+ * wrapped as a callable tool that the parent can invoke during its
+ * tool loop. Abort signals propagate from parent to child.
+ *
+ * @example
+ * ```typescript
+ * import { agent } from '@funkai/agents'
+ * import type { SubAgents } from '@funkai/agents'
+ *
+ * const researcher = agent({
+ *   name: 'researcher',
+ *   model: 'openai/gpt-4.1',
+ *   system: 'You research topics and return factual summaries.',
+ * })
+ *
+ * const summarizer = agent({
+ *   name: 'summarizer',
+ *   model: 'openai/gpt-4.1-mini',
+ *   system: 'You condense text into concise bullet points.',
+ * })
+ *
+ * const orchestrator = agent({
+ *   name: 'orchestrator',
+ *   model: 'openai/gpt-4.1',
+ *   system: 'Coordinate research and summarization.',
+ *   agents: { researcher, summarizer } satisfies SubAgents,
+ * })
+ * ```
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type SubAgents = Record<string, Agent<any, any, any, any>>;
 

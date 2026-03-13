@@ -32,6 +32,20 @@ export type OutputParam = OutputSpec | ZodType;
  * - Anything else → `Output.object({ schema })`
  *
  * @internal
+ * @param output - An AI SDK `OutputSpec` or a raw Zod schema to wrap.
+ * @returns The resolved {@link OutputSpec} ready for the AI SDK.
+ *
+ * @example
+ * ```typescript
+ * import { z } from 'zod'
+ * import { resolveOutput } from '@funkai/agents'
+ *
+ * const objectOutput = resolveOutput(z.object({ title: z.string() }))
+ * // Equivalent to Output.object({ schema: z.object({ title: z.string() }) })
+ *
+ * const arrayOutput = resolveOutput(z.array(z.object({ name: z.string() })))
+ * // Equivalent to Output.array({ element: z.object({ name: z.string() }) })
+ * ```
  */
 export function resolveOutput(output: OutputParam): OutputSpec {
   // OutputSpec instances have `parseCompleteOutput` — Zod schemas don't
