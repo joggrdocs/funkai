@@ -3,7 +3,5 @@
   "outputDirectory": ".zpress/dist",
   "framework": null,
   "installCommand": "pnpm install",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet .",
-  "cleanUrls": true,
-  "trailingSlash": false
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet ."
 }
