@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { AMAZON_BEDROCK_MODELS } from '../catalog/providers/amazon-bedrock.js'
+import type { LiteralUnion } from "type-fest";
+
+import { AMAZON_BEDROCK_MODELS } from "../catalog/providers/amazon-bedrock.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Amazon Bedrock.
@@ -25,7 +26,7 @@ import { AMAZON_BEDROCK_MODELS } from '../catalog/providers/amazon-bedrock.js'
  * const id: AmazonBedrockModelId = 'deepseek.r1-v1:0'
  * ```
  */
-export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
+export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]["id"];
 
 /**
  * All Amazon Bedrock models in the catalog.
@@ -39,7 +40,7 @@ export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
  * }
  * ```
  */
-export const amazonBedrockModels = AMAZON_BEDROCK_MODELS
+export const amazonBedrockModels = AMAZON_BEDROCK_MODELS;
 
 /**
  * Look up an Amazon Bedrock model by ID.
@@ -57,6 +58,8 @@ export const amazonBedrockModels = AMAZON_BEDROCK_MODELS
  * }
  * ```
  */
-export function amazonBedrockModel(id: LiteralUnion<AmazonBedrockModelId, string>): ModelDefinition | null {
-  return AMAZON_BEDROCK_MODELS.find((m) => m.id === id) ?? null
+export function amazonBedrockModel(
+  id: LiteralUnion<AmazonBedrockModelId, string>,
+): ModelDefinition | null {
+  return AMAZON_BEDROCK_MODELS.find((m) => m.id === id) ?? null;
 }

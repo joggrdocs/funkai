@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { GOOGLE_MODELS } from '../catalog/providers/google.js'
+import type { LiteralUnion } from "type-fest";
+
+import { GOOGLE_MODELS } from "../catalog/providers/google.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Google.
@@ -25,7 +26,7 @@ import { GOOGLE_MODELS } from '../catalog/providers/google.js'
  * const id: GoogleModelId = 'gemini-embedding-001'
  * ```
  */
-export type GoogleModelId = (typeof GOOGLE_MODELS)[number]['id']
+export type GoogleModelId = (typeof GOOGLE_MODELS)[number]["id"];
 
 /**
  * All Google models in the catalog.
@@ -39,7 +40,7 @@ export type GoogleModelId = (typeof GOOGLE_MODELS)[number]['id']
  * }
  * ```
  */
-export const googleModels = GOOGLE_MODELS
+export const googleModels = GOOGLE_MODELS;
 
 /**
  * Look up a Google model by ID.
@@ -58,5 +59,5 @@ export const googleModels = GOOGLE_MODELS
  * ```
  */
 export function googleModel(id: LiteralUnion<GoogleModelId, string>): ModelDefinition | null {
-  return GOOGLE_MODELS.find((m) => m.id === id) ?? null
+  return GOOGLE_MODELS.find((m) => m.id === id) ?? null;
 }

@@ -1,3 +1,4 @@
+import type { ModelResolver } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { match, P } from "ts-pattern";
@@ -8,7 +9,6 @@ import type { Agent, Message } from "@/core/agents/base/types.js";
 import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
-import type { ModelResolver } from "@funkai/models";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 
 /**

@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
+import type { LiteralUnion } from "type-fest";
+
+import { DEEPINFRA_MODELS } from "../catalog/providers/deepinfra.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for DeepInfra.
@@ -25,7 +26,7 @@ import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
  * const id: DeepInfraModelId = 'zai-org/GLM-4.7-Flash'
  * ```
  */
-export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
+export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]["id"];
 
 /**
  * All DeepInfra models in the catalog.
@@ -39,7 +40,7 @@ export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
  * }
  * ```
  */
-export const deepInfraModels = DEEPINFRA_MODELS
+export const deepInfraModels = DEEPINFRA_MODELS;
 
 /**
  * Look up a DeepInfra model by ID.
@@ -58,5 +59,5 @@ export const deepInfraModels = DEEPINFRA_MODELS
  * ```
  */
 export function deepInfraModel(id: LiteralUnion<DeepInfraModelId, string>): ModelDefinition | null {
-  return DEEPINFRA_MODELS.find((m) => m.id === id) ?? null
+  return DEEPINFRA_MODELS.find((m) => m.id === id) ?? null;
 }

@@ -1,7 +1,6 @@
+import type { ModelResolver } from "@funkai/models";
 import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from "ai";
 import type { ZodType } from "zod";
-
-import type { ModelResolver } from "@funkai/models";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";

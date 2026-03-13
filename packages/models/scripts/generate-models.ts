@@ -149,11 +149,7 @@ function buildCapabilities(m: ApiModel): string {
  * Escape a string for use in a TypeScript single-quoted string literal.
  */
 function escapeStr(s: string): string {
-  return s
-    .replace(/\\/g, "\\\\")
-    .replace(/'/g, "\\'")
-    .replace(/\n/g, "\\n")
-    .replace(/\r/g, "\\r");
+  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
 }
 
 // ---------------------------------------------------------------------------
@@ -186,7 +182,9 @@ async function main(): Promise<void> {
   }
 
   // Read provider config
-  const providers: Record<string, ProviderEntry> = JSON.parse(readFileSync(PROVIDERS_PATH, "utf-8"));
+  const providers: Record<string, ProviderEntry> = JSON.parse(
+    readFileSync(PROVIDERS_PATH, "utf-8"),
+  );
   const providerKeys = Object.keys(providers);
 
   if (providerKeys.length === 0) {

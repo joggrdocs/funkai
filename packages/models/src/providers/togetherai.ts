@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { TOGETHERAI_MODELS } from '../catalog/providers/togetherai.js'
+import type { LiteralUnion } from "type-fest";
+
+import { TOGETHERAI_MODELS } from "../catalog/providers/togetherai.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Together AI.
@@ -25,7 +26,7 @@ import { TOGETHERAI_MODELS } from '../catalog/providers/togetherai.js'
  * const id: TogetherModelId = 'zai-org/GLM-4.6'
  * ```
  */
-export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]['id']
+export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]["id"];
 
 /**
  * All Together AI models in the catalog.
@@ -39,7 +40,7 @@ export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]['id']
  * }
  * ```
  */
-export const togetherModels = TOGETHERAI_MODELS
+export const togetherModels = TOGETHERAI_MODELS;
 
 /**
  * Look up a Together AI model by ID.
@@ -58,5 +59,5 @@ export const togetherModels = TOGETHERAI_MODELS
  * ```
  */
 export function togetherModel(id: LiteralUnion<TogetherModelId, string>): ModelDefinition | null {
-  return TOGETHERAI_MODELS.find((m) => m.id === id) ?? null
+  return TOGETHERAI_MODELS.find((m) => m.id === id) ?? null;
 }
