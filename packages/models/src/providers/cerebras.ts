@@ -17,6 +17,13 @@ import { CEREBRAS_MODELS } from '../catalog/providers/cerebras.js'
 
 /**
  * Known model identifiers for Cerebras.
+ *
+ * @example
+ * ```typescript
+ * import type { CerebrasModelId } from '@funkai/models/cerebras'
+ *
+ * const id: CerebrasModelId = 'qwen-3-235b-a22b-instruct-2507'
+ * ```
  */
 export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]['id']
 

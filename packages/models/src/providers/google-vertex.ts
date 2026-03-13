@@ -17,6 +17,13 @@ import { GOOGLE_VERTEX_MODELS } from '../catalog/providers/google-vertex.js'
 
 /**
  * Known model identifiers for Google Vertex AI.
+ *
+ * @example
+ * ```typescript
+ * import type { GoogleVertexModelId } from '@funkai/models/google-vertex'
+ *
+ * const id: GoogleVertexModelId = 'gemini-embedding-001'
+ * ```
  */
 export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]['id']
 

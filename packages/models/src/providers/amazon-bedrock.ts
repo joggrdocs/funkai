@@ -17,6 +17,13 @@ import { AMAZON_BEDROCK_MODELS } from '../catalog/providers/amazon-bedrock.js'
 
 /**
  * Known model identifiers for Amazon Bedrock.
+ *
+ * @example
+ * ```typescript
+ * import type { AmazonBedrockModelId } from '@funkai/models/amazon-bedrock'
+ *
+ * const id: AmazonBedrockModelId = 'deepseek.r1-v1:0'
+ * ```
  */
 export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
 export const amazonBedrockModels = AMAZON_BEDROCK_MODELS
 
 /**
- * Look up a Amazon Bedrock model by ID.
+ * Look up an Amazon Bedrock model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.

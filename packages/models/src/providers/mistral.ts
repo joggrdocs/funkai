@@ -17,6 +17,13 @@ import { MISTRAL_MODELS } from '../catalog/providers/mistral.js'
 
 /**
  * Known model identifiers for Mistral.
+ *
+ * @example
+ * ```typescript
+ * import type { MistralModelId } from '@funkai/models/mistral'
+ *
+ * const id: MistralModelId = 'devstral-medium-2507'
+ * ```
  */
 export type MistralModelId = (typeof MISTRAL_MODELS)[number]['id']
 

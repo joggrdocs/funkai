@@ -17,6 +17,13 @@ import { TOGETHERAI_MODELS } from '../catalog/providers/togetherai.js'
 
 /**
  * Known model identifiers for Together AI.
+ *
+ * @example
+ * ```typescript
+ * import type { TogetherModelId } from '@funkai/models/togetherai'
+ *
+ * const id: TogetherModelId = 'zai-org/GLM-4.6'
+ * ```
  */
 export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]['id']
 

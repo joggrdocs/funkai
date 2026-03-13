@@ -17,6 +17,13 @@ import { PERPLEXITY_MODELS } from '../catalog/providers/perplexity.js'
 
 /**
  * Known model identifiers for Perplexity.
+ *
+ * @example
+ * ```typescript
+ * import type { PerplexityModelId } from '@funkai/models/perplexity'
+ *
+ * const id: PerplexityModelId = 'sonar-reasoning-pro'
+ * ```
  */
 export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]['id']
 

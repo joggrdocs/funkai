@@ -17,6 +17,13 @@ import { DEEPSEEK_MODELS } from '../catalog/providers/deepseek.js'
 
 /**
  * Known model identifiers for DeepSeek.
+ *
+ * @example
+ * ```typescript
+ * import type { DeepSeekModelId } from '@funkai/models/deepseek'
+ *
+ * const id: DeepSeekModelId = 'deepseek-reasoner'
+ * ```
  */
 export type DeepSeekModelId = (typeof DEEPSEEK_MODELS)[number]['id']
 

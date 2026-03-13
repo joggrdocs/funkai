@@ -17,6 +17,13 @@ import { OPENROUTER_MODELS } from '../catalog/providers/openrouter.js'
 
 /**
  * Known model identifiers for OpenRouter.
+ *
+ * @example
+ * ```typescript
+ * import type { OpenRouterModelId } from '@funkai/models/openrouter'
+ *
+ * const id: OpenRouterModelId = 'prime-intellect/intellect-3'
+ * ```
  */
 export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]['id']
 export const openRouterModels = OPENROUTER_MODELS
 
 /**
- * Look up a OpenRouter model by ID.
+ * Look up an OpenRouter model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.

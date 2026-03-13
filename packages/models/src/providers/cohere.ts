@@ -17,6 +17,13 @@ import { COHERE_MODELS } from '../catalog/providers/cohere.js'
 
 /**
  * Known model identifiers for Cohere.
+ *
+ * @example
+ * ```typescript
+ * import type { CohereModelId } from '@funkai/models/cohere'
+ *
+ * const id: CohereModelId = 'c4ai-aya-expanse-32b'
+ * ```
  */
 export type CohereModelId = (typeof COHERE_MODELS)[number]['id']
 

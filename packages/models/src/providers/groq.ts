@@ -17,6 +17,13 @@ import { GROQ_MODELS } from '../catalog/providers/groq.js'
 
 /**
  * Known model identifiers for Groq.
+ *
+ * @example
+ * ```typescript
+ * import type { GroqModelId } from '@funkai/models/groq'
+ *
+ * const id: GroqModelId = 'llama3-70b-8192'
+ * ```
  */
 export type GroqModelId = (typeof GROQ_MODELS)[number]['id']
 

@@ -17,6 +17,13 @@ import { INCEPTION_MODELS } from '../catalog/providers/inception.js'
 
 /**
  * Known model identifiers for Inception (Mercury).
+ *
+ * @example
+ * ```typescript
+ * import type { InceptionModelId } from '@funkai/models/inception'
+ *
+ * const id: InceptionModelId = 'mercury-2'
+ * ```
  */
 export type InceptionModelId = (typeof INCEPTION_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type InceptionModelId = (typeof INCEPTION_MODELS)[number]['id']
 export const inceptionModels = INCEPTION_MODELS
 
 /**
- * Look up a Inception (Mercury) model by ID.
+ * Look up an Inception (Mercury) model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.

@@ -17,6 +17,13 @@ import { ANTHROPIC_MODELS } from '../catalog/providers/anthropic.js'
 
 /**
  * Known model identifiers for Anthropic.
+ *
+ * @example
+ * ```typescript
+ * import type { AnthropicModelId } from '@funkai/models/anthropic'
+ *
+ * const id: AnthropicModelId = 'claude-opus-4-5-20251101'
+ * ```
  */
 export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]['id']
 export const anthropicModels = ANTHROPIC_MODELS
 
 /**
- * Look up a Anthropic model by ID.
+ * Look up an Anthropic model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.

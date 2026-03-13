@@ -17,6 +17,13 @@ import { LLAMA_MODELS } from '../catalog/providers/llama.js'
 
 /**
  * Known model identifiers for Meta Llama.
+ *
+ * @example
+ * ```typescript
+ * import type { LlamaModelId } from '@funkai/models/llama'
+ *
+ * const id: LlamaModelId = 'cerebras-llama-4-maverick-17b-128e-instruct'
+ * ```
  */
 export type LlamaModelId = (typeof LLAMA_MODELS)[number]['id']
 

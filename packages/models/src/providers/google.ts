@@ -17,6 +17,13 @@ import { GOOGLE_MODELS } from '../catalog/providers/google.js'
 
 /**
  * Known model identifiers for Google.
+ *
+ * @example
+ * ```typescript
+ * import type { GoogleModelId } from '@funkai/models/google'
+ *
+ * const id: GoogleModelId = 'gemini-embedding-001'
+ * ```
  */
 export type GoogleModelId = (typeof GOOGLE_MODELS)[number]['id']
 

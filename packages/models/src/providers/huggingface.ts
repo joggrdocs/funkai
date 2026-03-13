@@ -17,6 +17,13 @@ import { HUGGINGFACE_MODELS } from '../catalog/providers/huggingface.js'
 
 /**
  * Known model identifiers for Hugging Face.
+ *
+ * @example
+ * ```typescript
+ * import type { HuggingFaceModelId } from '@funkai/models/huggingface'
+ *
+ * const id: HuggingFaceModelId = 'zai-org/GLM-4.7-Flash'
+ * ```
  */
 export type HuggingFaceModelId = (typeof HUGGINGFACE_MODELS)[number]['id']
 

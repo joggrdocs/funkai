@@ -17,6 +17,13 @@ import { FIREWORKS_AI_MODELS } from '../catalog/providers/fireworks-ai.js'
 
 /**
  * Known model identifiers for Fireworks AI.
+ *
+ * @example
+ * ```typescript
+ * import type { FireworksModelId } from '@funkai/models/fireworks-ai'
+ *
+ * const id: FireworksModelId = 'accounts/fireworks/models/kimi-k2-instruct'
+ * ```
  */
 export type FireworksModelId = (typeof FIREWORKS_AI_MODELS)[number]['id']
 

@@ -83,6 +83,13 @@ function lowerFirst(s: string): string {
 }
 
 /**
+ * Return the correct indefinite article ("a" or "an") for a word.
+ */
+function article(word: string): string {
+  return /^[aeiou]/i.test(word) ? "an" : "a";
+}
+
+/**
  * Convert per-million-token rate to per-token rate.
  */
 function toPerToken(perMillion: number): number {
@@ -195,6 +202,14 @@ async function main(): Promise<void> {
   const apiData: Record<string, ApiProvider> = await response.json();
   console.log(`generate-models: ${Object.keys(apiData).length} providers from API`);
 
+  // Fail fast if any configured provider is missing from the API
+  const missingProviders = providerKeys.filter((key) => !apiData[key]);
+  if (missingProviders.length > 0) {
+    throw new Error(
+      `models.dev API is missing configured providers: ${missingProviders.join(", ")}`,
+    );
+  }
+
   mkdirSync(GENERATED_DIR, { recursive: true });
 
   // Clean and recreate catalog providers dir
@@ -253,6 +268,8 @@ ${lines.join("\n")}
     const prefix = providers[providerKey]!.prefix;
     const camel = lowerFirst(prefix);
     const exampleId = escapeStr(Object.values(apiModels)[0]?.id ?? "example-id");
+    const providerName = escapeStr(providers[providerKey]!.name);
+    const art = article(providers[providerKey]!.name);
     const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
@@ -260,12 +277,19 @@ import type { ModelDefinition } from '../catalog/types.js'
 import { ${constName} } from '../catalog/providers/${providerKey}.js'
 
 /**
- * Known model identifiers for ${escapeStr(providers[providerKey]!.name)}.
+ * Known model identifiers for ${providerName}.
+ *
+ * @example
+ * \`\`\`typescript
+ * import type { ${prefix}ModelId } from '@funkai/models/${providerKey}'
+ *
+ * const id: ${prefix}ModelId = '${exampleId}'
+ * \`\`\`
  */
 export type ${prefix}ModelId = (typeof ${constName})[number]['id']
 
 /**
- * All ${escapeStr(providers[providerKey]!.name)} models in the catalog.
+ * All ${providerName} models in the catalog.
  *
  * @example
  * \`\`\`typescript
@@ -279,7 +303,7 @@ export type ${prefix}ModelId = (typeof ${constName})[number]['id']
 export const ${camel}Models = ${constName}
 
 /**
- * Look up a ${escapeStr(providers[providerKey]!.name)} model by ID.
+ * Look up ${art} ${providerName} model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or \`null\`.

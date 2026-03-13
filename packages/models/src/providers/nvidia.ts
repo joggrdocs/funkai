@@ -17,6 +17,13 @@ import { NVIDIA_MODELS } from '../catalog/providers/nvidia.js'
 
 /**
  * Known model identifiers for NVIDIA NIM.
+ *
+ * @example
+ * ```typescript
+ * import type { NvidiaModelId } from '@funkai/models/nvidia'
+ *
+ * const id: NvidiaModelId = 'nvidia/llama-3.1-nemotron-70b-instruct'
+ * ```
  */
 export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]['id']
 

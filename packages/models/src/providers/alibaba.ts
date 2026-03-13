@@ -17,6 +17,13 @@ import { ALIBABA_MODELS } from '../catalog/providers/alibaba.js'
 
 /**
  * Known model identifiers for Alibaba (Qwen).
+ *
+ * @example
+ * ```typescript
+ * import type { AlibabaModelId } from '@funkai/models/alibaba'
+ *
+ * const id: AlibabaModelId = 'qwen-vl-plus'
+ * ```
  */
 export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
 export const alibabaModels = ALIBABA_MODELS
 
 /**
- * Look up a Alibaba (Qwen) model by ID.
+ * Look up an Alibaba (Qwen) model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.

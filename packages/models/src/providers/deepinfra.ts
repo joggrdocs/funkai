@@ -17,6 +17,13 @@ import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
 
 /**
  * Known model identifiers for DeepInfra.
+ *
+ * @example
+ * ```typescript
+ * import type { DeepInfraModelId } from '@funkai/models/deepinfra'
+ *
+ * const id: DeepInfraModelId = 'zai-org/GLM-4.7-Flash'
+ * ```
  */
 export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
 

@@ -17,6 +17,13 @@ import { XAI_MODELS } from '../catalog/providers/xai.js'
 
 /**
  * Known model identifiers for xAI.
+ *
+ * @example
+ * ```typescript
+ * import type { XAIModelId } from '@funkai/models/xai'
+ *
+ * const id: XAIModelId = 'grok-2-1212'
+ * ```
  */
 export type XAIModelId = (typeof XAI_MODELS)[number]['id']
 

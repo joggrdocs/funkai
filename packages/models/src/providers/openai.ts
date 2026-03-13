@@ -17,6 +17,13 @@ import { OPENAI_MODELS } from '../catalog/providers/openai.js'
 
 /**
  * Known model identifiers for OpenAI.
+ *
+ * @example
+ * ```typescript
+ * import type { OpenAIModelId } from '@funkai/models/openai'
+ *
+ * const id: OpenAIModelId = 'gpt-4o-2024-11-20'
+ * ```
  */
 export type OpenAIModelId = (typeof OPENAI_MODELS)[number]['id']
 
@@ -35,7 +42,7 @@ export type OpenAIModelId = (typeof OPENAI_MODELS)[number]['id']
 export const openAIModels = OPENAI_MODELS
 
 /**
- * Look up a OpenAI model by ID.
+ * Look up an OpenAI model by ID.
  *
  * @param id - The provider-native model identifier.
  * @returns The matching model definition, or `null`.
