@@ -1,18 +1,18 @@
 {
-  "name": "@funkai/agents",
-  "version": "0.1.1",
+  "name": "@funkai/models",
+  "version": "0.1.0",
   "private": false,
-  "description": "Lightweight workflow and agent orchestration framework",
+  "description": "Model catalog, provider resolution, and cost calculations for the funkai AI SDK",
   "keywords": [
-    "agents",
     "ai",
     "ai-sdk",
+    "models",
     "openrouter",
-    "orchestration",
-    "typescript",
-    "workflow"
+    "pricing",
+    "providers",
+    "typescript"
   ],
-  "homepage": "https://github.com/joggrdocs/funkai/tree/main/packages/agents#readme",
+  "homepage": "https://github.com/joggrdocs/funkai/tree/main/packages/models#readme",
   "bugs": {
     "url": "https://github.com/joggrdocs/funkai/issues"
   },
@@ -20,7 +20,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/joggrdocs/funkai.git",
-    "directory": "packages/agents"
+    "directory": "packages/models"
   },
   "type": "module",
   "exports": {
@@ -30,20 +30,22 @@
     }
   },
   "scripts": {
+    "generate:models": "tsx scripts/generate-models.ts",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --typecheck",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@funkai/models": "workspace:*",
+    "@openrouter/ai-sdk-provider": "^2.3.0",
     "ai": "^6.0.116",
     "es-toolkit": "catalog:",
     "ts-pattern": "catalog:",
+    "type-fest": "^5.4.4",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@ai-sdk/devtools": "^0.0.15",
+    "@openrouter/sdk": "^0.9.11",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",

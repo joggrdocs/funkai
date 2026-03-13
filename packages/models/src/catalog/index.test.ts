@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { model, models, MODELS, tryModel } from "@/core/models/index.js";
+import { model, models, MODELS, tryModel } from "@/catalog/index.js";
 
 // ---------------------------------------------------------------------------
 // MODELS constant

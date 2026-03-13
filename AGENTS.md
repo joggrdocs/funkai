@@ -67,9 +67,12 @@ For design rationale and full tool reference, see [Tech Stack](contributing/conc
 - `pnpm format` — Format with OXFmt
 - `pnpm format:check` — Check formatting
 - `pnpm changeset` — Create changeset for versioning (required before PR for published packages)
+- `pnpm --filter=@funkai/models generate:models` — Fetch latest model data from OpenRouter (requires `OPENROUTER_API_KEY`)
+- `pnpm --filter=@funkai/models generate:models --force` — Force-fetch ignoring staleness cache
 
 ## Project Layout
 
+- `packages/models` — `@funkai/models` — Model catalog, provider resolution, and cost calculations
 - `packages/agents` — `@funkai/agents` — Lightweight workflow and agent orchestration framework
 - `packages/prompts` — `@funkai/prompts` — Prompt SDK with LiquidJS templating and Zod validation
 - `contributing/` — Contributing standards, guides, and architectural concepts
@@ -81,7 +84,7 @@ For architectural details, see [Architecture](contributing/concepts/architecture
 
 - **Commit format**: Conventional Commits (`type(scope): description`)
 - **Types**: feat, fix, docs, refactor, test, chore, perf, style, ci, deps, revert
-- **Scopes**: packages/agents, packages/prompts, workspace, tooling
+- **Scopes**: packages/models, packages/agents, packages/prompts, workspace, tooling
 - **Changesets**: Run `pnpm changeset` for changes to published packages
 - **PR standards**: Keep PRs focused — one feature/fix per PR
 

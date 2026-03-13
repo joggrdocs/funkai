@@ -1,0 +1,58 @@
+name: Generate Models
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install
+
+      - name: Generate models
+        run: pnpm --filter=@funkai/models generate:models --force
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet packages/models/src/catalog/providers/ || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create changeset
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          CHANGESET_ID=$(pnpm tsx packages/models/scripts/changeset-id.ts)
+          cat > ".changeset/${CHANGESET_ID}.md" << 'CHANGESET_EOF'
+          ---
+          "@funkai/models": patch
+          ---
+
+          Update model catalog with latest pricing from OpenRouter
+          CHANGESET_EOF
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/models/src/catalog/providers/ .changeset/
+          git commit -m "chore(packages/models): update model catalog"
+          git push

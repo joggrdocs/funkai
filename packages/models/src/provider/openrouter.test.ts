@@ -9,7 +9,7 @@ vi.mock("@openrouter/ai-sdk-provider", () => ({
 }));
 
 // Must import after mocking
-const { createOpenRouter, openrouter } = await import("@/core/provider/provider.js");
+const { createOpenRouter, openrouter } = await import("@/provider/openrouter.js");
 
 // ---------------------------------------------------------------------------
 // createOpenRouter()
@@ -71,9 +71,6 @@ describe("createOpenRouter()", () => {
 // ---------------------------------------------------------------------------
 // openrouter() — cached model factory
 // ---------------------------------------------------------------------------
-
-// Each test in this block uses a unique API key to invalidate the module-level
-// cache, so call-count assertions remain isolated between tests.
 
 describe("openrouter()", () => {
   beforeEach(() => {

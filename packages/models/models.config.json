@@ -14,5 +14,20 @@
     { "id": "openai/o3", "category": "reasoning" },
     { "id": "openai/o3-mini", "category": "reasoning" },
     { "id": "openai/o4-mini", "category": "reasoning" }
+  ],
+  "anthropic": [
+    { "id": "anthropic/claude-opus-4", "category": "reasoning" },
+    { "id": "anthropic/claude-sonnet-4", "category": "chat" },
+    { "id": "anthropic/claude-sonnet-4-5", "category": "reasoning" },
+    { "id": "anthropic/claude-haiku-3.5", "category": "chat" }
+  ],
+  "google": [
+    { "id": "google/gemini-2.5-pro-preview", "category": "reasoning" },
+    { "id": "google/gemini-2.5-flash-preview", "category": "chat" },
+    { "id": "google/gemini-2.0-flash-001", "category": "chat" }
+  ],
+  "meta-llama": [
+    { "id": "meta-llama/llama-4-maverick", "category": "chat" },
+    { "id": "meta-llama/llama-4-scout", "category": "chat" }
   ]
 }

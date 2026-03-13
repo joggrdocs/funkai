@@ -79,6 +79,16 @@ export type {
   FlowAgentTokenUsage,
 } from "@/core/provider/types.js";
 
+// Re-export new @funkai/models features
+export { createModelResolver, calculateCost } from "@funkai/models";
+export type {
+  ProviderFactory,
+  ProviderMap,
+  ModelResolverConfig,
+  ModelResolver,
+  CostBreakdown,
+} from "@funkai/models";
+
 export type { Output } from "ai";
 
 export type { ExecutionContext } from "@/lib/context.js";
