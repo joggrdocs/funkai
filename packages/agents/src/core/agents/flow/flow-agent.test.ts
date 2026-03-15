@@ -389,6 +389,73 @@ describe("generate() hooks", () => {
     expect(overrideOnError).toHaveBeenCalledTimes(1);
   });
 
+  it("fires both config and override onStepFinish hooks", async () => {
+    const configOnStepFinish = vi.fn();
+    const overrideOnStepFinish = vi.fn();
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "step-hook-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: configOnStepFinish,
+      },
+      async ({ input, $ }) => {
+        await $.step({
+          id: "double",
+          execute: async () => input.x * 2,
+        });
+        return { y: input.x * 2 };
+      },
+    );
+
+    await fa.generate({ x: 3 }, { onStepFinish: overrideOnStepFinish });
+
+    expect(configOnStepFinish).toHaveBeenCalledTimes(1);
+    expect(overrideOnStepFinish).toHaveBeenCalledTimes(1);
+
+    const configCall = configOnStepFinish.mock.calls[0];
+    const overrideCall = overrideOnStepFinish.mock.calls[0];
+    if (!configCall) throw new Error("Expected configOnStepFinish first call");
+    if (!overrideCall) throw new Error("Expected overrideOnStepFinish first call");
+    expect(configCall[0]).toHaveProperty("step");
+    expect(configCall[0]).toHaveProperty("duration");
+    expect(overrideCall[0]).toHaveProperty("step");
+    expect(overrideCall[0]).toHaveProperty("duration");
+  });
+
+  it("fires config onStepFinish before override onStepFinish", async () => {
+    const order: string[] = [];
+    const configOnStepFinish = vi.fn(() => {
+      order.push("config");
+    });
+    const overrideOnStepFinish = vi.fn(() => {
+      order.push("override");
+    });
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "order-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: configOnStepFinish,
+      },
+      async ({ input, $ }) => {
+        await $.step({
+          id: "compute",
+          execute: async () => input.x,
+        });
+        return { y: input.x };
+      },
+    );
+
+    await fa.generate({ x: 1 }, { onStepFinish: overrideOnStepFinish });
+
+    expect(order).toEqual(["config", "override"]);
+  });
+
   it("does not fire onFinish when handler throws", async () => {
     const onFinish = vi.fn();
 

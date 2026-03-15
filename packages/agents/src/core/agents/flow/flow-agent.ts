@@ -17,6 +17,7 @@ import type {
   FlowAgentHandler,
   FlowAgentOverrides,
   InternalFlowAgentOptions,
+  StepInfo,
 } from "@/core/agents/flow/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
@@ -28,6 +29,40 @@ import type { TraceEntry } from "@/lib/trace.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
+
+/** Hook signature for step-finish events. @private */
+type StepFinishHook = (event: { step: StepInfo; result: unknown; duration: number }) => void | Promise<void>;
+
+/**
+ * Build a merged `onStepFinish` parent hook that fires both the config-level
+ * and per-call override hooks sequentially (config first, then override).
+ *
+ * Returns `undefined` when neither hook is provided, so `createStepBuilder`
+ * skips the callback entirely.
+ *
+ * @param log - Logger for `fireHooks` error reporting.
+ * @param configHook - The hook from `FlowAgentConfig`.
+ * @param overrideHook - The hook from `FlowAgentOverrides`.
+ * @returns A merged hook callback, or `undefined`.
+ *
+ * @private
+ */
+function buildMergedStepFinishHook(
+  log: Logger,
+  configHook: StepFinishHook | undefined,
+  overrideHook: StepFinishHook | undefined,
+): StepFinishHook | undefined {
+  if (configHook === undefined && overrideHook === undefined) {
+    return undefined;
+  }
+  return async (event) => {
+    await fireHooks(
+      log,
+      wrapHook(configHook, event),
+      wrapHook(overrideHook, event),
+    );
+  };
+}
 
 /**
  * Resolve the logger for a single flow agent execution.
@@ -203,11 +238,17 @@ export function flowAgent<TInput, TOutput = any>(
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
+    const mergedOnStepFinish = buildMergedStepFinishHook(
+      log,
+      config.onStepFinish,
+      overrides && overrides.onStepFinish,
+    );
+
     const base$ = createStepBuilder({
       ctx,
       parentHooks: {
         onStepStart: config.onStepStart,
-        onStepFinish: config.onStepFinish,
+        onStepFinish: mergedOnStepFinish,
       },
     });
 
@@ -330,11 +371,17 @@ export function flowAgent<TInput, TOutput = any>(
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
     const writer = writable.getWriter();
 
+    const mergedOnStepFinish = buildMergedStepFinishHook(
+      log,
+      config.onStepFinish,
+      overrides && overrides.onStepFinish,
+    );
+
     const base$ = createStepBuilder({
       ctx,
       parentHooks: {
         onStepStart: config.onStepStart,
-        onStepFinish: config.onStepFinish,
+        onStepFinish: mergedOnStepFinish,
       },
       writer,
     });
