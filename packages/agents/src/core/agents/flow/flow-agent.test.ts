@@ -389,6 +389,73 @@ describe("generate() hooks", () => {
     expect(overrideOnError).toHaveBeenCalledTimes(1);
   });
 
+  it("fires both config and override onStepFinish hooks", async () => {
+    const configOnStepFinish = vi.fn();
+    const overrideOnStepFinish = vi.fn();
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "step-hook-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: configOnStepFinish,
+      },
+      async ({ input, $ }) => {
+        await $.step({
+          id: "double",
+          execute: async () => input.x * 2,
+        });
+        return { y: input.x * 2 };
+      },
+    );
+
+    await fa.generate({ x: 3 }, { onStepFinish: overrideOnStepFinish });
+
+    expect(configOnStepFinish).toHaveBeenCalledTimes(1);
+    expect(overrideOnStepFinish).toHaveBeenCalledTimes(1);
+
+    const configCall = configOnStepFinish.mock.calls[0];
+    const overrideCall = overrideOnStepFinish.mock.calls[0];
+    if (!configCall) throw new Error("Expected configOnStepFinish first call");
+    if (!overrideCall) throw new Error("Expected overrideOnStepFinish first call");
+    expect(configCall[0]).toHaveProperty("step");
+    expect(configCall[0]).toHaveProperty("duration");
+    expect(overrideCall[0]).toHaveProperty("step");
+    expect(overrideCall[0]).toHaveProperty("duration");
+  });
+
+  it("fires config onStepFinish before override onStepFinish", async () => {
+    const order: string[] = [];
+    const configOnStepFinish = vi.fn(() => {
+      order.push("config");
+    });
+    const overrideOnStepFinish = vi.fn(() => {
+      order.push("override");
+    });
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "order-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: configOnStepFinish,
+      },
+      async ({ input, $ }) => {
+        await $.step({
+          id: "compute",
+          execute: async () => input.x,
+        });
+        return { y: input.x };
+      },
+    );
+
+    await fa.generate({ x: 1 }, { onStepFinish: overrideOnStepFinish });
+
+    expect(order).toEqual(["config", "override"]);
+  });
+
   it("does not fire onFinish when handler throws", async () => {
     const onFinish = vi.fn();
 
@@ -1023,5 +1090,47 @@ describe("edge cases", () => {
     await fa.generate({ x: 1 });
 
     expect(receivedLog).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stream() — no unhandled rejections on derived promises
+// ---------------------------------------------------------------------------
+
+describe("stream() unhandled rejection safety", () => {
+  it("does not emit unhandledRejection when consumer ignores derived promises", async () => {
+    const fa = createSimpleFlowAgent(undefined, async () => {
+      throw new Error("derived promise rejection test");
+    });
+
+    const unhandledRejections: unknown[] = [];
+    const handler = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", handler);
+
+    try {
+      const result = await fa.stream({ x: 1 });
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
+      // Before the fix, this would cause unhandled rejection warnings.
+
+      // Drain the stream to trigger the error
+      const reader = result.fullStream.getReader();
+      for (;;) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+
+      // Allow microtasks to settle so any unhandled rejections would fire
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      process.removeListener("unhandledRejection", handler);
+    }
   });
 });

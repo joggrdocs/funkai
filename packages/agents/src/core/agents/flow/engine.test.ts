@@ -421,6 +421,83 @@ describe("createFlowEngine", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Void-output flow agents
+  // ---------------------------------------------------------------------------
+
+  describe("void-output flow agents", () => {
+    it("creates a void-output flow agent through engine", async () => {
+      const engine = createFlowEngine({});
+
+      const fa = engine(
+        { name: "void-flow", input: Input, logger: createMockLogger() },
+        async () => {},
+      );
+
+      const result = await fa.generate({ x: 5 });
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+      expect(typeof result.output).toBe("string");
+    });
+
+    it("void-output flow agent with custom steps", async () => {
+      const sideEffects: number[] = [];
+
+      const engine = createFlowEngine({
+        $: {
+          track: async ({ config }: { config: { value: number } }) => {
+            sideEffects.push(config.value);
+          },
+        },
+      });
+
+      const fa = engine(
+        { name: "void-custom", input: Input, logger: createMockLogger() },
+        async ({ input, $ }) => {
+          await $.track({ value: input.x * 10 });
+        },
+      );
+
+      const result = await fa.generate({ x: 3 });
+
+      expect(result.ok).toBe(true);
+      expect(sideEffects).toEqual([30]);
+    });
+
+    it("void-output flow agent hooks fire correctly", async () => {
+      const order: string[] = [];
+
+      const engine = createFlowEngine({
+        onStart: () => {
+          order.push("engine:onStart");
+        },
+        onFinish: () => {
+          order.push("engine:onFinish");
+        },
+      });
+
+      const fa = engine(
+        {
+          name: "void-hooks",
+          input: Input,
+          logger: createMockLogger(),
+          onStart: () => {
+            order.push("flow:onStart");
+          },
+          onFinish: () => {
+            order.push("flow:onFinish");
+          },
+        },
+        async () => {},
+      );
+
+      await fa.generate({ x: 1 });
+
+      expect(order).toEqual(["engine:onStart", "flow:onStart", "engine:onFinish", "flow:onFinish"]);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // Custom step name validation
   // ---------------------------------------------------------------------------
 

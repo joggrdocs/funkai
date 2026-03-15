@@ -33,7 +33,7 @@ source?: {
 `agentUsage()` aggregates token counts from one or more raw records into a flat `AgentTokenUsage` object.
 
 ```ts
-import { agentUsage } from "@pkg/agent-sdk";
+import { agentUsage } from "@funkai/agents";
 
 const usage = agentUsage("my-agent", records);
 console.log(usage.agentId); // 'my-agent'
@@ -47,7 +47,7 @@ console.log(usage.totalTokens);
 `workflowUsage()` groups records by `source.agentId` and computes per-agent usage.
 
 ```ts
-import { workflowUsage } from "@pkg/agent-sdk";
+import { workflowUsage } from "@funkai/agents";
 
 const usage = workflowUsage(allRecords);
 for (const entry of usage.usages) {
@@ -75,7 +75,7 @@ The aggregated output type. All fields are resolved `number` (0 when the raw rec
 Sum multiple `TokenUsage` objects into a new one. Pure function, does not mutate inputs.
 
 ```ts
-import { sumTokenUsage } from "@pkg/agent-sdk";
+import { sumTokenUsage } from "@funkai/agents";
 
 const total = sumTokenUsage([usageA, usageB, usageC]);
 ```
@@ -85,7 +85,7 @@ const total = sumTokenUsage([usageA, usageB, usageC]);
 Walk a `TraceEntry[]` tree and collect all `usage` values into a flat array (recursively including children). Compose with `sumTokenUsage()` to aggregate usage across all `$.agent()` calls.
 
 ```ts
-import { collectUsages, sumTokenUsage } from "@pkg/agent-sdk";
+import { collectUsages, sumTokenUsage } from "@funkai/agents";
 
 const result = await myWorkflow.generate(input);
 if (result.ok) {

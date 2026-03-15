@@ -1534,3 +1534,69 @@ describe("stream() async error during consumption", () => {
     expect(onFinish).not.toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// stream() — no unhandled rejections on derived promises
+// ---------------------------------------------------------------------------
+
+describe("stream() unhandled rejection safety", () => {
+  it("does not emit unhandledRejection when consumer ignores derived promises", async () => {
+    const streamError = new Error("derived promise rejection test");
+
+    async function* makeFullStream() {
+      yield { type: "text-delta" as const, textDelta: "partial" };
+      throw streamError;
+    }
+
+    const rejected = <T>(): Promise<T> => {
+      const p = Promise.reject(streamError);
+      p.catch(() => {});
+      return p;
+    };
+
+    mockStreamText.mockReturnValue({
+      fullStream: makeFullStream(),
+      text: rejected<string>(),
+      output: rejected<unknown>(),
+      response: rejected<{ messages: unknown[] }>(),
+      totalUsage: rejected<typeof MOCK_TOTAL_USAGE>(),
+      finishReason: rejected<string>(),
+    });
+
+    const unhandledRejections: unknown[] = [];
+    const handler = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", handler);
+
+    try {
+      const a = createSimpleAgent();
+      const result = await a.stream("test");
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
+      // Before the fix, this would cause unhandled rejection warnings.
+
+      // Drain the stream to trigger the error
+      const reader = result.fullStream.getReader();
+      for (;;) {
+        try {
+          // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
+          const { done } = await reader.read();
+          if (done) break;
+        } catch {
+          break;
+        }
+      }
+
+      // Allow microtasks to settle so any unhandled rejections would fire
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      process.removeListener("unhandledRejection", handler);
+    }
+  });
+});

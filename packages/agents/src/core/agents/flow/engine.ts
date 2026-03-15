@@ -2,8 +2,11 @@ import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
   FlowAgent,
+  FlowAgentConfig,
   FlowAgentConfigWithOutput,
+  FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
+  InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
 import type { StepInfo } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
@@ -99,16 +102,74 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
 /**
  * A `flowAgent` factory with custom steps merged into `$`.
  *
+ * Supports both output-typed and void-output flow agents,
+ * mirroring the overloads of `flowAgent()`.
+ *
  * @typeParam TCustomSteps - The custom step definitions map.
  */
-export type FlowFactory<TCustomSteps extends CustomStepDefinitions> = <TInput, TOutput>(
-  config: FlowAgentConfigWithOutput<TInput, TOutput>,
-  handler: (params: {
-    input: TInput;
-    $: StepBuilder & TypedCustomSteps<TCustomSteps>;
-    log: Logger;
-  }) => Promise<TOutput>,
-) => FlowAgent<TInput, TOutput>;
+export interface FlowFactory<TCustomSteps extends CustomStepDefinitions> {
+  /**
+   * Create a flow agent with structured output.
+   *
+   * @typeParam TInput - Input type, inferred from the `input` Zod schema.
+   * @typeParam TOutput - Output type, inferred from the `output` Zod schema.
+   * @param config - Flow agent configuration including `input` and `output` Zod schemas.
+   * @param handler - Async function receiving `{ input, $, log }` that orchestrates
+   *   steps via the `$` builder and returns a value matching `TOutput`.
+   * @returns A {@link FlowAgent} with `.generate()` and `.stream()` methods.
+   *
+   * @example
+   * ```typescript
+   * const fa = engine(
+   *   { name: 'summarize', input: z.object({ text: z.string() }), output: z.object({ summary: z.string() }) },
+   *   async ({ input, $ }) => {
+   *     const result = await $.agent({ agent: summarizer, input: input.text });
+   *     return { summary: result.value.text };
+   *   },
+   * );
+   * ```
+   */
+  <TInput, TOutput>(
+    config: FlowAgentConfigWithOutput<TInput, TOutput>,
+    handler: (params: {
+      input: TInput;
+      $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+      log: Logger;
+    }) => Promise<TOutput>,
+  ): FlowAgent<TInput, TOutput>;
+
+  /**
+   * Create a flow agent without structured output.
+   *
+   * The handler returns `void` — sub-agent text is collected as the
+   * `string` output.
+   *
+   * @typeParam TInput - Input type, inferred from the `input` Zod schema.
+   * @param config - Flow agent configuration with an `input` Zod schema and no `output`.
+   * @param handler - Async function receiving `{ input, $, log }` that orchestrates
+   *   steps via the `$` builder. Returns `void`; the aggregated sub-agent text
+   *   becomes the string output.
+   * @returns A {@link FlowAgent} whose output type is `string`.
+   *
+   * @example
+   * ```typescript
+   * const fa = engine(
+   *   { name: 'chat', input: z.object({ message: z.string() }) },
+   *   async ({ input, $ }) => {
+   *     await $.agent({ agent: chatBot, input: input.message });
+   *   },
+   * );
+   * ```
+   */
+  <TInput>(
+    config: FlowAgentConfigWithoutOutput<TInput>,
+    handler: (params: {
+      input: TInput;
+      $: StepBuilder & TypedCustomSteps<TCustomSteps>;
+      log: Logger;
+    }) => Promise<void>,
+  ): FlowAgent<TInput, string>;
+}
 
 /**
  * Wrap a hook callback so it can be passed to `fireHooks`.
@@ -227,14 +288,16 @@ export function createFlowEngine<
     }
   }
 
-  return function engineCreateFlowAgent<TInput, TOutput>(
-    flowConfig: FlowAgentConfigWithOutput<TInput, TOutput>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- implementation signature must accept both overloads
+  return function engineCreateFlowAgent<TInput, TOutput = any>(
+    flowConfig: FlowAgentConfig<TInput, TOutput>,
     handler: (params: {
       input: TInput;
       $: StepBuilder & TypedCustomSteps<TCustomSteps>;
       log: Logger;
-    }) => Promise<TOutput>,
-  ): FlowAgent<TInput, TOutput> {
+    }) => Promise<TOutput | void>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
+  ): FlowAgent<TInput, any> {
     const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
 
     const { onStart: engineOnStart } = engineConfig;
@@ -248,16 +311,18 @@ export function createFlowEngine<
     const { onStepFinish: engineOnStepFinish } = engineConfig;
     const { onStepFinish: flowOnStepFinish } = flowConfig;
 
-    const mergedConfig: FlowAgentConfigWithOutput<TInput, TOutput> = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to merge both config variants
+    const mergedConfig = {
       ...flowConfig,
       onStart: buildMergedHook(hookLog, engineOnStart, flowOnStart),
       onFinish: buildMergedHook(hookLog, engineOnFinish, flowOnFinish),
       onError: buildMergedHook(hookLog, engineOnError, flowOnError),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, flowOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, flowOnStepFinish),
-    };
+    } as FlowAgentConfig<TInput, any>;
 
-    const wrappedHandler: FlowAgentHandler<TInput, TOutput> = async (params) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
+    const wrappedHandler: FlowAgentHandler<TInput, any> = async (params) => {
       return handler({
         input: params.input,
         $: params.$ as StepBuilder & TypedCustomSteps<TCustomSteps>,
@@ -265,17 +330,36 @@ export function createFlowEngine<
       });
     };
 
-    return flowAgent(mergedConfig, wrappedHandler, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bypass overloads; runtime handles both config variants
+    return (
+      flowAgent as (
+        config: FlowAgentConfig<TInput, any>,
+        handler: FlowAgentHandler<TInput, any>,
+        _internal?: InternalFlowAgentOptions,
+      ) => FlowAgent<TInput, any>
+    )(mergedConfig, wrappedHandler, {
       augment$: ($, ctx) => {
         const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
 
         for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
           // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-          customSteps[name] = (config: unknown) =>
-            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never });
+          customSteps[name] = async (config: unknown) => {
+            const result = await $.step({
+              id:
+                config != null && typeof config === "object" && "id" in config
+                  ? (config as { id: string }).id
+                  : name,
+              execute: async () =>
+                factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+            });
+            if (!result.ok) {
+              throw result.error;
+            }
+            return result.value;
+          };
         }
         return { ...$, ...customSteps } as StepBuilder;
       },
     });
-  };
+  } as FlowFactory<TCustomSteps>;
 }

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- `@pkg/agent-sdk` installed
+- `@funkai/agents` installed
 - `OPENROUTER_API_KEY` environment variable set
 - Familiarity with Zod schemas (for typed agents)
 
@@ -13,7 +13,7 @@
 Pass a `name`, `model`, and optional `system` prompt. In simple mode, `.generate()` accepts a raw `string` or `Message[]`.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 
 const helper = agent({
   name: "helper",
@@ -32,7 +32,7 @@ if (result.ok) {
 Add an `input` Zod schema and a `prompt` function. Both are required together. `.generate()` now accepts the typed input.
 
 ```ts
-import { agent } from "@pkg/agent-sdk";
+import { agent } from "@funkai/agents";
 import { z } from "zod";
 
 const summarizer = agent({
@@ -58,7 +58,7 @@ const result = await summarizer.generate({
 Pass a `tools` record. Tool names come from the object keys. See [Create a Tool](create-tool.md).
 
 ```ts
-import { agent, tool } from "@pkg/agent-sdk";
+import { agent, tool } from "@funkai/agents";
 import { z } from "zod";
 
 const fetchPage = tool({

@@ -17,6 +17,7 @@ import type {
   FlowAgentHandler,
   FlowAgentOverrides,
   InternalFlowAgentOptions,
+  StepInfo,
 } from "@/core/agents/flow/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
@@ -28,6 +29,40 @@ import type { TraceEntry } from "@/lib/trace.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
+
+/** Hook signature for step-finish events. @private */
+type StepFinishHook = (event: {
+  step: StepInfo;
+  result: unknown;
+  duration: number;
+}) => void | Promise<void>;
+
+/**
+ * Build a merged `onStepFinish` parent hook that fires both the config-level
+ * and per-call override hooks sequentially (config first, then override).
+ *
+ * Returns `undefined` when neither hook is provided, so `createStepBuilder`
+ * skips the callback entirely.
+ *
+ * @param log - Logger for `fireHooks` error reporting.
+ * @param configHook - The hook from `FlowAgentConfig`.
+ * @param overrideHook - The hook from `FlowAgentOverrides`.
+ * @returns A merged hook callback, or `undefined`.
+ *
+ * @private
+ */
+function buildMergedStepFinishHook(
+  log: Logger,
+  configHook: StepFinishHook | undefined,
+  overrideHook: StepFinishHook | undefined,
+): StepFinishHook | undefined {
+  if (configHook === undefined && overrideHook === undefined) {
+    return undefined;
+  }
+  return async (event) => {
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(overrideHook, event));
+  };
+}
 
 /**
  * Resolve the logger for a single flow agent execution.
@@ -178,11 +213,45 @@ export function flowAgent<TInput, TOutput = any>(
     return { ok: true, value: text };
   }
 
-  async function generate(
+  /**
+   * Resolved values shared by both `generate()` and `stream()`.
+   *
+   * Returned by `prepareFlowAgent()` so each method only contains
+   * the logic that differs (sync vs async result handling, stream piping).
+   *
+   * @private
+   */
+  interface PreparedFlowAgent {
+    readonly parsedInput: TInput;
+    readonly startedAt: number;
+    readonly log: Logger;
+    readonly $: StepBuilder;
+    readonly trace: TraceEntry[];
+    readonly messages: Message[];
+  }
+
+  /**
+   * Perform the shared setup for `generate()` and `stream()`.
+   *
+   * Validates input, resolves the logger, creates the execution context
+   * (signal, trace, messages), builds the step builder, pushes the user
+   * message, and fires onStart hooks.
+   *
+   * Returns `{ ok: false, error }` when input validation fails, or
+   * `{ ok: true, ...prepared }` with all resolved values.
+   *
+   * The optional `writer` param is forwarded to `createStepBuilder`
+   * for the streaming path.
+   *
+   * @private
+   */
+  async function prepareFlowAgent(
     input: TInput,
-    overrides?: FlowAgentOverrides,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-  ): Promise<Result<FlowAgentGenerateResult<any>>> {
+    overrides: FlowAgentOverrides | undefined,
+    writer?: WritableStreamDefaultWriter<StreamPart>,
+  ): Promise<
+    { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
+  > {
     const inputParsed = config.input.safeParse(input);
     if (!inputParsed.success) {
       return {
@@ -203,12 +272,19 @@ export function flowAgent<TInput, TOutput = any>(
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
+    const mergedOnStepFinish = buildMergedStepFinishHook(
+      log,
+      config.onStepFinish,
+      overrides && overrides.onStepFinish,
+    );
+
     const base$ = createStepBuilder({
       ctx,
       parentHooks: {
         onStepStart: config.onStepStart,
-        onStepFinish: config.onStepFinish,
+        onStepFinish: mergedOnStepFinish,
       },
+      writer,
     });
 
     const $ = augmentStepBuilder(base$, ctx, _internal);
@@ -221,6 +297,28 @@ export function flowAgent<TInput, TOutput = any>(
       wrapHook(config.onStart, { input: parsedInput }),
       wrapHook(overrides && overrides.onStart, { input: parsedInput }),
     );
+
+    return {
+      ok: true,
+      parsedInput,
+      startedAt,
+      log,
+      $,
+      trace,
+      messages,
+    };
+  }
+
+  async function generate(
+    input: TInput,
+    overrides?: FlowAgentOverrides,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
+  ): Promise<Result<FlowAgentGenerateResult<any>>> {
+    const prepared = await prepareFlowAgent(input, overrides);
+    if (!prepared.ok) {
+      return { ok: false, error: prepared.error };
+    }
+    const { parsedInput, startedAt, log, $, trace, messages } = prepared;
 
     log.debug("flowAgent.generate start", { name: config.name });
 
@@ -307,48 +405,14 @@ export function flowAgent<TInput, TOutput = any>(
     overrides?: FlowAgentOverrides,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<import("@/core/agents/base/types.js").StreamResult<any>>> {
-    const inputParsed = config.input.safeParse(input);
-    if (!inputParsed.success) {
-      return {
-        ok: false,
-        error: {
-          code: "VALIDATION_ERROR",
-          message: `Input validation failed: ${inputParsed.error.message}`,
-        },
-      };
-    }
-    const parsedInput = inputParsed.data as TInput;
-
-    const startedAt = Date.now();
-    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
-
-    const signal = (overrides && overrides.signal) || new AbortController().signal;
-    const trace: TraceEntry[] = [];
-    const messages: Message[] = [];
-    const ctx: Context = { signal, log, trace, messages };
-
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
     const writer = writable.getWriter();
 
-    const base$ = createStepBuilder({
-      ctx,
-      parentHooks: {
-        onStepStart: config.onStepStart,
-        onStepFinish: config.onStepFinish,
-      },
-      writer,
-    });
-
-    const $ = augmentStepBuilder(base$, ctx, _internal);
-
-    // Push user message
-    messages.push(createUserMessage(parsedInput));
-
-    await fireHooks(
-      log,
-      wrapHook(config.onStart, { input: parsedInput }),
-      wrapHook(overrides && overrides.onStart, { input: parsedInput }),
-    );
+    const prepared = await prepareFlowAgent(input, overrides, writer);
+    if (!prepared.ok) {
+      return { ok: false, error: prepared.error };
+    }
+    const { parsedInput, startedAt, log, $, trace, messages } = prepared;
 
     log.debug("flowAgent.stream start", { name: config.name });
 
@@ -452,6 +516,12 @@ export function flowAgent<TInput, TOutput = any>(
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
     };
+
+    // Prevent unhandled rejection warnings when consumers don't await all promises
+    streamResult.output.catch(() => {});
+    streamResult.messages.catch(() => {});
+    streamResult.usage.catch(() => {});
+    streamResult.finishReason.catch(() => {});
 
     return { ok: true, ...streamResult };
   }
