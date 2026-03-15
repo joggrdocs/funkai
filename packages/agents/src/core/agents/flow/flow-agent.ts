@@ -31,7 +31,11 @@ import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
 
 /** Hook signature for step-finish events. @private */
-type StepFinishHook = (event: { step: StepInfo; result: unknown; duration: number }) => void | Promise<void>;
+type StepFinishHook = (event: {
+  step: StepInfo;
+  result: unknown;
+  duration: number;
+}) => void | Promise<void>;
 
 /**
  * Build a merged `onStepFinish` parent hook that fires both the config-level
@@ -56,11 +60,7 @@ function buildMergedStepFinishHook(
     return undefined;
   }
   return async (event) => {
-    await fireHooks(
-      log,
-      wrapHook(configHook, event),
-      wrapHook(overrideHook, event),
-    );
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(overrideHook, event));
   };
 }
 
