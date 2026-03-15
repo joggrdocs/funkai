@@ -23,6 +23,8 @@ export type ModelId = LiteralUnion<KnownModelId, string>;
  */
 export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a model definition by its identifier.
  *
@@ -42,7 +44,7 @@ export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
  * ```
  */
 export function model(id: ModelId): ModelDefinition | null {
-  return MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }
 
 /**
