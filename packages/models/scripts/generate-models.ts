@@ -155,12 +155,12 @@ function escapeStr(s: string): string {
 // Staleness check
 // ---------------------------------------------------------------------------
 
-function isFresh(REQ_PATH: string): boolean {
-  if (!existsSync(REQ_PATH)) {
+function isFresh(reqPath: string): boolean {
+  if (!existsSync(reqPath)) {
     return false;
   }
   try {
-    const timestamp = readFileSync(REQ_PATH, "utf-8").trim();
+    const timestamp = readFileSync(reqPath, "utf-8").trim();
     const lastRun = new Date(timestamp).getTime();
     return Date.now() - lastRun < STALE_MS;
   } catch {
@@ -232,12 +232,7 @@ export default lauf({
     const providerFiles: { provider: string; constName: string; count: number }[] = [];
 
     for (const providerKey of providerKeys) {
-      const apiProvider = apiData[providerKey];
-      if (!apiProvider) {
-        ctx.logger.warn(`provider "${providerKey}" not found in models.dev API — skipping`);
-        continue;
-      }
-
+      const apiProvider = apiData[providerKey]!;
       const apiModels = apiProvider.models ?? {};
       const constName = toConstName(providerKey);
       const lines: string[] = [];
