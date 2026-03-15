@@ -52,7 +52,7 @@ interface ApiModel {
   attachment?: boolean;
   structured_output?: boolean;
   modalities?: { input?: string[]; output?: string[] };
-  cost?: { input?: number; output?: number; cache_read?: number; cache_write?: number };
+  cost?: { input?: number; output?: number; cache_read?: number; cache_write?: number; reasoning?: number };
   limit?: { context?: number; output?: number };
 }
 
@@ -119,6 +119,9 @@ function buildPricing(cost: ApiModel["cost"]): string {
   }
   if (cost?.cache_write != null && cost.cache_write > 0) {
     parts.push(`cacheWrite: ${fmtNum(toPerToken(cost.cache_write))}`);
+  }
+  if (cost?.reasoning != null && cost.reasoning > 0) {
+    parts.push(`reasoning: ${fmtNum(toPerToken(cost.reasoning))}`);
   }
 
   return `{ ${parts.join(", ")} }`;

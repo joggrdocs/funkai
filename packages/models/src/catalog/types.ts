@@ -17,6 +17,9 @@ export interface ModelPricing {
 
   /** Cost per cached input token (write). */
   readonly cacheWrite?: number;
+
+  /** Cost per reasoning token. */
+  readonly reasoning?: number;
 }
 
 /**

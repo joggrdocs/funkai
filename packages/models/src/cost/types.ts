@@ -17,6 +17,9 @@ export interface UsageCost {
   /** Cost for cached input tokens (write). */
   readonly cacheWrite: number;
 
+  /** Cost for reasoning tokens. */
+  readonly reasoning: number;
+
   /** Total cost (sum of all fields). */
   readonly total: number;
 }
