@@ -113,6 +113,21 @@ export interface FlowFactory<TCustomSteps extends CustomStepDefinitions> {
    *
    * @typeParam TInput - Input type, inferred from the `input` Zod schema.
    * @typeParam TOutput - Output type, inferred from the `output` Zod schema.
+   * @param config - Flow agent configuration including `input` and `output` Zod schemas.
+   * @param handler - Async function receiving `{ input, $, log }` that orchestrates
+   *   steps via the `$` builder and returns a value matching `TOutput`.
+   * @returns A {@link FlowAgent} with `.generate()` and `.stream()` methods.
+   *
+   * @example
+   * ```typescript
+   * const fa = engine(
+   *   { name: 'summarize', input: z.object({ text: z.string() }), output: z.object({ summary: z.string() }) },
+   *   async ({ input, $ }) => {
+   *     const result = await $.agent({ agent: summarizer, input: input.text });
+   *     return { summary: result.value.text };
+   *   },
+   * );
+   * ```
    */
   <TInput, TOutput>(
     config: FlowAgentConfigWithOutput<TInput, TOutput>,
@@ -130,6 +145,21 @@ export interface FlowFactory<TCustomSteps extends CustomStepDefinitions> {
    * `string` output.
    *
    * @typeParam TInput - Input type, inferred from the `input` Zod schema.
+   * @param config - Flow agent configuration with an `input` Zod schema and no `output`.
+   * @param handler - Async function receiving `{ input, $, log }` that orchestrates
+   *   steps via the `$` builder. Returns `void`; the aggregated sub-agent text
+   *   becomes the string output.
+   * @returns A {@link FlowAgent} whose output type is `string`.
+   *
+   * @example
+   * ```typescript
+   * const fa = engine(
+   *   { name: 'chat', input: z.object({ message: z.string() }) },
+   *   async ({ input, $ }) => {
+   *     await $.agent({ agent: chatBot, input: input.message });
+   *   },
+   * );
+   * ```
    */
   <TInput>(
     config: FlowAgentConfigWithoutOutput<TInput>,
