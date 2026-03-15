@@ -121,7 +121,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.3.0",
+    "@openrouter/ai-sdk-provider": "^2.3.1",
     "ai": "^6.0.116",
     "type-fest": "^5.4.4"
   },
