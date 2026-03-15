@@ -1092,3 +1092,45 @@ describe("edge cases", () => {
     expect(receivedLog).toBeDefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// stream() — no unhandled rejections on derived promises
+// ---------------------------------------------------------------------------
+
+describe("stream() unhandled rejection safety", () => {
+  it("does not emit unhandledRejection when consumer ignores derived promises", async () => {
+    const fa = createSimpleFlowAgent(undefined, async () => {
+      throw new Error("derived promise rejection test");
+    });
+
+    const unhandledRejections: unknown[] = [];
+    const handler = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on("unhandledRejection", handler);
+
+    try {
+      const result = await fa.stream({ x: 1 });
+
+      expect(result.ok).toBe(true);
+      if (!result.ok) return;
+
+      // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
+      // Before the fix, this would cause unhandled rejection warnings.
+
+      // Drain the stream to trigger the error
+      const reader = result.fullStream.getReader();
+      for (;;) {
+        const { done } = await reader.read();
+        if (done) break;
+      }
+
+      // Allow microtasks to settle so any unhandled rejections would fire
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(unhandledRejections).toEqual([]);
+    } finally {
+      process.removeListener("unhandledRejection", handler);
+    }
+  });
+});
