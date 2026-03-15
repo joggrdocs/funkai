@@ -6,36 +6,38 @@ export default defineConfig({
   tagline:
     "A composable AI microframework built on ai-sdk, curried with funk-tional programming flair.",
   theme: {
-    switcher: true,
+    name: "arcade",
   },
   packages: [
     {
-      text: "@funkai/agents",
+      title: "@funkai/agents",
       description: "Lightweight workflow and agent orchestration framework",
       icon: "pixelarticons:robot",
-      docsPrefix: "/agents",
+      prefix: "/agents",
       tags: [],
+      discovery: {},
     },
     {
-      text: "@funkai/prompts",
+      title: "@funkai/prompts",
       description: "Prompt SDK with LiquidJS templating and Zod validation",
       icon: "pixelarticons:message-text",
-      docsPrefix: "/prompts",
+      prefix: "/prompts",
       tags: [],
+      discovery: {},
     },
     {
-      text: "@funkai/cli",
+      title: "@funkai/cli",
       description: "CLI for the funkai prompt SDK",
       icon: "pixelarticons:terminal",
-      docsPrefix: "/cli",
+      prefix: "/cli",
       tags: [],
+      discovery: {},
     },
   ],
   sections: [
     // ── Getting Started ──
     {
-      text: "Getting Started",
-      description: "Get up and running with the funkai framework",
+      title: "Getting Started",
       link: "/getting-started",
       icon: "pixelarticons:speed-fast",
       content: [
@@ -63,82 +65,81 @@ export default defineConfig({
 
     // ── Agents ──
     {
-      text: "Agents",
-      description: "Lightweight workflow and agent orchestration framework",
+      title: "Agents",
       icon: "pixelarticons:robot",
       content: "Lightweight workflow and agent orchestration framework",
       items: [
         {
-          text: "Overview",
+          title: "Overview",
           link: "/agents/",
           from: "packages/agents/docs/overview.md",
         },
         {
-          text: "Core",
+          title: "Core",
           prefix: "/agents/core",
           items: [
             {
-              text: "Overview",
+              title: "Overview",
               link: "/agents/core/overview",
               from: "packages/agents/docs/core/overview.md",
             },
             {
-              text: "Agent",
+              title: "Agent",
               link: "/agents/core/agent",
               from: "packages/agents/docs/core/agent.md",
             },
             {
-              text: "Workflow",
+              title: "Workflow",
               link: "/agents/core/workflow",
               from: "packages/agents/docs/core/workflow.md",
             },
             {
-              text: "Step",
+              title: "Step",
               link: "/agents/core/step",
               from: "packages/agents/docs/core/step.md",
             },
             {
-              text: "Tools",
+              title: "Tools",
               link: "/agents/core/tools",
               from: "packages/agents/docs/core/tools.md",
             },
             {
-              text: "Hooks",
+              title: "Hooks",
               link: "/agents/core/hooks",
               from: "packages/agents/docs/core/hooks.md",
             },
           ],
         },
         {
-          text: "Guides",
+          title: "Guides",
           prefix: "/agents/guides",
           from: "packages/agents/docs/guides/*.md",
-          textFrom: "heading",
+          titleFrom: "heading",
           sort: "alpha",
         },
         {
-          text: "Provider",
+          title: "Provider",
           prefix: "/agents/provider",
           items: [
             {
-              text: "Overview",
+              title: "Overview",
               link: "/agents/provider/overview",
               from: "packages/agents/docs/provider/overview.md",
             },
             {
-              text: "Models",
+              title: "Models",
               link: "/agents/provider/models",
               from: "packages/agents/docs/provider/models.md",
             },
             {
-              text: "Usage",
+              title: "Usage",
               link: "/agents/provider/usage",
               from: "packages/agents/docs/provider/usage.md",
             },
           ],
         },
         {
-          text: "Troubleshooting",
+          title: "Troubleshooting",
           link: "/agents/troubleshooting",
           from: "packages/agents/docs/troubleshooting.md",
         },
@@ -147,74 +148,73 @@ export default defineConfig({
 
     // ── Prompts ──
     {
-      text: "Prompts",
-      description: "Prompt SDK with LiquidJS templating and Zod validation",
+      title: "Prompts",
       icon: "pixelarticons:message-text",
       frontmatter: {
         description: "Prompt SDK with LiquidJS templating and Zod validation",
       },
       items: [
         {
-          text: "Overview",
+          title: "Overview",
           link: "/prompts/",
           from: "packages/prompts/docs/overview.md",
         },
         {
-          text: "File Format",
+          title: "File Format",
           prefix: "/prompts/file-format",
           items: [
             {
-              text: "Overview",
+              title: "Overview",
               link: "/prompts/file-format/overview",
               from: "packages/prompts/docs/file-format/overview.md",
             },
             {
-              text: "Frontmatter",
+              title: "Frontmatter",
               link: "/prompts/file-format/frontmatter",
               from: "packages/prompts/docs/file-format/frontmatter.md",
             },
             {
-              text: "Partials",
+              title: "Partials",
               link: "/prompts/file-format/partials",
               from: "packages/prompts/docs/file-format/partials.md",
             },
           ],
         },
         {
-          text: "CLI",
+          title: "CLI",
           prefix: "/prompts/cli",
           items: [
             {
-              text: "Overview",
+              title: "Overview",
               link: "/prompts/cli/overview",
               from: "packages/prompts/docs/cli/overview.md",
             },
             {
-              text: "Commands",
+              title: "Commands",
               link: "/prompts/cli/commands",
               from: "packages/prompts/docs/cli/commands.md",
             },
           ],
         },
         {
-          text: "Code Generation",
+          title: "Code Generation",
           link: "/prompts/codegen/overview",
           from: "packages/prompts/docs/codegen/overview.md",
         },
         {
-          text: "Library",
+          title: "Library",
           link: "/prompts/library/overview",
           from: "packages/prompts/docs/library/overview.md",
         },
         {
-          text: "Guides",
+          title: "Guides",
           prefix: "/prompts/guides",
           from: "packages/prompts/docs/guides/*.md",
-          textFrom: "heading",
+          titleFrom: "heading",
           sort: "alpha",
         },
         {
-          text: "Troubleshooting",
+          title: "Troubleshooting",
           link: "/prompts/troubleshooting",
           from: "packages/prompts/docs/troubleshooting.md",
         },
@@ -223,8 +223,7 @@ export default defineConfig({
 
     // ── CLI ──
     {
-      text: "CLI",
-      description: "CLI for the funkai prompt SDK",
+      title: "CLI",
       icon: "pixelarticons:terminal",
       link: "/cli/",
       from: "packages/cli/README.md",
@@ -232,52 +231,51 @@ export default defineConfig({
 
     // ── Contributing ──
     {
-      text: "Contributing",
-      description: "Contributing standards, guides, and architectural concepts",
+      title: "Contributing",
       icon: "pixelarticons:git-merge",
       isolated: true,
       items: [
         {
-          text: "Overview",
+          title: "Overview",
           link: "/contributing/overview",
           from: "contributing/README.md",
         },
         {
-          text: "Concepts",
+          title: "Concepts",
           prefix: "/contributing/concepts",
           from: "contributing/concepts/*.md",
-          textFrom: "heading",
+          titleFrom: "heading",
           sort: "alpha",
         },
         {
-          text: "Guides",
+          title: "Guides",
           prefix: "/contributing/guides",
           from: "contributing/guides/*.md",
-          textFrom: "heading",
+          titleFrom: "heading",
           sort: "alpha",
         },
         {
-          text: "Standards",
+          title: "Standards",
           items: [
             {
-              text: "TypeScript",
+              title: "TypeScript",
               prefix: "/contributing/standards/typescript",
               from: "contributing/standards/typescript/*.md",
-              textFrom: "heading",
+              titleFrom: "heading",
               sort: "alpha",
             },
             {
-              text: "Documentation",
+              title: "Documentation",
               prefix: "/contributing/standards/documentation",
               from: "contributing/standards/documentation/*.md",
-              textFrom: "heading",
+              titleFrom: "heading",
               sort: "alpha",
             },
             {
-              text: "Git",
+              title: "Git",
               prefix: "/contributing/standards/git",
               from: "contributing/standards/git-*.md",
-              textFrom: "heading",
+              titleFrom: "heading",
               sort: "alpha",
             },
           ],
