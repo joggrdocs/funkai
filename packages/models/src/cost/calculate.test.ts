@@ -29,6 +29,14 @@ const FULL_PRICING: ModelPricing = {
   cacheWrite: 0.000001,
 };
 
+const REASONING_PRICING: ModelPricing = {
+  input: 0.000002,
+  output: 0.000008,
+  cacheRead: 0.0000005,
+  cacheWrite: 0.000001,
+  reasoning: 0.000012,
+};
+
 // ---------------------------------------------------------------------------
 // calculateCost()
 // ---------------------------------------------------------------------------
@@ -41,6 +49,7 @@ describe("calculateCost()", () => {
     expect(result.output).toBe(0);
     expect(result.cacheRead).toBe(0);
     expect(result.cacheWrite).toBe(0);
+    expect(result.reasoning).toBe(0);
     expect(result.total).toBe(0);
   });
 
@@ -71,9 +80,10 @@ describe("calculateCost()", () => {
 
     const result = calculateCost(usage, BASIC_PRICING);
 
-    // Optional pricing fields default to 0, so cache costs nothing
+    // Optional pricing fields default to 0, so cache and reasoning cost nothing
     expect(result.cacheRead).toBe(0);
     expect(result.cacheWrite).toBe(0);
+    expect(result.reasoning).toBe(0);
     expect(result.total).toBeCloseTo(0.006);
   });
 
@@ -96,6 +106,38 @@ describe("calculateCost()", () => {
     expect(result.total).toBeCloseTo(0.0062);
   });
 
+  it("calculates reasoning token costs when pricing is provided", () => {
+    const usage: TokenUsage = {
+      inputTokens: 1000,
+      outputTokens: 500,
+      totalTokens: 1500,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 800,
+    };
+
+    const result = calculateCost(usage, REASONING_PRICING);
+
+    expect(result.reasoning).toBeCloseTo(0.0096);
+    expect(result.total).toBeCloseTo(0.002 + 0.004 + 0.0096);
+  });
+
+  it("defaults reasoning cost to zero when pricing omits reasoning", () => {
+    const usage: TokenUsage = {
+      inputTokens: 1000,
+      outputTokens: 500,
+      totalTokens: 1500,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 800,
+    };
+
+    const result = calculateCost(usage, BASIC_PRICING);
+
+    expect(result.reasoning).toBe(0);
+    expect(result.total).toBeCloseTo(0.006);
+  });
+
   it("total equals sum of all fields", () => {
     const usage: TokenUsage = {
       inputTokens: 500,
@@ -107,7 +149,8 @@ describe("calculateCost()", () => {
     };
 
     const result = calculateCost(usage, FULL_PRICING);
-    const expectedTotal = result.input + result.output + result.cacheRead + result.cacheWrite;
+    const expectedTotal =
+      result.input + result.output + result.cacheRead + result.cacheWrite + result.reasoning;
 
     expect(result.total).toBeCloseTo(expectedTotal);
   });
