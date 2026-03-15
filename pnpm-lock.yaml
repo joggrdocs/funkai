@@ -19,8 +19,8 @@ catalogs:
       specifier: ^5.9.0
       version: 5.9.0
     tsdown:
-      specifier: ^0.21.2
-      version: 0.21.2
+      specifier: ^0.21.3
+      version: 0.21.3
     tsx:
       specifier: ^4.21.0
       version: 4.21.0
@@ -42,8 +42,8 @@ importers:
         specifier: ^2.30.0
         version: 2.30.0(@types/node@25.5.0)
       '@zpress/kit':
-        specifier: ^0.2.1
-        version: 0.2.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: ^0.2.3
+        version: 0.2.3(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       laufen:
         specifier: ^1.2.0
         version: 1.2.0(magicast@0.5.2)
@@ -71,7 +71,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -96,7 +96,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -121,7 +121,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -146,7 +146,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -177,7 +177,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -208,7 +208,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -254,7 +254,7 @@ importers:
         version: 3.1.14
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -279,7 +279,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -316,7 +316,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -333,8 +333,8 @@ importers:
         specifier: workspace:*
         version: link:../prompts
       '@kidd-cli/core':
-        specifier: ^0.4.0
-        version: 0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
+        specifier: ^0.5.0
+        version: 0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
       liquidjs:
         specifier: ^10.25.0
         version: 10.25.0
@@ -349,8 +349,8 @@ importers:
         version: 4.3.6
     devDependencies:
       '@kidd-cli/cli':
-        specifier: ^0.2.0
-        version: 0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
+        specifier: ^0.3.0
+        version: 0.3.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
       '@types/node':
         specifier: 'catalog:'
         version: 25.5.0
@@ -359,7 +359,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -387,7 +387,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -418,7 +418,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -781,8 +781,8 @@ packages:
   '@iconify-json/logos@1.2.10':
     resolution: {integrity: sha512-qxaXKJ6fu8jzTMPQdHtNxlfx6tBQ0jXRbHZIYy5Ilh8Lx9US9FsAdzZWUR8MXV8PnWTKGDFO4ZZee9VwerCyMA==}
 
-  '@iconify-json/material-icon-theme@1.2.55':
-    resolution: {integrity: sha512-V4FUXp2az00xpGYjj4MaOvp6aAIfOMTRRGrt66KH7DmqoIb4WV/YqH4TalgOswCJD/UPGdPuOoy+B6hxLuifTg==}
+  '@iconify-json/material-icon-theme@1.2.56':
+    resolution: {integrity: sha512-Kg2MkTL1oQmY6Rs031sMsyW5d9OXnWDJ4rRxIJvrJs03fz5rywUlPyMwlU0W9QJuZifzXTItiXJUIs4MwSJAxA==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
@@ -790,8 +790,8 @@ packages:
   '@iconify-json/pixelarticons@1.2.4':
     resolution: {integrity: sha512-nADJKEI3mlxDSmJMLqGvNuvNl1TGa+VbFJIwrtj/8vUA4m15qPNiwxMyw8YxW3gVokuO9MNU462B8uK1hb4rqw==}
 
-  '@iconify-json/simple-icons@1.2.73':
-    resolution: {integrity: sha512-nQZTwul4c2zBqH/aLP4zMOiElj93T6HawbrP+sFQKpxmBdS5x1duCK3cAnkj6dntHz84EYkzaQRM83V2pj4qxA==}
+  '@iconify-json/simple-icons@1.2.74':
+    resolution: {integrity: sha512-yqaohfY6jnYjTVpuTkaBQHrWbdUrQyWXhau0r/0EZiNWYXPX/P8WWwl1DoLH5CbvDjjcWQw5J0zADhgCUklOqA==}
 
   '@iconify-json/skill-icons@1.2.4':
     resolution: {integrity: sha512-S6iRKHGlGCb/zfx3Isv1TBe5PunbDE5FEwJcaXji60+yRZMrcFFtYEI1xivKqaGKXyVZ508yjGDItsehQdJmSg==}
@@ -832,8 +832,8 @@ packages:
   '@kidd-cli/bundler@0.2.0':
     resolution: {integrity: sha512-G14hJ+JSTKGO3vhAyMpUjYlNmgAjTc4kNYoQBYbjgUA5cEM6ddfC52BeGiaGt8ROEFxCG/LP9yCnYVVtAbD1YQ==}
 
-  '@kidd-cli/cli@0.2.0':
-    resolution: {integrity: sha512-tU5ILi+XeIbjCbX8j+LK9xHMNRVsggkIQuAG0v6hGTNykVwhih7E0Hp4OdlZlo7KZZv0jlVbvfv8gel19QICuA==}
+  '@kidd-cli/cli@0.3.0':
+    resolution: {integrity: sha512-ANP2VI2iGzuePE0VdtEM0G0ZbL8ET4qGM0JzfBeBKDWnFJs3dHL10Zrc8y/CwPOquAZw8uK7HXn81nBo/UuKtQ==}
     hasBin: true
 
   '@kidd-cli/config@0.1.4':
@@ -841,6 +841,14 @@ packages:
 
   '@kidd-cli/core@0.4.0':
     resolution: {integrity: sha512-5PldqbwvX/FwXAUDjmEhOB5yUzZbskmwXM82MB9HzYsQJLeQZeSD9efk5uLTtP4mjOre4zH2RxvUVtq0X9M8Dg==}
+    peerDependencies:
+      pino: '>=9.0.0'
+    peerDependenciesMeta:
+      pino:
+        optional: true
+
+  '@kidd-cli/core@0.5.0':
+    resolution: {integrity: sha512-prOV7A4drv56Hne6noSK7cy1qfYq1tkFkj5lVOrBXgULwrlXogzoXm9uq/ceAcJksOu1K/BKaM0CUuCJc3MAtw==}
     peerDependencies:
       pino: '>=9.0.0'
     peerDependenciesMeta:
@@ -1571,21 +1579,21 @@ packages:
   '@vitest/utils@4.1.0':
     resolution: {integrity: sha512-XfPXT6a8TZY3dcGY8EdwsBulFCIw+BeeX0RZn2x/BtiY/75YGh8FeWGG8QISN/WhaqSrE2OrlDgtF8q5uhOTmw==}
 
-  '@zpress/cli@0.3.1':
-    resolution: {integrity: sha512-hEGXZEAHsup6Yu614JQ0WUpLuC68e0+/WsVnvAokUnRUpkvjJKI6WrfUFDIjbiSdAGVyIqCQWWWA+d9zYxsYfA==}
+  '@zpress/cli@0.3.3':
+    resolution: {integrity: sha512-+zLLH9E3vLGfEQQlhd4oxG4xDqqw9HpWNi5nTCjLjyCaW4TupU4IQvFHg2zTyV5m2yfTxsDwiPyJskWWMrsRJQ==}
     engines: {node: '>=24.0.0'}
     hasBin: true
 
-  '@zpress/config@0.2.1':
-    resolution: {integrity: sha512-SoKn4eRRgS0rMV9w/t0iKN9XNPvCej11mDfnSc+LKDXNGA7ONLoXBwMkIBIx5SVj2LRNgHowtlhlWFQL4BzuEw==}
+  '@zpress/config@0.2.2':
+    resolution: {integrity: sha512-UngXxe7szQ85a7R0yccEC8vD7xHhXHi2lC6f9XMPsqVL/Llaj2PXXucgKjmJ61SCcIPU7xq+qIxPBkYHX5/Aag==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/core@0.6.1':
-    resolution: {integrity: sha512-B5PGZcbWdTIKRIBMiRfKiaA9UEe0Fg+eacRg+1pdE2Muw+mFfWqYs7NuI9G/xlpY+8OHUc2kije9xiYTmHb+og==}
+  '@zpress/core@0.6.2':
+    resolution: {integrity: sha512-MFiFLLVxx6e4E+pNpA5LwmgjI09IWwFNXV4DM2ua6wpphqUUW97k8rNbBlgdbxCp6yOMUyZXNPS1ZIS9ccGJRA==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/kit@0.2.1':
-    resolution: {integrity: sha512-yONFcommpa32UizOUSYtUWqpW/Tm+T5WlCrLuQe8jgMcLAnl0mhvB2r+hetbAYwwBN0p6WnLQDgLpHZfhUtSXA==}
+  '@zpress/kit@0.2.3':
+    resolution: {integrity: sha512-LybWTQXPBXwRqh/WygkiF0B0SoHaSCTXHbHGILJr6F5P1c7o1vNyYZYBtjxVjIJgr42AipB3B65zAn72kawOhw==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -1593,12 +1601,12 @@ packages:
       react: ^19.2.4
       react-dom: ^19.2.4
 
-  '@zpress/theme@0.2.1':
-    resolution: {integrity: sha512-qPzn18eOFvGfx8AQjMV5q/xr7muMhoSIEaExxN3emm1uvcDDYjPv8f7Ab/ZsTRiIXa7wK5yxL806vvBkx1ZqVw==}
+  '@zpress/theme@0.3.0':
+    resolution: {integrity: sha512-RtIqB7d3snlJGtJMn0hmiD3AH8I8SeiQk/74PMRKz1yiWPuFoHNhzvngdETC1NOVDN2gE0Nihs9vk+28uLHfXw==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/ui@0.5.1':
-    resolution: {integrity: sha512-vyWhTTKsW31rqBsMUFTbMB34WzJfrbvBRppxZwk4BKp/vGv0I4ldEUwDIIf3G42V5j4HwS9gsha1G8NzDrSLgg==}
+  '@zpress/ui@0.6.1':
+    resolution: {integrity: sha512-XsKjmNWGi0zHsS22gupkqBnEvNQ16P5h4aXPIgo2tNWHZoS/g9ICSstJ1Ck8DntqvE2Z7/rk91x4aUFde3fJ6Q==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
       '@rspress/core': ^2.0.5
@@ -1974,6 +1982,9 @@ packages:
   flexsearch@0.8.212:
     resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
 
+  font-list@2.0.2:
+    resolution: {integrity: sha512-kNG2sY5+Nh5bbWL9kgAi+k8tuXfZ3m+6fjNGF4iUITTyex2S6wITREgr9ZqY1xw2+mFM6Bi5NPEPpRB6jLLOnw==}
+
   fs-extra@11.3.4:
     resolution: {integrity: sha512-CTXd6rk/M3/ULNQj8FBqBWHYBVYybQ3VPBw0xGKFe3tuH7ytT6ACnvzpIQ3UZtB8yvUKC2cXn1a+x+5EVQLovA==}
     engines: {node: '>=14.14'}
@@ -2068,8 +2079,8 @@ packages:
     resolution: {integrity: sha512-VJCEvtrezO1IAR+kqEYnxUOoStaQPGrCmX3j4wDTNOcD1uRPFpGlwQUIW8niPuvHXaTUxeOUl5MMDGrl+tmO9A==}
     engines: {node: '>=16.9.0'}
 
-  hookable@6.0.1:
-    resolution: {integrity: sha512-uKGyY8BuzN/a5gvzvA+3FVWo0+wUjgtfSdnmjtrOVwQCZPHpHDH2WRO3VZSOeluYrHoDCiXFffZXs8Dj1ULWtw==}
+  hookable@6.1.0:
+    resolution: {integrity: sha512-ZoKZSJgu8voGK2geJS+6YtYjvIzu9AOM/KZXsBxr83uhLL++e9pEv/dlgwgy3dvHg06kTz6JOh1hk3C8Ceiymw==}
 
   html-entities@2.6.0:
     resolution: {integrity: sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ==}
@@ -2471,8 +2482,8 @@ packages:
   oniguruma-parser@0.12.1:
     resolution: {integrity: sha512-8Unqkvk1RYc6yq2WBYRj4hdnsAxVze8i7iPfQr8e4uSP3tRv0rpZcbGUDvxfQQcdwHt/e9PrMvGCsa8OqG9X3w==}
 
-  oniguruma-to-es@4.3.4:
-    resolution: {integrity: sha512-3VhUGN3w2eYxnTzHn+ikMI+fp/96KoRSVK9/kMTcFqj1NRDh2IhQCKvYxDnWePKRXY/AqH+Fuiyb7VHSzBjHfA==}
+  oniguruma-to-es@4.3.5:
+    resolution: {integrity: sha512-Zjygswjpsewa0NLTsiizVuMQZbp0MDyM6lIt66OxsF21npUDlzpHi1Mgb/qhQdkb+dWFTzJmFbEWdvZgRho8eQ==}
 
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
@@ -2946,14 +2957,14 @@ packages:
       unplugin-unused:
         optional: true
 
-  tsdown@0.21.2:
-    resolution: {integrity: sha512-pP8eAcd1XAWjl5gjosuJs0BAuVoheUe3V8VDHx31QK7YOgXjcCMsBSyFWO3CMh/CSUkjRUzR96JtGH3WJFTExQ==}
+  tsdown@0.21.3:
+    resolution: {integrity: sha512-oKKeMC8+IgNsB+81hvF5VBsqhqL/nr0g9vse+ujbK40vv0i3ReFI6gUts7hQH7J53ylQNjMgf2Vu6n0+P/uddA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
       '@arethetypeswrong/core': ^0.18.1
-      '@tsdown/css': 0.21.2
-      '@tsdown/exe': 0.21.2
+      '@tsdown/css': 0.21.3
+      '@tsdown/exe': 0.21.3
       '@vitejs/devtools': '*'
       publint: ^0.3.0
       typescript: ^5.0.0
@@ -3580,7 +3591,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-json/material-icon-theme@1.2.55':
+  '@iconify-json/material-icon-theme@1.2.56':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -3592,7 +3603,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-json/simple-icons@1.2.73':
+  '@iconify-json/simple-icons@1.2.74':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -3659,11 +3670,11 @@ snapshots:
       - unplugin-unused
       - vue-tsc
 
-  '@kidd-cli/cli@0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)':
+  '@kidd-cli/cli@0.3.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)':
     dependencies:
       '@kidd-cli/bundler': 0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
       '@kidd-cli/config': 0.1.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@kidd-cli/core': 0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
+      '@kidd-cli/core': 0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
       '@kidd-cli/utils': 0.1.4
       fs-extra: 11.3.4
       liquidjs: 10.25.0
@@ -3736,7 +3747,7 @@ snapshots:
       - jiti
       - magicast
 
-  '@kidd-cli/core@0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)':
+  '@kidd-cli/core@0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
       '@clack/prompts': 1.1.0
       '@kidd-cli/config': 0.1.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
@@ -3744,6 +3755,7 @@ snapshots:
       '@pinojs/redact': 0.4.0
       dotenv: 17.3.1
       es-toolkit: 1.45.1
+      font-list: 2.0.2
       jsonc-parser: 3.3.1
       liquidjs: 10.25.0
       picocolors: 1.1.1
@@ -4249,7 +4261,7 @@ snapshots:
     dependencies:
       '@shikijs/types': 4.0.2
       '@shikijs/vscode-textmate': 10.0.2
-      oniguruma-to-es: 4.3.4
+      oniguruma-to-es: 4.3.5
 
   '@shikijs/engine-oniguruma@4.0.2':
     dependencies:
@@ -4408,12 +4420,12 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@zpress/cli@0.3.1(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/cli@0.3.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@kidd-cli/core': 0.4.0(chokidar@4.0.3)(jiti@2.6.1)(magicast@0.5.2)
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/core': 0.6.1(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/ui': 0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/ui': 0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
       zod: 4.3.6
@@ -4435,9 +4447,9 @@ snapshots:
       - supports-color
       - webpack-hot-middleware
 
-  '@zpress/config@0.2.1(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
+  '@zpress/config@0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
-      '@zpress/theme': 0.2.1
+      '@zpress/theme': 0.3.0
       c12: 4.0.0-beta.3(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
@@ -4450,11 +4462,11 @@ snapshots:
       - jiti
       - magicast
 
-  '@zpress/core@0.6.1(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)':
+  '@zpress/core@0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)':
     dependencies:
       '@clack/prompts': 1.1.0
-      '@zpress/config': 0.2.1(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/theme': 0.2.1
+      '@zpress/config': 0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.0
       es-toolkit: 1.45.1
       fast-glob: 3.3.3
       gray-matter: 4.0.3
@@ -4466,12 +4478,12 @@ snapshots:
       - giget
       - magicast
 
-  '@zpress/kit@0.2.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/kit@0.2.3(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/cli': 0.3.1(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@zpress/core': 0.6.1(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/ui': 0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/cli': 0.3.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/ui': 0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
     transitivePeerDependencies:
@@ -4490,28 +4502,28 @@ snapshots:
       - supports-color
       - webpack-hot-middleware
 
-  '@zpress/theme@0.2.1':
+  '@zpress/theme@0.3.0':
     dependencies:
       ts-pattern: 5.9.0
       type-fest: 5.4.4
       zod: 4.3.6
 
-  '@zpress/ui@0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/ui@0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@iconify-json/catppuccin': 1.2.17
       '@iconify-json/devicon': 1.2.60
       '@iconify-json/logos': 1.2.10
-      '@iconify-json/material-icon-theme': 1.2.55
+      '@iconify-json/material-icon-theme': 1.2.56
       '@iconify-json/mdi': 1.2.3
       '@iconify-json/pixelarticons': 1.2.4
-      '@iconify-json/simple-icons': 1.2.73
+      '@iconify-json/simple-icons': 1.2.74
       '@iconify-json/skill-icons': 1.2.4
       '@iconify-json/vscode-icons': 1.2.45
       '@iconify/react': 6.0.2(react@19.2.4)
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/config': 0.2.1(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/core': 0.6.1(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/theme': 0.2.1
+      '@zpress/config': 0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.0
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
       ts-pattern: 5.9.0
@@ -4887,6 +4899,8 @@ snapshots:
 
   flexsearch@0.8.212: {}
 
+  font-list@2.0.2: {}
+
   fs-extra@11.3.4:
     dependencies:
       graceful-fs: 4.2.11
@@ -5066,7 +5080,7 @@ snapshots:
 
   hono@4.12.8: {}
 
-  hookable@6.0.1: {}
+  hookable@6.1.0: {}
 
   html-entities@2.6.0: {}
 
@@ -5722,7 +5736,7 @@ snapshots:
 
   oniguruma-parser@0.12.1: {}
 
-  oniguruma-to-es@4.3.4:
+  oniguruma-to-es@4.3.5:
     dependencies:
       oniguruma-parser: 0.12.1
       regex: 6.1.0
@@ -6271,7 +6285,7 @@ snapshots:
       cac: 7.0.0
       defu: 6.1.4
       empathic: 2.0.0
-      hookable: 6.0.1
+      hookable: 6.1.0
       import-without-cache: 0.2.5
       obug: 2.1.1
       picomatch: 4.0.3
@@ -6292,13 +6306,13 @@ snapshots:
       - synckit
       - vue-tsc
 
-  tsdown@0.21.2(typescript@5.9.3):
+  tsdown@0.21.3(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 7.0.0
       defu: 6.1.4
       empathic: 2.0.0
-      hookable: 6.0.1
+      hookable: 6.1.0
       import-without-cache: 0.2.5
       obug: 2.1.1
       picomatch: 4.0.3
@@ -6372,7 +6386,7 @@ snapshots:
 
   unhead@2.1.12:
     dependencies:
-      hookable: 6.0.1
+      hookable: 6.1.0
 
   unified@11.0.5:
     dependencies:
