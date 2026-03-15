@@ -506,6 +506,12 @@ export function agent<
         fullStream: readable as AsyncIterableStream<StreamPart>,
       };
 
+      // Prevent unhandled rejection warnings when consumers don't await all promises
+      streamResult.output.catch(() => {});
+      streamResult.messages.catch(() => {});
+      streamResult.usage.catch(() => {});
+      streamResult.finishReason.catch(() => {});
+
       return { ok: true, ...streamResult };
     } catch (thrown) {
       const error = toError(thrown);
