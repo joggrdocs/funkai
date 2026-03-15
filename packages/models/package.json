@@ -114,7 +114,7 @@
     }
   },
   "scripts": {
-    "generate:models": "tsx scripts/generate-models.ts",
+    "generate:models": "lauf run @funkai/models/generate-models",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --typecheck",

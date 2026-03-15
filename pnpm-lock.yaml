@@ -19,8 +19,8 @@ catalogs:
       specifier: ^5.9.0
       version: 5.9.0
     tsdown:
-      specifier: ^0.21.2
-      version: 0.21.2
+      specifier: ^0.21.3
+      version: 0.21.3
     tsx:
       specifier: ^4.21.0
       version: 4.21.0
@@ -42,8 +42,11 @@ importers:
         specifier: ^2.30.0
         version: 2.30.0(@types/node@25.5.0)
       '@zpress/kit':
-        specifier: ^0.2.1
-        version: 0.2.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: ^0.2.3
+        version: 0.2.3(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      laufen:
+        specifier: ^1.2.0
+        version: 1.2.0(magicast@0.5.2)
       oxfmt:
         specifier: ^0.40.0
         version: 0.40.0
@@ -68,7 +71,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -93,7 +96,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -118,7 +121,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -143,7 +146,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -174,7 +177,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -205,7 +208,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -251,7 +254,7 @@ importers:
         version: 3.1.14
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -276,7 +279,7 @@ importers:
         version: 25.5.0
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -313,7 +316,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -330,8 +333,8 @@ importers:
         specifier: workspace:*
         version: link:../prompts
       '@kidd-cli/core':
-        specifier: ^0.4.0
-        version: 0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
+        specifier: ^0.5.0
+        version: 0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
       liquidjs:
         specifier: ^10.25.0
         version: 10.25.0
@@ -346,8 +349,8 @@ importers:
         version: 4.3.6
     devDependencies:
       '@kidd-cli/cli':
-        specifier: ^0.2.0
-        version: 0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
+        specifier: ^0.3.0
+        version: 0.3.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
       '@types/node':
         specifier: 'catalog:'
         version: 25.5.0
@@ -356,7 +359,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -384,7 +387,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.21.0
@@ -415,7 +418,7 @@ importers:
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       tsdown:
         specifier: 'catalog:'
-        version: 0.21.2(typescript@5.9.3)
+        version: 0.21.3(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -553,6 +556,50 @@ packages:
 
   '@clack/prompts@1.1.0':
     resolution: {integrity: sha512-pkqbPGtohJAvm4Dphs2M8xE29ggupihHdy1x84HNojZuMtFsHiUlRvqD24tM2+XmI+61LlfNceM3Wr7U5QES5g==}
+
+  '@clerc/core@1.3.1':
+    resolution: {integrity: sha512-8jowdURow2tXga2gUa4E7/j8/9tl5TLXAvtpbnsY3JK4PTcaKB3lyc6YrcfUTJfV06whBzBpPvr3jGcNja3Wtg==}
+
+  '@clerc/parser@1.3.1':
+    resolution: {integrity: sha512-e1rb82ENJNfZYjkf5tR7OcsmwNShINJumxfy7fS9SYypSZNRbQmzHj7k7miQ3u+Mfc08fpBtvpAGqeBWQKQxRQ==}
+
+  '@clerc/plugin-completions@1.3.1':
+    resolution: {integrity: sha512-zotC2qXVnDZLdwsFI6RPzhA90aNLkZSMuAeYsmrTEekknI3KMp2VFMKEBkQ+Zjsq3XCdaT8P4WEvPFkLJIMZjA==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-friendly-error@1.3.1':
+    resolution: {integrity: sha512-qef/3VbiEBDEWU3hiKBP0uUHPo0dxLd0WCLg1ZJNAMUjjZosNPMM+vsFAp1cRKFr/9wQCDzHF7nEPbrodogaqw==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-help@1.3.1':
+    resolution: {integrity: sha512-8cibdUMgZpUqv2kVfTK2HcbxeEz53NQnX+SR4Dh0V+oqB95MmRc0ihXUdXb2qR0J5h5zd7F9QC6yRiG9t00F/g==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-not-found@1.3.1':
+    resolution: {integrity: sha512-k52YK5wDjqdenVDzcOH0A9mZl40RXa+FKNrWiiFxHY/U/REc7dBfISCDEH4ilVPZEe9Op3MB6zjgujDXOSYW0w==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-strict-flags@1.3.1':
+    resolution: {integrity: sha512-sFys7qDIiaiBZ/DsHTpQd1jfQKIirK0hav+SPLZfp5696ZiGzZxuXw0L11q9Y/XEaJj3eXtEPTbTBeY1O2W/ew==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-update-notifier@1.3.1':
+    resolution: {integrity: sha512-wUq9E3CBMzEDhL5uUwt08Gf7yUydUFIcAbWXijhEEnId924facRKQIbFmEDfD+bV5MIfGukBXmeTobDGAcvXIQ==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/plugin-version@1.3.1':
+    resolution: {integrity: sha512-g8bn+J/oX8dwNhFCwh8E1BGka9Z9PLCjQ+dgByMc7EA7RH0agxU9bWXgHqkL4JFMPhVWFG2w6sGxL6pN6tyq4Q==}
+    peerDependencies:
+      '@clerc/core': '*'
+
+  '@clerc/utils@1.3.1':
+    resolution: {integrity: sha512-wkK6daYkmTQKnhSADMkunfDhNJI6rRCn2R++7cI2EoEBmOZWYqn7frkk5ac7zsxBi0Mc3UnMVaJiNFU+t6PPWQ==}
 
   '@emnapi/core@1.9.0':
     resolution: {integrity: sha512-0DQ98G9ZQZOxfUcQn1waV2yS8aWdZ6kJMbYCJB3oUBecjWYO1fqJ+a1DRfPF3O5JEkwqwP1A9QEN/9mYm2Yd0w==}
@@ -734,8 +781,8 @@ packages:
   '@iconify-json/logos@1.2.10':
     resolution: {integrity: sha512-qxaXKJ6fu8jzTMPQdHtNxlfx6tBQ0jXRbHZIYy5Ilh8Lx9US9FsAdzZWUR8MXV8PnWTKGDFO4ZZee9VwerCyMA==}
 
-  '@iconify-json/material-icon-theme@1.2.55':
-    resolution: {integrity: sha512-V4FUXp2az00xpGYjj4MaOvp6aAIfOMTRRGrt66KH7DmqoIb4WV/YqH4TalgOswCJD/UPGdPuOoy+B6hxLuifTg==}
+  '@iconify-json/material-icon-theme@1.2.56':
+    resolution: {integrity: sha512-Kg2MkTL1oQmY6Rs031sMsyW5d9OXnWDJ4rRxIJvrJs03fz5rywUlPyMwlU0W9QJuZifzXTItiXJUIs4MwSJAxA==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
@@ -743,8 +790,8 @@ packages:
   '@iconify-json/pixelarticons@1.2.4':
     resolution: {integrity: sha512-nADJKEI3mlxDSmJMLqGvNuvNl1TGa+VbFJIwrtj/8vUA4m15qPNiwxMyw8YxW3gVokuO9MNU462B8uK1hb4rqw==}
 
-  '@iconify-json/simple-icons@1.2.73':
-    resolution: {integrity: sha512-nQZTwul4c2zBqH/aLP4zMOiElj93T6HawbrP+sFQKpxmBdS5x1duCK3cAnkj6dntHz84EYkzaQRM83V2pj4qxA==}
+  '@iconify-json/simple-icons@1.2.74':
+    resolution: {integrity: sha512-yqaohfY6jnYjTVpuTkaBQHrWbdUrQyWXhau0r/0EZiNWYXPX/P8WWwl1DoLH5CbvDjjcWQw5J0zADhgCUklOqA==}
 
   '@iconify-json/skill-icons@1.2.4':
     resolution: {integrity: sha512-S6iRKHGlGCb/zfx3Isv1TBe5PunbDE5FEwJcaXji60+yRZMrcFFtYEI1xivKqaGKXyVZ508yjGDItsehQdJmSg==}
@@ -785,8 +832,8 @@ packages:
   '@kidd-cli/bundler@0.2.0':
     resolution: {integrity: sha512-G14hJ+JSTKGO3vhAyMpUjYlNmgAjTc4kNYoQBYbjgUA5cEM6ddfC52BeGiaGt8ROEFxCG/LP9yCnYVVtAbD1YQ==}
 
-  '@kidd-cli/cli@0.2.0':
-    resolution: {integrity: sha512-tU5ILi+XeIbjCbX8j+LK9xHMNRVsggkIQuAG0v6hGTNykVwhih7E0Hp4OdlZlo7KZZv0jlVbvfv8gel19QICuA==}
+  '@kidd-cli/cli@0.3.0':
+    resolution: {integrity: sha512-ANP2VI2iGzuePE0VdtEM0G0ZbL8ET4qGM0JzfBeBKDWnFJs3dHL10Zrc8y/CwPOquAZw8uK7HXn81nBo/UuKtQ==}
     hasBin: true
 
   '@kidd-cli/config@0.1.4':
@@ -800,8 +847,20 @@ packages:
       pino:
         optional: true
 
+  '@kidd-cli/core@0.5.0':
+    resolution: {integrity: sha512-prOV7A4drv56Hne6noSK7cy1qfYq1tkFkj5lVOrBXgULwrlXogzoXm9uq/ceAcJksOu1K/BKaM0CUuCJc3MAtw==}
+    peerDependencies:
+      pino: '>=9.0.0'
+    peerDependenciesMeta:
+      pino:
+        optional: true
+
   '@kidd-cli/utils@0.1.4':
     resolution: {integrity: sha512-883GQ+R7MkLb0Eh31e+/1gPzcQsd2l5qzfhXVu9Nh1aDotwlzAfJxqejTcNFb3WzqgT5EA7ts+j9gFNA65RnwA==}
+
+  '@laufen/engine@1.2.0':
+    resolution: {integrity: sha512-l9xyao+jpU+UXJccP8icFKnnV/IW3fYkMHAoEAFhCe4l/zJdyP+uAm3Nu6TTS/HkYjsVQSRtZAyWtB7Jgj0MqQ==}
+    engines: {node: '>=22.0.0'}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -1475,6 +1534,9 @@ packages:
     peerDependencies:
       react: '>=18.3.1'
 
+  '@uttr/tint@0.1.3':
+    resolution: {integrity: sha512-nQlAxBriuQ7NPxvMlxCXdw0n4alhEAIzsjFNNyU4CR7AitUwMFp1A5e/47JYQ7NMcooaI06OEQKylYhNhbpuIA==}
+
   '@vercel/oidc@3.1.0':
     resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
     engines: {node: '>= 20'}
@@ -1517,21 +1579,21 @@ packages:
   '@vitest/utils@4.1.0':
     resolution: {integrity: sha512-XfPXT6a8TZY3dcGY8EdwsBulFCIw+BeeX0RZn2x/BtiY/75YGh8FeWGG8QISN/WhaqSrE2OrlDgtF8q5uhOTmw==}
 
-  '@zpress/cli@0.3.1':
-    resolution: {integrity: sha512-hEGXZEAHsup6Yu614JQ0WUpLuC68e0+/WsVnvAokUnRUpkvjJKI6WrfUFDIjbiSdAGVyIqCQWWWA+d9zYxsYfA==}
+  '@zpress/cli@0.3.3':
+    resolution: {integrity: sha512-+zLLH9E3vLGfEQQlhd4oxG4xDqqw9HpWNi5nTCjLjyCaW4TupU4IQvFHg2zTyV5m2yfTxsDwiPyJskWWMrsRJQ==}
     engines: {node: '>=24.0.0'}
     hasBin: true
 
-  '@zpress/config@0.2.1':
-    resolution: {integrity: sha512-SoKn4eRRgS0rMV9w/t0iKN9XNPvCej11mDfnSc+LKDXNGA7ONLoXBwMkIBIx5SVj2LRNgHowtlhlWFQL4BzuEw==}
+  '@zpress/config@0.2.2':
+    resolution: {integrity: sha512-UngXxe7szQ85a7R0yccEC8vD7xHhXHi2lC6f9XMPsqVL/Llaj2PXXucgKjmJ61SCcIPU7xq+qIxPBkYHX5/Aag==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/core@0.6.1':
-    resolution: {integrity: sha512-B5PGZcbWdTIKRIBMiRfKiaA9UEe0Fg+eacRg+1pdE2Muw+mFfWqYs7NuI9G/xlpY+8OHUc2kije9xiYTmHb+og==}
+  '@zpress/core@0.6.2':
+    resolution: {integrity: sha512-MFiFLLVxx6e4E+pNpA5LwmgjI09IWwFNXV4DM2ua6wpphqUUW97k8rNbBlgdbxCp6yOMUyZXNPS1ZIS9ccGJRA==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/kit@0.2.1':
-    resolution: {integrity: sha512-yONFcommpa32UizOUSYtUWqpW/Tm+T5WlCrLuQe8jgMcLAnl0mhvB2r+hetbAYwwBN0p6WnLQDgLpHZfhUtSXA==}
+  '@zpress/kit@0.2.3':
+    resolution: {integrity: sha512-LybWTQXPBXwRqh/WygkiF0B0SoHaSCTXHbHGILJr6F5P1c7o1vNyYZYBtjxVjIJgr42AipB3B65zAn72kawOhw==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -1539,12 +1601,12 @@ packages:
       react: ^19.2.4
       react-dom: ^19.2.4
 
-  '@zpress/theme@0.2.1':
-    resolution: {integrity: sha512-qPzn18eOFvGfx8AQjMV5q/xr7muMhoSIEaExxN3emm1uvcDDYjPv8f7Ab/ZsTRiIXa7wK5yxL806vvBkx1ZqVw==}
+  '@zpress/theme@0.3.0':
+    resolution: {integrity: sha512-RtIqB7d3snlJGtJMn0hmiD3AH8I8SeiQk/74PMRKz1yiWPuFoHNhzvngdETC1NOVDN2gE0Nihs9vk+28uLHfXw==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/ui@0.5.1':
-    resolution: {integrity: sha512-vyWhTTKsW31rqBsMUFTbMB34WzJfrbvBRppxZwk4BKp/vGv0I4ldEUwDIIf3G42V5j4HwS9gsha1G8NzDrSLgg==}
+  '@zpress/ui@0.6.1':
+    resolution: {integrity: sha512-XsKjmNWGi0zHsS22gupkqBnEvNQ16P5h4aXPIgo2tNWHZoS/g9ICSstJ1Ck8DntqvE2Z7/rk91x4aUFde3fJ6Q==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
       '@rspress/core': ^2.0.5
@@ -1676,6 +1738,10 @@ packages:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
 
+  chalk@5.6.2:
+    resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+
   character-entities-html4@2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
 
@@ -1695,9 +1761,16 @@ packages:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
 
+  chokidar@4.0.3:
+    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
+    engines: {node: '>= 14.16.0'}
+
   chokidar@5.0.0:
     resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
     engines: {node: '>= 20.19.0'}
+
+  clerc@1.3.1:
+    resolution: {integrity: sha512-FUgCFbvK40HPIvR5ty5Y1V8UkesgR+h64H6ybkc8ZOCWvO9Z5F1t3Fdw+DfX6n1kDlYg640Qp3HmqVOXtKtZPQ==}
 
   cliui@9.0.1:
     resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
@@ -1880,6 +1953,12 @@ packages:
     resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
     engines: {node: '>=8.6.0'}
 
+  fast-string-truncated-width@3.0.3:
+    resolution: {integrity: sha512-0jjjIEL6+0jag3l2XWWizO64/aZVtpiGE3t0Zgqxv0DPuxiMjvB3M24fCyhZUO4KomJQPj3LTSUnDP3GpdwC0g==}
+
+  fast-string-width@3.0.2:
+    resolution: {integrity: sha512-gX8LrtNEI5hq8DVUfRQMbr5lpaS4nMIWV+7XEbXk2b8kiQIizgnlr12B4dA3ZEx3308ze0O4Q1R+cHts8kyUJg==}
+
   fastq@1.20.1:
     resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
 
@@ -1902,6 +1981,9 @@ packages:
 
   flexsearch@0.8.212:
     resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
+
+  font-list@2.0.2:
+    resolution: {integrity: sha512-kNG2sY5+Nh5bbWL9kgAi+k8tuXfZ3m+6fjNGF4iUITTyex2S6wITREgr9ZqY1xw2+mFM6Bi5NPEPpRB6jLLOnw==}
 
   fs-extra@11.3.4:
     resolution: {integrity: sha512-CTXd6rk/M3/ULNQj8FBqBWHYBVYybQ3VPBw0xGKFe3tuH7ytT6ACnvzpIQ3UZtB8yvUKC2cXn1a+x+5EVQLovA==}
@@ -1997,8 +2079,8 @@ packages:
     resolution: {integrity: sha512-VJCEvtrezO1IAR+kqEYnxUOoStaQPGrCmX3j4wDTNOcD1uRPFpGlwQUIW8niPuvHXaTUxeOUl5MMDGrl+tmO9A==}
     engines: {node: '>=16.9.0'}
 
-  hookable@6.0.1:
-    resolution: {integrity: sha512-uKGyY8BuzN/a5gvzvA+3FVWo0+wUjgtfSdnmjtrOVwQCZPHpHDH2WRO3VZSOeluYrHoDCiXFffZXs8Dj1ULWtw==}
+  hookable@6.1.0:
+    resolution: {integrity: sha512-ZoKZSJgu8voGK2geJS+6YtYjvIzu9AOM/KZXsBxr83uhLL++e9pEv/dlgwgy3dvHg06kTz6JOh1hk3C8Ceiymw==}
 
   html-entities@2.6.0:
     resolution: {integrity: sha512-kig+rMn/QOVRvr7c86gQ8lWXq+Hkv6CbAH1hLu+RG338StTpE8Z0b44SDVaqVu7HGKf27frdmUYEs9hTUX/cLQ==}
@@ -2130,10 +2212,18 @@ packages:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
 
+  laufen@1.2.0:
+    resolution: {integrity: sha512-5LdywX+BW/i6rDzmhWtWzsQLP9WiT0yAgb0XpINfwOL8iRHKlP+Ur6ZZHpnpr8AMnOxAusXUJJUqsJzvJlB9oA==}
+    engines: {node: '>=22.0.0'}
+    hasBin: true
+
   liquidjs@10.25.0:
     resolution: {integrity: sha512-XpO7AiGULTG4xcTlwkcTI5JreFG7b6esLCLp+aUSh7YuQErJZEoUXre9u9rbdb0057pfWG4l0VursvLd5Q/eAw==}
     engines: {node: '>=16'}
     hasBin: true
+
+  lite-emit@4.0.0:
+    resolution: {integrity: sha512-8krVeIZLS7JbkXz4R9xYziqHcxga6UgmomVWb45g21aB4M8qzDwr7FTEW3PJa80PTUASXeqbfipveKCB5YZdug==}
 
   locate-path@5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
@@ -2392,8 +2482,8 @@ packages:
   oniguruma-parser@0.12.1:
     resolution: {integrity: sha512-8Unqkvk1RYc6yq2WBYRj4hdnsAxVze8i7iPfQr8e4uSP3tRv0rpZcbGUDvxfQQcdwHt/e9PrMvGCsa8OqG9X3w==}
 
-  oniguruma-to-es@4.3.4:
-    resolution: {integrity: sha512-3VhUGN3w2eYxnTzHn+ikMI+fp/96KoRSVK9/kMTcFqj1NRDh2IhQCKvYxDnWePKRXY/AqH+Fuiyb7VHSzBjHfA==}
+  oniguruma-to-es@4.3.5:
+    resolution: {integrity: sha512-Zjygswjpsewa0NLTsiizVuMQZbp0MDyM6lIt66OxsF21npUDlzpHi1Mgb/qhQdkb+dWFTzJmFbEWdvZgRho8eQ==}
 
   outdent@0.5.0:
     resolution: {integrity: sha512-/jHxFIzoMXdqPzTaCpFzAAWhpkSjZPF4Vsn6jAfNpmbH/ymsmd7Qc6VE9BGn0L6YMj6uwpQLxCECpus4ukKS9Q==}
@@ -2543,6 +2633,10 @@ packages:
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+
+  readdirp@4.1.2:
+    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
+    engines: {node: '>= 14.18.0'}
 
   readdirp@5.0.0:
     resolution: {integrity: sha512-9u/XQ1pvrQtYyMpZe7DXKv2p5CNvyVwzUB6uhLAnQwHMSgKMBR62lc7AHljaeteeHXn11XTAaLLUVZYVZyuRBQ==}
@@ -2785,6 +2879,9 @@ packages:
     resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}
     engines: {node: '>=8'}
 
+  text-table@0.2.0:
+    resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
+
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
@@ -2860,14 +2957,14 @@ packages:
       unplugin-unused:
         optional: true
 
-  tsdown@0.21.2:
-    resolution: {integrity: sha512-pP8eAcd1XAWjl5gjosuJs0BAuVoheUe3V8VDHx31QK7YOgXjcCMsBSyFWO3CMh/CSUkjRUzR96JtGH3WJFTExQ==}
+  tsdown@0.21.3:
+    resolution: {integrity: sha512-oKKeMC8+IgNsB+81hvF5VBsqhqL/nr0g9vse+ujbK40vv0i3ReFI6gUts7hQH7J53ylQNjMgf2Vu6n0+P/uddA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
     peerDependencies:
       '@arethetypeswrong/core': ^0.18.1
-      '@tsdown/css': 0.21.2
-      '@tsdown/exe': 0.21.2
+      '@tsdown/css': 0.21.3
+      '@tsdown/exe': 0.21.3
       '@vitejs/devtools': '*'
       publint: ^0.3.0
       typescript: ^5.0.0
@@ -3337,6 +3434,53 @@ snapshots:
       '@clack/core': 1.1.0
       sisteransi: 1.0.5
 
+  '@clerc/core@1.3.1':
+    dependencies:
+      '@clerc/parser': 1.3.1
+      '@clerc/utils': 1.3.1
+      lite-emit: 4.0.0
+
+  '@clerc/parser@1.3.1':
+    dependencies:
+      '@clerc/utils': 1.3.1
+
+  '@clerc/plugin-completions@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+
+  '@clerc/plugin-friendly-error@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+
+  '@clerc/plugin-help@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+      '@clerc/utils': 1.3.1
+      '@uttr/tint': 0.1.3
+      fast-string-width: 3.0.2
+      text-table: 0.2.0
+
+  '@clerc/plugin-not-found@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+      '@uttr/tint': 0.1.3
+
+  '@clerc/plugin-strict-flags@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+      '@clerc/utils': 1.3.1
+
+  '@clerc/plugin-update-notifier@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+
+  '@clerc/plugin-version@1.3.1(@clerc/core@1.3.1)':
+    dependencies:
+      '@clerc/core': 1.3.1
+      '@clerc/utils': 1.3.1
+
+  '@clerc/utils@1.3.1': {}
+
   '@emnapi/core@1.9.0':
     dependencies:
       '@emnapi/wasi-threads': 1.2.0
@@ -3447,7 +3591,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-json/material-icon-theme@1.2.55':
+  '@iconify-json/material-icon-theme@1.2.56':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -3459,7 +3603,7 @@ snapshots:
     dependencies:
       '@iconify/types': 2.0.0
 
-  '@iconify-json/simple-icons@1.2.73':
+  '@iconify-json/simple-icons@1.2.74':
     dependencies:
       '@iconify/types': 2.0.0
 
@@ -3526,11 +3670,11 @@ snapshots:
       - unplugin-unused
       - vue-tsc
 
-  '@kidd-cli/cli@0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)':
+  '@kidd-cli/cli@0.3.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)':
     dependencies:
       '@kidd-cli/bundler': 0.2.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(typescript@5.9.3)
       '@kidd-cli/config': 0.1.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@kidd-cli/core': 0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
+      '@kidd-cli/core': 0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
       '@kidd-cli/utils': 0.1.4
       fs-extra: 11.3.4
       liquidjs: 10.25.0
@@ -3556,6 +3700,19 @@ snapshots:
       - unplugin-unused
       - vue-tsc
 
+  '@kidd-cli/config@0.1.4(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
+    dependencies:
+      '@kidd-cli/utils': 0.1.4
+      c12: 4.0.0-beta.3(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      es-toolkit: 1.45.1
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - chokidar
+      - dotenv
+      - giget
+      - jiti
+      - magicast
+
   '@kidd-cli/config@0.1.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
       '@kidd-cli/utils': 0.1.4
@@ -3569,7 +3726,28 @@ snapshots:
       - jiti
       - magicast
 
-  '@kidd-cli/core@0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)':
+  '@kidd-cli/core@0.4.0(chokidar@4.0.3)(jiti@2.6.1)(magicast@0.5.2)':
+    dependencies:
+      '@clack/prompts': 1.1.0
+      '@kidd-cli/config': 0.1.4(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@kidd-cli/utils': 0.1.4
+      '@pinojs/redact': 0.4.0
+      dotenv: 17.3.1
+      es-toolkit: 1.45.1
+      jsonc-parser: 3.3.1
+      liquidjs: 10.25.0
+      picocolors: 1.1.1
+      ts-pattern: 5.9.0
+      yaml: 2.8.2
+      yargs: 18.0.0
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - chokidar
+      - giget
+      - jiti
+      - magicast
+
+  '@kidd-cli/core@0.5.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
       '@clack/prompts': 1.1.0
       '@kidd-cli/config': 0.1.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
@@ -3577,6 +3755,7 @@ snapshots:
       '@pinojs/redact': 0.4.0
       dotenv: 17.3.1
       es-toolkit: 1.45.1
+      font-list: 2.0.2
       jsonc-parser: 3.3.1
       liquidjs: 10.25.0
       picocolors: 1.1.1
@@ -3595,6 +3774,15 @@ snapshots:
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
       type-fest: 5.4.4
+      zod: 4.3.6
+
+  '@laufen/engine@1.2.0':
+    dependencies:
+      '@clack/prompts': 1.1.0
+      es-toolkit: 1.45.1
+      esbuild: 0.27.4
+      picocolors: 1.1.1
+      ts-pattern: 5.9.0
       zod: 4.3.6
 
   '@manypkg/find-root@1.1.0':
@@ -4073,7 +4261,7 @@ snapshots:
     dependencies:
       '@shikijs/types': 4.0.2
       '@shikijs/vscode-textmate': 10.0.2
-      oniguruma-to-es: 4.3.4
+      oniguruma-to-es: 4.3.5
 
   '@shikijs/engine-oniguruma@4.0.2':
     dependencies:
@@ -4173,6 +4361,8 @@ snapshots:
       react: 19.2.4
       unhead: 2.1.12
 
+  '@uttr/tint@0.1.3': {}
+
   '@vercel/oidc@3.1.0': {}
 
   '@vitest/coverage-v8@4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))':
@@ -4230,12 +4420,12 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@zpress/cli@0.3.1(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/cli@0.3.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
-      '@kidd-cli/core': 0.4.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)
+      '@kidd-cli/core': 0.4.0(chokidar@4.0.3)(jiti@2.6.1)(magicast@0.5.2)
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/core': 0.6.1(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/ui': 0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/ui': 0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
       zod: 4.3.6
@@ -4257,10 +4447,10 @@ snapshots:
       - supports-color
       - webpack-hot-middleware
 
-  '@zpress/config@0.2.1(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
+  '@zpress/config@0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
-      '@zpress/theme': 0.2.1
-      c12: 4.0.0-beta.3(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.0
+      c12: 4.0.0-beta.3(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
       type-fest: 5.4.4
@@ -4272,11 +4462,11 @@ snapshots:
       - jiti
       - magicast
 
-  '@zpress/core@0.6.1(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)':
+  '@zpress/core@0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)':
     dependencies:
       '@clack/prompts': 1.1.0
-      '@zpress/config': 0.2.1(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/theme': 0.2.1
+      '@zpress/config': 0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.0
       es-toolkit: 1.45.1
       fast-glob: 3.3.3
       gray-matter: 4.0.3
@@ -4288,12 +4478,12 @@ snapshots:
       - giget
       - magicast
 
-  '@zpress/kit@0.2.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/kit@0.2.3(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/cli': 0.3.1(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@zpress/core': 0.6.1(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/ui': 0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/cli': 0.3.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/ui': 0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
     transitivePeerDependencies:
@@ -4312,28 +4502,28 @@ snapshots:
       - supports-color
       - webpack-hot-middleware
 
-  '@zpress/theme@0.2.1':
+  '@zpress/theme@0.3.0':
     dependencies:
       ts-pattern: 5.9.0
       type-fest: 5.4.4
       zod: 4.3.6
 
-  '@zpress/ui@0.5.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/ui@0.6.1(@rspress/core@2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@iconify-json/catppuccin': 1.2.17
       '@iconify-json/devicon': 1.2.60
       '@iconify-json/logos': 1.2.10
-      '@iconify-json/material-icon-theme': 1.2.55
+      '@iconify-json/material-icon-theme': 1.2.56
       '@iconify-json/mdi': 1.2.3
       '@iconify-json/pixelarticons': 1.2.4
-      '@iconify-json/simple-icons': 1.2.73
+      '@iconify-json/simple-icons': 1.2.74
       '@iconify-json/skill-icons': 1.2.4
       '@iconify-json/vscode-icons': 1.2.45
       '@iconify/react': 6.0.2(react@19.2.4)
       '@rspress/core': 2.0.5(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/config': 0.2.1(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/core': 0.6.1(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)
-      '@zpress/theme': 0.2.1
+      '@zpress/config': 0.2.2(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/core': 0.6.2(chokidar@4.0.3)(dotenv@17.3.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.0
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
       ts-pattern: 5.9.0
@@ -4419,6 +4609,20 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
+  c12@4.0.0-beta.3(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2):
+    dependencies:
+      confbox: 0.2.4
+      defu: 6.1.4
+      exsolve: 1.0.8
+      pathe: 2.0.3
+      pkg-types: 2.3.0
+      rc9: 3.0.0
+    optionalDependencies:
+      chokidar: 4.0.3
+      dotenv: 17.3.1
+      jiti: 2.6.1
+      magicast: 0.5.2
+
   c12@4.0.0-beta.3(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2):
     dependencies:
       confbox: 0.2.4
@@ -4438,6 +4642,8 @@ snapshots:
   ccount@2.0.1: {}
 
   chai@6.2.2: {}
+
+  chalk@5.6.2: {}
 
   character-entities-html4@2.1.0: {}
 
@@ -4461,10 +4667,25 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  chokidar@4.0.3:
+    dependencies:
+      readdirp: 4.1.2
+
   chokidar@5.0.0:
     dependencies:
       readdirp: 5.0.0
     optional: true
+
+  clerc@1.3.1:
+    dependencies:
+      '@clerc/core': 1.3.1
+      '@clerc/plugin-completions': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-friendly-error': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-help': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-not-found': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-strict-flags': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-update-notifier': 1.3.1(@clerc/core@1.3.1)
+      '@clerc/plugin-version': 1.3.1(@clerc/core@1.3.1)
 
   cliui@9.0.1:
     dependencies:
@@ -4653,6 +4874,12 @@ snapshots:
       merge2: 1.4.1
       micromatch: 4.0.8
 
+  fast-string-truncated-width@3.0.3: {}
+
+  fast-string-width@3.0.2:
+    dependencies:
+      fast-string-truncated-width: 3.0.3
+
   fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
@@ -4671,6 +4898,8 @@ snapshots:
       path-exists: 4.0.0
 
   flexsearch@0.8.212: {}
+
+  font-list@2.0.2: {}
 
   fs-extra@11.3.4:
     dependencies:
@@ -4851,7 +5080,7 @@ snapshots:
 
   hono@4.12.8: {}
 
-  hookable@6.0.1: {}
+  hookable@6.1.0: {}
 
   html-entities@2.6.0: {}
 
@@ -4954,9 +5183,31 @@ snapshots:
 
   kind-of@6.0.3: {}
 
+  laufen@1.2.0(magicast@0.5.2):
+    dependencies:
+      '@clack/prompts': 1.1.0
+      '@laufen/engine': 1.2.0
+      c12: 4.0.0-beta.3(chokidar@4.0.3)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      chalk: 5.6.2
+      chokidar: 4.0.3
+      clerc: 1.3.1
+      dotenv: 17.3.1
+      es-toolkit: 1.45.1
+      fast-glob: 3.3.3
+      jiti: 2.6.1
+      picocolors: 1.1.1
+      picomatch: 4.0.3
+      yaml: 2.8.2
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - giget
+      - magicast
+
   liquidjs@10.25.0:
     dependencies:
       commander: 10.0.1
+
+  lite-emit@4.0.0: {}
 
   locate-path@5.0.0:
     dependencies:
@@ -5485,7 +5736,7 @@ snapshots:
 
   oniguruma-parser@0.12.1: {}
 
-  oniguruma-to-es@4.3.4:
+  oniguruma-to-es@4.3.5:
     dependencies:
       oniguruma-parser: 0.12.1
       regex: 6.1.0
@@ -5641,6 +5892,8 @@ snapshots:
   readdirp@3.6.0:
     dependencies:
       picomatch: 2.3.1
+
+  readdirp@4.1.2: {}
 
   readdirp@5.0.0:
     optional: true
@@ -5993,6 +6246,8 @@ snapshots:
 
   term-size@2.2.1: {}
 
+  text-table@0.2.0: {}
+
   tinybench@2.9.0: {}
 
   tinyexec@1.0.4: {}
@@ -6030,7 +6285,7 @@ snapshots:
       cac: 7.0.0
       defu: 6.1.4
       empathic: 2.0.0
-      hookable: 6.0.1
+      hookable: 6.1.0
       import-without-cache: 0.2.5
       obug: 2.1.1
       picomatch: 4.0.3
@@ -6051,13 +6306,13 @@ snapshots:
       - synckit
       - vue-tsc
 
-  tsdown@0.21.2(typescript@5.9.3):
+  tsdown@0.21.3(typescript@5.9.3):
     dependencies:
       ansis: 4.2.0
       cac: 7.0.0
       defu: 6.1.4
       empathic: 2.0.0
-      hookable: 6.0.1
+      hookable: 6.1.0
       import-without-cache: 0.2.5
       obug: 2.1.1
       picomatch: 4.0.3
@@ -6131,7 +6386,7 @@ snapshots:
 
   unhead@2.1.12:
     dependencies:
-      hookable: 6.0.1
+      hookable: 6.1.0
 
   unified@11.0.5:
     dependencies:

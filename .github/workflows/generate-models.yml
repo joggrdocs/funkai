@@ -41,7 +41,7 @@ jobs:
       - name: Create changeset
         if: steps.changes.outputs.changed == 'true'
         run: |
-          CHANGESET_ID=$(pnpm tsx packages/models/scripts/changeset-id.ts)
+          CHANGESET_ID="$(date -u +'%Y%m%d')-models-update"
           cat > ".changeset/${CHANGESET_ID}.md" << 'CHANGESET_EOF'
 ---
 "@funkai/models": patch
