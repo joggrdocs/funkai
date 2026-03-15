@@ -1,5 +1,28 @@
 # @funkai/agents
 
+## 0.2.0
+
+### Minor Changes
+
+- 3b4a2ea: Extract @funkai/models package with models.dev catalog, per-provider subpath exports, and configurable model resolver
+
+### Patch Changes
+
+- 62459e6: Prevent unhandled promise rejections in agent.stream() and flowAgent.stream() when consumers don't await all derived promises
+- dbc4393: Add comprehensive JSDoc documentation to exported functions
+
+  Add JSDoc documentation with @param, @returns, and @example to:
+
+  - createDefaultLogger() with child logger binding examples
+  - resolveOutput() (marked @internal) with Zod schema wrapping examples
+  - SubAgents type with orchestrator pattern examples
+
+  All examples follow functional programming patterns with immutable data.
+
+- Updated dependencies [3b4a2ea]
+- Updated dependencies [3730fcc]
+  - @funkai/models@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes
