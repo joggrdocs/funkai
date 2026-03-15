@@ -36,7 +36,8 @@ export function calculateCost(usage: TokenUsage, pricing: ModelPricing): UsageCo
   const output = usage.outputTokens * pricing.output;
   const cacheRead = usage.cacheReadTokens * (pricing.cacheRead ?? 0);
   const cacheWrite = usage.cacheWriteTokens * (pricing.cacheWrite ?? 0);
-  const total = input + output + cacheRead + cacheWrite;
+  const reasoning = usage.reasoningTokens * (pricing.reasoning ?? 0);
+  const total = input + output + cacheRead + cacheWrite + reasoning;
 
-  return { input, output, cacheRead, cacheWrite, total };
+  return { input, output, cacheRead, cacheWrite, reasoning, total };
 }
