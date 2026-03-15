@@ -52,7 +52,13 @@ interface ApiModel {
   attachment?: boolean;
   structured_output?: boolean;
   modalities?: { input?: string[]; output?: string[] };
-  cost?: { input?: number; output?: number; cache_read?: number; cache_write?: number; reasoning?: number };
+  cost?: {
+    input?: number;
+    output?: number;
+    cache_read?: number;
+    cache_write?: number;
+    reasoning?: number;
+  };
   limit?: { context?: number; output?: number };
 }
 

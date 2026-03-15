@@ -149,7 +149,8 @@ describe("calculateCost()", () => {
     };
 
     const result = calculateCost(usage, FULL_PRICING);
-    const expectedTotal = result.input + result.output + result.cacheRead + result.cacheWrite + result.reasoning;
+    const expectedTotal =
+      result.input + result.output + result.cacheRead + result.cacheWrite + result.reasoning;
 
     expect(result.total).toBeCloseTo(expectedTotal);
   });
