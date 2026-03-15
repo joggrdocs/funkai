@@ -1,17 +1,6 @@
-/* eslint-disable security/detect-non-literal-fs-filename */
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PACKAGE_ROOT = join(__dirname, "..");
-const PROVIDERS_PATH = join(PACKAGE_ROOT, "providers.json");
-const CATALOG_DIR = join(PACKAGE_ROOT, "src", "catalog", "providers");
-const ENTRY_DIR = join(PACKAGE_ROOT, "src", "providers");
-const GENERATED_DIR = join(PACKAGE_ROOT, ".generated");
-const REQ_PATH = join(GENERATED_DIR, "req.txt");
-const ENTRIES_PATH = join(GENERATED_DIR, "entries.json");
-const PACKAGE_JSON_PATH = join(PACKAGE_ROOT, "package.json");
+import { join } from "node:path";
+import { lauf, z } from "laufen";
 
 const API_URL = "https://models.dev/api.json";
 const STALE_MS = 24 * 60 * 60 * 1000;
@@ -165,7 +154,7 @@ function escapeStr(s: string): string {
 // Staleness check
 // ---------------------------------------------------------------------------
 
-function isFresh(): boolean {
+function isFresh(REQ_PATH: string): boolean {
   if (!existsSync(REQ_PATH)) {
     return false;
   }
@@ -179,87 +168,98 @@ function isFresh(): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Main
+// Script
 // ---------------------------------------------------------------------------
 
-async function main(): Promise<void> {
-  const forceFlag = process.argv.includes("--force");
+export default lauf({
+  description: "Fetch model data from models.dev and generate TypeScript catalog files",
+  args: {
+    force: z.boolean().default(false).describe("Force-fetch ignoring staleness cache"),
+  },
+  async run(ctx) {
+    const PACKAGE_ROOT = ctx.dir.package;
+    const PROVIDERS_PATH = join(PACKAGE_ROOT, "providers.json");
+    const CATALOG_DIR = join(PACKAGE_ROOT, "src", "catalog", "providers");
+    const ENTRY_DIR = join(PACKAGE_ROOT, "src", "providers");
+    const GENERATED_DIR = join(PACKAGE_ROOT, ".generated");
+    const REQ_PATH = join(GENERATED_DIR, "req.txt");
+    const ENTRIES_PATH = join(GENERATED_DIR, "entries.json");
+    const PACKAGE_JSON_PATH = join(PACKAGE_ROOT, "package.json");
 
-  if (!forceFlag && isFresh()) {
-    console.log("generate-models: skipping — last fetch was less than 24h ago");
-    return;
-  }
-
-  // Read provider config
-  const providers: Record<string, ProviderEntry> = JSON.parse(
-    readFileSync(PROVIDERS_PATH, "utf-8"),
-  );
-  const providerKeys = Object.keys(providers);
-
-  if (providerKeys.length === 0) {
-    throw new Error("providers.json has no providers");
-  }
-
-  // Fetch models.dev API
-  console.log("generate-models: fetching models from models.dev");
-  const response = await fetch(API_URL, { signal: AbortSignal.timeout(30_000) });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${API_URL}: ${response.status} ${response.statusText}`);
-  }
-  const apiData: Record<string, ApiProvider> = await response.json();
-  console.log(`generate-models: ${Object.keys(apiData).length} providers from API`);
-
-  // Fail fast if any configured provider is missing from the API
-  const missingProviders = providerKeys.filter((key) => !apiData[key]);
-  if (missingProviders.length > 0) {
-    throw new Error(
-      `models.dev API is missing configured providers: ${missingProviders.join(", ")}`,
-    );
-  }
-
-  mkdirSync(GENERATED_DIR, { recursive: true });
-
-  // Clean and recreate catalog providers dir
-  rmSync(CATALOG_DIR, { recursive: true, force: true });
-  mkdirSync(CATALOG_DIR, { recursive: true });
-
-  // Clean and recreate entry points dir
-  rmSync(ENTRY_DIR, { recursive: true, force: true });
-  mkdirSync(ENTRY_DIR, { recursive: true });
-
-  const providerFiles: { provider: string; constName: string; count: number }[] = [];
-
-  for (const providerKey of providerKeys) {
-    // eslint-disable-next-line security/detect-object-injection -- Key from controlled iteration
-    const apiProvider = apiData[providerKey];
-    if (!apiProvider) {
-      console.warn(`  ⚠ provider "${providerKey}" not found in models.dev API — skipping`);
-      continue;
+    if (!ctx.args.force && isFresh(REQ_PATH)) {
+      ctx.logger.info("skipping — last fetch was less than 24h ago");
+      return;
     }
 
-    const apiModels = apiProvider.models ?? {};
-    const constName = toConstName(providerKey);
-    const lines: string[] = [];
+    // Read provider config
+    const providers: Record<string, ProviderEntry> = JSON.parse(
+      readFileSync(PROVIDERS_PATH, "utf-8"),
+    );
+    const providerKeys = Object.keys(providers);
 
-    for (const [, m] of Object.entries(apiModels)) {
-      const id = escapeStr(m.id);
-      const name = escapeStr(m.name ?? m.id);
-      const family = escapeStr(m.family ?? "");
-      const pricing = buildPricing(m.cost);
-      const contextWindow = m.limit?.context ?? 0;
-      const maxOutput = m.limit?.output ?? 0;
-      const modalities = buildModalities(m.modalities);
-      const capabilities = buildCapabilities(m);
+    if (providerKeys.length === 0) {
+      throw new Error("providers.json has no providers");
+    }
 
-      lines.push(
-        `  { id: '${id}', name: '${name}', provider: '${providerKey}', family: '${family}', ` +
-          `pricing: ${pricing}, contextWindow: ${contextWindow}, maxOutput: ${maxOutput}, ` +
-          `modalities: ${modalities}, capabilities: { ${capabilities} } },`,
+    // Fetch models.dev API
+    ctx.spinner.start("Fetching models from models.dev");
+    const response = await fetch(API_URL, { signal: AbortSignal.timeout(30_000) });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${API_URL}: ${response.status} ${response.statusText}`);
+    }
+    const apiData: Record<string, ApiProvider> = await response.json();
+    ctx.spinner.stop(`${Object.keys(apiData).length} providers from API`);
+
+    // Fail fast if any configured provider is missing from the API
+    const missingProviders = providerKeys.filter((key) => !apiData[key]);
+    if (missingProviders.length > 0) {
+      throw new Error(
+        `models.dev API is missing configured providers: ${missingProviders.join(", ")}`,
       );
     }
 
-    // Write catalog provider file
-    const catalogContent = `${BANNER}
+    mkdirSync(GENERATED_DIR, { recursive: true });
+
+    // Clean and recreate catalog providers dir
+    rmSync(CATALOG_DIR, { recursive: true, force: true });
+    mkdirSync(CATALOG_DIR, { recursive: true });
+
+    // Clean and recreate entry points dir
+    rmSync(ENTRY_DIR, { recursive: true, force: true });
+    mkdirSync(ENTRY_DIR, { recursive: true });
+
+    const providerFiles: { provider: string; constName: string; count: number }[] = [];
+
+    for (const providerKey of providerKeys) {
+      const apiProvider = apiData[providerKey];
+      if (!apiProvider) {
+        ctx.logger.warn(`provider "${providerKey}" not found in models.dev API — skipping`);
+        continue;
+      }
+
+      const apiModels = apiProvider.models ?? {};
+      const constName = toConstName(providerKey);
+      const lines: string[] = [];
+
+      for (const [, m] of Object.entries(apiModels)) {
+        const id = escapeStr(m.id);
+        const name = escapeStr(m.name ?? m.id);
+        const family = escapeStr(m.family ?? "");
+        const pricing = buildPricing(m.cost);
+        const contextWindow = m.limit?.context ?? 0;
+        const maxOutput = m.limit?.output ?? 0;
+        const modalities = buildModalities(m.modalities);
+        const capabilities = buildCapabilities(m);
+
+        lines.push(
+          `  { id: '${id}', name: '${name}', provider: '${providerKey}', family: '${family}', ` +
+            `pricing: ${pricing}, contextWindow: ${contextWindow}, maxOutput: ${maxOutput}, ` +
+            `modalities: ${modalities}, capabilities: { ${capabilities} } },`,
+        );
+      }
+
+      // Write catalog provider file
+      const catalogContent = `${BANNER}
 
 import type { ModelDefinition } from '../types.js'
 
@@ -268,16 +268,16 @@ ${lines.join("\n")}
 ] as const satisfies readonly ModelDefinition[]
 `;
 
-    const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
-    writeFileSync(catalogPath, catalogContent, "utf-8");
+      const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
+      writeFileSync(catalogPath, catalogContent, "utf-8");
 
-    // Write per-provider entry point
-    const prefix = providers[providerKey]!.prefix;
-    const camel = lowerFirst(prefix);
-    const exampleId = escapeStr(Object.values(apiModels)[0]?.id ?? "example-id");
-    const providerName = escapeStr(providers[providerKey]!.name);
-    const art = article(providers[providerKey]!.name);
-    const entryContent = `${BANNER}
+      // Write per-provider entry point
+      const prefix = providers[providerKey]!.prefix;
+      const camel = lowerFirst(prefix);
+      const exampleId = escapeStr(Object.values(apiModels)[0]?.id ?? "example-id");
+      const providerName = escapeStr(providers[providerKey]!.name);
+      const art = article(providers[providerKey]!.name);
+      const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
@@ -330,21 +330,21 @@ export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): Model
 }
 `;
 
-    const entryPath = join(ENTRY_DIR, `${providerKey}.ts`);
-    writeFileSync(entryPath, entryContent, "utf-8");
+      const entryPath = join(ENTRY_DIR, `${providerKey}.ts`);
+      writeFileSync(entryPath, entryContent, "utf-8");
 
-    console.log(`  ✓ ${providerKey} (${lines.length} models)`);
-    providerFiles.push({ provider: providerKey, constName, count: lines.length });
-  }
+      ctx.logger.success(`${providerKey} (${lines.length} models)`);
+      providerFiles.push({ provider: providerKey, constName, count: lines.length });
+    }
 
-  // Catalog barrel
-  const imports = providerFiles
-    .map((p) => `import { ${p.constName} } from './${p.provider}.js'`)
-    .join("\n");
+    // Catalog barrel
+    const imports = providerFiles
+      .map((p) => `import { ${p.constName} } from './${p.provider}.js'`)
+      .join("\n");
 
-  const spreads = providerFiles.map((p) => `  ...${p.constName},`).join("\n");
+    const spreads = providerFiles.map((p) => `  ...${p.constName},`).join("\n");
 
-  const catalogBarrel = `${BANNER}
+    const catalogBarrel = `${BANNER}
 
 import type { ModelDefinition } from '../types.js'
 ${imports}
@@ -354,44 +354,40 @@ ${spreads}
 ] as const satisfies readonly ModelDefinition[]
 `;
 
-  writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf-8");
-  console.log("  ✓ catalog/providers/index.ts (barrel)");
+    writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf-8");
+    ctx.logger.success("catalog/providers/index.ts (barrel)");
 
-  // Write generated entries list for tsdown config
-  const entryPoints = providerFiles.map((p) => `src/providers/${p.provider}.ts`);
-  writeFileSync(ENTRIES_PATH, JSON.stringify(entryPoints, null, 2), "utf-8");
-  console.log("  ✓ .generated/entries.json");
+    // Write generated entries list for tsdown config
+    const entryPoints = providerFiles.map((p) => `src/providers/${p.provider}.ts`);
+    writeFileSync(ENTRIES_PATH, JSON.stringify(entryPoints, null, 2), "utf-8");
+    ctx.logger.success(".generated/entries.json");
 
-  // Update package.json exports map
-  const pkgRaw = readFileSync(PACKAGE_JSON_PATH, "utf-8");
-  const pkg = JSON.parse(pkgRaw);
+    // Update package.json exports map
+    const pkgRaw = readFileSync(PACKAGE_JSON_PATH, "utf-8");
+    const pkg = JSON.parse(pkgRaw);
 
-  const exportsMap: Record<string, { types: string; import: string }> = {
-    ".": {
-      types: "./dist/index.d.mts",
-      import: "./dist/index.mjs",
-    },
-  };
-
-  for (const p of providerFiles) {
-    exportsMap[`./${p.provider}`] = {
-      types: `./dist/providers/${p.provider}.d.mts`,
-      import: `./dist/providers/${p.provider}.mjs`,
+    const exportsMap: Record<string, { types: string; import: string }> = {
+      ".": {
+        types: "./dist/index.d.mts",
+        import: "./dist/index.mjs",
+      },
     };
-  }
 
-  pkg.exports = exportsMap;
-  writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
-  console.log("  ✓ package.json exports map updated");
+    for (const p of providerFiles) {
+      exportsMap[`./${p.provider}`] = {
+        types: `./dist/providers/${p.provider}.d.mts`,
+        import: `./dist/providers/${p.provider}.mjs`,
+      };
+    }
 
-  // Staleness timestamp
-  writeFileSync(REQ_PATH, new Date().toISOString(), "utf-8");
+    pkg.exports = exportsMap;
+    writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+    ctx.logger.success("package.json exports map updated");
 
-  const totalModels = providerFiles.reduce((sum, p) => sum + p.count, 0);
-  console.log(`generate-models: done (${providerFiles.length} providers, ${totalModels} models)`);
-}
+    // Staleness timestamp
+    writeFileSync(REQ_PATH, new Date().toISOString(), "utf-8");
 
-main().catch((err) => {
-  console.error("generate-models: fatal error", err);
-  process.exit(1);
+    const totalModels = providerFiles.reduce((sum, p) => sum + p.count, 0);
+    ctx.logger.info(`done (${providerFiles.length} providers, ${totalModels} models)`);
+  },
 });
