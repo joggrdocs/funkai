@@ -272,7 +272,14 @@ export function createFlowEngine<
         for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
           // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
           customSteps[name] = (config: unknown) =>
-            factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never });
+            $.step({
+              id:
+                config != null && typeof config === "object" && "id" in config
+                  ? (config as { id: string }).id
+                  : name,
+              execute: async () =>
+                factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+            });
         }
         return { ...$, ...customSteps } as StepBuilder;
       },
