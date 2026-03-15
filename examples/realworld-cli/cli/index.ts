@@ -16,7 +16,7 @@ const targetInput = await p.text({
   message: "Which directory should I scan for tests?",
   placeholder: "./fixtures",
   defaultValue: "./fixtures",
-  validate: (value) => {
+  validate: (value = "") => {
     if (value.trim().length === 0) return "Please enter a directory path.";
     return undefined;
   },
