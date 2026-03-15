@@ -6,7 +6,7 @@ export default defineConfig({
   tagline:
     "A composable AI microframework built on ai-sdk, curried with funk-tional programming flair.",
   theme: {
-    switcher: true,
+    name: "arcade",
   },
   packages: [
     {
