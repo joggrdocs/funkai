@@ -354,7 +354,17 @@ export function agent<
 
     try {
       const prepared = await prepareGeneration(validated.input, log, overrides);
-      const { input, model, aiTools, system, promptParams, output, maxSteps, signal, onStepFinish } = prepared;
+      const {
+        input,
+        model,
+        aiTools,
+        system,
+        promptParams,
+        output,
+        maxSteps,
+        signal,
+        onStepFinish,
+      } = prepared;
 
       log.debug("agent.generate start", { name: config.name });
 
@@ -429,7 +439,17 @@ export function agent<
 
     try {
       const prepared = await prepareGeneration(validated.input, log, overrides);
-      const { input, model, aiTools, system, promptParams, output, maxSteps, signal, onStepFinish } = prepared;
+      const {
+        input,
+        model,
+        aiTools,
+        system,
+        promptParams,
+        output,
+        maxSteps,
+        signal,
+        onStepFinish,
+      } = prepared;
 
       log.debug("agent.stream start", { name: config.name });
 

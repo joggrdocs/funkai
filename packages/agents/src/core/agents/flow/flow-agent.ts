@@ -190,7 +190,6 @@ export function flowAgent<TInput, TOutput = any>(
     readonly parsedInput: TInput;
     readonly startedAt: number;
     readonly log: Logger;
-    readonly ctx: Context;
     readonly $: StepBuilder;
     readonly trace: TraceEntry[];
     readonly messages: Message[];
@@ -216,8 +215,7 @@ export function flowAgent<TInput, TOutput = any>(
     overrides: FlowAgentOverrides | undefined,
     writer?: WritableStreamDefaultWriter<StreamPart>,
   ): Promise<
-    | { ok: false; error: { code: string; message: string } }
-    | ({ ok: true } & PreparedFlowAgent)
+    { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
   > {
     const inputParsed = config.input.safeParse(input);
     if (!inputParsed.success) {
@@ -264,7 +262,6 @@ export function flowAgent<TInput, TOutput = any>(
       parsedInput,
       startedAt,
       log,
-      ctx,
       $,
       trace,
       messages,
