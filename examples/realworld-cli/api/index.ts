@@ -1,4 +1,6 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config({ quiet: true });
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { z } from "zod";
