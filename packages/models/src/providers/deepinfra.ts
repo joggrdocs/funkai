@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
+import type { LiteralUnion } from "type-fest";
+
+import { DEEPINFRA_MODELS } from "../catalog/providers/deepinfra.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for DeepInfra.
@@ -25,7 +26,7 @@ import { DEEPINFRA_MODELS } from '../catalog/providers/deepinfra.js'
  * const id: DeepInfraModelId = 'zai-org/GLM-4.7-Flash'
  * ```
  */
-export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
+export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]["id"];
 
 /**
  * All DeepInfra models in the catalog.
@@ -39,9 +40,9 @@ export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]['id']
  * }
  * ```
  */
-export const deepInfraModels = DEEPINFRA_MODELS
+export const deepInfraModels = DEEPINFRA_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(DEEPINFRA_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(DEEPINFRA_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a DeepInfra model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(DEEPINFRA_MODELS.map((m) =>
  * ```
  */
 export function deepInfraModel(id: LiteralUnion<DeepInfraModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

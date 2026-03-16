@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { ALIBABA_MODELS } from '../catalog/providers/alibaba.js'
+import type { LiteralUnion } from "type-fest";
+
+import { ALIBABA_MODELS } from "../catalog/providers/alibaba.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Alibaba (Qwen).
@@ -25,7 +26,7 @@ import { ALIBABA_MODELS } from '../catalog/providers/alibaba.js'
  * const id: AlibabaModelId = 'qwen-vl-plus'
  * ```
  */
-export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
+export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]["id"];
 
 /**
  * All Alibaba (Qwen) models in the catalog.
@@ -39,9 +40,9 @@ export type AlibabaModelId = (typeof ALIBABA_MODELS)[number]['id']
  * }
  * ```
  */
-export const alibabaModels = ALIBABA_MODELS
+export const alibabaModels = ALIBABA_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(ALIBABA_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(ALIBABA_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up an Alibaba (Qwen) model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(ALIBABA_MODELS.map((m) => [
  * ```
  */
 export function alibabaModel(id: LiteralUnion<AlibabaModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

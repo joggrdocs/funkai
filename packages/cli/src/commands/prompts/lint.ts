@@ -21,7 +21,11 @@ export type LintArgs = z.infer<typeof lintArgs>;
  */
 export function handleLint(
   args: { readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean },
-  logger: { info: (msg: string) => void; error: (msg: string) => void; warn: (msg: string) => void },
+  logger: {
+    info: (msg: string) => void;
+    error: (msg: string) => void;
+    warn: (msg: string) => void;
+  },
   fail: (msg: string) => never,
 ): void {
   const { roots, partials, silent } = args;

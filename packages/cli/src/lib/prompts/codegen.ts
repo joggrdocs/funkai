@@ -93,9 +93,7 @@ const HEADER = [
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
-  const groupValue = prompt.group != null
-    ? `'${prompt.group}' as const`
-    : "undefined";
+  const groupValue = prompt.group != null ? `'${prompt.group}' as const` : "undefined";
 
   const lines: string[] = [
     HEADER,

@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { AMAZON_BEDROCK_MODELS } from '../catalog/providers/amazon-bedrock.js'
+import type { LiteralUnion } from "type-fest";
+
+import { AMAZON_BEDROCK_MODELS } from "../catalog/providers/amazon-bedrock.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Amazon Bedrock.
@@ -25,7 +26,7 @@ import { AMAZON_BEDROCK_MODELS } from '../catalog/providers/amazon-bedrock.js'
  * const id: AmazonBedrockModelId = 'deepseek.r1-v1:0'
  * ```
  */
-export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
+export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]["id"];
 
 /**
  * All Amazon Bedrock models in the catalog.
@@ -39,9 +40,9 @@ export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]['id']
  * }
  * ```
  */
-export const amazonBedrockModels = AMAZON_BEDROCK_MODELS
+export const amazonBedrockModels = AMAZON_BEDROCK_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(AMAZON_BEDROCK_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(AMAZON_BEDROCK_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up an Amazon Bedrock model by ID.
@@ -59,6 +60,8 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(AMAZON_BEDROCK_MODELS.map((
  * }
  * ```
  */
-export function amazonBedrockModel(id: LiteralUnion<AmazonBedrockModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+export function amazonBedrockModel(
+  id: LiteralUnion<AmazonBedrockModelId, string>,
+): ModelDefinition | null {
+  return MODEL_INDEX.get(id) ?? null;
 }

@@ -75,9 +75,7 @@ export default command({
 
     if (shouldGitignore) {
       const gitignorePath = resolve(GITIGNORE_FILE);
-      const existing = existsSync(gitignorePath)
-        ? readFileSync(gitignorePath, "utf-8")
-        : "";
+      const existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf-8") : "";
 
       if (!existing.includes(GITIGNORE_ENTRY)) {
         const separator = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";

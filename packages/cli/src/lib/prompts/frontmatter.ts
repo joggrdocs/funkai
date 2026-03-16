@@ -76,19 +76,20 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     );
   }
 
-  const group = typeof parsed.group === "string"
-    ? (() => {
-        const g = parsed.group as string;
-        const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
-        if (invalidSegment !== undefined) {
-          throw new Error(
-            `Invalid group segment "${invalidSegment}" in ${filePath}. ` +
-              "Group segments must be lowercase alphanumeric with hyphens only.",
-          );
-        }
-        return g;
-      })()
-    : undefined;
+  const group =
+    typeof parsed.group === "string"
+      ? (() => {
+          const g = parsed.group as string;
+          const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
+          if (invalidSegment !== undefined) {
+            throw new Error(
+              `Invalid group segment "${invalidSegment}" in ${filePath}. ` +
+                "Group segments must be lowercase alphanumeric with hyphens only.",
+            );
+          }
+          return g;
+        })()
+      : undefined;
   const version = parsed.version != null ? String(parsed.version) : undefined;
 
   const schema = parseSchemaBlock(parsed.schema, filePath);
@@ -123,9 +124,8 @@ function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
       const def = value as Record<string, unknown>;
       const type = typeof def.type === "string" ? (def.type as string) : "string";
       const required = def.required !== false;
-      const description = typeof def.description === "string"
-        ? (def.description as string)
-        : undefined;
+      const description =
+        typeof def.description === "string" ? (def.description as string) : undefined;
 
       return { name: varName, type, required, description };
     }

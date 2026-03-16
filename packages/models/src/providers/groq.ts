@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { GROQ_MODELS } from '../catalog/providers/groq.js'
+import type { LiteralUnion } from "type-fest";
+
+import { GROQ_MODELS } from "../catalog/providers/groq.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Groq.
@@ -25,7 +26,7 @@ import { GROQ_MODELS } from '../catalog/providers/groq.js'
  * const id: GroqModelId = 'llama3-70b-8192'
  * ```
  */
-export type GroqModelId = (typeof GROQ_MODELS)[number]['id']
+export type GroqModelId = (typeof GROQ_MODELS)[number]["id"];
 
 /**
  * All Groq models in the catalog.
@@ -39,9 +40,9 @@ export type GroqModelId = (typeof GROQ_MODELS)[number]['id']
  * }
  * ```
  */
-export const groqModels = GROQ_MODELS
+export const groqModels = GROQ_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(GROQ_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(GROQ_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Groq model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(GROQ_MODELS.map((m) => [m.i
  * ```
  */
 export function groqModel(id: LiteralUnion<GroqModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

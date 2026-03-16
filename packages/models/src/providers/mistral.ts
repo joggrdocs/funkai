@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { MISTRAL_MODELS } from '../catalog/providers/mistral.js'
+import type { LiteralUnion } from "type-fest";
+
+import { MISTRAL_MODELS } from "../catalog/providers/mistral.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Mistral.
@@ -25,7 +26,7 @@ import { MISTRAL_MODELS } from '../catalog/providers/mistral.js'
  * const id: MistralModelId = 'devstral-medium-2507'
  * ```
  */
-export type MistralModelId = (typeof MISTRAL_MODELS)[number]['id']
+export type MistralModelId = (typeof MISTRAL_MODELS)[number]["id"];
 
 /**
  * All Mistral models in the catalog.
@@ -39,9 +40,9 @@ export type MistralModelId = (typeof MISTRAL_MODELS)[number]['id']
  * }
  * ```
  */
-export const mistralModels = MISTRAL_MODELS
+export const mistralModels = MISTRAL_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(MISTRAL_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(MISTRAL_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Mistral model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(MISTRAL_MODELS.map((m) => [
  * ```
  */
 export function mistralModel(id: LiteralUnion<MistralModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

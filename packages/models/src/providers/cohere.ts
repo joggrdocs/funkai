@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { COHERE_MODELS } from '../catalog/providers/cohere.js'
+import type { LiteralUnion } from "type-fest";
+
+import { COHERE_MODELS } from "../catalog/providers/cohere.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Cohere.
@@ -25,7 +26,7 @@ import { COHERE_MODELS } from '../catalog/providers/cohere.js'
  * const id: CohereModelId = 'c4ai-aya-expanse-32b'
  * ```
  */
-export type CohereModelId = (typeof COHERE_MODELS)[number]['id']
+export type CohereModelId = (typeof COHERE_MODELS)[number]["id"];
 
 /**
  * All Cohere models in the catalog.
@@ -39,9 +40,9 @@ export type CohereModelId = (typeof COHERE_MODELS)[number]['id']
  * }
  * ```
  */
-export const cohereModels = COHERE_MODELS
+export const cohereModels = COHERE_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(COHERE_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(COHERE_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Cohere model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(COHERE_MODELS.map((m) => [m
  * ```
  */
 export function cohereModel(id: LiteralUnion<CohereModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

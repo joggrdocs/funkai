@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { LLAMA_MODELS } from '../catalog/providers/llama.js'
+import type { LiteralUnion } from "type-fest";
+
+import { LLAMA_MODELS } from "../catalog/providers/llama.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Meta Llama.
@@ -25,7 +26,7 @@ import { LLAMA_MODELS } from '../catalog/providers/llama.js'
  * const id: LlamaModelId = 'cerebras-llama-4-maverick-17b-128e-instruct'
  * ```
  */
-export type LlamaModelId = (typeof LLAMA_MODELS)[number]['id']
+export type LlamaModelId = (typeof LLAMA_MODELS)[number]["id"];
 
 /**
  * All Meta Llama models in the catalog.
@@ -39,9 +40,9 @@ export type LlamaModelId = (typeof LLAMA_MODELS)[number]['id']
  * }
  * ```
  */
-export const llamaModels = LLAMA_MODELS
+export const llamaModels = LLAMA_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(LLAMA_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(LLAMA_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Meta Llama model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(LLAMA_MODELS.map((m) => [m.
  * ```
  */
 export function llamaModel(id: LiteralUnion<LlamaModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { HUGGINGFACE_MODELS } from '../catalog/providers/huggingface.js'
+import type { LiteralUnion } from "type-fest";
+
+import { HUGGINGFACE_MODELS } from "../catalog/providers/huggingface.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Hugging Face.
@@ -25,7 +26,7 @@ import { HUGGINGFACE_MODELS } from '../catalog/providers/huggingface.js'
  * const id: HuggingFaceModelId = 'zai-org/GLM-4.7-Flash'
  * ```
  */
-export type HuggingFaceModelId = (typeof HUGGINGFACE_MODELS)[number]['id']
+export type HuggingFaceModelId = (typeof HUGGINGFACE_MODELS)[number]["id"];
 
 /**
  * All Hugging Face models in the catalog.
@@ -39,9 +40,9 @@ export type HuggingFaceModelId = (typeof HUGGINGFACE_MODELS)[number]['id']
  * }
  * ```
  */
-export const huggingFaceModels = HUGGINGFACE_MODELS
+export const huggingFaceModels = HUGGINGFACE_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(HUGGINGFACE_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(HUGGINGFACE_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Hugging Face model by ID.
@@ -59,6 +60,8 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(HUGGINGFACE_MODELS.map((m) 
  * }
  * ```
  */
-export function huggingFaceModel(id: LiteralUnion<HuggingFaceModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+export function huggingFaceModel(
+  id: LiteralUnion<HuggingFaceModelId, string>,
+): ModelDefinition | null {
+  return MODEL_INDEX.get(id) ?? null;
 }

@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { XAI_MODELS } from '../catalog/providers/xai.js'
+import type { LiteralUnion } from "type-fest";
+
+import { XAI_MODELS } from "../catalog/providers/xai.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for xAI.
@@ -25,7 +26,7 @@ import { XAI_MODELS } from '../catalog/providers/xai.js'
  * const id: XAIModelId = 'grok-2-1212'
  * ```
  */
-export type XAIModelId = (typeof XAI_MODELS)[number]['id']
+export type XAIModelId = (typeof XAI_MODELS)[number]["id"];
 
 /**
  * All xAI models in the catalog.
@@ -39,9 +40,9 @@ export type XAIModelId = (typeof XAI_MODELS)[number]['id']
  * }
  * ```
  */
-export const xAIModels = XAI_MODELS
+export const xAIModels = XAI_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(XAI_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(XAI_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a xAI model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(XAI_MODELS.map((m) => [m.id
  * ```
  */
 export function xAIModel(id: LiteralUnion<XAIModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

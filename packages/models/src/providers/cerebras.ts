@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { CEREBRAS_MODELS } from '../catalog/providers/cerebras.js'
+import type { LiteralUnion } from "type-fest";
+
+import { CEREBRAS_MODELS } from "../catalog/providers/cerebras.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for Cerebras.
@@ -25,7 +26,7 @@ import { CEREBRAS_MODELS } from '../catalog/providers/cerebras.js'
  * const id: CerebrasModelId = 'qwen-3-235b-a22b-instruct-2507'
  * ```
  */
-export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]['id']
+export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]["id"];
 
 /**
  * All Cerebras models in the catalog.
@@ -39,9 +40,9 @@ export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]['id']
  * }
  * ```
  */
-export const cerebrasModels = CEREBRAS_MODELS
+export const cerebrasModels = CEREBRAS_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(CEREBRAS_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(CEREBRAS_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up a Cerebras model by ID.
@@ -60,5 +61,5 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(CEREBRAS_MODELS.map((m) => 
  * ```
  */
 export function cerebrasModel(id: LiteralUnion<CerebrasModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+  return MODEL_INDEX.get(id) ?? null;
 }

@@ -25,8 +25,19 @@ export type GenerateArgs = z.infer<typeof generateArgs>;
  * @param fail - Failure callback from the command context.
  */
 export function handleGenerate(
-  args: { readonly out: string; readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean },
-  logger: { info: (msg: string) => void; step: (msg: string) => void; error: (msg: string) => void; warn: (msg: string) => void; success: (msg: string) => void },
+  args: {
+    readonly out: string;
+    readonly roots: readonly string[];
+    readonly partials?: string;
+    readonly silent: boolean;
+  },
+  logger: {
+    info: (msg: string) => void;
+    step: (msg: string) => void;
+    error: (msg: string) => void;
+    warn: (msg: string) => void;
+    success: (msg: string) => void;
+  },
   fail: (msg: string) => never,
 ): void {
   const { out, roots, partials, silent } = args;
@@ -39,9 +50,8 @@ export function handleGenerate(
 
   if (!silent) {
     for (const prompt of prompts) {
-      const varList = prompt.schema.length > 0
-        ? ` (${prompt.schema.map((v) => v.name).join(", ")})`
-        : "";
+      const varList =
+        prompt.schema.length > 0 ? ` (${prompt.schema.map((v) => v.name).join(", ")})` : "";
       logger.step(`${prompt.name}${varList}`);
     }
   }

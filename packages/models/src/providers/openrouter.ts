@@ -11,9 +11,10 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from 'type-fest'
-import type { ModelDefinition } from '../catalog/types.js'
-import { OPENROUTER_MODELS } from '../catalog/providers/openrouter.js'
+import type { LiteralUnion } from "type-fest";
+
+import { OPENROUTER_MODELS } from "../catalog/providers/openrouter.js";
+import type { ModelDefinition } from "../catalog/types.js";
 
 /**
  * Known model identifiers for OpenRouter.
@@ -25,7 +26,7 @@ import { OPENROUTER_MODELS } from '../catalog/providers/openrouter.js'
  * const id: OpenRouterModelId = 'prime-intellect/intellect-3'
  * ```
  */
-export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]['id']
+export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]["id"];
 
 /**
  * All OpenRouter models in the catalog.
@@ -39,9 +40,9 @@ export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]['id']
  * }
  * ```
  */
-export const openRouterModels = OPENROUTER_MODELS
+export const openRouterModels = OPENROUTER_MODELS;
 
-const MODEL_INDEX = new Map<string, ModelDefinition>(OPENROUTER_MODELS.map((m) => [m.id, m]))
+const MODEL_INDEX = new Map<string, ModelDefinition>(OPENROUTER_MODELS.map((m) => [m.id, m]));
 
 /**
  * Look up an OpenRouter model by ID.
@@ -59,6 +60,8 @@ const MODEL_INDEX = new Map<string, ModelDefinition>(OPENROUTER_MODELS.map((m) =
  * }
  * ```
  */
-export function openRouterModel(id: LiteralUnion<OpenRouterModelId, string>): ModelDefinition | null {
-  return MODEL_INDEX.get(id) ?? null
+export function openRouterModel(
+  id: LiteralUnion<OpenRouterModelId, string>,
+): ModelDefinition | null {
+  return MODEL_INDEX.get(id) ?? null;
 }
