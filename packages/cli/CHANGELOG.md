@@ -1,5 +1,12 @@
 # @funkai/cli
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [153c393]
+  - @funkai/prompts@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
