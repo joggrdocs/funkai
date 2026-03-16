@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { DEEPSEEK_MODELS } from "../catalog/providers/deepseek.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { DEEPSEEK_MODELS } from '../catalog/providers/deepseek.js'
 
 /**
  * Known model identifiers for DeepSeek.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: DeepSeekModelId = 'deepseek-reasoner'
  * ```
  */
-export type DeepSeekModelId = (typeof DEEPSEEK_MODELS)[number]["id"];
+export type DeepSeekModelId = (typeof DEEPSEEK_MODELS)[number]['id']
 
 /**
  * All DeepSeek models in the catalog.
@@ -40,7 +39,9 @@ export type DeepSeekModelId = (typeof DEEPSEEK_MODELS)[number]["id"];
  * }
  * ```
  */
-export const deepSeekModels = DEEPSEEK_MODELS;
+export const deepSeekModels = DEEPSEEK_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(DEEPSEEK_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a DeepSeek model by ID.
@@ -59,5 +60,5 @@ export const deepSeekModels = DEEPSEEK_MODELS;
  * ```
  */
 export function deepSeekModel(id: LiteralUnion<DeepSeekModelId, string>): ModelDefinition | null {
-  return DEEPSEEK_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

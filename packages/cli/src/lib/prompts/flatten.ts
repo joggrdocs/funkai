@@ -1,5 +1,4 @@
 import { Liquid } from "liquidjs";
-import { match } from "ts-pattern";
 
 // oxlint-disable-next-line security/detect-unsafe-regex -- template parsing, not adversarial input
 const RENDER_TAG_RE = /\{%-?\s*render\s+'([^']+)'(?:\s*,\s*(.*?))?\s*-?%\}/g;
@@ -40,12 +39,8 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
-    const rawParams = match(m[2] != null)
-      .with(true, () => m[2].trim())
-      .otherwise(() => "");
-    const params = match(rawParams.length > 0)
-      .with(true, () => parseParams(rawParams, m[1]))
-      .otherwise(() => ({}));
+    const rawParams = m[2] != null ? m[2].trim() : "";
+    const params = rawParams.length > 0 ? parseParams(rawParams, m[1]) : {};
 
     return { fullMatch: m[0], partialName: m[1], params };
   });

@@ -1,14 +1,14 @@
 import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 
+import { FRONTMATTER_RE, NAME_RE } from "./frontmatter.js";
+
 const MAX_DEPTH = 5;
 const PROMPT_EXT = ".prompt";
-const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-const NAME_RE = /^[a-z0-9-]+$/;
 
 export interface DiscoveredPrompt {
-  name: string;
-  filePath: string;
+  readonly name: string;
+  readonly filePath: string;
 }
 
 /**
@@ -102,7 +102,7 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
  * @returns Sorted, deduplicated list of discovered prompts.
  * @throws If duplicate prompt names are found across roots.
  */
-export function discoverPrompts(roots: string[]): DiscoveredPrompt[] {
+export function discoverPrompts(roots: readonly string[]): DiscoveredPrompt[] {
   const all = roots.flatMap((root) => scanDirectory(resolve(root), 0));
 
   const byName = Map.groupBy(all, (prompt) => prompt.name);

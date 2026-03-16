@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { OPENAI_MODELS } from "../catalog/providers/openai.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { OPENAI_MODELS } from '../catalog/providers/openai.js'
 
 /**
  * Known model identifiers for OpenAI.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: OpenAIModelId = 'gpt-4o-2024-11-20'
  * ```
  */
-export type OpenAIModelId = (typeof OPENAI_MODELS)[number]["id"];
+export type OpenAIModelId = (typeof OPENAI_MODELS)[number]['id']
 
 /**
  * All OpenAI models in the catalog.
@@ -40,7 +39,9 @@ export type OpenAIModelId = (typeof OPENAI_MODELS)[number]["id"];
  * }
  * ```
  */
-export const openAIModels = OPENAI_MODELS;
+export const openAIModels = OPENAI_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(OPENAI_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up an OpenAI model by ID.
@@ -59,5 +60,5 @@ export const openAIModels = OPENAI_MODELS;
  * ```
  */
 export function openAIModel(id: LiteralUnion<OpenAIModelId, string>): ModelDefinition | null {
-  return OPENAI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { PERPLEXITY_MODELS } from "../catalog/providers/perplexity.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { PERPLEXITY_MODELS } from '../catalog/providers/perplexity.js'
 
 /**
  * Known model identifiers for Perplexity.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: PerplexityModelId = 'sonar-reasoning-pro'
  * ```
  */
-export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]["id"];
+export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]['id']
 
 /**
  * All Perplexity models in the catalog.
@@ -40,7 +39,9 @@ export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]["id"];
  * }
  * ```
  */
-export const perplexityModels = PERPLEXITY_MODELS;
+export const perplexityModels = PERPLEXITY_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(PERPLEXITY_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a Perplexity model by ID.
@@ -58,8 +59,6 @@ export const perplexityModels = PERPLEXITY_MODELS;
  * }
  * ```
  */
-export function perplexityModel(
-  id: LiteralUnion<PerplexityModelId, string>,
-): ModelDefinition | null {
-  return PERPLEXITY_MODELS.find((m) => m.id === id) ?? null;
+export function perplexityModel(id: LiteralUnion<PerplexityModelId, string>): ModelDefinition | null {
+  return MODEL_INDEX.get(id) ?? null
 }

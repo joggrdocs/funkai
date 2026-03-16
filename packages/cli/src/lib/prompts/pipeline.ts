@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { clean, PARTIALS_DIR } from "@funkai/prompts";
-import { match } from "ts-pattern";
 
 import { type ParsedPrompt } from "./codegen.js";
 import { extractVariables } from "./extract-variables.js";
@@ -37,9 +36,9 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  const partialsDirs = match(existsSync(customPartialsDir))
-    .with(true, () => [customPartialsDir, PARTIALS_DIR])
-    .otherwise(() => [PARTIALS_DIR]);
+  const partialsDirs = existsSync(customPartialsDir)
+    ? [customPartialsDir, PARTIALS_DIR]
+    : [PARTIALS_DIR];
 
   const results = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
@@ -83,9 +82,9 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  const partialsDirs = match(existsSync(customPartialsDir))
-    .with(true, () => [customPartialsDir, PARTIALS_DIR])
-    .otherwise(() => [PARTIALS_DIR]);
+  const partialsDirs = existsSync(customPartialsDir)
+    ? [customPartialsDir, PARTIALS_DIR]
+    : [PARTIALS_DIR];
 
   const processed = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file

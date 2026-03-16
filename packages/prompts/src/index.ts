@@ -1,4 +1,4 @@
-export { engine, createEngine } from "./engine.js";
+export { liquidEngine, createEngine } from "./engine.js";
 export { clean } from "./clean.js";
 export { PARTIALS_DIR } from "./partials-dir.js";
 export { createPromptRegistry } from "./registry.js";

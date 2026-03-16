@@ -96,5 +96,3 @@ export type { OperationType, TraceEntry } from "@/lib/trace.js";
 
 /** @deprecated Use `OperationType` instead. */
 export type { TraceType } from "@/lib/trace.js";
-
-export type { ResolveParam } from "@/utils/resolve.js";

@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { ANTHROPIC_MODELS } from "../catalog/providers/anthropic.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { ANTHROPIC_MODELS } from '../catalog/providers/anthropic.js'
 
 /**
  * Known model identifiers for Anthropic.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: AnthropicModelId = 'claude-opus-4-5-20251101'
  * ```
  */
-export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]["id"];
+export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]['id']
 
 /**
  * All Anthropic models in the catalog.
@@ -40,7 +39,9 @@ export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]["id"];
  * }
  * ```
  */
-export const anthropicModels = ANTHROPIC_MODELS;
+export const anthropicModels = ANTHROPIC_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(ANTHROPIC_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up an Anthropic model by ID.
@@ -59,5 +60,5 @@ export const anthropicModels = ANTHROPIC_MODELS;
  * ```
  */
 export function anthropicModel(id: LiteralUnion<AnthropicModelId, string>): ModelDefinition | null {
-  return ANTHROPIC_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

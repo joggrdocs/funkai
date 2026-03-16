@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { CEREBRAS_MODELS } from "../catalog/providers/cerebras.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { CEREBRAS_MODELS } from '../catalog/providers/cerebras.js'
 
 /**
  * Known model identifiers for Cerebras.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: CerebrasModelId = 'qwen-3-235b-a22b-instruct-2507'
  * ```
  */
-export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]["id"];
+export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]['id']
 
 /**
  * All Cerebras models in the catalog.
@@ -40,7 +39,9 @@ export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]["id"];
  * }
  * ```
  */
-export const cerebrasModels = CEREBRAS_MODELS;
+export const cerebrasModels = CEREBRAS_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(CEREBRAS_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a Cerebras model by ID.
@@ -59,5 +60,5 @@ export const cerebrasModels = CEREBRAS_MODELS;
  * ```
  */
 export function cerebrasModel(id: LiteralUnion<CerebrasModelId, string>): ModelDefinition | null {
-  return CEREBRAS_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

@@ -6,11 +6,11 @@ import type { SchemaVariable } from "./frontmatter.js";
  * Fully parsed prompt ready for code generation.
  */
 export interface ParsedPrompt {
-  name: string;
-  group?: string;
-  schema: SchemaVariable[];
-  template: string;
-  sourcePath: string;
+  readonly name: string;
+  readonly group?: string;
+  readonly schema: readonly SchemaVariable[];
+  readonly template: string;
+  readonly sourcePath: string;
 }
 
 /**
@@ -57,7 +57,7 @@ function escapeTemplateLiteral(str: string): string {
  *
  * @private
  */
-function generateSchemaExpression(vars: SchemaVariable[]): string {
+function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
   if (vars.length === 0) {
     return "z.object({})";
   }
@@ -65,9 +65,7 @@ function generateSchemaExpression(vars: SchemaVariable[]): string {
   const fields = vars
     .map((v) => {
       const base = "z.string()";
-      const expr = match(v.required)
-        .with(true, () => base)
-        .otherwise(() => `${base}.optional()`);
+      const expr = v.required ? base : `${base}.optional()`;
       return `  ${v.name}: ${expr},`;
     })
     .join("\n");
@@ -95,16 +93,16 @@ const HEADER = [
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
-  const groupValue = match(prompt.group != null)
-    .with(true, () => `'${prompt.group}' as const`)
-    .otherwise(() => "undefined");
+  const groupValue = prompt.group != null
+    ? `'${prompt.group}' as const`
+    : "undefined";
 
   const lines: string[] = [
     HEADER,
     `// Source: ${prompt.sourcePath}`,
     "",
     "import { z } from 'zod'",
-    "import { engine } from '@funkai/prompts'",
+    "import { liquidEngine } from '@funkai/prompts'",
     "",
     `const schema = ${schemaExpr}`,
     "",
@@ -119,7 +117,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
     ...match(prompt.schema.length)
       .with(0, () => [
         "  render(variables?: undefined): string {",
-        "    return engine.parseAndRenderSync(template, {})",
+        "    return liquidEngine.parseAndRenderSync(template, {})",
         "  },",
         "  validate(variables?: undefined): Variables {",
         "    return schema.parse(variables ?? {})",
@@ -127,7 +125,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
       ])
       .otherwise(() => [
         "  render(variables: Variables): string {",
-        "    return engine.parseAndRenderSync(template, schema.parse(variables))",
+        "    return liquidEngine.parseAndRenderSync(template, schema.parse(variables))",
         "  },",
         "  validate(variables: unknown): Variables {",
         "    return schema.parse(variables)",
@@ -214,7 +212,7 @@ function serializeTree(node: TreeNode, indent: number): string[] {
  * Prompts are organized into a nested object structure based on their
  * `group` field, with each `/`-separated segment becoming a nesting level.
  */
-export function generateRegistry(prompts: ParsedPrompt[]): string {
+export function generateRegistry(prompts: readonly ParsedPrompt[]): string {
   const sorted = [...prompts].toSorted((a, b) => a.name.localeCompare(b.name));
 
   const imports = sorted

@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { FIREWORKS_AI_MODELS } from "../catalog/providers/fireworks-ai.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { FIREWORKS_AI_MODELS } from '../catalog/providers/fireworks-ai.js'
 
 /**
  * Known model identifiers for Fireworks AI.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: FireworksModelId = 'accounts/fireworks/models/kimi-k2-instruct'
  * ```
  */
-export type FireworksModelId = (typeof FIREWORKS_AI_MODELS)[number]["id"];
+export type FireworksModelId = (typeof FIREWORKS_AI_MODELS)[number]['id']
 
 /**
  * All Fireworks AI models in the catalog.
@@ -40,7 +39,9 @@ export type FireworksModelId = (typeof FIREWORKS_AI_MODELS)[number]["id"];
  * }
  * ```
  */
-export const fireworksModels = FIREWORKS_AI_MODELS;
+export const fireworksModels = FIREWORKS_AI_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(FIREWORKS_AI_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a Fireworks AI model by ID.
@@ -59,5 +60,5 @@ export const fireworksModels = FIREWORKS_AI_MODELS;
  * ```
  */
 export function fireworksModel(id: LiteralUnion<FireworksModelId, string>): ModelDefinition | null {
-  return FIREWORKS_AI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

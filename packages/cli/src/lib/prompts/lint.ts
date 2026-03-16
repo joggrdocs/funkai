@@ -4,17 +4,17 @@ import type { SchemaVariable } from "./frontmatter.js";
  * A single lint diagnostic.
  */
 export interface LintDiagnostic {
-  level: "error" | "warn";
-  message: string;
+  readonly level: "error" | "warn";
+  readonly message: string;
 }
 
 /**
  * Result of linting a single prompt file.
  */
 export interface LintResult {
-  name: string;
-  filePath: string;
-  diagnostics: LintDiagnostic[];
+  readonly name: string;
+  readonly filePath: string;
+  readonly diagnostics: readonly LintDiagnostic[];
 }
 
 /**
@@ -33,8 +33,8 @@ export interface LintResult {
 export function lintPrompt(
   name: string,
   filePath: string,
-  schemaVars: SchemaVariable[],
-  templateVars: string[],
+  schemaVars: readonly SchemaVariable[],
+  templateVars: readonly string[],
 ): LintResult {
   const diagnostics: LintDiagnostic[] = [];
   const declared = new Set(schemaVars.map((v) => v.name));
@@ -69,6 +69,6 @@ export function lintPrompt(
 /**
  * Check whether any lint results contain errors.
  */
-export function hasLintErrors(results: LintResult[]): boolean {
+export function hasLintErrors(results: readonly LintResult[]): boolean {
   return results.some((r) => r.diagnostics.some((d) => d.level === "error"));
 }

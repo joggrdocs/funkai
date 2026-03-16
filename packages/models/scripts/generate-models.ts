@@ -86,10 +86,11 @@ function article(word: string): string {
 }
 
 /**
- * Convert per-million-token rate to per-token rate.
+ * Convert per-million-token rate to per-token rate, rounding to
+ * eliminate floating-point noise (e.g. `8.000000000000001e-7`).
  */
 function toPerToken(perMillion: number): number {
-  return perMillion / 1_000_000;
+  return parseFloat((perMillion / 1_000_000).toPrecision(6));
 }
 
 /**
@@ -305,6 +306,8 @@ export type ${prefix}ModelId = (typeof ${constName})[number]['id']
  */
 export const ${camel}Models = ${constName}
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(${constName}.map((m) => [m.id, m]))
+
 /**
  * Look up ${art} ${providerName} model by ID.
  *
@@ -322,7 +325,7 @@ export const ${camel}Models = ${constName}
  * \`\`\`
  */
 export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): ModelDefinition | null {
-  return ${constName}.find((m) => m.id === id) ?? null
+  return MODEL_INDEX.get(id) ?? null
 }
 `;
 

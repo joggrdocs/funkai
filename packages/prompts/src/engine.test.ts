@@ -1,7 +1,7 @@
 import { Liquid } from "liquidjs";
 import { describe, expect, it } from "vitest";
 
-import { createEngine, engine } from "@/engine.js";
+import { createEngine, liquidEngine } from "@/engine.js";
 
 describe("createEngine", () => {
   it("should return a Liquid instance", () => {
@@ -26,19 +26,19 @@ describe("createEngine", () => {
   });
 });
 
-describe("engine", () => {
+describe("liquidEngine", () => {
   it("should be a Liquid instance", () => {
-    expect(engine).toBeInstanceOf(Liquid);
+    expect(liquidEngine).toBeInstanceOf(Liquid);
   });
 
   it("should render variable expressions", () => {
-    const result = engine.parseAndRenderSync("Hello {{ name }}", { name: "World" });
+    const result = liquidEngine.parseAndRenderSync("Hello {{ name }}", { name: "World" });
     expect(result).toBe("Hello World");
   });
 
   it("should throw on unknown filters (strictFilters)", () => {
     expect(() => {
-      engine.parseAndRenderSync("{{ name | bogus }}", { name: "test" });
+      liquidEngine.parseAndRenderSync("{{ name | bogus }}", { name: "test" });
     }).toThrow();
   });
 });

@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { NVIDIA_MODELS } from "../catalog/providers/nvidia.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { NVIDIA_MODELS } from '../catalog/providers/nvidia.js'
 
 /**
  * Known model identifiers for NVIDIA NIM.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: NvidiaModelId = 'nvidia/llama-3.1-nemotron-70b-instruct'
  * ```
  */
-export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]["id"];
+export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]['id']
 
 /**
  * All NVIDIA NIM models in the catalog.
@@ -40,7 +39,9 @@ export type NvidiaModelId = (typeof NVIDIA_MODELS)[number]["id"];
  * }
  * ```
  */
-export const nvidiaModels = NVIDIA_MODELS;
+export const nvidiaModels = NVIDIA_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(NVIDIA_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a NVIDIA NIM model by ID.
@@ -59,5 +60,5 @@ export const nvidiaModels = NVIDIA_MODELS;
  * ```
  */
 export function nvidiaModel(id: LiteralUnion<NvidiaModelId, string>): ModelDefinition | null {
-  return NVIDIA_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { INCEPTION_MODELS } from "../catalog/providers/inception.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { INCEPTION_MODELS } from '../catalog/providers/inception.js'
 
 /**
  * Known model identifiers for Inception (Mercury).
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: InceptionModelId = 'mercury-2'
  * ```
  */
-export type InceptionModelId = (typeof INCEPTION_MODELS)[number]["id"];
+export type InceptionModelId = (typeof INCEPTION_MODELS)[number]['id']
 
 /**
  * All Inception (Mercury) models in the catalog.
@@ -40,7 +39,9 @@ export type InceptionModelId = (typeof INCEPTION_MODELS)[number]["id"];
  * }
  * ```
  */
-export const inceptionModels = INCEPTION_MODELS;
+export const inceptionModels = INCEPTION_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(INCEPTION_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up an Inception (Mercury) model by ID.
@@ -59,5 +60,5 @@ export const inceptionModels = INCEPTION_MODELS;
  * ```
  */
 export function inceptionModel(id: LiteralUnion<InceptionModelId, string>): ModelDefinition | null {
-  return INCEPTION_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null
 }

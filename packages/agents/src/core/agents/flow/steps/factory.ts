@@ -265,7 +265,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   async function agent<TInput>(
     config: AgentStepConfig<TInput>,
   ): Promise<StepResult<import("@/core/agents/base/types.js").GenerateResult>> {
-    const onFinishHandler = buildOnFinishHandlerWithCast<
+    const onFinishHandler = buildOnFinishHandler<
       import("@/core/agents/base/types.js").GenerateResult
     >(config.onFinish);
 
@@ -333,7 +333,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }
 
   async function map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>> {
-    const onFinishHandler = buildOnFinishHandlerWithCast<R[]>(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<R[]>(config.onFinish);
 
     return executeStep<R[]>({
       id: config.id,
@@ -377,7 +377,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }
 
   async function reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>> {
-    const onFinishHandler = buildOnFinishHandlerWithCast<R>(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<R>(config.onFinish);
 
     return executeStep<R>({
       id: config.id,
@@ -399,7 +399,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }
 
   async function whileStep<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>> {
-    const onFinishHandler = buildOnFinishHandlerWithCast<T | undefined>(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<T | undefined>(config.onFinish);
 
     return executeStep<T | undefined>({
       id: config.id,
@@ -417,7 +417,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }
 
   async function all(config: AllConfig): Promise<StepResult<unknown[]>> {
-    const onFinishHandler = buildOnFinishHandlerWithCast<unknown[]>(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<unknown[]>(config.onFinish);
 
     return executeStep<unknown[]>({
       id: config.id,
@@ -517,20 +517,6 @@ function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
 // Helper: build onFinish handler (generic step) without ternary or !
 // ---------------------------------------------------------------------------
 function buildOnFinishHandler<T>(
-  onFinish?: (event: { id: string; result: T; duration: number }) => void | Promise<void>,
-):
-  | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
-  | undefined {
-  if (onFinish == null) {
-    return undefined;
-  }
-  return (event) => onFinish({ id: event.id, result: event.result as T, duration: event.duration });
-}
-
-// ---------------------------------------------------------------------------
-// Helper: build onFinish handler with cast (for agent, map, reduce, while, all)
-// ---------------------------------------------------------------------------
-function buildOnFinishHandlerWithCast<T>(
   onFinish?: (event: { id: string; result: T; duration: number }) => void | Promise<void>,
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)

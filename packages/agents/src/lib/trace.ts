@@ -23,7 +23,7 @@ export type TraceType = OperationType;
  *
  * @internal
  *   Part of the internal execution context. Exposed on
- *   `WorkflowResult.trace` for observability but not directly
+ *   `FlowAgentGenerateResult.trace` for observability but not directly
  *   constructed by user code.
  */
 export interface TraceEntry {

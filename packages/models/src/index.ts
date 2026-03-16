@@ -12,7 +12,7 @@ export type {
 // Provider
 export { createOpenRouter, openrouter } from "@/provider/openrouter.js";
 export { createModelResolver } from "@/provider/resolver.js";
-export type { ModelResolverConfig, ModelResolver } from "@/provider/resolver.js";
+export type { ProviderFactory, ProviderMap, ModelResolverConfig, ModelResolver } from "@/provider/resolver.js";
 export type { LanguageModel, TokenUsage } from "@/provider/types.js";
 
 // Cost

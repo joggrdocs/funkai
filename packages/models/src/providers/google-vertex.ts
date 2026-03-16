@@ -11,10 +11,9 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
-import type { LiteralUnion } from "type-fest";
-
-import { GOOGLE_VERTEX_MODELS } from "../catalog/providers/google-vertex.js";
-import type { ModelDefinition } from "../catalog/types.js";
+import type { LiteralUnion } from 'type-fest'
+import type { ModelDefinition } from '../catalog/types.js'
+import { GOOGLE_VERTEX_MODELS } from '../catalog/providers/google-vertex.js'
 
 /**
  * Known model identifiers for Google Vertex AI.
@@ -26,7 +25,7 @@ import type { ModelDefinition } from "../catalog/types.js";
  * const id: GoogleVertexModelId = 'gemini-embedding-001'
  * ```
  */
-export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]["id"];
+export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]['id']
 
 /**
  * All Google Vertex AI models in the catalog.
@@ -40,7 +39,9 @@ export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]["id"];
  * }
  * ```
  */
-export const googleVertexModels = GOOGLE_VERTEX_MODELS;
+export const googleVertexModels = GOOGLE_VERTEX_MODELS
+
+const MODEL_INDEX = new Map<string, ModelDefinition>(GOOGLE_VERTEX_MODELS.map((m) => [m.id, m]))
 
 /**
  * Look up a Google Vertex AI model by ID.
@@ -58,8 +59,6 @@ export const googleVertexModels = GOOGLE_VERTEX_MODELS;
  * }
  * ```
  */
-export function googleVertexModel(
-  id: LiteralUnion<GoogleVertexModelId, string>,
-): ModelDefinition | null {
-  return GOOGLE_VERTEX_MODELS.find((m) => m.id === id) ?? null;
+export function googleVertexModel(id: LiteralUnion<GoogleVertexModelId, string>): ModelDefinition | null {
+  return MODEL_INDEX.get(id) ?? null
 }
