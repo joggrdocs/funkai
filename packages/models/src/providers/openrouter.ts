@@ -42,6 +42,8 @@ export type OpenRouterModelId = (typeof OPENROUTER_MODELS)[number]["id"];
  */
 export const openRouterModels = OPENROUTER_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(OPENROUTER_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up an OpenRouter model by ID.
  *
@@ -61,5 +63,5 @@ export const openRouterModels = OPENROUTER_MODELS;
 export function openRouterModel(
   id: LiteralUnion<OpenRouterModelId, string>,
 ): ModelDefinition | null {
-  return OPENROUTER_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

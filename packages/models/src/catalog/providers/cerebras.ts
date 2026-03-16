@@ -41,7 +41,7 @@ export const CEREBRAS_MODELS = [
     name: "Llama 3.1 8B",
     provider: "cerebras",
     family: "llama",
-    pricing: { input: 1.0000000000000001e-7, output: 1.0000000000000001e-7 },
+    pricing: { input: 1e-7, output: 1e-7 },
     contextWindow: 32000,
     maxOutput: 8000,
     modalities: { input: ["text"], output: ["text"] },

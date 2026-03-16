@@ -42,6 +42,8 @@ export type AmazonBedrockModelId = (typeof AMAZON_BEDROCK_MODELS)[number]["id"];
  */
 export const amazonBedrockModels = AMAZON_BEDROCK_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(AMAZON_BEDROCK_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up an Amazon Bedrock model by ID.
  *
@@ -61,5 +63,5 @@ export const amazonBedrockModels = AMAZON_BEDROCK_MODELS;
 export function amazonBedrockModel(
   id: LiteralUnion<AmazonBedrockModelId, string>,
 ): ModelDefinition | null {
-  return AMAZON_BEDROCK_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

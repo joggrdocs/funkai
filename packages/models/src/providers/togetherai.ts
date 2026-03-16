@@ -42,6 +42,8 @@ export type TogetherModelId = (typeof TOGETHERAI_MODELS)[number]["id"];
  */
 export const togetherModels = TOGETHERAI_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(TOGETHERAI_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Together AI model by ID.
  *
@@ -59,5 +61,5 @@ export const togetherModels = TOGETHERAI_MODELS;
  * ```
  */
 export function togetherModel(id: LiteralUnion<TogetherModelId, string>): ModelDefinition | null {
-  return TOGETHERAI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

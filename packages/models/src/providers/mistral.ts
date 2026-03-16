@@ -42,6 +42,8 @@ export type MistralModelId = (typeof MISTRAL_MODELS)[number]["id"];
  */
 export const mistralModels = MISTRAL_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(MISTRAL_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Mistral model by ID.
  *
@@ -59,5 +61,5 @@ export const mistralModels = MISTRAL_MODELS;
  * ```
  */
 export function mistralModel(id: LiteralUnion<MistralModelId, string>): ModelDefinition | null {
-  return MISTRAL_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

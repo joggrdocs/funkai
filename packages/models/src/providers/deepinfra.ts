@@ -42,6 +42,8 @@ export type DeepInfraModelId = (typeof DEEPINFRA_MODELS)[number]["id"];
  */
 export const deepInfraModels = DEEPINFRA_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(DEEPINFRA_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a DeepInfra model by ID.
  *
@@ -59,5 +61,5 @@ export const deepInfraModels = DEEPINFRA_MODELS;
  * ```
  */
 export function deepInfraModel(id: LiteralUnion<DeepInfraModelId, string>): ModelDefinition | null {
-  return DEEPINFRA_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

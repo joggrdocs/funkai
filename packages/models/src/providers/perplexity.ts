@@ -42,6 +42,8 @@ export type PerplexityModelId = (typeof PERPLEXITY_MODELS)[number]["id"];
  */
 export const perplexityModels = PERPLEXITY_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(PERPLEXITY_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Perplexity model by ID.
  *
@@ -61,5 +63,5 @@ export const perplexityModels = PERPLEXITY_MODELS;
 export function perplexityModel(
   id: LiteralUnion<PerplexityModelId, string>,
 ): ModelDefinition | null {
-  return PERPLEXITY_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

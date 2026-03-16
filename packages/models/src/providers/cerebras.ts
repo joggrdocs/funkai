@@ -42,6 +42,8 @@ export type CerebrasModelId = (typeof CEREBRAS_MODELS)[number]["id"];
  */
 export const cerebrasModels = CEREBRAS_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(CEREBRAS_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Cerebras model by ID.
  *
@@ -59,5 +61,5 @@ export const cerebrasModels = CEREBRAS_MODELS;
  * ```
  */
 export function cerebrasModel(id: LiteralUnion<CerebrasModelId, string>): ModelDefinition | null {
-  return CEREBRAS_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

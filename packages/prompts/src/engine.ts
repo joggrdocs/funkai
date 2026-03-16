@@ -31,7 +31,7 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
  * only needs to handle `{{ var }}` expressions and basic Liquid
  * control flow (`{% if %}`, `{% for %}`). No filesystem access required.
  */
-export const engine = new Liquid({
+export const liquidEngine = new Liquid({
   strictFilters: true,
   ownPropertyOnly: true,
 });

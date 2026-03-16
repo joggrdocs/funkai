@@ -41,7 +41,7 @@ export const PERPLEXITY_MODELS = [
     name: "Perplexity Sonar Deep Research",
     provider: "perplexity",
     family: "",
-    pricing: { input: 0.000002, output: 0.000008 },
+    pricing: { input: 0.000002, output: 0.000008, reasoning: 0.000003 },
     contextWindow: 128000,
     maxOutput: 32768,
     modalities: { input: ["text"], output: ["text"] },

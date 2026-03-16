@@ -42,6 +42,8 @@ export type HuggingFaceModelId = (typeof HUGGINGFACE_MODELS)[number]["id"];
  */
 export const huggingFaceModels = HUGGINGFACE_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(HUGGINGFACE_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Hugging Face model by ID.
  *
@@ -61,5 +63,5 @@ export const huggingFaceModels = HUGGINGFACE_MODELS;
 export function huggingFaceModel(
   id: LiteralUnion<HuggingFaceModelId, string>,
 ): ModelDefinition | null {
-  return HUGGINGFACE_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

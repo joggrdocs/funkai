@@ -42,6 +42,8 @@ export type OpenAIModelId = (typeof OPENAI_MODELS)[number]["id"];
  */
 export const openAIModels = OPENAI_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(OPENAI_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up an OpenAI model by ID.
  *
@@ -59,5 +61,5 @@ export const openAIModels = OPENAI_MODELS;
  * ```
  */
 export function openAIModel(id: LiteralUnion<OpenAIModelId, string>): ModelDefinition | null {
-  return OPENAI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

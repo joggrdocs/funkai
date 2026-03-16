@@ -2,7 +2,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { command } from "@kidd-cli/core";
-import { match } from "ts-pattern";
 
 const VSCODE_DIR = ".vscode";
 const SETTINGS_FILE = "settings.json";
@@ -76,14 +75,10 @@ export default command({
 
     if (shouldGitignore) {
       const gitignorePath = resolve(GITIGNORE_FILE);
-      const existing = match(existsSync(gitignorePath))
-        .with(true, () => readFileSync(gitignorePath, "utf-8"))
-        .otherwise(() => "");
+      const existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf-8") : "";
 
       if (!existing.includes(GITIGNORE_ENTRY)) {
-        const separator = match(existing.length > 0 && !existing.endsWith("\n"))
-          .with(true, () => "\n")
-          .otherwise(() => "");
+        const separator = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";
         const block = `${separator}\n# Generated prompt client (created by \`funkai prompts generate\`)\n${GITIGNORE_ENTRY}\n`;
         writeFileSync(gitignorePath, existing + block, "utf-8");
         ctx.logger.success(`Added ${GITIGNORE_ENTRY} to ${gitignorePath}`);

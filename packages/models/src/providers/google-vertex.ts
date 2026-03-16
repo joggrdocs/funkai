@@ -42,6 +42,8 @@ export type GoogleVertexModelId = (typeof GOOGLE_VERTEX_MODELS)[number]["id"];
  */
 export const googleVertexModels = GOOGLE_VERTEX_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(GOOGLE_VERTEX_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Google Vertex AI model by ID.
  *
@@ -61,5 +63,5 @@ export const googleVertexModels = GOOGLE_VERTEX_MODELS;
 export function googleVertexModel(
   id: LiteralUnion<GoogleVertexModelId, string>,
 ): ModelDefinition | null {
-  return GOOGLE_VERTEX_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

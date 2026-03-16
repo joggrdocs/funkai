@@ -42,6 +42,8 @@ export type AnthropicModelId = (typeof ANTHROPIC_MODELS)[number]["id"];
  */
 export const anthropicModels = ANTHROPIC_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(ANTHROPIC_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up an Anthropic model by ID.
  *
@@ -59,5 +61,5 @@ export const anthropicModels = ANTHROPIC_MODELS;
  * ```
  */
 export function anthropicModel(id: LiteralUnion<AnthropicModelId, string>): ModelDefinition | null {
-  return ANTHROPIC_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

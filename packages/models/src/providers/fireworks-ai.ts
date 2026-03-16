@@ -42,6 +42,8 @@ export type FireworksModelId = (typeof FIREWORKS_AI_MODELS)[number]["id"];
  */
 export const fireworksModels = FIREWORKS_AI_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(FIREWORKS_AI_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Fireworks AI model by ID.
  *
@@ -59,5 +61,5 @@ export const fireworksModels = FIREWORKS_AI_MODELS;
  * ```
  */
 export function fireworksModel(id: LiteralUnion<FireworksModelId, string>): ModelDefinition | null {
-  return FIREWORKS_AI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

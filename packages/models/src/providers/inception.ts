@@ -42,6 +42,8 @@ export type InceptionModelId = (typeof INCEPTION_MODELS)[number]["id"];
  */
 export const inceptionModels = INCEPTION_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(INCEPTION_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up an Inception (Mercury) model by ID.
  *
@@ -59,5 +61,5 @@ export const inceptionModels = INCEPTION_MODELS;
  * ```
  */
 export function inceptionModel(id: LiteralUnion<InceptionModelId, string>): ModelDefinition | null {
-  return INCEPTION_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

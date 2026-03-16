@@ -1,8 +1,7 @@
-import { match } from "ts-pattern";
 import { parse as parseYaml } from "yaml";
 
-const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-const NAME_RE = /^[a-z0-9-]+$/;
+export const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+export const NAME_RE = /^[a-z0-9-]+$/;
 
 /**
  * Parse raw YAML content into a record, wrapping parse errors
@@ -26,20 +25,20 @@ function parseYamlContent(yaml: string, filePath: string): Record<string, unknow
  * A variable declared in the frontmatter `schema` block.
  */
 export interface SchemaVariable {
-  name: string;
-  type: string;
-  required: boolean;
-  description?: string;
+  readonly name: string;
+  readonly type: string;
+  readonly required: boolean;
+  readonly description?: string;
 }
 
 /**
  * Parsed frontmatter from a `.prompt` file.
  */
 export interface ParsedFrontmatter {
-  name: string;
-  group?: string;
-  version?: string;
-  schema: SchemaVariable[];
+  readonly name: string;
+  readonly group?: string;
+  readonly version?: string;
+  readonly schema: readonly SchemaVariable[];
 }
 
 /**
@@ -77,22 +76,21 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     );
   }
 
-  const group = match(typeof parsed.group === "string")
-    .with(true, () => {
-      const g = parsed.group as string;
-      const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
-      if (invalidSegment !== undefined) {
-        throw new Error(
-          `Invalid group segment "${invalidSegment}" in ${filePath}. ` +
-            "Group segments must be lowercase alphanumeric with hyphens only.",
-        );
-      }
-      return g;
-    })
-    .otherwise(() => undefined);
-  const version = match(parsed.version != null)
-    .with(true, () => String(parsed.version))
-    .otherwise(() => undefined);
+  const group =
+    typeof parsed.group === "string"
+      ? (() => {
+          const g = parsed.group as string;
+          const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
+          if (invalidSegment !== undefined) {
+            throw new Error(
+              `Invalid group segment "${invalidSegment}" in ${filePath}. ` +
+                "Group segments must be lowercase alphanumeric with hyphens only.",
+            );
+          }
+          return g;
+        })()
+      : undefined;
+  const version = parsed.version != null ? String(parsed.version) : undefined;
 
   const schema = parseSchemaBlock(parsed.schema, filePath);
 
@@ -124,13 +122,10 @@ function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       const def = value as Record<string, unknown>;
-      const type = match(typeof def.type === "string")
-        .with(true, () => def.type as string)
-        .otherwise(() => "string");
+      const type = typeof def.type === "string" ? (def.type as string) : "string";
       const required = def.required !== false;
-      const description = match(typeof def.description === "string")
-        .with(true, () => def.description as string)
-        .otherwise(() => undefined);
+      const description =
+        typeof def.description === "string" ? (def.description as string) : undefined;
 
       return { name: varName, type, required, description };
     }

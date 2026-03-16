@@ -42,6 +42,8 @@ export type LlamaModelId = (typeof LLAMA_MODELS)[number]["id"];
  */
 export const llamaModels = LLAMA_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(LLAMA_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Meta Llama model by ID.
  *
@@ -59,5 +61,5 @@ export const llamaModels = LLAMA_MODELS;
  * ```
  */
 export function llamaModel(id: LiteralUnion<LlamaModelId, string>): ModelDefinition | null {
-  return LLAMA_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

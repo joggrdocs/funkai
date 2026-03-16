@@ -55,9 +55,9 @@ export type ModelRef = Model;
 
 /**
  * A value that can be generated against — the shared contract
- * between Agent and Workflow.
+ * between Agent and FlowAgent.
  *
- * Both `Agent` and `Workflow` satisfy this interface. Any API that
+ * Both `Agent` and `FlowAgent` satisfy this interface. Any API that
  * accepts a `Runnable` works with either.
  */
 /* eslint-disable @typescript-eslint/no-explicit-any -- Runnable config accepts implementation-specific options that cannot be narrowed at the interface level */

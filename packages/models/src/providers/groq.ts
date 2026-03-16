@@ -42,6 +42,8 @@ export type GroqModelId = (typeof GROQ_MODELS)[number]["id"];
  */
 export const groqModels = GROQ_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(GROQ_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Groq model by ID.
  *
@@ -59,5 +61,5 @@ export const groqModels = GROQ_MODELS;
  * ```
  */
 export function groqModel(id: LiteralUnion<GroqModelId, string>): ModelDefinition | null {
-  return GROQ_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

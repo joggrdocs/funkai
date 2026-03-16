@@ -142,11 +142,16 @@ export function createDefaultLogger(bindings?: Record<string, unknown>): Logger 
 }
 
 /**
+ * Write a log entry to the console at the given level.
  *
- * @param bindings
- * @param level
- * @param first
- * @param second
+ * Handles both pino-style call signatures: `(msg, meta?)` and
+ * `(meta, msg)`. Accumulated bindings are merged into the output
+ * object so child-logger context is always present.
+ *
+ * @param bindings - Accumulated key-value pairs from parent loggers merged into every entry.
+ * @param level - Console log level to write at (`debug`, `info`, `warn`, or `error`).
+ * @param first - Either the log message string or a metadata object, depending on call signature.
+ * @param second - Either a metadata object or the log message string (complement of `first`).
  * @private
  */
 function writeLog(

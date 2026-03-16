@@ -42,6 +42,8 @@ export type GoogleModelId = (typeof GOOGLE_MODELS)[number]["id"];
  */
 export const googleModels = GOOGLE_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(GOOGLE_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a Google model by ID.
  *
@@ -59,5 +61,5 @@ export const googleModels = GOOGLE_MODELS;
  * ```
  */
 export function googleModel(id: LiteralUnion<GoogleModelId, string>): ModelDefinition | null {
-  return GOOGLE_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }

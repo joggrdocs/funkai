@@ -42,6 +42,8 @@ export type XAIModelId = (typeof XAI_MODELS)[number]["id"];
  */
 export const xAIModels = XAI_MODELS;
 
+const MODEL_INDEX = new Map<string, ModelDefinition>(XAI_MODELS.map((m) => [m.id, m]));
+
 /**
  * Look up a xAI model by ID.
  *
@@ -59,5 +61,5 @@ export const xAIModels = XAI_MODELS;
  * ```
  */
 export function xAIModel(id: LiteralUnion<XAIModelId, string>): ModelDefinition | null {
-  return XAI_MODELS.find((m) => m.id === id) ?? null;
+  return MODEL_INDEX.get(id) ?? null;
 }
