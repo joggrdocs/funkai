@@ -4,7 +4,7 @@ import { handleLint, lintArgs } from "./prompts/lint.js";
 
 export default command({
   description: "Run all validations across the funkai SDK",
-  args: lintArgs,
+  options: lintArgs,
   handler(ctx) {
     const { silent } = ctx.args;
 
