@@ -7,6 +7,7 @@ import type {
   UIMessage,
   UIMessageStreamOptions,
 } from "ai";
+import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
@@ -26,42 +27,36 @@ import type { Result } from "@/utils/result.js";
 export type StreamPart = TextStreamPart<ToolSet>;
 
 /**
- * Compile-time guard for sub-agent record keys.
+ * Compile-time guard that validates a string is a provider-safe tool name.
  *
- * Rejects keys containing characters that are invalid across LLM
- * providers (OpenAI, Anthropic, Gemini, Mistral). The universally
- * safe pattern is `^[a-zA-Z_][a-zA-Z0-9_]*$` — both camelCase and
- * snake_case are allowed.
+ * Accepts camelCase and snake_case — the two naming styles that work
+ * across all major LLM providers (OpenAI, Anthropic, Gemini, Mistral).
+ * Rejects kebab-case, dot.case, colons, spaces, and other formats that
+ * contain characters outside `^[a-zA-Z_][a-zA-Z0-9_]*$`.
  *
- * Rejected: dashes, dots, colons, spaces, slashes, and other
- * non-alphanumeric/non-underscore characters. Empty strings and
- * digit-leading names are also rejected.
- *
- * When a key is invalid the type resolves to `never`, producing a
- * compile error at the call site.
+ * Uses type-fest's `SnakeCase` and `CamelCase` converters as validators:
+ * if converting `S` to snake_case (or camelCase) returns the same string,
+ * then `S` is already in that format and therefore safe.
  *
  * @remarks
- * TypeScript template literal types cannot express `[a-zA-Z0-9_]`
- * as a character class, so this type catches the most common
- * mistakes (dashes, dots, colons, spaces, slashes) but cannot
- * reject every invalid character (e.g. `@`, `#`). The runtime
- * {@link validateToolName} in `utils.ts` catches the full set.
+ * Runtime validation in `validateToolName()` is the authoritative check.
+ * This type is a best-effort compile-time guard.
  *
  * @example
  * ```typescript
- * type Good = ToolSafeKey<'myAgent'>;     // 'myAgent'
- * type Also = ToolSafeKey<'my_agent'>;    // 'my_agent'
- * type Bad  = ToolSafeKey<'my-agent'>;    // never
- * type Nope = ToolSafeKey<'agent:plan'>;  // never
+ * type Good = SafeToolName<'myAgent'>;     // 'myAgent'
+ * type Also = SafeToolName<'my_agent'>;    // 'my_agent'
+ * type Bad  = SafeToolName<'my-agent'>;    // never
+ * type Nope = SafeToolName<'agent:plan'>;  // never
  * ```
  */
-export type ToolSafeKey<S extends string> = S extends ""
+export type SafeToolName<S extends string> = S extends ""
   ? never
-  : S extends `${number}${string}`
-    ? never
-    : S extends `${string}${"-" | "." | ":" | " " | "/" | "\\" | "@" | "#" | "!" | "+" | "=" | "(" | ")" | "[" | "]" | "{" | "}" | "|" | ";" | "," | "<" | ">" | "?" | "*" | "&" | "%" | "$" | "^" | "~" | "'" | '"'}${string}`
-      ? never
-      : S;
+  : S extends SnakeCase<S>
+    ? S
+    : S extends CamelCase<S>
+      ? S
+      : never;
 
 /**
  * Record of named subagents available for delegation.
@@ -73,7 +68,7 @@ export type ToolSafeKey<S extends string> = S extends ""
  *
  * Keys must be provider-safe identifiers matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
  * — camelCase or snake_case only. Non-alphanumeric characters (except
- * underscore) are rejected at both the type level ({@link ToolSafeKey})
+ * underscore) are rejected at both the type level ({@link SafeToolName})
  * and at runtime.
  *
  * @example
@@ -511,11 +506,11 @@ export interface AgentConfig<
    *
    * Keys must match `^[a-zA-Z_][a-zA-Z0-9_]*$` (camelCase or snake_case).
    * Non-alphanumeric characters (except underscore) cause a compile
-   * error via {@link ToolSafeKey} and a runtime error from validation.
+   * error via {@link SafeToolName} and a runtime error from validation.
    */
   agents?: {
     [K in keyof TSubAgents]: K extends string
-      ? ToolSafeKey<K> extends never
+      ? SafeToolName<K> extends never
         ? never
         : TSubAgents[K]
       : TSubAgents[K];

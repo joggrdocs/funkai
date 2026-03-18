@@ -42,6 +42,7 @@
     "ai": "^6.0.116",
     "es-toolkit": "catalog:",
     "ts-pattern": "catalog:",
+    "type-fest": "^5.4.4",
     "zod": "catalog:"
   },
   "devDependencies": {
