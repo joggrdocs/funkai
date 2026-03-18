@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent, tool } from "@funkai/agents";
 import { z } from "zod";
 
@@ -20,7 +21,7 @@ const weatherTool = tool({
 
 const weatherAgent = agent({
   name: "weather-agent",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system:
     "You are a helpful weather assistant. Use the get-weather tool to answer questions about the weather.",
   tools: { "get-weather": weatherTool },

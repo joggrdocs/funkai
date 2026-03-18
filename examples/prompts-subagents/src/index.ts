@@ -1,10 +1,11 @@
+import { openai } from "@ai-sdk/openai";
 import { agent, flowAgent } from "@funkai/agents";
 import { z } from "zod";
 import { prompts } from "~prompts";
 
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: prompts.agents.researcher.render({
     domain: "software engineering",
   }),
@@ -12,7 +13,7 @@ const researcher = agent({
 
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: prompts.agents.writer.render({
     tone: "friendly",
     audience: "senior engineers",
@@ -21,7 +22,7 @@ const writer = agent({
 
 const reviewer = agent({
   name: "reviewer",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: prompts.agents.reviewer.render({
     standard: "technical blog post",
   }),
