@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import { resolveOutput } from "@/core/agents/base/output.js";
-import type { AgentConfig, AgentOverrides } from "@/core/agents/base/types.js";
+import type { AgentConfig, AgentOverrides, ToolName } from "@/core/agents/base/types.js";
 
 describe("outputParam accepts all Output factories", () => {
   it("accepts Output.text()", () => {
@@ -53,6 +53,55 @@ describe("outputParam is assignable to config fields", () => {
 
   it("is assignable to AgentOverrides.output", () => {
     expectTypeOf<OutputParam>().toExtend<AgentOverrides["output"]>();
+  });
+});
+
+describe("ToolName accepts valid tool names", () => {
+  it("accepts camelCase", () => {
+    expectTypeOf<ToolName<"myAgent">>().toEqualTypeOf<"myAgent">();
+  });
+
+  it("accepts snake_case", () => {
+    expectTypeOf<ToolName<"my_agent">>().toEqualTypeOf<"my_agent">();
+  });
+
+  it("accepts single lowercase word", () => {
+    expectTypeOf<ToolName<"agent">>().toEqualTypeOf<"agent">();
+  });
+
+  it("accepts all-uppercase acronyms", () => {
+    expectTypeOf<ToolName<"API">>().toEqualTypeOf<"API">();
+  });
+
+  it("accepts uppercase with underscores", () => {
+    expectTypeOf<ToolName<"HTTP_CLIENT">>().toEqualTypeOf<"HTTP_CLIENT">();
+  });
+});
+
+describe("ToolName rejects invalid tool names", () => {
+  it("rejects empty string", () => {
+    expectTypeOf<ToolName<"">>().toBeNever();
+  });
+
+  it("rejects kebab-case", () => {
+    expectTypeOf<ToolName<"my-agent">>().toBeNever();
+  });
+
+  it("rejects spaces", () => {
+    expectTypeOf<ToolName<"my agent">>().toBeNever();
+  });
+});
+
+describe("ToolName works in AgentConfig.agents", () => {
+  it("accepts valid agent keys", () => {
+    expectTypeOf<{
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      myAgent: ToolName<"myAgent"> extends never ? never : any;
+    }>().not.toBeNever();
+  });
+
+  it("rejects invalid agent keys via ToolName", () => {
+    expectTypeOf<ToolName<"my-agent">>().toBeNever();
   });
 });
 

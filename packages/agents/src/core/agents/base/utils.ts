@@ -1,6 +1,7 @@
 import type { ProviderRegistry } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
+import { isNil, isNotNil } from "es-toolkit";
 import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
@@ -53,8 +54,8 @@ export function buildAITools(
   agents?: Record<string, Agent<any, any, any, any>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): Record<string, any> | undefined {
-  const hasTools = tools !== null && tools !== undefined && Object.keys(tools).length > 0;
-  const hasAgents = agents !== null && agents !== undefined && Object.keys(agents).length > 0;
+  const hasTools = isNotNil(tools) && Object.keys(tools).length > 0;
+  const hasAgents = isNotNil(agents) && Object.keys(agents).length > 0;
 
   if (!hasTools && !hasAgents) {
     return undefined;
@@ -72,16 +73,17 @@ export function buildAITools(
           const toolName = resolveToolName(meta, name);
           validateToolName(name);
           const agentToolName = `agent_${name}`;
+          if (isNotNil(tools) && Object.hasOwn(tools, agentToolName)) {
+            throw new Error(
+              `Tool name collision: "${agentToolName}" already exists in tools. ` +
+                `Rename sub-agent key "${name}" or the existing tool.`,
+            );
+          }
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
           const agentTool: ReturnType<typeof tool<any, any>> = (() => {
             // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-            if (
-              meta !== null &&
-              meta !== undefined &&
-              meta.inputSchema !== null &&
-              meta.inputSchema !== undefined
-            ) {
+            if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
               return tool({
                 description: `Delegate to ${toolName}`,
                 inputSchema: meta.inputSchema,
@@ -124,7 +126,7 @@ export function resolveSystem<TInput>(
   system: string | ((params: { input: TInput }) => string) | undefined,
   input: TInput,
 ): string | undefined {
-  if (system === null || system === undefined) {
+  if (isNil(system)) {
     return undefined;
   }
   if (typeof system === "function") {
@@ -239,22 +241,27 @@ function validateToolName(name: string): void {
     return;
   }
 
-  const reasons: string[] = [];
+  const reasons: readonly string[] = match(name)
+    .when(
+      (n) => n.length === 0,
+      () => ["name must not be empty"],
+    )
+    .otherwise((n) => {
+      const invalidChars = [...new Set([...n.replaceAll(/[a-zA-Z0-9_]/g, "")])].filter(
+        (c) => c.length > 0,
+      );
 
-  if (name.length === 0) {
-    reasons.push("name must not be empty");
-  } else {
-    if (/^[0-9]/.test(name)) {
-      reasons.push(`must start with a letter or underscore, got "${name[0]}"`);
-    }
-
-    const invalidChars = [...new Set(name.replaceAll(/[a-zA-Z0-9_]/g, ""))].filter(
-      (c) => c.length > 0,
-    );
-    if (invalidChars.length > 0) {
-      reasons.push(`invalid character(s): ${invalidChars.map((c) => `"${c}"`).join(", ")}`);
-    }
-  }
+      return [
+        ...match(/^[0-9]/.test(n))
+          .with(true, () => [`must start with a letter or underscore, got "${n[0]}"`])
+          .otherwise(() => []),
+        ...match(invalidChars.length > 0)
+          .with(true, () => [
+            `invalid character(s): ${invalidChars.map((c) => `"${c}"`).join(", ")}`,
+          ])
+          .otherwise(() => []),
+      ];
+    });
 
   throw new Error(
     `Invalid sub-agent key "${name}": tool names must match /^[a-zA-Z_][a-zA-Z0-9_]*$/ ` +
@@ -275,7 +282,7 @@ function validateToolName(name: string): void {
  * @private
  */
 function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
-  if (meta !== null && meta !== undefined && meta.name !== null && meta.name !== undefined) {
+  if (isNotNil(meta) && isNotNil(meta.name)) {
     return meta.name;
   }
   return fallback;

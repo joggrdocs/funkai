@@ -42,6 +42,10 @@ export type StreamPart = TextStreamPart<ToolSet>;
  * Runtime validation in `validateToolName()` is the authoritative check.
  * This type is a best-effort compile-time guard.
  *
+ * @param S - Candidate key string to validate; must start with a letter or
+ *   underscore and contain only letters, digits, or underscores.
+ * @returns The input string `S` if it matches camelCase or snake_case, otherwise `never`.
+ *
  * @example
  * ```typescript
  * type Good = ToolName<'myAgent'>;     // 'myAgent'
@@ -52,11 +56,13 @@ export type StreamPart = TextStreamPart<ToolSet>;
  */
 export type ToolName<S extends string> = S extends ""
   ? never
-  : S extends SnakeCase<S>
+  : S extends Uppercase<S>
     ? S
-    : S extends CamelCase<S>
+    : S extends SnakeCase<S>
       ? S
-      : never;
+      : S extends CamelCase<S>
+        ? S
+        : never;
 
 /**
  * Record of named subagents available for delegation.
