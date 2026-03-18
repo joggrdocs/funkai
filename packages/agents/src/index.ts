@@ -6,7 +6,14 @@ export { usage, sumTokenUsage } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
 export type { Runnable, Model, ModelRef } from "@/core/types.js";
-export type { TextStreamPart, AsyncIterableStream, ToolSet } from "ai";
+export type {
+  TextStreamPart,
+  AsyncIterableStream,
+  ToolSet,
+  UIMessage,
+  UIMessageStreamOptions,
+} from "ai";
+export { toError, safeStringify, safeStringifyJSON } from "@/utils/error.js";
 export type { Result, ResultError } from "@/utils/result.js";
 export type { Logger } from "@/core/logger.js";
 export type { Tool, ToolConfig } from "@/core/tool.js";

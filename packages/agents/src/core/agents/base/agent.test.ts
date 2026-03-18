@@ -92,6 +92,8 @@ function createMockStreamResult(overrides?: {
     ),
     totalUsage: Promise.resolve(merged.totalUsage),
     finishReason: Promise.resolve(merged.finishReason),
+    toTextStreamResponse: vi.fn(() => new Response("mock text stream")),
+    toUIMessageStreamResponse: vi.fn(() => new Response("mock ui stream")),
   };
 }
 
@@ -1473,6 +1475,8 @@ describe("stream() unhandled rejection safety", () => {
       response: rejected<{ messages: unknown[] }>(),
       totalUsage: rejected<typeof MOCK_TOTAL_USAGE>(),
       finishReason: rejected<string>(),
+      toTextStreamResponse: vi.fn(() => new Response("")),
+      toUIMessageStreamResponse: vi.fn(() => new Response("")),
     });
 
     const unhandledRejections: unknown[] = [];
@@ -1510,5 +1514,66 @@ describe("stream() unhandled rejection safety", () => {
     } finally {
       process.removeListener("unhandledRejection", handler);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// stream() response methods
+// ---------------------------------------------------------------------------
+
+describe("stream() response methods", () => {
+  it("toTextStreamResponse delegates to the AI SDK result", async () => {
+    const mockResponse = new Response("mock text");
+    const mockToText = vi.fn(() => mockResponse);
+    mockStreamText.mockReturnValue({
+      ...createMockStreamResult(),
+      toTextStreamResponse: mockToText,
+    });
+
+    const a = createSimpleAgent();
+    const result = await a.stream("hello");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const init = { status: 200, headers: { "x-custom": "value" } };
+    const response = result.toTextStreamResponse(init);
+    expect(mockToText).toHaveBeenCalledWith(init);
+    expect(response).toBe(mockResponse);
+  });
+
+  it("toUIMessageStreamResponse delegates to the AI SDK result", async () => {
+    const mockResponse = new Response("mock ui");
+    const mockToUI = vi.fn(() => mockResponse);
+    mockStreamText.mockReturnValue({
+      ...createMockStreamResult(),
+      toUIMessageStreamResponse: mockToUI,
+    });
+
+    const a = createSimpleAgent();
+    const result = await a.stream("hello");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toUIMessageStreamResponse();
+    expect(mockToUI).toHaveBeenCalledWith(undefined);
+    expect(response).toBe(mockResponse);
+  });
+
+  it("toTextStreamResponse works with no arguments", async () => {
+    const mockResponse = new Response("text");
+    const mockToText = vi.fn(() => mockResponse);
+    mockStreamText.mockReturnValue({
+      ...createMockStreamResult(),
+      toTextStreamResponse: mockToText,
+    });
+
+    const a = createSimpleAgent();
+    const result = await a.stream("hello");
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toTextStreamResponse();
+    expect(mockToText).toHaveBeenCalledWith(undefined);
+    expect(response).toBe(mockResponse);
   });
 });

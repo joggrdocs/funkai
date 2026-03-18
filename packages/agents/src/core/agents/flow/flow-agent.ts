@@ -8,6 +8,7 @@ import {
 } from "@/core/agents/flow/messages.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
+import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
 import type {
   FlowAgent,
   FlowAgentConfig,
@@ -508,6 +509,8 @@ export function flowAgent<TInput, TOutput = any>(
     // Catch stream errors to prevent unhandled rejections
     done.catch(() => {});
 
+    const responseMethods = buildStreamResponseMethods(() => readable);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
     const streamResult: import("@/core/agents/base/types.js").StreamResult<any> = {
       output: done.then((r) => r.output),
@@ -515,6 +518,8 @@ export function flowAgent<TInput, TOutput = any>(
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
+      toTextStreamResponse: (init) => responseMethods.toTextStreamResponse(init),
+      toUIMessageStreamResponse: (options) => responseMethods.toUIMessageStreamResponse(options),
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
