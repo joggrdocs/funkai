@@ -215,18 +215,12 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
 function serializeTree(node: TreeNode, indent: number): string[] {
   const pad = "  ".repeat(indent);
 
-  return Object.entries(node).reduce<string[]>((acc, [key, value]) => {
+  return Object.entries(node).flatMap(([key, value]) => {
     if (typeof value === "string") {
-      acc.push(`${pad}${key},`);
-    } else {
-      acc.push(`${pad}${key}: {`);
-      for (const line of serializeTree(value, indent + 1)) {
-        acc.push(line);
-      }
-      acc.push(`${pad}},`);
+      return [`${pad}${key},`];
     }
-    return acc;
-  }, []);
+    return [`${pad}${key}: {`, ...serializeTree(value, indent + 1), `${pad}},`];
+  });
 }
 
 /**
