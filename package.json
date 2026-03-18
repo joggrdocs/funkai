@@ -5,7 +5,8 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
     "typecheck": "turbo typecheck",
@@ -23,6 +24,10 @@
     "@zpress/kit": "^0.2.3",
     "laufen": "^1.2.0",
     "oxfmt": "^0.40.0",
+    "eslint-plugin-functional": "^9.0.4",
+    "eslint-plugin-jsdoc": "^62.8.0",
+    "eslint-plugin-security": "^4.0.0",
+    "oxlint": "^1.56.0",
     "turbo": "^2.8.17"
   },
   "engines": {
