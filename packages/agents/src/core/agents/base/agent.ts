@@ -19,9 +19,9 @@ import {
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
-import type { LanguageModel } from "@/core/provider/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
+import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";

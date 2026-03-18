@@ -37,7 +37,6 @@ vi.mock(
     }) as any,
 );
 
-
 const MOCK_TOTAL_USAGE = {
   inputTokens: 100,
   outputTokens: 50,
