@@ -18,11 +18,39 @@ export interface UnattributedSource {
 }
 
 /**
- * Resolved usage for a single agent — token counts with source identity.
+ * Per-agent usage — token counts with agent source identity.
  */
-export interface ResolvedUsage extends TokenUsage {
+export interface AgentUsage extends TokenUsage {
   /** Which agent (or unattributed source) produced this usage. */
   readonly source: AgentSource | UnattributedSource;
+}
+
+/**
+ * Per-model usage — token counts with model identity.
+ */
+export interface ModelUsage extends TokenUsage {
+  /** The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`). */
+  readonly modelId: string;
+}
+
+/**
+ * Sum all token usage records into a single flat {@link TokenUsage}.
+ *
+ * Treats `undefined` fields as `0`. Returns zero-valued usage for
+ * an empty array.
+ *
+ * @param records - Raw tracking records from agent execution(s).
+ * @returns A single `TokenUsage` with each field summed.
+ *
+ * @example
+ * ```typescript
+ * const records = collectUsages(result.trace)
+ * const total = usage(records)
+ * // { inputTokens: 350, outputTokens: 175, ... }
+ * ```
+ */
+export function usage(records: TokenUsageRecord[]): TokenUsage {
+  return aggregateTokens(records);
 }
 
 /**
@@ -32,31 +60,20 @@ export interface ResolvedUsage extends TokenUsage {
  * and returns a flat array of per-agent usage. Records without a
  * `source.agentId` are grouped as `{ type: 'unattributed' }`.
  *
- * Works for both single-agent and multi-agent (flow) scenarios — a single
- * agent's records simply produce a one-element array.
- *
  * @param records - Raw tracking records from agent execution(s).
  * @returns Per-agent usage breakdown.
  *
  * @example
  * ```typescript
  * const records = collectUsages(result.trace)
- * const perAgent = usage(records)
+ * const perAgent = usageByAgent(records)
  * // [{ source: { type: 'agent', agentId: 'scanner' }, inputTokens: 150, ... }]
  * ```
  */
-export function usage(records: TokenUsageRecord | TokenUsageRecord[]): readonly ResolvedUsage[] {
-  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-  const arr: TokenUsageRecord[] = (() => {
-    if (Array.isArray(records)) {
-      return records;
-    }
-    return [records];
-  })();
-
+export function usageByAgent(records: TokenUsageRecord[]): readonly AgentUsage[] {
   const UNATTRIBUTED = "__unattributed__";
 
-  const grouped = groupBy(arr, (r) => {
+  const grouped = groupBy(records, (r) => {
     const agentId: string | undefined = (() => {
       if (r.source !== null && r.source !== undefined) {
         return r.source.agentId;
@@ -83,23 +100,28 @@ export function usage(records: TokenUsageRecord | TokenUsageRecord[]): readonly 
 }
 
 /**
- * Sum multiple {@link TokenUsage} objects field-by-field.
+ * Compute per-model token usage from raw tracking records.
  *
- * Pure function — returns a new object without mutating any input.
- * Returns zero-valued usage when given an empty array.
+ * Groups records by `modelId`, aggregates token counts per group,
+ * and returns a flat array of per-model usage.
  *
- * @param usages - Array of usage objects to sum.
- * @returns A new `TokenUsage` with each field summed.
+ * @param records - Raw tracking records from agent execution(s).
+ * @returns Per-model usage breakdown.
+ *
+ * @example
+ * ```typescript
+ * const records = collectUsages(result.trace)
+ * const perModel = usageByModel(records)
+ * // [{ modelId: 'openai/gpt-5.2-codex', inputTokens: 350, ... }]
+ * ```
  */
-export function sumTokenUsage(usages: TokenUsage[]): TokenUsage {
-  return {
-    inputTokens: sumBy(usages, (u) => u.inputTokens),
-    outputTokens: sumBy(usages, (u) => u.outputTokens),
-    totalTokens: sumBy(usages, (u) => u.totalTokens),
-    cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens),
-    cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens),
-    reasoningTokens: sumBy(usages, (u) => u.reasoningTokens),
-  };
+export function usageByModel(records: TokenUsageRecord[]): readonly ModelUsage[] {
+  const grouped = groupBy(records, (r) => r.modelId);
+
+  return Object.entries(grouped).map(
+    // oxlint-disable-next-line prefer-object-spread -- no-map-spread conflicts with prefer-object-spread
+    ([modelId, group]) => Object.assign({ modelId }, aggregateTokens(group)),
+  );
 }
 
 // ---------------------------------------------------------------------------
