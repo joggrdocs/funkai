@@ -68,7 +68,7 @@ export function handleLint(
 
 export default command({
   description: "Validate .prompt files for schema/template mismatches",
-  args: lintArgs,
+  options: lintArgs,
   handler(ctx) {
     handleLint(ctx.args, ctx.logger, ctx.fail);
   },

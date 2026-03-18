@@ -66,10 +66,6 @@ export interface ResultError {
  */
 export type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 
-// ---------------------------------------------------------------------------
-// Constructors
-// ---------------------------------------------------------------------------
-
 /**
  * Create a success `Result`.
  *
@@ -109,10 +105,6 @@ export function err(
 ): { ok: false; error: ResultError } {
   return { ok: false as const, error: { code, message, cause } };
 }
-
-// ---------------------------------------------------------------------------
-// Type guards
-// ---------------------------------------------------------------------------
 
 /**
  * Narrow a `Result<T>` to its success branch.

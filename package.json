@@ -6,8 +6,7 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "test": "turbo test",
-    "test:coverage": "turbo test:coverage",
+    "test": "vitest run",
     "typecheck": "turbo typecheck",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
@@ -20,10 +19,12 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
-    "@zpress/kit": "^0.2.3",
-    "laufen": "^1.2.0",
-    "oxfmt": "^0.40.0",
-    "turbo": "^2.8.17"
+    "@vitest/coverage-v8": "catalog:",
+    "@zpress/kit": "^0.2.4",
+    "laufen": "^1.2.1",
+    "oxfmt": "^0.41.0",
+    "turbo": "^2.8.17",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=24.0.0"

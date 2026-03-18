@@ -100,7 +100,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
     `// Source: ${prompt.sourcePath}`,
     "",
     "import { z } from 'zod'",
-    "import { liquidEngine } from '@funkai/prompts'",
+    "import { liquidEngine } from '@funkai/prompts/runtime'",
     "",
     `const schema = ${schemaExpr}`,
     "",

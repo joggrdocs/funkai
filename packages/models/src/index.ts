@@ -10,14 +10,8 @@ export type {
 } from "@/catalog/index.js";
 
 // Provider
-export { createOpenRouter, openrouter } from "@/provider/openrouter.js";
-export { createModelResolver } from "@/provider/resolver.js";
-export type {
-  ProviderFactory,
-  ProviderMap,
-  ModelResolverConfig,
-  ModelResolver,
-} from "@/provider/resolver.js";
+export { createProviderRegistry } from "@/provider/registry.js";
+export type { ProviderRegistryConfig, ProviderRegistry } from "@/provider/registry.js";
 export type { LanguageModel, TokenUsage } from "@/provider/types.js";
 
 // Cost

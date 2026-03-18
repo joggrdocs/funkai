@@ -91,7 +91,7 @@ export function handleGenerate(
 
 export default command({
   description: "Generate TypeScript modules from .prompt files",
-  args: generateArgs,
+  options: generateArgs,
   handler(ctx) {
     handleGenerate(ctx.args, ctx.logger, ctx.fail);
   },

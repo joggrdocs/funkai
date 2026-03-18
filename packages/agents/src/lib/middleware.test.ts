@@ -3,10 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { withModelMiddleware } from "@/lib/middleware.js";
 
-// ---------------------------------------------------------------------------
-// Helpers — minimal model stubs
-// ---------------------------------------------------------------------------
-
 function createStubModel() {
   return {
     specificationVersion: "v3" as const,
@@ -27,10 +23,6 @@ function createStubMiddleware(
     ...overrides,
   } as LanguageModelMiddleware;
 }
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 describe("withModelMiddleware", () => {
   it("returns the model unchanged when there is no middleware and devtools is off", async () => {

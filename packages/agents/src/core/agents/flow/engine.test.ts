@@ -4,10 +4,6 @@ import { z } from "zod";
 import { createFlowEngine } from "@/core/agents/flow/engine.js";
 import { createMockLogger } from "@/testing/index.js";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const Input = z.object({ x: z.number() });
 const Output = z.object({ y: z.number() });
 
@@ -20,10 +16,6 @@ function defaultConfig(overrides?: Record<string, unknown>) {
     ...overrides,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Engine with no custom steps (plain flow agent)
-// ---------------------------------------------------------------------------
 
 describe("createFlowEngine", () => {
   it("works as a plain flow agent when no custom steps are defined", async () => {

@@ -3,7 +3,6 @@ import { join } from "node:path";
 
 import { defineConfig } from "tsdown";
 
-// Read generated entry points (created by generate-models script)
 const entriesPath = join(import.meta.dirname, ".generated", "entries.json");
 const generatedEntries: string[] = existsSync(entriesPath)
   ? JSON.parse(readFileSync(entriesPath, "utf-8"))

@@ -6,10 +6,6 @@ import { lauf, z } from "laufen";
 const API_URL = "https://models.dev/api.json";
 const STALE_MS = 24 * 60 * 60 * 1000;
 
-// ---------------------------------------------------------------------------
-// Banner
-// ---------------------------------------------------------------------------
-
 const BANNER = `// ──────────────────────────────────────────────────────────────
 // ███████╗██╗   ██╗███╗   ██╗██╗  ██╗ █████╗ ██╗
 // ██╔════╝██║   ██║████╗  ██║██║ ██╔╝██╔══██╗██║
@@ -22,10 +18,6 @@ const BANNER = `// ────────────────────�
 // Source: https://models.dev
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────`;
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface ProviderEntry {
   name: string;
@@ -57,10 +49,6 @@ interface ApiProvider {
   name: string;
   models: Record<string, ApiModel>;
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 /**
  * Convert a provider key to a TypeScript constant name.
@@ -152,10 +140,6 @@ function escapeStr(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
 }
 
-// ---------------------------------------------------------------------------
-// Staleness check
-// ---------------------------------------------------------------------------
-
 function isFresh(reqPath: string): boolean {
   if (!existsSync(reqPath)) {
     return false;
@@ -168,10 +152,6 @@ function isFresh(reqPath: string): boolean {
     return false;
   }
 }
-
-// ---------------------------------------------------------------------------
-// Script
-// ---------------------------------------------------------------------------
 
 export default lauf({
   description: "Fetch model data from models.dev and generate TypeScript catalog files",

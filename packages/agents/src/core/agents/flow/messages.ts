@@ -79,23 +79,6 @@ export function createToolResultMessage(
 }
 
 /**
- * Safely serialize a value to a string for message content.
- *
- * Returns the value as-is when it's already a string. Otherwise
- * delegates to {@link safeStringify} which handles circular refs,
- * Maps, Sets, bigints, and other non-JSON-serializable types.
- *
- * @param value - The value to serialize.
- * @returns A string representation of the value.
- */
-function serializeMessageContent(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-  return safeStringify(value ?? null);
-}
-
-/**
  * Create a user message from flow agent input.
  *
  * This is the first message in the flow's message array, representing
@@ -138,4 +121,27 @@ export function collectTextFromMessages(messages: readonly Message[]): string {
     .map((m) => m.content as string)
     .join("\n")
     .trim();
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely serialize a value to a string for message content.
+ *
+ * Returns the value as-is when it's already a string. Otherwise
+ * delegates to {@link safeStringify} which handles circular refs,
+ * Maps, Sets, bigints, and other non-JSON-serializable types.
+ *
+ * @param value - The value to serialize.
+ * @returns A string representation of the value.
+ *
+ * @private
+ */
+function serializeMessageContent(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return safeStringify(value ?? null);
 }

@@ -1,7 +1,3 @@
-// ---------------------------------------------------------------------------
-// SSE event types shared between the API server and CLI client
-// ---------------------------------------------------------------------------
-
 export type AnalyzeEvent =
   | { readonly type: "step:start"; readonly stepId: string; readonly stepType: string }
   | { readonly type: "step:finish"; readonly stepId: string; readonly duration: number }
@@ -21,10 +17,6 @@ export type AnalyzeEvent =
       readonly totalIssues: number;
     }
   | { readonly type: "error"; readonly message: string };
-
-// ---------------------------------------------------------------------------
-// Tool result payload — CLI posts this back to the API
-// ---------------------------------------------------------------------------
 
 export interface ToolResultPayload {
   readonly callId: string;

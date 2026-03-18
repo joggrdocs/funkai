@@ -141,6 +141,10 @@ export function createDefaultLogger(bindings?: Record<string, unknown>): Logger 
   };
 }
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
 /**
  * Write a log entry to the console at the given level.
  *

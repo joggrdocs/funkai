@@ -1,4 +1,4 @@
-import type { ModelResolver } from "@funkai/models";
+import type { ProviderRegistry } from "@funkai/models";
 import type {
   AsyncIterableStream,
   ModelMessage,
@@ -383,40 +383,43 @@ export interface AgentConfig<
   /**
    * Model to use for generation.
    *
-   * Accepts a string model ID (resolved via `resolver`) or an
+   * Accepts a string model ID (resolved via `registry`) or an
    * AI SDK `LanguageModel` instance — including middleware-wrapped models.
    *
-   * When passing a string, a `resolver` must also be configured.
+   * When passing a string, a `registry` must also be configured.
    *
    * @see {@link Model}
    */
   model: Model;
 
   /**
-   * Model resolver for string model IDs.
+   * Provider registry for resolving string model IDs.
    *
-   * Required when `model` is a string. Created via `createModelResolver()`
+   * Required when `model` is a string. Created via `createProviderRegistry()`
    * from `@funkai/models`.
    *
    * @example
    * ```typescript
-   * import { createModelResolver, openrouter } from '@funkai/models'
+   * import { createProviderRegistry } from '@funkai/models'
    * import { createOpenAI } from '@ai-sdk/openai'
+   * import { anthropic } from '@ai-sdk/anthropic'
    *
-   * const resolver = createModelResolver({
-   *   providers: { openai: createOpenAI({ apiKey: '...' }) },
-   *   fallback: openrouter,
+   * const registry = createProviderRegistry({
+   *   providers: {
+   *     openai: createOpenAI({ apiKey: '...' }),
+   *     anthropic,
+   *   },
    * })
    *
    * const myAgent = agent({
    *   name: 'my-agent',
    *   model: 'openai/gpt-4.1',
-   *   resolver,
+   *   registry,
    *   system: 'You are helpful.',
    * })
    * ```
    */
-  resolver?: ModelResolver;
+  registry?: ProviderRegistry;
 
   /**
    * Zod schema for the agent's typed input.

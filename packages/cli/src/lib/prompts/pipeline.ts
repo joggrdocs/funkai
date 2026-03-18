@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { clean, PARTIALS_DIR } from "@funkai/prompts";
+import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
 
 import { type ParsedPrompt } from "./codegen.js";
 import { extractVariables } from "./extract-variables.js";
