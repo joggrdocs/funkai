@@ -273,10 +273,10 @@ describe(buildAITools, () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
 
     expect(result).toBeDefined();
-    expect(result).toHaveProperty("agent:sub");
+    expect(result).toHaveProperty("agent_sub");
     const tools = result as Record<string, Record<string, unknown>>;
-    expect(tools["agent:sub"]).toHaveProperty("description");
-    expect(tools["agent:sub"]).toHaveProperty("execute");
+    expect(tools["agent_sub"]).toHaveProperty("description");
+    expect(tools["agent_sub"]).toHaveProperty("execute");
   });
 
   it("wraps agents with inputSchema using the schema", () => {
@@ -290,14 +290,14 @@ describe(buildAITools, () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
 
     expect(result).toBeDefined();
-    expect(result).toHaveProperty("agent:sub");
+    expect(result).toHaveProperty("agent_sub");
     const tools = result as Record<
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    expect(tools["agent:sub"]).toHaveProperty("description");
+    expect(tools["agent_sub"]).toHaveProperty("description");
     // Description should use meta name
-    expect(tools["agent:sub"].description).toContain("custom-name");
+    expect(tools["agent_sub"].description).toContain("custom-name");
   });
 
   it("uses fallback name when agent has no RUNNABLE_META name", () => {
@@ -311,7 +311,54 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    expect(tools["agent:fallbackKey"].description).toContain("fallbackKey");
+    expect(tools["agent_fallbackKey"].description).toContain("fallbackKey");
+  });
+
+  it("throws on agent key with dashes", () => {
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+    };
+    expect(() => buildAITools(undefined, { "my-agent": mockAgent as never })).toThrow(
+      /Invalid sub-agent key "my-agent"/,
+    );
+  });
+
+  it("throws on agent key with dots", () => {
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+    };
+    expect(() => buildAITools(undefined, { "my.agent": mockAgent as never })).toThrow(
+      /Invalid sub-agent key "my\.agent"/,
+    );
+  });
+
+  it("throws on agent key with colons", () => {
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+    };
+    expect(() => buildAITools(undefined, { "my:agent": mockAgent as never })).toThrow(
+      /Invalid sub-agent key "my:agent"/,
+    );
+  });
+
+  it("accepts camelCase agent keys", () => {
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+    };
+    const result = buildAITools(undefined, { myAgent: mockAgent as never });
+
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty("agent_myAgent");
+  });
+
+  it("accepts snake_case agent keys", () => {
+    const mockAgent = {
+      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+    };
+    const result = buildAITools(undefined, { my_agent: mockAgent as never });
+
+    expect(result).toBeDefined();
+    expect(result).toHaveProperty("agent_my_agent");
   });
 
   it("merges tools and agents together", () => {
@@ -323,7 +370,7 @@ describe(buildAITools, () => {
 
     expect(result).toBeDefined();
     expect(result).toHaveProperty("myTool");
-    expect(result).toHaveProperty("agent:sub");
+    expect(result).toHaveProperty("agent_sub");
   });
 
   it("execute calls generate on prompt-based agent and returns output", async () => {
@@ -337,7 +384,7 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    const output = await tools["agent:sub"].execute(
+    const output = await tools["agent_sub"].execute(
       { prompt: "hello" },
       { toolCallId: "tc-1", messages: [] },
     );
@@ -357,7 +404,7 @@ describe(buildAITools, () => {
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
     await expect(
-      tools["agent:sub"].execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent_sub"].execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("agent failed");
   });
 
@@ -376,7 +423,7 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    const output = await tools["agent:sub"].execute(
+    const output = await tools["agent_sub"].execute(
       { query: "test" },
       { toolCallId: "tc-1", messages: [] },
     );
@@ -400,7 +447,7 @@ describe(buildAITools, () => {
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
     await expect(
-      tools["agent:sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent_sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("typed failed");
   });
 });

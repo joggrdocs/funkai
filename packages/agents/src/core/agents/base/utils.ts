@@ -70,7 +70,8 @@ export function buildAITools(
             | RunnableMeta
             | undefined;
           const toolName = resolveToolName(meta, name);
-          const agentToolName = `agent:${name}`;
+          validateToolName(name);
+          const agentToolName = `agent_${name}`;
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
           const agentTool: ReturnType<typeof tool<any, any>> = (() => {
@@ -210,6 +211,58 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
+
+/**
+ * Pattern matching the universally safe tool-name subset accepted by
+ * all major LLM providers (OpenAI, Anthropic, Google Gemini, Mistral).
+ *
+ * Must start with a letter or underscore, then letters, digits, or
+ * underscores only — the strictest common denominator (Gemini).
+ *
+ * @private
+ */
+const SAFE_TOOL_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+/**
+ * Validate that a tool name is safe for all major LLM providers.
+ *
+ * Throws with a descriptive error if the name contains characters
+ * that would be rejected by any provider (OpenAI, Anthropic, Gemini, Mistral).
+ *
+ * @param name - The tool name to validate.
+ * @throws {Error} If the name contains unsupported characters.
+ *
+ * @private
+ */
+function validateToolName(name: string): void {
+  if (SAFE_TOOL_NAME_RE.test(name)) {
+    return;
+  }
+
+  const reasons: string[] = [];
+
+  if (name.length === 0) {
+    reasons.push("name must not be empty");
+  } else {
+    if (/^[0-9]/.test(name)) {
+      reasons.push(`must start with a letter or underscore, got "${name[0]}"`);
+    }
+
+    const invalidChars = [...new Set(name.replace(/[a-zA-Z0-9_]/g, "").split(""))].filter(
+      (c) => c.length > 0,
+    );
+    if (invalidChars.length > 0) {
+      reasons.push(`invalid character(s): ${invalidChars.map((c) => `"${c}"`).join(", ")}`);
+    }
+  }
+
+  throw new Error(
+    `Invalid sub-agent key "${name}": tool names must match /^[a-zA-Z_][a-zA-Z0-9_]*$/ ` +
+      `to work across all LLM providers (OpenAI, Anthropic, Gemini, Mistral). ` +
+      `${reasons.join("; ")}. ` +
+      `Use camelCase (e.g. "myAgent") or snake_case (e.g. "my_agent") instead.`,
+  );
+}
 
 /**
  * Resolve a display name for a sub-agent tool from its runnable

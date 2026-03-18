@@ -20,6 +20,7 @@ export type { Tool, ToolConfig } from "@/core/tool.js";
 export type { OutputSpec, OutputParam } from "@/core/agents/base/output.js";
 
 export type {
+  ToolSafeKey,
   SubAgents,
   Message,
   Agent,
