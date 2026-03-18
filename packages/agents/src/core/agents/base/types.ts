@@ -1,4 +1,3 @@
-import type { ProviderRegistry } from "@funkai/models";
 import type {
   AsyncIterableStream,
   ModelMessage,
@@ -82,21 +81,23 @@ export type ToolName<S extends string> = S extends ""
  * import { agent } from '@funkai/agents'
  * import type { SubAgents } from '@funkai/agents'
  *
+ * import { openai } from '@ai-sdk/openai'
+ *
  * const researcher = agent({
  *   name: 'researcher',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'You research topics and return factual summaries.',
  * })
  *
  * const summarizer = agent({
  *   name: 'summarizer',
- *   model: 'openai/gpt-4.1-mini',
+ *   model: openai('gpt-4.1-mini'),
  *   system: 'You condense text into concise bullet points.',
  * })
  *
  * const orchestrator = agent({
  *   name: 'orchestrator',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'Coordinate research and summarization.',
  *   agents: { researcher, summarizer } satisfies SubAgents,
  * })
@@ -306,7 +307,7 @@ export interface AgentOverrides<
   /**
    * Override the model for this call.
    *
-   * Accepts a string model ID or an AI SDK `LanguageModel` instance.
+   * Pass an AI SDK `LanguageModel` instance.
    */
   model?: Model;
 
@@ -427,43 +428,12 @@ export interface AgentConfig<
   /**
    * Model to use for generation.
    *
-   * Accepts a string model ID (resolved via `registry`) or an
-   * AI SDK `LanguageModel` instance — including middleware-wrapped models.
-   *
-   * When passing a string, a `registry` must also be configured.
+   * Pass an AI SDK `LanguageModel` instance — including middleware-wrapped
+   * models via `wrapLanguageModel()`.
    *
    * @see {@link Model}
    */
   model: Model;
-
-  /**
-   * Provider registry for resolving string model IDs.
-   *
-   * Required when `model` is a string. Created via `createProviderRegistry()`
-   * from `@funkai/models`.
-   *
-   * @example
-   * ```typescript
-   * import { createProviderRegistry } from '@funkai/models'
-   * import { createOpenAI } from '@ai-sdk/openai'
-   * import { anthropic } from '@ai-sdk/anthropic'
-   *
-   * const registry = createProviderRegistry({
-   *   providers: {
-   *     openai: createOpenAI({ apiKey: '...' }),
-   *     anthropic,
-   *   },
-   * })
-   *
-   * const myAgent = agent({
-   *   name: 'my-agent',
-   *   model: 'openai/gpt-4.1',
-   *   registry,
-   *   system: 'You are helpful.',
-   * })
-   * ```
-   */
-  registry?: ProviderRegistry;
 
   /**
    * Zod schema for the agent's typed input.

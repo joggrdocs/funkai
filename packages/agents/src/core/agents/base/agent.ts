@@ -1,5 +1,5 @@
 import { generateText, streamText, stepCountIs } from "ai";
-import type { AsyncIterableStream, LanguageModel } from "ai";
+import type { AsyncIterableStream } from "ai";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -14,12 +14,12 @@ import type {
   SubAgents,
 } from "@/core/agents/base/types.js";
 import {
-  resolveModel,
   buildAITools,
   resolveSystem,
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { LanguageModel } from "@/core/provider/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
@@ -53,10 +53,12 @@ import type { Result } from "@/utils/result.js";
  *
  * @example
  * ```typescript
+ * import { openai } from '@ai-sdk/openai'
+ *
  * // Simple mode — pass a string directly
  * const helper = agent({
  *   name: 'helper',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'You are a helpful assistant.',
  * })
  * await helper.generate('What is TypeScript?')
@@ -65,7 +67,7 @@ import type { Result } from "@/utils/result.js";
  * const summarizer = agent({
  *   name: 'summarizer',
  *   input: z.object({ text: z.string() }),
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
  * })
  * await summarizer.generate({ text: '...' })
@@ -154,8 +156,7 @@ export function agent<
     overrides: AgentOverrides<TTools, TSubAgents> | undefined,
   ): Promise<PreparedGeneration> {
     const overrideModel = readOverride(overrides, "model");
-    const modelRef = overrideModel ?? config.model;
-    const baseModel = resolveModel(modelRef, config.registry);
+    const baseModel = overrideModel ?? config.model;
     const model = await withModelMiddleware({ model: baseModel });
 
     const overrideTools = readOverride(overrides, "tools");

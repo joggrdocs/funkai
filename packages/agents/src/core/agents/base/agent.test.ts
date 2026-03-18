@@ -37,7 +37,6 @@ vi.mock(
     }) as any,
 );
 
-const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
 
 const MOCK_TOTAL_USAGE = {
   inputTokens: 100,
@@ -1323,36 +1322,6 @@ describe("edge cases", () => {
     const result = await a.generate("");
 
     expect(result.ok).toBeTruthy();
-  });
-
-  it("model string ID is resolved via configured registry", async () => {
-    const a = agent({
-      name: "string-model-agent",
-      model: "openai/gpt-4.1",
-      registry: mockResolver,
-      system: "test",
-      logger: createMockLogger(),
-    });
-
-    await a.generate("test");
-
-    expect(mockResolver).toHaveBeenCalledWith("openai/gpt-4.1");
-  });
-
-  it("throws when string model ID is used without a registry", async () => {
-    const a = agent({
-      name: "no-registry-agent",
-      model: "openai/gpt-4.1",
-      system: "test",
-      logger: createMockLogger(),
-    });
-
-    const result = await a.generate("test");
-
-    expect(result.ok).toBeFalsy();
-    if (!result.ok) {
-      expect(result.error.message).toContain("no registry configured");
-    }
   });
 
   it("uses default logger when none provided", async () => {

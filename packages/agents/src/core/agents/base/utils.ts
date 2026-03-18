@@ -1,4 +1,3 @@
-import type { ProviderRegistry } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
@@ -7,35 +6,10 @@ import type { ZodType } from "zod";
 import { z } from "zod";
 
 import type { Agent, Message } from "@/core/agents/base/types.js";
-import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
+import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { Model } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
-
-/**
- * Resolve a {@link Model} to an AI SDK `LanguageModel`.
- *
- * When `ref` is already a `LanguageModel`, it is returned as-is.
- * When `ref` is a string model ID, the optional `registry` is used
- * to convert it. If no registry is provided, an error is thrown.
- *
- * @param ref - A string model ID or an AI SDK `LanguageModel` instance.
- * @param registry - Optional provider registry for string model IDs.
- * @returns The resolved `LanguageModel`.
- */
-export function resolveModel(ref: Model, registry?: ProviderRegistry): LanguageModel {
-  if (typeof ref === "string") {
-    if (!registry) {
-      throw new Error(
-        `Cannot resolve string model ID "${ref}": no registry configured. ` +
-          `Pass a ProviderRegistry via agent config, or pass an AI SDK LanguageModel instance directly.`,
-      );
-    }
-    return registry(ref);
-  }
-  return ref as LanguageModel;
-}
 
 /**
  * Merge `Tool` records and wrap subagent `Runnable` objects into AI SDK
