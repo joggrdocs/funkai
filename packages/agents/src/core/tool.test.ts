@@ -11,7 +11,7 @@ const greetTool = tool({
   }),
 });
 
-describe("tool", () => {
+describe(tool, () => {
   it("returns an object with description, inputSchema, and execute", () => {
     expect(greetTool).toHaveProperty("description", "Greet a person by name");
     expect(greetTool).toHaveProperty("inputSchema");
@@ -19,7 +19,7 @@ describe("tool", () => {
   });
 
   it("executes and returns the expected output", async () => {
-    if (greetTool.execute == null) {
+    if (greetTool.execute === null || greetTool.execute === undefined) {
       throw new Error("Expected greetTool.execute to be defined");
     }
     const result = await greetTool.execute({ name: "Ada" }, { toolCallId: "test", messages: [] });

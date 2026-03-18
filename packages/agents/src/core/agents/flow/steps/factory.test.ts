@@ -16,7 +16,7 @@ describe("step()", () => {
       execute: async () => ({ greeting: "hello" }),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -38,7 +38,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -167,7 +167,7 @@ describe("step()", () => {
       execute: async () => ({ value: 42 }),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -185,7 +185,7 @@ describe("step()", () => {
     });
 
     expect(ctx.trace).toHaveLength(1);
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -206,7 +206,7 @@ describe("step()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -243,7 +243,7 @@ describe("step()", () => {
     });
 
     expect(ctx.trace).toHaveLength(1);
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -251,7 +251,7 @@ describe("step()", () => {
     if (traceEntry.children === undefined) {
       throw new Error("Expected trace children");
     }
-    const childEntry = traceEntry.children[0];
+    const [childEntry] = traceEntry.children;
     if (childEntry === undefined) {
       throw new Error("Expected child trace entry");
     }
@@ -267,7 +267,7 @@ describe("step()", () => {
       execute: async () => "hello",
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -283,7 +283,7 @@ describe("step()", () => {
       execute: async () => 42,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -323,7 +323,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -344,7 +344,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -407,7 +407,7 @@ describe("agent()", () => {
 
     await $.agent({ id: "ag-trace", agent, input: "my-input" });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -421,7 +421,7 @@ describe("agent()", () => {
 
     await $.agent({ id: "ag-usage-trace", agent, input: "test" });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -438,7 +438,7 @@ describe("agent()", () => {
 
     await $.agent({ id: "ag-no-usage", agent, input: "test" });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -457,7 +457,7 @@ describe("map()", () => {
       execute: async ({ item }) => ({ doubled: item * 2 }),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -479,7 +479,7 @@ describe("map()", () => {
       execute: async ({ item }) => {
         state.current++;
         state.maxConcurrent = Math.max(state.maxConcurrent, state.current);
-        await new Promise((r) => setTimeout(r, 10));
+        await new Promise((resolve) => { setTimeout(resolve, 10); });
         state.current--;
         return { v: item };
       },
@@ -497,21 +497,21 @@ describe("map()", () => {
       input: [3, 1, 2],
       concurrency: 2,
       execute: async ({ item }) => {
-        await new Promise((r) => setTimeout(r, item * 5));
+        await new Promise((resolve) => { setTimeout(resolve, item * 5); });
         return { v: item };
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
     // The trace output should have items in original order
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
-    const output = traceEntry.output as Array<{ v: number }>;
+    const output = traceEntry.output as { v: number }[];
     expect(output.map((o) => o.v)).toEqual([3, 1, 2]);
   });
 });
@@ -530,7 +530,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(order).toEqual([1, 2, 3]);
     expect(result.step.type).toBe("each");
   });
@@ -549,7 +549,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -569,14 +569,14 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
     // The result of reduce is a number — spread onto the object
     // For primitive types, the spread doesn't add properties,
-    // but the trace output captures it
-    const traceEntry = ctx.trace[0];
+    // But the trace output captures it
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -595,8 +595,8 @@ describe("reduce()", () => {
       execute: async ({ accumulator }) => accumulator,
     });
 
-    expect(result.ok).toBe(true);
-    const traceEntry = ctx.trace[0];
+    expect(result.ok).toBeTruthy();
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -615,9 +615,9 @@ describe("while()", () => {
       execute: async ({ index }) => ({ count: index }),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(result.step.type).toBe("while");
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -635,8 +635,8 @@ describe("while()", () => {
       execute: async () => ({ v: 1 }),
     });
 
-    expect(result.ok).toBe(true);
-    const traceEntry = ctx.trace[0];
+    expect(result.ok).toBeTruthy();
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -654,11 +654,11 @@ describe("all()", () => {
       entries: [() => Promise.resolve("a"), () => Promise.resolve("b"), () => Promise.resolve("c")],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -680,7 +680,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -720,16 +720,16 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-first",
       entries: [
-        () => new Promise((r) => setTimeout(() => r("slow"), 50)),
+        () => new Promise((resolve) => { setTimeout(() => { resolve("slow"); }, 50); }),
         () => Promise.resolve("fast"),
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -748,12 +748,12 @@ describe("race()", () => {
         () => Promise.resolve("winner"),
         (signal) => {
           signals.loser = signal;
-          return new Promise((r) => setTimeout(() => r("loser"), 500));
+          return new Promise((resolve) => { setTimeout(() => { resolve("loser"); }, 500); });
         },
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -761,7 +761,7 @@ describe("race()", () => {
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
-    expect(signals.loser.aborted).toBe(true);
+    expect(signals.loser.aborted).toBeTruthy();
   });
 });
 
@@ -848,8 +848,8 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {return;}
     expect(result.step.type).toBe("agent");
     expect(result.value.output).toBe("hello world");
     expect(result.value.messages).toEqual([]);
@@ -884,8 +884,8 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
+    expect(result.ok).toBeFalsy();
+    if (result.ok) {return;}
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.stepId).toBe("stream-err");
   });
@@ -911,8 +911,8 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
+    expect(result.ok).toBeFalsy();
+    if (result.ok) {return;}
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.message).toBe("no cause error");
   });
@@ -977,8 +977,8 @@ describe("map() with aborted signal", () => {
       execute: async ({ item }) => item * 2,
     });
 
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
+    expect(result.ok).toBeFalsy();
+    if (result.ok) {return;}
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.message).toBe("Aborted");
   });

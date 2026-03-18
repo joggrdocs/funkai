@@ -39,8 +39,20 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
-    const rawParams = m[2] != null ? m[2].trim() : "";
-    const params = rawParams.length > 0 ? parseParams(rawParams, m[1]) : {};
+    let rawParams: string;
+    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+    if (m[2] !== null && m[2] !== undefined) {
+      rawParams = m[2].trim();
+    } else {
+      rawParams = "";
+    }
+    let params: Record<string, string>;
+    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+    if (rawParams.length > 0) {
+      params = parseParams(rawParams, m[1]);
+    } else {
+      params = {};
+    }
 
     return { fullMatch: m[0], partialName: m[1], params };
   });

@@ -46,22 +46,38 @@ export interface ResolvedUsage extends TokenUsage {
  * ```
  */
 export function usage(records: TokenUsageRecord | TokenUsageRecord[]): readonly ResolvedUsage[] {
-  const arr = Array.isArray(records) ? records : [records];
+  let arr: TokenUsageRecord[];
+  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+  if (Array.isArray(records)) {
+    arr = records;
+  } else {
+    arr = [records];
+  }
 
   const UNATTRIBUTED = "__unattributed__";
 
   const grouped = groupBy(arr, (r) => {
-    const agentId = r.source?.agentId;
-    return typeof agentId === "string" ? agentId : UNATTRIBUTED;
+    let agentId: string | undefined;
+    if (r.source !== null && r.source !== undefined) {
+      ({ agentId } = r.source);
+    }
+    if (typeof agentId === "string") {
+      return agentId;
+    }
+    return UNATTRIBUTED;
   });
 
-  return Object.entries(grouped).map(([key, group]) => ({
-    source:
-      key === UNATTRIBUTED
-        ? ({ type: "unattributed" } as const)
-        : ({ type: "agent", agentId: key } as const),
-    ...aggregateTokens(group),
-  }));
+  return Object.entries(grouped).map(([key, group]) => {
+    let source: AgentSource | UnattributedSource;
+    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+    if (key === UNATTRIBUTED) {
+      source = { type: "unattributed" } as const;
+    } else {
+      source = { type: "agent", agentId: key } as const;
+    }
+    // oxlint-disable-next-line unicorn/prefer-object-spread -- no-map-spread rule requires Object.assign
+    return Object.assign({ source }, aggregateTokens(group));
+  });
 }
 
 /**

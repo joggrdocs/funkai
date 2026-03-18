@@ -27,7 +27,7 @@ const emptyPrompt = {
   },
 };
 
-describe("createPromptRegistry", () => {
+describe(createPromptRegistry, () => {
   it("should provide dot-access to a registered prompt", () => {
     const registry = createPromptRegistry({ testPrompt: mockPrompt });
     expect(registry.testPrompt.name).toBe("test-prompt");
@@ -44,14 +44,14 @@ describe("createPromptRegistry", () => {
 
   it("should freeze the top-level registry object", () => {
     const registry = createPromptRegistry({ testPrompt: mockPrompt });
-    expect(Object.isFrozen(registry)).toBe(true);
+    expect(Object.isFrozen(registry)).toBeTruthy();
   });
 
   it("should freeze nested namespace objects", () => {
     const registry = createPromptRegistry({
       agents: { testPrompt: mockPrompt },
     });
-    expect(Object.isFrozen(registry.agents)).toBe(true);
+    expect(Object.isFrozen(registry.agents)).toBeTruthy();
   });
 
   it("should expose all keys via Object.keys", () => {

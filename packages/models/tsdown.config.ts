@@ -4,9 +4,11 @@ import { join } from "node:path";
 import { defineConfig } from "tsdown";
 
 const entriesPath = join(import.meta.dirname, ".generated", "entries.json");
-const generatedEntries: string[] = existsSync(entriesPath)
-  ? JSON.parse(readFileSync(entriesPath, "utf-8"))
-  : [];
+// oxlint-disable-next-line eslint-plugin-jest/require-hook
+let generatedEntries: string[] = [];
+if (existsSync(entriesPath)) {
+  generatedEntries = JSON.parse(readFileSync(entriesPath, "utf8"));
+}
 
 export default defineConfig([
   {

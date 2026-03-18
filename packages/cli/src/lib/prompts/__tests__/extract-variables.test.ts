@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { extractVariables } from "@/lib/prompts/extract-variables.js";
 
-describe("extractVariables", () => {
+describe(extractVariables, () => {
   it("extracts simple variables", () => {
     expect(extractVariables("{{ name }}")).toEqual(["name"]);
   });

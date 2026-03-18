@@ -12,7 +12,7 @@ export default defineConfig({
         "packages/*/src/**/*.test-d.ts",
         "packages/*/src/**/index.ts",
 
-        // agents
+        // Agents
         "packages/agents/src/core/types.ts",
         "packages/agents/src/core/agents/base/types.ts",
         "packages/agents/src/core/agents/flow/types.ts",
@@ -31,11 +31,11 @@ export default defineConfig({
         "packages/agents/src/testing/**",
         "packages/agents/src/lib/mocks/**",
 
-        // models (auto-generated)
+        // Models (auto-generated)
         "packages/models/src/catalog/providers/**",
         "packages/models/src/providers/**",
 
-        // prompts
+        // Prompts
         "packages/prompts/src/types.ts",
       ],
       reporter: ["text", "lcov"],

@@ -13,7 +13,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve("a"), () => Promise.resolve("b"), () => Promise.resolve("c")],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -34,7 +34,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -77,7 +77,7 @@ describe("all()", () => {
         () => Promise.reject(new Error("fail fast")),
         (signal) => {
           signals.entry = signal;
-          return new Promise((r) => setTimeout(() => r("late"), 500));
+          return new Promise((resolve) => { setTimeout(() => { resolve("late"); }, 500); });
         },
       ],
     });
@@ -85,7 +85,7 @@ describe("all()", () => {
     if (signals.entry === undefined) {
       throw new Error("Expected entry signal");
     }
-    expect(signals.entry.aborted).toBe(true);
+    expect(signals.entry.aborted).toBeTruthy();
   });
 
   it("handles empty entries array", async () => {
@@ -97,7 +97,7 @@ describe("all()", () => {
       entries: [],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -113,7 +113,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve(42)],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -127,13 +127,13 @@ describe("all()", () => {
     const result = await $.all({
       id: "all-order",
       entries: [
-        () => new Promise((r) => setTimeout(() => r("slow"), 30)),
+        () => new Promise((resolve) => { setTimeout(() => { resolve("slow"); }, 30); }),
         () => Promise.resolve("fast"),
-        () => new Promise((r) => setTimeout(() => r("medium"), 10)),
+        () => new Promise((resolve) => { setTimeout(() => { resolve("medium"); }, 10); }),
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -158,11 +158,11 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (signals.entry === undefined) {
       throw new Error("Expected entry signal");
     }
-    expect(signals.entry.aborted).toBe(true);
+    expect(signals.entry.aborted).toBeTruthy();
   });
 
   it("fires onStart and onFinish hooks", async () => {
@@ -233,7 +233,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve("traced")],
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -262,7 +262,7 @@ describe("all()", () => {
       ],
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -270,7 +270,7 @@ describe("all()", () => {
     if (traceEntry.children === undefined) {
       throw new Error("Expected children");
     }
-    const child = traceEntry.children[0];
+    const [child] = traceEntry.children;
     if (child === undefined) {
       throw new Error("Expected child entry");
     }
@@ -291,7 +291,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }

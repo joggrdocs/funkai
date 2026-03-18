@@ -11,6 +11,7 @@
 // Update: pnpm --filter=@funkai/models generate:models
 // ──────────────────────────────────────────────────────────────
 
+// oxlint-disable eslint-plugin-import/max-dependencies
 import type { ModelDefinition } from "../types.js";
 import { ALIBABA_MODELS } from "./alibaba.js";
 import { AMAZON_BEDROCK_MODELS } from "./amazon-bedrock.js";

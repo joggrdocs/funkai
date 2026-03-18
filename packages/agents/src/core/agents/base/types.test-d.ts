@@ -6,7 +6,7 @@ import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { AgentConfig, AgentOverrides } from "@/core/agents/base/types.js";
 
-describe("OutputParam accepts all Output factories", () => {
+describe("outputParam accepts all Output factories", () => {
   it("accepts Output.text()", () => {
     expectTypeOf(Output.text()).toExtend<OutputParam>();
   });
@@ -30,7 +30,7 @@ describe("OutputParam accepts all Output factories", () => {
   });
 });
 
-describe("OutputParam accepts raw Zod schemas", () => {
+describe("outputParam accepts raw Zod schemas", () => {
   it("accepts z.object()", () => {
     expectTypeOf(z.object({ name: z.string() })).toExtend<OutputParam>();
   });
@@ -44,9 +44,9 @@ describe("OutputParam accepts raw Zod schemas", () => {
   });
 });
 
-describe("OutputParam is assignable to config fields", () => {
+describe("outputParam is assignable to config fields", () => {
   it("is assignable to AgentConfig.output", () => {
-    expectTypeOf<OutputParam>().toExtend<AgentConfig<string, string, {}, {}>["output"]>();
+    expectTypeOf<OutputParam>().toExtend<AgentConfig<string, string, Record<string, never>, Record<string, never>>["output"]>();
   });
 
   it("is assignable to AgentOverrides.output", () => {

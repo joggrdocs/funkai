@@ -50,8 +50,13 @@ export function handleGenerate(
 
   if (!silent) {
     for (const prompt of prompts) {
-      const varList =
-        prompt.schema.length > 0 ? ` (${prompt.schema.map((v) => v.name).join(", ")})` : "";
+      let varList: string;
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      if (prompt.schema.length > 0) {
+        varList = ` (${prompt.schema.map((v) => v.name).join(", ")})`;
+      } else {
+        varList = "";
+      }
       logger.step(`${prompt.name}${varList}`);
     }
   }
@@ -77,12 +82,12 @@ export function handleGenerate(
   for (const prompt of prompts) {
     const content = generatePromptModule(prompt);
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated module to output directory
-    writeFileSync(resolve(outDir, `${prompt.name}.ts`), content, "utf-8");
+    writeFileSync(resolve(outDir, `${prompt.name}.ts`), content, "utf8");
   }
 
   const registryContent = generateRegistry(prompts);
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated registry to output directory
-  writeFileSync(resolve(outDir, "index.ts"), registryContent, "utf-8");
+  writeFileSync(resolve(outDir, "index.ts"), registryContent, "utf8");
 
   if (!silent) {
     logger.success(`Generated ${prompts.length} prompt module(s) + registry → ${outDir}`);

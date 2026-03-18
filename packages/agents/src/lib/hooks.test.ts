@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { fireHooks } from "@/lib/hooks.js";
 import { createMockLogger } from "@/testing/logger.js";
 
-describe("fireHooks", () => {
+describe(fireHooks, () => {
   it("runs handlers sequentially", async () => {
     const log = createMockLogger();
     const order: number[] = [];
@@ -53,7 +53,7 @@ describe("fireHooks", () => {
     const log = createMockLogger();
 
     await fireHooks(log, () => {
-      throw "string error";
+      throw new Error("string error");
     });
 
     expect(log.warn).toHaveBeenCalledWith("hook error", { error: "string error" });

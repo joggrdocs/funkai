@@ -3,11 +3,12 @@ import { resolve } from "node:path";
 
 import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
 
-import { type ParsedPrompt } from "./codegen.js";
+import type { ParsedPrompt } from './codegen.js';
 import { extractVariables } from "./extract-variables.js";
 import { flattenPartials } from "./flatten.js";
 import { parseFrontmatter } from "./frontmatter.js";
-import { lintPrompt, type LintResult } from "./lint.js";
+import { lintPrompt } from './lint.js';
+import type { LintResult } from './lint.js';
 import { discoverPrompts } from "./paths.js";
 
 /**
@@ -36,13 +37,17 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  const partialsDirs = existsSync(customPartialsDir)
-    ? [customPartialsDir, PARTIALS_DIR]
-    : [PARTIALS_DIR];
+  let partialsDirs: string[];
+  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+  if (existsSync(customPartialsDir)) {
+    partialsDirs = [customPartialsDir, PARTIALS_DIR];
+  } else {
+    partialsDirs = [PARTIALS_DIR];
+  }
 
   const results = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
-    const raw = readFileSync(d.filePath, "utf-8");
+    const raw = readFileSync(d.filePath, "utf8");
     const frontmatter = parseFrontmatter(raw, d.filePath);
     const template = flattenPartials(clean(raw), partialsDirs);
     const templateVars = extractVariables(template);
@@ -82,13 +87,17 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  const partialsDirs = existsSync(customPartialsDir)
-    ? [customPartialsDir, PARTIALS_DIR]
-    : [PARTIALS_DIR];
+  let partialsDirs: string[];
+  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+  if (existsSync(customPartialsDir)) {
+    partialsDirs = [customPartialsDir, PARTIALS_DIR];
+  } else {
+    partialsDirs = [PARTIALS_DIR];
+  }
 
   const processed = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
-    const raw = readFileSync(d.filePath, "utf-8");
+    const raw = readFileSync(d.filePath, "utf8");
     const frontmatter = parseFrontmatter(raw, d.filePath);
     const template = flattenPartials(clean(raw), partialsDirs);
     const templateVars = extractVariables(template);

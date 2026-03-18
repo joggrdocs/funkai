@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
+import { RUNNABLE_META } from "@/lib/runnable.js";
 
-describe("RUNNABLE_META", () => {
+describe("RUNNABLE_META symbol", () => {
   it("is a symbol", () => {
     expect(typeof RUNNABLE_META).toBe("symbol");
   });

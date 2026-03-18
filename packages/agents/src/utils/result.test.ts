@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import { ok, err, isOk, isErr } from "@/utils/result.js";
 import type { Result } from "@/utils/result.js";
 
-describe("ok", () => {
+describe(ok, () => {
   it("creates a success result with ok: true", () => {
     const result = ok({ output: "hello" });
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(result.output).toBe("hello");
   });
 
@@ -21,10 +21,10 @@ describe("ok", () => {
   });
 });
 
-describe("err", () => {
+describe(err, () => {
   it("creates a failure result with ok: false", () => {
     const result = err("VALIDATION_ERROR", "Name is required");
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     expect(result.error.code).toBe("VALIDATION_ERROR");
     expect(result.error.message).toBe("Name is required");
     expect(result.error.cause).toBeUndefined();
@@ -37,15 +37,15 @@ describe("err", () => {
   });
 });
 
-describe("isOk", () => {
+describe(isOk, () => {
   it("returns true for success results", () => {
     const result: Result<{ value: number }> = ok({ value: 1 });
-    expect(isOk(result)).toBe(true);
+    expect(isOk(result)).toBeTruthy();
   });
 
   it("returns false for failure results", () => {
     const result: Result<{ value: number }> = err("ERR", "fail");
-    expect(isOk(result)).toBe(false);
+    expect(isOk(result)).toBeFalsy();
   });
 
   it("narrows the type so success fields are accessible", () => {
@@ -57,15 +57,15 @@ describe("isOk", () => {
   });
 });
 
-describe("isErr", () => {
+describe(isErr, () => {
   it("returns true for failure results", () => {
     const result: Result<{ value: number }> = err("ERR", "fail");
-    expect(isErr(result)).toBe(true);
+    expect(isErr(result)).toBeTruthy();
   });
 
   it("returns false for success results", () => {
     const result: Result<{ value: number }> = ok({ value: 1 });
-    expect(isErr(result)).toBe(false);
+    expect(isErr(result)).toBeFalsy();
   });
 
   it("narrows the type so error fields are accessible", () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { parseFrontmatter } from "@/lib/prompts/frontmatter.js";
 
-describe("parseFrontmatter", () => {
+describe(parseFrontmatter, () => {
   it("parses name from frontmatter", () => {
     const content = "---\nname: my-prompt\n---\nHello";
     const result = parseFrontmatter(content, "test.prompt");

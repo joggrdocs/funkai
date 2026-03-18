@@ -55,7 +55,7 @@ interface ApiProvider {
  * e.g. "openai" → "OPENAI_MODELS", "meta-llama" → "META_LLAMA_MODELS"
  */
 function toConstName(provider: string): string {
-  return `${provider.toUpperCase().replace(/[^A-Z0-9]/g, "_")}_MODELS`;
+  return `${provider.toUpperCase().replaceAll(/[^A-Z0-9]/g, "_")}_MODELS`;
 }
 
 /**
@@ -63,14 +63,24 @@ function toConstName(provider: string): string {
  * e.g. "OpenAI" → "openAI", "GoogleVertex" → "googleVertex", "XAI" → "xAI"
  */
 function lowerFirst(s: string): string {
-  return s.length === 0 ? s : s[0]!.toLowerCase() + s.slice(1);
+  if (s.length === 0) {
+    return s;
+  }
+  const [first] = s;
+  if (first === undefined) {
+    return s;
+  }
+  return first.toLowerCase() + s.slice(1);
 }
 
 /**
  * Return the correct indefinite article ("a" or "an") for a word.
  */
 function article(word: string): string {
-  return /^[aeiou]/i.test(word) ? "an" : "a";
+  if (/^[aeiou]/i.test(word)) {
+    return "an";
+  }
+  return "a";
 }
 
 /**
@@ -86,8 +96,8 @@ function toPerToken(perMillion: number): number {
  * very small values.
  */
 function fmtNum(n: number): string {
-  if (n === 0) return "0";
-  if (n < 0.0000001) return n.toExponential();
+  if (n === 0) {return "0";}
+  if (n < 0.000_000_1) {return n.toExponential();}
   return String(n);
 }
 
@@ -95,18 +105,30 @@ function fmtNum(n: number): string {
  * Build the pricing object literal string for a model.
  */
 function buildPricing(cost: ApiModel["cost"]): string {
-  const input = toPerToken(cost?.input ?? 0);
-  const output = toPerToken(cost?.output ?? 0);
+  let costInput = 0;
+  let costOutput = 0;
+  if (cost !== undefined && cost !== null) {
+    if (cost.input !== undefined && cost.input !== null) {
+      costInput = cost.input;
+    }
+    if (cost.output !== undefined && cost.output !== null) {
+      costOutput = cost.output;
+    }
+  }
+  const input = toPerToken(costInput);
+  const output = toPerToken(costOutput);
   const parts: string[] = [`input: ${fmtNum(input)}`, `output: ${fmtNum(output)}`];
 
-  if (cost?.cache_read != null && cost.cache_read > 0) {
-    parts.push(`cacheRead: ${fmtNum(toPerToken(cost.cache_read))}`);
-  }
-  if (cost?.cache_write != null && cost.cache_write > 0) {
-    parts.push(`cacheWrite: ${fmtNum(toPerToken(cost.cache_write))}`);
-  }
-  if (cost?.reasoning != null && cost.reasoning > 0) {
-    parts.push(`reasoning: ${fmtNum(toPerToken(cost.reasoning))}`);
+  if (cost !== undefined && cost !== null) {
+    if (cost.cache_read !== undefined && cost.cache_read !== null && cost.cache_read > 0) {
+      parts.push(`cacheRead: ${fmtNum(toPerToken(cost.cache_read))}`);
+    }
+    if (cost.cache_write !== undefined && cost.cache_write !== null && cost.cache_write > 0) {
+      parts.push(`cacheWrite: ${fmtNum(toPerToken(cost.cache_write))}`);
+    }
+    if (cost.reasoning !== undefined && cost.reasoning !== null && cost.reasoning > 0) {
+      parts.push(`reasoning: ${fmtNum(toPerToken(cost.reasoning))}`);
+    }
   }
 
   return `{ ${parts.join(", ")} }`;
@@ -116,8 +138,18 @@ function buildPricing(cost: ApiModel["cost"]): string {
  * Build the modalities object literal string.
  */
 function buildModalities(modalities: ApiModel["modalities"]): string {
-  const input = JSON.stringify(modalities?.input ?? ["text"]);
-  const output = JSON.stringify(modalities?.output ?? ["text"]);
+  let modalInput: string[] = ["text"];
+  let modalOutput: string[] = ["text"];
+  if (modalities !== undefined && modalities !== null) {
+    if (modalities.input !== undefined && modalities.input !== null) {
+      modalInput = modalities.input;
+    }
+    if (modalities.output !== undefined && modalities.output !== null) {
+      modalOutput = modalities.output;
+    }
+  }
+  const input = JSON.stringify(modalInput);
+  const output = JSON.stringify(modalOutput);
   return `{ input: ${input}, output: ${output} }`;
 }
 
@@ -134,10 +166,28 @@ function buildCapabilities(m: ApiModel): string {
 }
 
 /**
+ * Extract context window and max output from a model's limit field.
+ */
+function getModelLimits(limit: ApiModel["limit"]): { contextWindow: number; maxOutput: number } {
+  if (limit === undefined || limit === null) {
+    return { contextWindow: 0, maxOutput: 0 };
+  }
+  let contextWindow = 0;
+  let maxOutput = 0;
+  if (limit.context !== undefined && limit.context !== null) {
+    contextWindow = limit.context;
+  }
+  if (limit.output !== undefined && limit.output !== null) {
+    maxOutput = limit.output;
+  }
+  return { contextWindow, maxOutput };
+}
+
+/**
  * Escape a string for use in a TypeScript single-quoted string literal.
  */
 function escapeStr(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+  return s.replaceAll("\\", String.raw`\\`).replaceAll("'", String.raw`\'`).replaceAll("\n", String.raw`\n`).replaceAll("\r", String.raw`\r`);
 }
 
 function isFresh(reqPath: string): boolean {
@@ -145,7 +195,7 @@ function isFresh(reqPath: string): boolean {
     return false;
   }
   try {
-    const timestamp = readFileSync(reqPath, "utf-8").trim();
+    const timestamp = readFileSync(reqPath, "utf8").trim();
     const lastRun = new Date(timestamp).getTime();
     return Date.now() - lastRun < STALE_MS;
   } catch {
@@ -175,7 +225,7 @@ export default lauf({
 
     // Read provider config
     const providers: Record<string, ProviderEntry> = JSON.parse(
-      readFileSync(PROVIDERS_PATH, "utf-8"),
+      readFileSync(PROVIDERS_PATH, "utf8"),
     );
     const providerKeys = Object.keys(providers);
 
@@ -213,30 +263,29 @@ export default lauf({
     const providerFiles: { provider: string; constName: string; count: number }[] = [];
 
     for (const providerKey of providerKeys) {
-      const apiProvider = apiData[providerKey]!;
-      const apiModels = apiProvider.models ?? {};
-      const constName = toConstName(providerKey);
-      const lines: string[] = [];
+      const apiProviderEntry = apiData[providerKey];
+      const providerEntry = providers[providerKey];
+      if (apiProviderEntry !== undefined && providerEntry !== undefined) {
+        const apiModels = apiProviderEntry.models ?? {};
+        const constName = toConstName(providerKey);
+        const lines: string[] = [];
 
-      for (const [, m] of Object.entries(apiModels)) {
-        const id = escapeStr(m.id);
-        const name = escapeStr(m.name ?? m.id);
-        const family = escapeStr(m.family ?? "");
-        const pricing = buildPricing(m.cost);
-        const contextWindow = m.limit?.context ?? 0;
-        const maxOutput = m.limit?.output ?? 0;
-        const modalities = buildModalities(m.modalities);
-        const capabilities = buildCapabilities(m);
+        for (const [, m] of Object.entries(apiModels)) {
+          const id = escapeStr(m.id);
+          const name = escapeStr(m.name ?? m.id);
+          const family = escapeStr(m.family ?? "");
+          const pricing = buildPricing(m.cost);
+          const { contextWindow, maxOutput } = getModelLimits(m.limit);
+          const modalities = buildModalities(m.modalities);
+          const capabilities = buildCapabilities(m);
 
-        lines.push(
-          `  { id: '${id}', name: '${name}', provider: '${providerKey}', family: '${family}', ` +
-            `pricing: ${pricing}, contextWindow: ${contextWindow}, maxOutput: ${maxOutput}, ` +
-            `modalities: ${modalities}, capabilities: { ${capabilities} } },`,
-        );
-      }
+          lines.push(
+            `  { id: '${id}', name: '${name}', provider: '${providerKey}', family: '${family}', pricing: ${pricing}, contextWindow: ${contextWindow}, maxOutput: ${maxOutput}, modalities: ${modalities}, capabilities: { ${capabilities} } },`,
+          );
+        }
 
-      // Write catalog provider file
-      const catalogContent = `${BANNER}
+        // Write catalog provider file
+        const catalogContent = `${BANNER}
 
 import type { ModelDefinition } from '../types.js'
 
@@ -245,16 +294,21 @@ ${lines.join("\n")}
 ] as const satisfies readonly ModelDefinition[]
 `;
 
-      const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
-      writeFileSync(catalogPath, catalogContent, "utf-8");
+        const catalogPath = join(CATALOG_DIR, `${providerKey}.ts`);
+        writeFileSync(catalogPath, catalogContent, "utf8");
 
-      // Write per-provider entry point
-      const prefix = providers[providerKey]!.prefix;
-      const camel = lowerFirst(prefix);
-      const exampleId = escapeStr(Object.values(apiModels)[0]?.id ?? "example-id");
-      const providerName = escapeStr(providers[providerKey]!.name);
-      const art = article(providers[providerKey]!.name);
-      const entryContent = `${BANNER}
+        // Write per-provider entry point
+        const { prefix } = providerEntry;
+        const camel = lowerFirst(prefix);
+        const [firstModel] = Object.values(apiModels);
+        let exampleId = "example-id";
+        if (firstModel !== undefined) {
+          exampleId = firstModel.id;
+        }
+        exampleId = escapeStr(exampleId);
+        const providerName = escapeStr(providerEntry.name);
+        const art = article(providerEntry.name);
+        const entryContent = `${BANNER}
 
 import type { LiteralUnion } from 'type-fest'
 import type { ModelDefinition } from '../catalog/types.js'
@@ -309,11 +363,12 @@ export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): Model
 }
 `;
 
-      const entryPath = join(ENTRY_DIR, `${providerKey}.ts`);
-      writeFileSync(entryPath, entryContent, "utf-8");
+        const entryPath = join(ENTRY_DIR, `${providerKey}.ts`);
+        writeFileSync(entryPath, entryContent, "utf8");
 
-      ctx.logger.success(`${providerKey} (${lines.length} models)`);
-      providerFiles.push({ provider: providerKey, constName, count: lines.length });
+        ctx.logger.success(`${providerKey} (${lines.length} models)`);
+        providerFiles.push({ provider: providerKey, constName, count: lines.length });
+      }
     }
 
     // Catalog barrel
@@ -333,16 +388,16 @@ ${spreads}
 ] as const satisfies readonly ModelDefinition[]
 `;
 
-    writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf-8");
+    writeFileSync(join(CATALOG_DIR, "index.ts"), catalogBarrel, "utf8");
     ctx.logger.success("catalog/providers/index.ts (barrel)");
 
     // Write generated entries list for tsdown config
     const entryPoints = providerFiles.map((p) => `src/providers/${p.provider}.ts`);
-    writeFileSync(ENTRIES_PATH, JSON.stringify(entryPoints, null, 2), "utf-8");
+    writeFileSync(ENTRIES_PATH, JSON.stringify(entryPoints, null, 2), "utf8");
     ctx.logger.success(".generated/entries.json");
 
     // Update package.json exports map
-    const pkgRaw = readFileSync(PACKAGE_JSON_PATH, "utf-8");
+    const pkgRaw = readFileSync(PACKAGE_JSON_PATH, "utf8");
     const pkg = JSON.parse(pkgRaw);
 
     const exportsMap: Record<string, { types: string; import: string }> = {
@@ -360,11 +415,11 @@ ${spreads}
     }
 
     pkg.exports = exportsMap;
-    writeFileSync(PACKAGE_JSON_PATH, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+    writeFileSync(PACKAGE_JSON_PATH, `${JSON.stringify(pkg, null, 2)}\n`, "utf8");
     ctx.logger.success("package.json exports map updated");
 
     // Staleness timestamp
-    writeFileSync(REQ_PATH, new Date().toISOString(), "utf-8");
+    writeFileSync(REQ_PATH, new Date().toISOString(), "utf8");
 
     const totalModels = providerFiles.reduce((sum, p) => sum + p.count, 0);
     ctx.logger.info(`done (${providerFiles.length} providers, ${totalModels} models)`);

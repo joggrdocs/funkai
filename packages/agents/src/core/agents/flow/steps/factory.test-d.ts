@@ -5,7 +5,7 @@ import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
 import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { ResultError } from "@/utils/result.js";
 
-describe("StepError extends ResultError", () => {
+describe("stepError extends ResultError", () => {
   it("is assignable to ResultError", () => {
     expectTypeOf<StepError>().toExtend<ResultError>();
   });
@@ -15,7 +15,7 @@ describe("StepError extends ResultError", () => {
   });
 });
 
-describe("StepResult<T>", () => {
+describe("stepResult<T>", () => {
   it("success branch has ok: true", () => {
     type Success = Extract<StepResult<{ value: number }>, { ok: true }>;
     expectTypeOf<Success["ok"]>().toEqualTypeOf<true>();
@@ -43,7 +43,8 @@ describe("StepResult<T>", () => {
   });
 });
 
-describe("createStepBuilder", () => {
+// oxlint-disable-next-line jest(valid-title) -- function reference as title is idiomatic for type tests
+describe(createStepBuilder, () => {
   it("returns StepBuilder", () => {
     expectTypeOf(createStepBuilder).returns.toExtend<StepBuilder>();
   });

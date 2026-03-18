@@ -16,8 +16,8 @@ export const NAME_RE = /^[a-z0-9-]+$/;
 function parseYamlContent(yaml: string, filePath: string): Record<string, unknown> {
   try {
     return parseYaml(yaml) as Record<string, unknown>;
-  } catch (err) {
-    throw new Error(`Failed to parse YAML frontmatter in ${filePath}: ${err}`, { cause: err });
+  } catch (error) {
+    throw new Error(`Failed to parse YAML frontmatter in ${filePath}: ${error}`, { cause: error });
   }
 }
 
@@ -64,7 +64,7 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     throw new Error(`Frontmatter is not a valid object in ${filePath}`);
   }
 
-  const name = parsed.name;
+  const {name} = parsed;
   if (typeof name !== "string" || name.length === 0) {
     throw new Error(`Missing or empty "name" in frontmatter: ${filePath}`);
   }
@@ -76,21 +76,21 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     );
   }
 
-  const group =
-    typeof parsed.group === "string"
-      ? (() => {
-          const g = parsed.group as string;
-          const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
-          if (invalidSegment !== undefined) {
-            throw new Error(
-              `Invalid group segment "${invalidSegment}" in ${filePath}. ` +
-                "Group segments must be lowercase alphanumeric with hyphens only.",
-            );
-          }
-          return g;
-        })()
-      : undefined;
-  const version = parsed.version != null ? String(parsed.version) : undefined;
+  let group: string | undefined;
+  if (typeof parsed.group === "string") {
+    const g = parsed.group as string;
+    const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
+    if (invalidSegment !== undefined) {
+      throw new Error(
+        `Invalid group segment "${invalidSegment}" in ${filePath}. Group segments must be lowercase alphanumeric with hyphens only.`,
+      );
+    }
+    group = g;
+  }
+  let version: string | undefined;
+  if (parsed.version !== null && parsed.version !== undefined) {
+    version = String(parsed.version);
+  }
 
   const schema = parseSchemaBlock(parsed.schema, filePath);
 
@@ -103,12 +103,12 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
  * @private
  */
 function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
-  if (raw == null) {
+  if (raw === null || raw === undefined) {
     return [];
   }
 
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    throw new Error(
+    throw new TypeError(
       `Invalid "schema" in ${filePath}: expected an object mapping variable names to definitions`,
     );
   }
@@ -122,10 +122,18 @@ function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       const def = value as Record<string, unknown>;
-      const type = typeof def.type === "string" ? (def.type as string) : "string";
+      let type: string;
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      if (typeof def.type === "string") {
+        type = def.type as string;
+      } else {
+        type = "string";
+      }
       const required = def.required !== false;
-      const description =
-        typeof def.description === "string" ? (def.description as string) : undefined;
+      let description: string | undefined;
+      if (typeof def.description === "string") {
+        description = def.description as string;
+      }
 
       return { name: varName, type, required, description };
     }

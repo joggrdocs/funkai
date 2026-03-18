@@ -59,7 +59,11 @@ export function buildStreamResponseMethods(
         }),
       );
 
-      const headers = new Headers(init?.headers);
+      let initHeaders: ResponseInit["headers"];
+      if (init !== undefined) {
+        initHeaders = init.headers;
+      }
+      const headers = new Headers(initHeaders);
       if (!headers.has("Content-Type")) {
         headers.set("Content-Type", "text/plain; charset=utf-8");
       }

@@ -61,5 +61,8 @@ export function model(id: ModelId): ModelDefinition | null {
  * ```
  */
 export function models(filter?: (m: ModelDefinition) => boolean): readonly ModelDefinition[] {
-  return filter ? MODELS.filter(filter) : MODELS;
+  if (filter) {
+    return MODELS.filter(filter);
+  }
+  return MODELS;
 }

@@ -87,7 +87,7 @@ export function createProviderRegistry(config: ProviderRegistryConfig): Provider
       throw new Error("Cannot resolve model: model ID is empty");
     }
     // Cast needed: AI SDK overloads expect `provider/model` template literal,
-    // but our ModelId is a branded string union. The runtime validates the format.
+    // But our ModelId is a branded string union. The runtime validates the format.
     return inner.languageModel(modelId as `${string}/${string}`) as LanguageModel;
   };
 }

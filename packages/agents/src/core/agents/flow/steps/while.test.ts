@@ -14,7 +14,7 @@ describe("while()", () => {
       execute: async ({ index }) => index,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -32,7 +32,7 @@ describe("while()", () => {
       execute: async () => "should not run",
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -67,7 +67,7 @@ describe("while()", () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -78,7 +78,7 @@ describe("while()", () => {
   it("passes previous value to condition", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const conditionValues: Array<number | undefined> = [];
+    const conditionValues: (number | undefined)[] = [];
 
     await $.while<number>({
       id: "while-val",
@@ -107,7 +107,7 @@ describe("while()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -148,7 +148,7 @@ describe("while()", () => {
       execute: async ({ index }) => index,
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -252,7 +252,7 @@ describe("while()", () => {
       execute: async ({ index }) => index,
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -274,7 +274,7 @@ describe("while()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }

@@ -6,19 +6,29 @@
  * can multiply directly.
  */
 export interface ModelPricing {
-  /** Cost per input token. */
+  /**
+   * Cost per input token.
+   */
   readonly input: number;
 
-  /** Cost per output token. */
+  /**
+   * Cost per output token.
+   */
   readonly output: number;
 
-  /** Cost per cached input token (read). */
+  /**
+   * Cost per cached input token (read).
+   */
   readonly cacheRead?: number;
 
-  /** Cost per cached input token (write). */
+  /**
+   * Cost per cached input token (write).
+   */
   readonly cacheWrite?: number;
 
-  /** Cost per reasoning token. */
+  /**
+   * Cost per reasoning token.
+   */
   readonly reasoning?: number;
 }
 
@@ -29,10 +39,14 @@ export interface ModelPricing {
  * `"image"`, `"audio"`, `"video"`, `"pdf"`).
  */
 export interface ModelModalities {
-  /** Accepted input modalities. */
+  /**
+   * Accepted input modalities.
+   */
   readonly input: readonly string[];
 
-  /** Produced output modalities. */
+  /**
+   * Produced output modalities.
+   */
   readonly output: readonly string[];
 }
 
@@ -40,16 +54,24 @@ export interface ModelModalities {
  * Boolean capability flags for a model.
  */
 export interface ModelCapabilities {
-  /** Supports chain-of-thought / extended thinking. */
+  /**
+   * Supports chain-of-thought / extended thinking.
+   */
   readonly reasoning: boolean;
 
-  /** Supports tool (function) calling. */
+  /**
+   * Supports tool (function) calling.
+   */
   readonly toolCall: boolean;
 
-  /** Supports file/image attachments. */
+  /**
+   * Supports file/image attachments.
+   */
   readonly attachment: boolean;
 
-  /** Supports structured (JSON) output. */
+  /**
+   * Supports structured (JSON) output.
+   */
   readonly structuredOutput: boolean;
 }
 
@@ -57,30 +79,48 @@ export interface ModelCapabilities {
  * Model definition with metadata, pricing, and capabilities.
  */
 export interface ModelDefinition {
-  /** Provider-native model identifier (e.g. `"gpt-4.1"`, `"claude-sonnet-4"`). */
+  /**
+   * Provider-native model identifier (e.g. `"gpt-4.1"`, `"claude-sonnet-4"`).
+   */
   readonly id: string;
 
-  /** Human-readable display name (e.g. `"GPT-4.1"`). */
+  /**
+   * Human-readable display name (e.g. `"GPT-4.1"`).
+   */
   readonly name: string;
 
-  /** Provider slug matching the key in `providers.json` (e.g. `"openai"`). */
+  /**
+   * Provider slug matching the key in `providers.json` (e.g. `"openai"`).
+   */
   readonly provider: string;
 
-  /** Model family (e.g. `"gpt"`, `"claude-sonnet"`). */
+  /**
+   * Model family (e.g. `"gpt"`, `"claude-sonnet"`).
+   */
   readonly family: string;
 
-  /** Token pricing rates (per-token, converted from per-million at generation time). */
+  /**
+   * Token pricing rates (per-token, converted from per-million at generation time).
+   */
   readonly pricing: ModelPricing;
 
-  /** Maximum context window size in tokens. */
+  /**
+   * Maximum context window size in tokens.
+   */
   readonly contextWindow: number;
 
-  /** Maximum output tokens. */
+  /**
+   * Maximum output tokens.
+   */
   readonly maxOutput: number;
 
-  /** Supported input/output modalities. */
+  /**
+   * Supported input/output modalities.
+   */
   readonly modalities: ModelModalities;
 
-  /** Model capability flags. */
+  /**
+   * Model capability flags.
+   */
   readonly capabilities: ModelCapabilities;
 }

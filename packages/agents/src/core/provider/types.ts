@@ -1,5 +1,4 @@
-import type { ModelId } from "@funkai/models";
-import type { TokenUsage } from "@funkai/models";
+import type { ModelId, TokenUsage } from "@funkai/models";
 
 export type { LanguageModel, TokenUsage } from "@funkai/models";
 
@@ -16,22 +15,34 @@ export interface TokenUsageRecord {
    */
   readonly modelId: ModelId;
 
-  /** Number of input (prompt) tokens. */
+  /**
+   * Number of input (prompt) tokens.
+   */
   readonly inputTokens: number | undefined;
 
-  /** Number of output (completion) tokens. */
+  /**
+   * Number of output (completion) tokens.
+   */
   readonly outputTokens: number | undefined;
 
-  /** Total tokens (input + output). */
+  /**
+   * Total tokens (input + output).
+   */
   readonly totalTokens: number | undefined;
 
-  /** Tokens served from the provider's prompt cache. */
+  /**
+   * Tokens served from the provider's prompt cache.
+   */
   readonly cacheReadTokens: number | undefined;
 
-  /** Tokens written into the provider's prompt cache. */
+  /**
+   * Tokens written into the provider's prompt cache.
+   */
   readonly cacheWriteTokens: number | undefined;
 
-  /** Tokens consumed by the model's internal reasoning (e.g. o3/o4). */
+  /**
+   * Tokens consumed by the model's internal reasoning (e.g. o3/o4).
+   */
   readonly reasoningTokens: number | undefined;
 
   /**

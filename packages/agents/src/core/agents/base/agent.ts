@@ -2,7 +2,8 @@ import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream, LanguageModel } from "ai";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
-import type { OutputSpec } from "@/core/agents/base/output.js";
+import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
+import type { Result } from "@/utils/result.js";
 import type {
   Agent,
   AgentConfig,
@@ -25,7 +26,8 @@ import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import { RUNNABLE_META } from '@/lib/runnable.js';
+import type { RunnableMeta } from '@/lib/runnable.js';
 import { toError } from "@/utils/error.js";
 
 /**
@@ -75,8 +77,8 @@ import { toError } from "@/utils/error.js";
 export function agent<
   TInput = string | Message[],
   TOutput = string,
-  TTools extends Record<string, Tool> = {},
-  TSubAgents extends SubAgents = {},
+  TTools extends Record<string, Tool> = Record<string, never>,
+  TSubAgents extends SubAgents = Record<string, never>,
 >(
   config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
 ): Agent<TInput, TOutput, TTools, TSubAgents> {
@@ -127,8 +129,8 @@ export function agent<
     readonly maxSteps: number;
     readonly signal: AbortSignal | undefined;
     readonly onStepFinish: (step: {
-      toolCalls?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
-      toolResults?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
+      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
+      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
       usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
     }) => Promise<void>;
   }
@@ -188,8 +190,8 @@ export function agent<
 
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: {
-      toolCalls?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
-      toolResults?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
+      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
+      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
       usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
     }) => {
       const stepId = `${config.name}:${stepCounter.value++}`;
@@ -226,7 +228,7 @@ export function agent<
   async function generate(
     rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
-  ): Promise<import("@/utils/result.js").Result<GenerateResult<TOutput>>> {
+  ): Promise<Result<GenerateResult<TOutput>>> {
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
@@ -285,8 +287,8 @@ export function agent<
       log.debug("agent.generate finish", { name: config.name, duration });
 
       return { ok: true, ...generateResult };
-    } catch (thrown) {
-      const error = toError(thrown);
+    } catch (caughtError) {
+      const error = toError(caughtError);
       const duration = Date.now() - startedAt;
 
       log.error("agent.generate error", { name: config.name, error: error.message, duration });
@@ -311,7 +313,7 @@ export function agent<
   async function stream(
     rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
-  ): Promise<import("@/utils/result.js").Result<StreamResult<TOutput>>> {
+  ): Promise<Result<StreamResult<TOutput>>> {
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
@@ -401,8 +403,8 @@ export function agent<
       })();
 
       // Catch stream errors: fire onError hooks and prevent unhandled rejections
-      done.catch(async (thrown) => {
-        const error = toError(thrown);
+      done.catch(async (caughtError) => {
+        const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
         log.error("agent.stream error", { name: config.name, error: error.message, duration });
@@ -421,8 +423,8 @@ export function agent<
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
         // Safe to delegate: the AI SDK internally tees its baseStream for each
-        // accessor (fullStream, textStream, toTextStreamResponse, etc.), so
-        // consuming fullStream above does not conflict with these methods.
+        // Accessor (fullStream, textStream, toTextStreamResponse, etc.), so
+        // Consuming fullStream above does not conflict with these methods.
         toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
         toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
@@ -434,8 +436,8 @@ export function agent<
       streamResult.finishReason.catch(() => {});
 
       return { ok: true, ...streamResult };
-    } catch (thrown) {
-      const error = toError(thrown);
+    } catch (caughtError) {
+      const error = toError(caughtError);
       const duration = Date.now() - startedAt;
 
       log.error("agent.stream error", { name: config.name, error: error.message, duration });
@@ -465,6 +467,7 @@ export function agent<
   };
 
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+  // oxlint-disable-next-line unicorn/no-immediate-mutation -- Symbol-keyed property must be assigned after object creation
   (agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
     name: config.name,
     inputSchema: config.input,
@@ -507,7 +510,10 @@ function readOverride<
 function safeSerializedLength(value: unknown): number {
   try {
     const json = JSON.stringify(value);
-    return typeof json === "string" ? json.length : 0;
+    if (typeof json === "string") {
+      return json.length;
+    }
+    return 0;
   } catch {
     return 0;
   }
@@ -533,8 +539,8 @@ function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
  * @private
  */
 function resolveOptionalOutput(
-  param: import("@/core/agents/base/output.js").OutputParam | undefined,
-): import("@/core/agents/base/output.js").OutputSpec | undefined {
+  param: OutputParam | undefined,
+): OutputSpec | undefined {
   if (param !== undefined) {
     return resolveOutput(param);
   }

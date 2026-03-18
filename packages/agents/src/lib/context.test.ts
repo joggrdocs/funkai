@@ -6,7 +6,7 @@ import { createMockCtx, createMockExecutionCtx, createMockLogger } from "@/testi
 describe("ExecutionContext", () => {
   it("provides a non-aborted signal by default", () => {
     const ctx = createMockExecutionCtx();
-    expect(ctx.signal.aborted).toBe(false);
+    expect(ctx.signal.aborted).toBeFalsy();
   });
 
   it("provides a mock logger", () => {
@@ -23,7 +23,7 @@ describe("ExecutionContext", () => {
     const controller = new AbortController();
     controller.abort();
     const ctx = createMockExecutionCtx({ signal: controller.signal });
-    expect(ctx.signal.aborted).toBe(true);
+    expect(ctx.signal.aborted).toBeTruthy();
   });
 
   it("accepts logger override", () => {
@@ -41,7 +41,7 @@ describe("Context", () => {
 
   it("provides a non-aborted signal by default", () => {
     const ctx = createMockCtx();
-    expect(ctx.signal.aborted).toBe(false);
+    expect(ctx.signal.aborted).toBeFalsy();
   });
 
   it("provides a mock logger", () => {
