@@ -1,5 +1,20 @@
 # @funkai/cli
 
+## 0.1.3
+
+### Patch Changes
+
+- 8b89d9c: Simplify API surface across all packages: replace OpenRouter-specific provider layer with generic registry pattern, streamline agent internals, and restructure prompt entry points.
+
+  Migration notes:
+
+  - `@funkai/agents`: `AgentConfig.resolver` is replaced by `AgentConfig.registry`.
+  - `@funkai/models`: OpenRouter-specific provider exports (`openrouter.ts`, `resolver.ts`) were removed in favor of `createProviderRegistry` and `ProviderRegistry`.
+  - `@funkai/prompts`: Runtime helpers moved to `@funkai/prompts/runtime`, CLI helpers moved to `@funkai/prompts/cli`.
+
+- Updated dependencies [8b89d9c]
+  - @funkai/prompts@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes
