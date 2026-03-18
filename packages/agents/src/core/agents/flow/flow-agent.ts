@@ -1,5 +1,7 @@
 import type { AsyncIterableStream } from "ai";
 
+import { buildStreamResponseMethods } from "@/core/agents/base/stream-response.js";
+
 import type { Message, StreamPart } from "@/core/agents/base/types.js";
 import {
   collectTextFromMessages,
@@ -508,6 +510,8 @@ export function flowAgent<TInput, TOutput = any>(
     // Catch stream errors to prevent unhandled rejections
     done.catch(() => {});
 
+    const responseMethods = buildStreamResponseMethods(() => readable);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
     const streamResult: import("@/core/agents/base/types.js").StreamResult<any> = {
       output: done.then((r) => r.output),
@@ -515,16 +519,8 @@ export function flowAgent<TInput, TOutput = any>(
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
-      toTextStreamResponse() {
-        throw new Error(
-          "toTextStreamResponse is not supported on flow agents. Use fullStream to consume events directly.",
-        );
-      },
-      toUIMessageStreamResponse() {
-        throw new Error(
-          "toUIMessageStreamResponse is not supported on flow agents. Use fullStream to consume events directly.",
-        );
-      },
+      toTextStreamResponse: (init) => responseMethods.toTextStreamResponse(init),
+      toUIMessageStreamResponse: (options) => responseMethods.toUIMessageStreamResponse(options),
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
