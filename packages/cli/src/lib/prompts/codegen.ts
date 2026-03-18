@@ -104,7 +104,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
   const schemaExpr = generateSchemaExpression(prompt.schema);
   // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
   const groupValue: string = (() => {
-    if (prompt.group !== null && prompt.group !== undefined) {
+    if (prompt.group) {
       return `'${prompt.group}' as const`;
     }
     return "undefined";

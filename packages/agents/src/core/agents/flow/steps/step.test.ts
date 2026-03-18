@@ -13,7 +13,7 @@ describe("step()", () => {
       execute: async () => ({ greeting: "hello" }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -35,7 +35,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -59,7 +59,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -79,7 +79,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -202,7 +202,7 @@ describe("step()", () => {
       execute: async () => ({ value: 42 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -302,7 +302,7 @@ describe("step()", () => {
       execute: async () => "hello",
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -318,7 +318,7 @@ describe("step()", () => {
       execute: async () => 42,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -377,7 +377,7 @@ describe("step()", () => {
       execute: async () => null,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -393,7 +393,7 @@ describe("step()", () => {
       execute: async () => undefined,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }

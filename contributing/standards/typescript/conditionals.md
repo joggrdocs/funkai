@@ -2,7 +2,7 @@
 
 ## Overview
 
-Patterns for conditional logic in TypeScript. This standard covers early returns, `if`/`else` for simple conditions, ternaries for inline expressions, and `ts-pattern` for multi-branch matching. Choosing the right construct keeps logic flat, exhaustive, and easy to follow.
+Patterns for conditional logic in TypeScript. This standard covers early returns, `if`/`else` for simple conditions, and `ts-pattern` for multi-branch matching. No ternaries — use `if`/`else` or `match()`. Choosing the right construct keeps logic flat, exhaustive, and easy to follow.
 
 ## Rules
 
@@ -12,7 +12,7 @@ Use `ts-pattern` for conditional logic with 2+ branches. It provides exhaustiven
 
 | Scenario           | Use                    | Why                    |
 | ------------------ | ---------------------- | ---------------------- |
-| Single boolean     | Ternary or `if`/`else` | Simpler for true/false |
+| Single boolean     | `if`/`else`            | Simpler for true/false |
 | Early return/guard | `if` statement         | Cleaner guard clauses  |
 | 2+ conditions      | `ts-pattern`           | Exhaustive, readable   |
 | Type narrowing     | `ts-pattern`           | Type-safe matching     |
@@ -141,22 +141,33 @@ match(status)
   .otherwise(() => "Unknown"); // Hides missing cases
 ```
 
-### Use Ternaries for Simple Inline Expressions
+### No Ternaries
 
-Use ternaries for simple single-condition expressions where the intent is clear. For anything more complex, prefer `if`/`else` or `match`.
-
-#### Correct
-
-```ts
-const label = isActive ? "Active" : "Inactive";
-const timeout = hasOverride ? config.timeout : DEFAULT_TIMEOUT;
-```
+Ternaries are forbidden (`no-ternary` lint rule). Use `if`/`else` for simple conditions or `match()` for multi-branch logic.
 
 #### Incorrect
 
 ```ts
-// Nested ternaries -- use match instead
+const label = isActive ? "Active" : "Inactive";
 const label = isAdmin ? "Admin" : isMod ? "Moderator" : "User";
+```
+
+#### Correct
+
+```ts
+// Simple condition — use if/else
+const label: string = (() => {
+  if (isActive) {
+    return "Active";
+  }
+  return "Inactive";
+})();
+
+// Multi-branch — use match
+const label = match(role)
+  .with("admin", () => "Admin")
+  .with("mod", () => "Moderator")
+  .otherwise(() => "User");
 ```
 
 ### Use if/else for Multi-Line Conditions

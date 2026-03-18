@@ -138,7 +138,7 @@ The prompts package provides a prompt authoring SDK with two surfaces:
 
 1. **Functional by default** -- Factory functions, closures, and plain objects instead of classes
 2. **Immutable data** -- Use `readonly`, `as const`, spread/destructuring; no in-place mutation
-3. **Expression over statement** -- Return values from functions; use `match()`, `attempt()`, ternaries
+3. **Expression over statement** -- Return values from functions; use `match()`, `attempt()`, `if`/`else`. No ternaries
 4. **Type-driven** -- Discriminated unions, branded types, exhaustive matching via ts-pattern
 5. **Zod at boundaries** -- Runtime validation for configs, user input, and external data
 6. **Vercel AI SDK foundation** -- Built on `ai` package for model interaction, tool calling, and streaming

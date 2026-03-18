@@ -103,7 +103,9 @@
         "no-unused-vars": "off",
         "functional/no-classes": "off",
         "typescript/no-non-null-assertion": "off",
-        "oxc/no-optional-chaining": "off"
+        "oxc/no-optional-chaining": "off",
+        "vitest/prefer-to-be-truthy": "off",
+        "vitest/prefer-to-be-falsy": "off"
       }
     }
   ],

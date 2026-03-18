@@ -292,7 +292,12 @@ export default lauf({
       const apiProviderEntry = apiData[providerKey];
       const providerEntry = providers[providerKey];
       if (apiProviderEntry !== undefined && providerEntry !== undefined) {
-        const apiModels = apiProviderEntry.models ?? {};
+        if (apiProviderEntry.models === undefined || apiProviderEntry.models === null) {
+          throw new Error(
+            `models.dev API returned no models for configured provider: ${providerKey}`,
+          );
+        }
+        const apiModels = apiProviderEntry.models;
         const constName = toConstName(providerKey);
         const lines: string[] = [];
 
