@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent } from "@funkai/agents";
 import type { Tool } from "@funkai/agents";
 import { prompts } from "~prompts";
@@ -11,7 +12,7 @@ import { prompts } from "~prompts";
 export const createScannerAgent = (tools: { readonly ls: Tool; readonly grep: Tool }) =>
   agent({
     name: "scanner",
-    model: "openai/gpt-4.1",
+    model: openai("gpt-4.1"),
     system: prompts.agents.scanner.render({
       fileExtensions: ".test.ts, .spec.ts, .test.js, .spec.js",
     }),

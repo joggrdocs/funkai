@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent, flowAgent, tool } from "@funkai/agents";
 import type { Message } from "@funkai/agents";
 import { z } from "zod";
@@ -28,7 +29,7 @@ const lookupTool = tool({
 
 const geographyAgent = agent({
   name: "geography",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system:
     "You are a geography expert. Use the lookup-capital tool to answer questions about capitals.",
   tools: { "lookup-capital": lookupTool },
@@ -104,7 +105,7 @@ console.log("\n=== Flow Agent Streaming ===\n");
 
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: "Answer questions concisely in one sentence.",
 });
 

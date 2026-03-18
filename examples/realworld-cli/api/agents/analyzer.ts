@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent } from "@funkai/agents";
 import type { Tool } from "@funkai/agents";
 import { prompts } from "~prompts";
@@ -19,7 +20,7 @@ export const createAnalyzerAgent = (
 ) =>
   agent({
     name: "analyzer",
-    model: "openai/gpt-4.1",
+    model: openai("gpt-4.1"),
     system: prompts.agents.analyzer.render({
       testFilePath,
     }),

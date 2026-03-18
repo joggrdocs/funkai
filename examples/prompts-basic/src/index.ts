@@ -1,9 +1,10 @@
+import { openai } from "@ai-sdk/openai";
 import { agent } from "@funkai/agents";
 import { prompts } from "~prompts";
 
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: prompts.agents.writer.render({
     tone: "friendly",
     context: "You are writing for a developer audience.",

@@ -1,38 +1,20 @@
-import type { AsyncIterableStream, LanguageModel } from "ai";
+import type { AsyncIterableStream } from "ai";
 
 import type { StreamPart } from "@/core/agents/base/types.js";
+import type { LanguageModel } from "@/core/provider/types.js";
 import type { Result } from "@/utils/result.js";
 
 /**
- * A model reference.
+ * A model reference — an AI SDK `LanguageModel` instance.
  *
- * Accepts either:
- * - A **string model ID** (e.g. `'openai/gpt-4.1'`) resolved via a
- *   configured `ProviderRegistry` at runtime.
- * - An **AI SDK `LanguageModel` instance** — including models wrapped
- *   with middleware via `wrapLanguageModel()`.
- *
- * When using a string, a `registry` must be configured on the agent.
+ * Use any AI SDK provider function to create one, or wrap with
+ * middleware via `wrapLanguageModel()`.
  *
  * @example
  * ```typescript
- * // String ID — resolved via a configured registry
- * import { createProviderRegistry } from '@funkai/models'
- * import { createOpenAI } from '@ai-sdk/openai'
- *
- * const registry = createProviderRegistry({
- *   providers: { openai: createOpenAI({ apiKey: '...' }) },
- * })
- * const agent1 = agent({
- *   name: 'my-agent',
- *   model: 'openai/gpt-4.1',
- *   registry,
- *   system: 'You are helpful.',
- * })
- *
- * // AI SDK provider instance (no resolver needed)
+ * // AI SDK provider instance
  * import { openai } from '@ai-sdk/openai'
- * const agent2 = agent({
+ * const myAgent = agent({
  *   name: 'my-agent',
  *   model: openai('gpt-4.1'),
  *   system: 'You are helpful.',
@@ -41,7 +23,7 @@ import type { Result } from "@/utils/result.js";
  * // Middleware-wrapped model
  * import { wrapLanguageModel, extractReasoningMiddleware } from 'ai'
  * import { anthropic } from '@ai-sdk/anthropic'
- * const agent3 = agent({
+ * const reasoner = agent({
  *   name: 'reasoner',
  *   model: wrapLanguageModel({
  *     model: anthropic('claude-sonnet-4-5-20250929'),
@@ -51,10 +33,7 @@ import type { Result } from "@/utils/result.js";
  * })
  * ```
  */
-export type Model = string | LanguageModel;
-
-/** @deprecated Use `Model` instead. */
-export type ModelRef = Model;
+export type Model = LanguageModel;
 
 /**
  * A value that can be generated against — the shared contract

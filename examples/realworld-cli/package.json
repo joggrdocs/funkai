@@ -13,6 +13,7 @@
     "prompts:generate": "funkai prompts generate --out .prompts/client --roots api/agents"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.0",
     "@clack/prompts": "^1.1.0",
     "@funkai/agents": "workspace:*",
     "@funkai/prompts": "workspace:*",

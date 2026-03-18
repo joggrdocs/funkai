@@ -5,39 +5,10 @@ import type { Message } from "@/core/agents/base/types.js";
 import {
   buildAITools,
   buildPrompt,
-  resolveModel,
   resolveSystem,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
-
-describe(resolveModel, () => {
-  it("resolves a string model ID using the provided registry", () => {
-    const registry = vi.fn((id: string) => ({ modelId: id }) as never);
-    const result = resolveModel("openai/gpt-4.1", registry);
-    expect(registry).toHaveBeenCalledWith("openai/gpt-4.1");
-    expect(result).toEqual({ modelId: "openai/gpt-4.1" });
-  });
-
-  it("throws when a string model ID is passed without a registry", () => {
-    expect(() => resolveModel("openai/gpt-4.1")).toThrow(
-      'Cannot resolve string model ID "openai/gpt-4.1": no registry configured',
-    );
-  });
-
-  it("returns a LanguageModel object as-is", () => {
-    const model = { modelId: "custom-model" } as never;
-    const result = resolveModel(model);
-    expect(result).toBe(model);
-  });
-
-  it("does not call registry when ref is a LanguageModel", () => {
-    const registry = vi.fn();
-    const model = { modelId: "custom-model" } as never;
-    resolveModel(model, registry);
-    expect(registry).not.toHaveBeenCalled();
-  });
-});
 
 describe(resolveSystem, () => {
   it("returns undefined when system is undefined", () => {

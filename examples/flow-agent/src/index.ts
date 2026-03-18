@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent, flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
@@ -10,13 +11,13 @@ import { z } from "zod";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: "Summarize the given text in one sentence.",
 });
 
 const translator = agent({
   name: "translator",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: "Translate the given text to Spanish.",
 });
 
