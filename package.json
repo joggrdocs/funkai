@@ -31,15 +31,15 @@
     "turbo": "^2.8.17",
     "vitest": "catalog:"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@9.15.4",
   "pnpm": {
     "peerDependencyRules": {
       "ignoreMissing": [
         "eslint"
       ]
     }
-  },
-  "engines": {
-    "node": ">=24.0.0"
-  },
-  "packageManager": "pnpm@9.15.4"
+  }
 }

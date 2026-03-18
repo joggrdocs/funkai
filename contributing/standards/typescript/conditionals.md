@@ -10,12 +10,12 @@ Patterns for conditional logic in TypeScript. This standard covers early returns
 
 Use `ts-pattern` for conditional logic with 2+ branches. It provides exhaustiveness checking and better readability than switch statements or nested ternaries.
 
-| Scenario           | Use                    | Why                    |
-| ------------------ | ---------------------- | ---------------------- |
-| Single boolean     | `if`/`else`            | Simpler for true/false |
-| Early return/guard | `if` statement         | Cleaner guard clauses  |
-| 2+ conditions      | `ts-pattern`           | Exhaustive, readable   |
-| Type narrowing     | `ts-pattern`           | Type-safe matching     |
+| Scenario           | Use            | Why                    |
+| ------------------ | -------------- | ---------------------- |
+| Single boolean     | `if`/`else`    | Simpler for true/false |
+| Early return/guard | `if` statement | Cleaner guard clauses  |
+| 2+ conditions      | `ts-pattern`   | Exhaustive, readable   |
+| Type narrowing     | `ts-pattern`   | Type-safe matching     |
 
 #### Correct
 
