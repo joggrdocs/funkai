@@ -22,7 +22,7 @@ describe("usage()", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
-      source: { agentId: "agent-1" },
+      source: { type: "agent", agentId: "agent-1" },
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
@@ -46,7 +46,7 @@ describe("usage()", () => {
     const result = usage(record);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.source.agentId).toBe("agent-2");
+    expect(result[0]!.source).toEqual({ type: "agent", agentId: "agent-2" });
     expect(result[0]!.inputTokens).toBe(100);
     expect(result[0]!.outputTokens).toBe(50);
     expect(result[0]!.totalTokens).toBe(150);
@@ -150,20 +150,20 @@ describe("usage()", () => {
 
     expect(result).toHaveLength(2);
 
-    const agentA = result.find((u) => u.source.agentId === "agent-a");
+    const agentA = result.find((u) => u.source.type === "agent" && u.source.agentId === "agent-a");
     expect(agentA).toBeDefined();
     expect(agentA!.inputTokens).toBe(150);
     expect(agentA!.outputTokens).toBe(75);
     expect(agentA!.totalTokens).toBe(225);
 
-    const agentB = result.find((u) => u.source.agentId === "agent-b");
+    const agentB = result.find((u) => u.source.type === "agent" && u.source.agentId === "agent-b");
     expect(agentB).toBeDefined();
     expect(agentB!.inputTokens).toBe(200);
     expect(agentB!.outputTokens).toBe(100);
     expect(agentB!.totalTokens).toBe(300);
   });
 
-  it('assigns records without source to "unknown" agent', () => {
+  it("assigns records without source to unattributed", () => {
     const records: TokenUsageRecord[] = [
       createRecord({ inputTokens: 100 }),
       createRecord({ inputTokens: 50 }),
@@ -172,11 +172,11 @@ describe("usage()", () => {
     const result = usage(records);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.source.agentId).toBe("unknown");
+    expect(result[0]!.source).toEqual({ type: "unattributed" });
     expect(result[0]!.inputTokens).toBe(150);
   });
 
-  it('assigns records with source but no agentId to "unknown"', () => {
+  it("assigns records with source but no agentId to unattributed", () => {
     const records: TokenUsageRecord[] = [
       createRecord({
         inputTokens: 75,
@@ -187,7 +187,7 @@ describe("usage()", () => {
     const result = usage(records);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.source.agentId).toBe("unknown");
+    expect(result[0]!.source).toEqual({ type: "unattributed" });
   });
 
   it("groups records from different steps under the same agentId", () => {
@@ -205,7 +205,7 @@ describe("usage()", () => {
     const result = usage(records);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.source.agentId).toBe("agent-x");
+    expect(result[0]!.source).toEqual({ type: "agent", agentId: "agent-x" });
     expect(result[0]!.inputTokens).toBe(30);
   });
 });

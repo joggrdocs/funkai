@@ -52,7 +52,7 @@ export type { AllConfig, EntryFactory } from "@/core/agents/flow/steps/all.js";
 export type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 
 export type { LanguageModel, TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
-export type { ResolvedUsage } from "@/core/provider/usage.js";
+export type { AgentSource, ResolvedUsage, UnattributedSource } from "@/core/provider/usage.js";
 
 export type { Output } from "ai";
 

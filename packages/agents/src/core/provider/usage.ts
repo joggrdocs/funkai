@@ -3,13 +3,26 @@ import { groupBy, sumBy } from "es-toolkit";
 import type { TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
 
 /**
+ * Source identifying a specific agent.
+ */
+export interface AgentSource {
+  readonly type: "agent";
+  readonly agentId: string;
+}
+
+/**
+ * Source for usage records that lack an agent attribution.
+ */
+export interface UnattributedSource {
+  readonly type: "unattributed";
+}
+
+/**
  * Resolved usage for a single agent — token counts with source identity.
  */
 export interface ResolvedUsage extends TokenUsage {
-  /** Which agent produced this usage. */
-  readonly source: {
-    readonly agentId: string;
-  };
+  /** Which agent (or unattributed source) produced this usage. */
+  readonly source: AgentSource | UnattributedSource;
 }
 
 /**
@@ -17,7 +30,7 @@ export interface ResolvedUsage extends TokenUsage {
  *
  * Groups records by `source.agentId`, aggregates token counts per group,
  * and returns a flat array of per-agent usage. Records without a
- * `source.agentId` are grouped under `"unknown"`.
+ * `source.agentId` are grouped as `{ type: 'unattributed' }`.
  *
  * Works for both single-agent and multi-agent (flow) scenarios — a single
  * agent's records simply produce a one-element array.
@@ -29,19 +42,24 @@ export interface ResolvedUsage extends TokenUsage {
  * ```typescript
  * const records = collectUsages(result.trace)
  * const perAgent = usage(records)
- * // [{ source: { agentId: 'scanner' }, inputTokens: 150, ... }]
+ * // [{ source: { type: 'agent', agentId: 'scanner' }, inputTokens: 150, ... }]
  * ```
  */
 export function usage(records: TokenUsageRecord | TokenUsageRecord[]): readonly ResolvedUsage[] {
   const arr = Array.isArray(records) ? records : [records];
 
+  const UNATTRIBUTED = "__unattributed__";
+
   const grouped = groupBy(arr, (r) => {
     const agentId = r.source?.agentId;
-    return typeof agentId === "string" ? agentId : "unknown";
+    return typeof agentId === "string" ? agentId : UNATTRIBUTED;
   });
 
-  return Object.entries(grouped).map(([agentId, group]) => ({
-    source: { agentId },
+  return Object.entries(grouped).map(([key, group]) => ({
+    source:
+      key === UNATTRIBUTED
+        ? ({ type: "unattributed" } as const)
+        : ({ type: "agent", agentId: key } as const),
     ...aggregateTokens(group),
   }));
 }
