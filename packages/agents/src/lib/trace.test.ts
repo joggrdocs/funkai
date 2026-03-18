@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { TokenUsage } from "@/core/provider/types.js";
-import { collectUsages, snapshotTrace, type TraceEntry } from "@/lib/trace.js";
+import { collectUsages, snapshotTrace } from "@/lib/trace.js";
+import type { TraceEntry } from "@/lib/trace.js";
 
 function createEntry(overrides?: Partial<TraceEntry>): TraceEntry {
   return {
@@ -12,18 +13,18 @@ function createEntry(overrides?: Partial<TraceEntry>): TraceEntry {
   };
 }
 
-describe("snapshotTrace", () => {
+describe(snapshotTrace, () => {
   it("returns a frozen array", () => {
     const trace = [createEntry()];
     const snapshot = snapshotTrace(trace);
-    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(Object.isFrozen(snapshot)).toBeTruthy();
   });
 
   it("freezes each entry in the array", () => {
     const trace = [createEntry(), createEntry({ id: "entry-2" })];
     const snapshot = snapshotTrace(trace);
-    expect(Object.isFrozen(snapshot[0])).toBe(true);
-    expect(Object.isFrozen(snapshot[1])).toBe(true);
+    expect(Object.isFrozen(snapshot[0])).toBeTruthy();
+    expect(Object.isFrozen(snapshot[1])).toBeTruthy();
   });
 
   it("returns a structural clone, not the same references", () => {
@@ -49,9 +50,9 @@ describe("snapshotTrace", () => {
 
     const snapped = snapshot[0] as TraceEntry;
     const snappedChildren = snapped.children as readonly TraceEntry[];
-    expect(Object.isFrozen(snapped)).toBe(true);
-    expect(Object.isFrozen(snappedChildren)).toBe(true);
-    expect(Object.isFrozen(snappedChildren[0])).toBe(true);
+    expect(Object.isFrozen(snapped)).toBeTruthy();
+    expect(Object.isFrozen(snappedChildren)).toBeTruthy();
+    expect(Object.isFrozen(snappedChildren[0])).toBeTruthy();
   });
 
   it("handles deeply nested children (3 levels)", () => {
@@ -66,14 +67,14 @@ describe("snapshotTrace", () => {
     const mid = root0Children[0] as TraceEntry;
     const midChildren = mid.children as readonly TraceEntry[];
     const deep = midChildren[0] as TraceEntry;
-    expect(Object.isFrozen(deep)).toBe(true);
+    expect(Object.isFrozen(deep)).toBeTruthy();
     expect(deep.id).toBe("grandchild");
   });
 
   it("handles an empty trace array", () => {
     const snapshot = snapshotTrace([]);
     expect(snapshot).toEqual([]);
-    expect(Object.isFrozen(snapshot)).toBe(true);
+    expect(Object.isFrozen(snapshot)).toBeTruthy();
   });
 
   it("preserves all entry fields", () => {
@@ -116,8 +117,8 @@ describe("snapshotTrace", () => {
 
     // Original should remain unfrozen and mutable
     const original = trace[0] as TraceEntry;
-    expect(Object.isFrozen(trace)).toBe(false);
-    expect(Object.isFrozen(original)).toBe(false);
+    expect(Object.isFrozen(trace)).toBeFalsy();
+    expect(Object.isFrozen(original)).toBeFalsy();
     original.id = "mutated";
     expect(original.id).toBe("mutated");
   });
@@ -130,16 +131,15 @@ describe("snapshotTrace", () => {
   });
 });
 
-describe("TraceEntry", () => {
+describe("TraceEntry type", () => {
   it("supports all operation types", () => {
     const types = ["step", "agent", "map", "each", "reduce", "while", "all", "race"] as const;
     const entries: TraceEntry[] = types.map((type) => createEntry({ id: type, type }));
 
     expect(entries).toHaveLength(8);
-    entries.forEach((entry, i) => {
-      // eslint-disable-next-line security/detect-object-injection -- Array index from forEach callback, not user input
+    for (const [i, entry] of entries.entries()) {
       expect(entry.type).toBe(types[i]);
-    });
+    }
   });
 
   it("allows optional fields to be undefined", () => {

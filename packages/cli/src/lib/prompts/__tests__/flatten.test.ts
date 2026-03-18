@@ -6,7 +6,7 @@ import { flattenPartials } from "@/lib/prompts/flatten.js";
 
 const PARTIALS_DIR = resolve(import.meta.dirname, "../../../../../prompts/src/prompts");
 
-describe("flattenPartials", () => {
+describe(flattenPartials, () => {
   describe("param parsing", () => {
     it("resolves a single literal param", () => {
       const template = "{% render 'identity', role: 'Bot' %}";

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { createEngine, liquidEngine } from "@/engine.js";
 
-describe("createEngine", () => {
+describe(createEngine, () => {
   it("should return a Liquid instance", () => {
     const eng = createEngine("/tmp/test-partials");
     expect(eng).toBeInstanceOf(Liquid);
@@ -26,7 +26,7 @@ describe("createEngine", () => {
   });
 });
 
-describe("liquidEngine", () => {
+describe("liquidEngine instance", () => {
   it("should be a Liquid instance", () => {
     expect(liquidEngine).toBeInstanceOf(Liquid);
   });

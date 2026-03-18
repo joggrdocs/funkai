@@ -25,6 +25,9 @@
     "funkai": "./bin/funkai.mjs"
   },
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "kidd dev",
     "build": "kidd build",

@@ -18,7 +18,13 @@ export function extractVariables(template: string): string[] {
 
   const roots = new Set(
     variables.map((variable) => {
-      const root = Array.isArray(variable) ? String(variable[0]) : String(variable);
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      const root: string = (() => {
+        if (Array.isArray(variable)) {
+          return String(variable[0]);
+        }
+        return String(variable);
+      })();
 
       if (DANGEROUS_NAMES.has(root)) {
         throw new Error(`Dangerous variable name "${root}" is not allowed in prompt templates`);

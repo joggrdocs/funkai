@@ -220,7 +220,7 @@ describe("step()", () => {
     });
 
     expect(ctx.trace).toHaveLength(1);
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -241,7 +241,7 @@ describe("step()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -278,7 +278,7 @@ describe("step()", () => {
     });
 
     expect(ctx.trace).toHaveLength(1);
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -286,7 +286,7 @@ describe("step()", () => {
     if (traceEntry.children === undefined) {
       throw new Error("Expected trace children");
     }
-    const childEntry = traceEntry.children[0];
+    const [childEntry] = traceEntry.children;
     if (childEntry === undefined) {
       throw new Error("Expected child trace entry");
     }

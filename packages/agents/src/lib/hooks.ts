@@ -8,7 +8,7 @@ const formatHookError = (err: unknown): string =>
       (e): e is Error => e instanceof Error,
       (e) => e.message,
     )
-    .otherwise((e) => String(e));
+    .otherwise(String);
 
 /**
  * Wrap a nullable hook into a callback for `fireHooks`, avoiding
@@ -41,15 +41,15 @@ export function wrapHook<T>(
  */
 export async function fireHooks(
   log: Logger,
-  ...handlers: Array<(() => void | Promise<void>) | undefined>
+  ...handlers: ((() => void | Promise<void>) | undefined)[]
 ): Promise<void> {
   for (const h of handlers) {
-    if (h != null) {
+    if (h !== null && h !== undefined) {
       try {
         // oxlint-disable-next-line no-await-in-loop - sequential by design
         await h();
-      } catch (err) {
-        const errorMessage = formatHookError(err);
+      } catch (error) {
+        const errorMessage = formatHookError(error);
         log.warn("hook error", {
           error: errorMessage,
         });

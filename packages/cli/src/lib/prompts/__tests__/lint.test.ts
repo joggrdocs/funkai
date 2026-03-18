@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { hasLintErrors, lintPrompt } from "@/lib/prompts/lint.js";
 
-describe("lintPrompt", () => {
+describe(lintPrompt, () => {
   it("returns no diagnostics when vars match schema", () => {
     const result = lintPrompt(
       "test",
@@ -50,10 +50,10 @@ describe("lintPrompt", () => {
   });
 });
 
-describe("hasLintErrors", () => {
+describe(hasLintErrors, () => {
   it("returns false when no errors", () => {
     const results = [{ name: "test", filePath: "test.prompt", diagnostics: [] }];
-    expect(hasLintErrors(results)).toBe(false);
+    expect(hasLintErrors(results)).toBeFalsy();
   });
 
   it("returns true when errors exist", () => {
@@ -64,7 +64,7 @@ describe("hasLintErrors", () => {
         diagnostics: [{ level: "error" as const, message: "oops" }],
       },
     ];
-    expect(hasLintErrors(results)).toBe(true);
+    expect(hasLintErrors(results)).toBeTruthy();
   });
 
   it("returns false when only warnings", () => {
@@ -75,6 +75,6 @@ describe("hasLintErrors", () => {
         diagnostics: [{ level: "warn" as const, message: "hmm" }],
       },
     ];
-    expect(hasLintErrors(results)).toBe(false);
+    expect(hasLintErrors(results)).toBeFalsy();
   });
 });

@@ -11,12 +11,17 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-first",
       entries: [
-        () => new Promise((r) => setTimeout(() => r("slow"), 50)),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow");
+            }, 50);
+          }),
         () => Promise.resolve("fast"),
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -35,12 +40,16 @@ describe("race()", () => {
         () => Promise.resolve("winner"),
         (signal) => {
           signals.loser = signal;
-          return new Promise((r) => setTimeout(() => r("loser"), 500));
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("loser");
+            }, 500);
+          });
         },
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -48,7 +57,7 @@ describe("race()", () => {
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
-    expect(signals.loser.aborted).toBe(true);
+    expect(signals.loser.aborted).toBeTruthy();
   });
 
   it("passes abort signal to all entry factories", async () => {
@@ -89,7 +98,11 @@ describe("race()", () => {
         },
         (signal) => {
           receivedSignals.push(signal);
-          return new Promise((r) => setTimeout(() => r("second"), 100));
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("second");
+            }, 100);
+          });
         },
       ],
     });
@@ -111,7 +124,7 @@ describe("race()", () => {
     });
 
     // Promise.race rejects with the first rejection
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -127,7 +140,7 @@ describe("race()", () => {
       entries: [() => Promise.resolve("only")],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -202,7 +215,7 @@ describe("race()", () => {
       entries: [() => Promise.resolve("traced")],
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -231,7 +244,7 @@ describe("race()", () => {
       ],
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -239,7 +252,7 @@ describe("race()", () => {
     if (traceEntry.children === undefined) {
       throw new Error("Expected children");
     }
-    const child = traceEntry.children[0];
+    const [child] = traceEntry.children;
     if (child === undefined) {
       throw new Error("Expected child entry");
     }
@@ -257,14 +270,18 @@ describe("race()", () => {
         () => Promise.reject(new Error("fail")),
         (signal) => {
           signals.entry = signal;
-          return new Promise((r) => setTimeout(() => r("late"), 500));
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("late");
+            }, 500);
+          });
         },
       ],
     });
 
     // The finally block in race() always aborts
     if (signals.entry !== undefined) {
-      expect(signals.entry.aborted).toBe(true);
+      expect(signals.entry.aborted).toBeTruthy();
     }
   });
 
@@ -275,13 +292,23 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-timing",
       entries: [
-        () => new Promise((r) => setTimeout(() => r("slow-1"), 100)),
-        () => new Promise((r) => setTimeout(() => r("slow-2"), 200)),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow-1");
+            }, 100);
+          }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow-2");
+            }, 200);
+          }),
         () => Promise.resolve("instant"),
       ],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }

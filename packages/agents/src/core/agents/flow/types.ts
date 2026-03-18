@@ -1,8 +1,9 @@
 import type { ZodType } from "zod";
 
-import type { GenerateResult, Message, StreamResult } from "@/core/agents/base/types.js";
+import type { GenerateResult, StreamResult } from "@/core/agents/base/types.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type { Logger } from "@/core/logger.js";
+import type { Context } from "@/lib/context.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
 
@@ -344,5 +345,5 @@ export interface FlowAgent<TInput, TOutput> {
  * into flowAgent(). Not exported — only accessible within the package.
  */
 export interface InternalFlowAgentOptions {
-  augment$?: ($: StepBuilder, ctx: import("@/lib/context.js").Context) => StepBuilder;
+  augment$?: ($: StepBuilder, ctx: Context) => StepBuilder;
 }

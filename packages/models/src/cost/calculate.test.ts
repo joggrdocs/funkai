@@ -14,23 +14,23 @@ const ZERO_USAGE: TokenUsage = {
 };
 
 const BASIC_PRICING: ModelPricing = {
-  input: 0.000002,
-  output: 0.000008,
+  input: 0.000_002,
+  output: 0.000_008,
 };
 
 const FULL_PRICING: ModelPricing = {
-  input: 0.000002,
-  output: 0.000008,
-  cacheRead: 0.0000005,
-  cacheWrite: 0.000001,
+  input: 0.000_002,
+  output: 0.000_008,
+  cacheRead: 0.000_000_5,
+  cacheWrite: 0.000_001,
 };
 
 const REASONING_PRICING: ModelPricing = {
-  input: 0.000002,
-  output: 0.000008,
-  cacheRead: 0.0000005,
-  cacheWrite: 0.000001,
-  reasoning: 0.000012,
+  input: 0.000_002,
+  output: 0.000_008,
+  cacheRead: 0.000_000_5,
+  cacheWrite: 0.000_001,
+  reasoning: 0.000_012,
 };
 
 describe("calculateCost()", () => {

@@ -28,7 +28,7 @@ function isPromptModule(value: unknown): value is PromptModule {
  */
 function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
   Object.freeze(obj);
-  Object.values(obj).forEach((value) => {
+  for (const value of Object.values(obj)) {
     if (
       typeof value === "object" &&
       value !== null &&
@@ -37,7 +37,7 @@ function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
     ) {
       deepFreeze(value as PromptNamespace);
     }
-  });
+  }
   return obj as PromptRegistry<T>;
 }
 

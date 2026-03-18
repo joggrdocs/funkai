@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { model, models, MODELS } from "@/catalog/index.js";
 
-describe("MODELS", () => {
+describe("MODELS catalog", () => {
   it("is a non-empty array", () => {
     expect(MODELS.length).toBeGreaterThan(0);
   });
@@ -14,8 +14,8 @@ describe("MODELS", () => {
       expect(typeof m.provider).toBe("string");
       expect(typeof m.pricing.input).toBe("number");
       expect(typeof m.pricing.output).toBe("number");
-      expect(Array.isArray(m.modalities.input)).toBe(true);
-      expect(Array.isArray(m.modalities.output)).toBe(true);
+      expect(Array.isArray(m.modalities.input)).toBeTruthy();
+      expect(Array.isArray(m.modalities.output)).toBeTruthy();
       expect(typeof m.capabilities.reasoning).toBe("boolean");
     }
   });
@@ -30,7 +30,7 @@ describe("MODELS", () => {
     const seen = new Map<string, Set<string>>();
     for (const m of MODELS) {
       const providerSet = seen.get(m.provider) ?? new Set<string>();
-      expect(providerSet.has(m.id)).toBe(false);
+      expect(providerSet.has(m.id)).toBeFalsy();
       providerSet.add(m.id);
       seen.set(m.provider, providerSet);
     }
@@ -58,7 +58,7 @@ describe("model()", () => {
     const result = model("o1");
 
     expect(result).not.toBeNull();
-    expect(result!.capabilities.reasoning).toBe(true);
+    expect(result!.capabilities.reasoning).toBeTruthy();
   });
 
   it("returns model with correct modalities", () => {
@@ -82,7 +82,7 @@ describe("models()", () => {
 
     expect(reasoningModels.length).toBeGreaterThan(0);
     for (const m of reasoningModels) {
-      expect(m.capabilities.reasoning).toBe(true);
+      expect(m.capabilities.reasoning).toBeTruthy();
     }
   });
 
@@ -102,11 +102,11 @@ describe("models()", () => {
   });
 
   it("supports arbitrary filter predicates", () => {
-    const result = models((m) => m.pricing.input > 0.000001);
+    const result = models((m) => m.pricing.input > 0.000_001);
 
     expect(result.length).toBeGreaterThan(0);
     for (const m of result) {
-      expect(m.pricing.input).toBeGreaterThan(0.000001);
+      expect(m.pricing.input).toBeGreaterThan(0.000_001);
     }
   });
 });

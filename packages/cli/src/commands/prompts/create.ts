@@ -5,7 +5,7 @@ import { command } from "@kidd-cli/core";
 import { match, P } from "ts-pattern";
 import { z } from "zod";
 
-const TEMPLATE = (name: string) => `---
+const createTemplate = (name: string) => `---
 name: ${name}
 ---
 
@@ -34,7 +34,7 @@ export default command({
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: directory derived from user CLI path argument
     mkdirSync(dir, { recursive: true });
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: file path derived from user CLI path argument
-    writeFileSync(filePath, TEMPLATE(name), "utf-8");
+    writeFileSync(filePath, createTemplate(name), "utf8");
 
     ctx.logger.success(`Created ${filePath}`);
   },

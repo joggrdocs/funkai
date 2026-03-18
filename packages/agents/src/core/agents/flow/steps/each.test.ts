@@ -17,7 +17,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(order).toEqual([1, 2, 3]);
     expect(result.step.type).toBe("each");
   });
@@ -32,7 +32,7 @@ describe("each()", () => {
       execute: async () => {},
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -53,7 +53,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -91,7 +91,7 @@ describe("each()", () => {
       execute: executeSpy,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(executeSpy).not.toHaveBeenCalled();
   });
 
@@ -108,7 +108,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     expect(processed).toEqual(["only"]);
   });
 
@@ -144,7 +144,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -227,7 +227,7 @@ describe("each()", () => {
       execute: async () => {},
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -248,7 +248,7 @@ describe("each()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }

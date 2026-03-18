@@ -64,6 +64,10 @@ export function createToolResultMessage(
   isError?: boolean,
 ): Message {
   // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
+  const errorField: { isError?: true } = {};
+  if (isError) {
+    errorField.isError = true;
+  }
   return {
     role: "tool",
     content: [
@@ -72,7 +76,7 @@ export function createToolResultMessage(
         toolCallId,
         toolName,
         output: result ?? {},
-        ...(isError ? { isError: true } : {}),
+        ...errorField,
       },
     ],
   } as Message;

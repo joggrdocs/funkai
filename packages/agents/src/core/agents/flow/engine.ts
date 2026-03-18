@@ -7,8 +7,8 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
   InternalFlowAgentOptions,
+  StepInfo,
 } from "@/core/agents/flow/types.js";
-import type { StepInfo } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { ExecutionContext } from "@/lib/context.js";
@@ -319,47 +319,61 @@ export function createFlowEngine<
       onError: buildMergedHook(hookLog, engineOnError, flowOnError),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, flowOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, flowOnStepFinish),
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to merge both config variants
     } as FlowAgentConfig<TInput, any>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-    const wrappedHandler: FlowAgentHandler<TInput, any> = async (params) => {
-      return handler({
+    const wrappedHandler: FlowAgentHandler<TInput, any> = async (params) =>
+      handler({
         input: params.input,
         $: params.$ as StepBuilder & TypedCustomSteps<TCustomSteps>,
         log: params.log,
       });
-    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- bypass overloads; runtime handles both config variants
+    // oxlint-disable @typescript-eslint/no-explicit-any
     return (
       flowAgent as (
         config: FlowAgentConfig<TInput, any>,
         handler: FlowAgentHandler<TInput, any>,
         _internal?: InternalFlowAgentOptions,
       ) => FlowAgent<TInput, any>
-    )(mergedConfig, wrappedHandler, {
-      augment$: ($, ctx) => {
-        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
+    )(
+      // oxlint-enable @typescript-eslint/no-explicit-any
+      mergedConfig,
+      wrappedHandler,
+      {
+        augment$: ($, ctx) => {
+          const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
 
-        for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
-          // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-          customSteps[name] = async (config: unknown) => {
-            const result = await $.step({
-              id:
-                config != null && typeof config === "object" && "id" in config
-                  ? (config as { id: string }).id
-                  : name,
-              execute: async () =>
-                factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
-            });
-            if (!result.ok) {
-              throw result.error;
-            }
-            return result.value;
-          };
-        }
-        return { ...$, ...customSteps } as StepBuilder;
+          for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
+            // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
+            customSteps[name] = async (config: unknown) => {
+              const stepId = (() => {
+                if (
+                  config !== null &&
+                  config !== undefined &&
+                  typeof config === "object" &&
+                  "id" in config
+                ) {
+                  return (config as { id: string }).id;
+                }
+                return name;
+              })();
+              const result = await $.step({
+                id: stepId,
+                execute: async () =>
+                  factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+              });
+              if (!result.ok) {
+                throw result.error;
+              }
+              return result.value;
+            };
+          }
+          return { ...$, ...customSteps } as StepBuilder;
+        },
       },
-    });
+    );
   } as FlowFactory<TCustomSteps>;
 }
