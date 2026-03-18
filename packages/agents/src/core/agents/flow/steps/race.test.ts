@@ -11,7 +11,12 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-first",
       entries: [
-        () => new Promise((resolve) => { setTimeout(() => { resolve("slow"); }, 50); }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow");
+            }, 50);
+          }),
         () => Promise.resolve("fast"),
       ],
     });
@@ -35,7 +40,11 @@ describe("race()", () => {
         () => Promise.resolve("winner"),
         (signal) => {
           signals.loser = signal;
-          return new Promise((resolve) => { setTimeout(() => { resolve("loser"); }, 500); });
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("loser");
+            }, 500);
+          });
         },
       ],
     });
@@ -89,7 +98,11 @@ describe("race()", () => {
         },
         (signal) => {
           receivedSignals.push(signal);
-          return new Promise((resolve) => { setTimeout(() => { resolve("second"); }, 100); });
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("second");
+            }, 100);
+          });
         },
       ],
     });
@@ -257,7 +270,11 @@ describe("race()", () => {
         () => Promise.reject(new Error("fail")),
         (signal) => {
           signals.entry = signal;
-          return new Promise((resolve) => { setTimeout(() => { resolve("late"); }, 500); });
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("late");
+            }, 500);
+          });
         },
       ],
     });
@@ -275,8 +292,18 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-timing",
       entries: [
-        () => new Promise((resolve) => { setTimeout(() => { resolve("slow-1"); }, 100); }),
-        () => new Promise((resolve) => { setTimeout(() => { resolve("slow-2"); }, 200); }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow-1");
+            }, 100);
+          }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow-2");
+            }, 200);
+          }),
         () => Promise.resolve("instant"),
       ],
     });

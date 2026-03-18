@@ -9,8 +9,8 @@ import type { Agent, Message } from "@/core/agents/base/types.js";
 import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
-import { RUNNABLE_META } from '@/lib/runnable.js';
-import type { RunnableMeta } from '@/lib/runnable.js';
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 
 /**
  * Resolve a {@link Model} to an AI SDK `LanguageModel`.
@@ -75,7 +75,12 @@ export function buildAITools(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
         let agentTool: ReturnType<typeof tool<any, any>>;
         // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-        if (meta !== null && meta !== undefined && meta.inputSchema !== null && meta.inputSchema !== undefined) {
+        if (
+          meta !== null &&
+          meta !== undefined &&
+          meta.inputSchema !== null &&
+          meta.inputSchema !== undefined
+        ) {
           agentTool = tool({
             description: `Delegate to ${toolName}`,
             inputSchema: meta.inputSchema,

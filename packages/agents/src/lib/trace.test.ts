@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { TokenUsage } from "@/core/provider/types.js";
-import { collectUsages, snapshotTrace } from '@/lib/trace.js';
-import type { TraceEntry } from '@/lib/trace.js';
+import { collectUsages, snapshotTrace } from "@/lib/trace.js";
+import type { TraceEntry } from "@/lib/trace.js";
 
 function createEntry(overrides?: Partial<TraceEntry>): TraceEntry {
   return {

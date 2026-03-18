@@ -479,7 +479,9 @@ describe("map()", () => {
       execute: async ({ item }) => {
         state.current++;
         state.maxConcurrent = Math.max(state.maxConcurrent, state.current);
-        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
         state.current--;
         return { v: item };
       },
@@ -497,7 +499,9 @@ describe("map()", () => {
       input: [3, 1, 2],
       concurrency: 2,
       execute: async ({ item }) => {
-        await new Promise((resolve) => { setTimeout(resolve, item * 5); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, item * 5);
+        });
         return { v: item };
       },
     });
@@ -720,7 +724,12 @@ describe("race()", () => {
     const result = await $.race({
       id: "race-first",
       entries: [
-        () => new Promise((resolve) => { setTimeout(() => { resolve("slow"); }, 50); }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow");
+            }, 50);
+          }),
         () => Promise.resolve("fast"),
       ],
     });
@@ -748,7 +757,11 @@ describe("race()", () => {
         () => Promise.resolve("winner"),
         (signal) => {
           signals.loser = signal;
-          return new Promise((resolve) => { setTimeout(() => { resolve("loser"); }, 500); });
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("loser");
+            }, 500);
+          });
         },
       ],
     });
@@ -849,7 +862,9 @@ describe("agent() streaming with writer", () => {
     });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.step.type).toBe("agent");
     expect(result.value.output).toBe("hello world");
     expect(result.value.messages).toEqual([]);
@@ -885,7 +900,9 @@ describe("agent() streaming with writer", () => {
     });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.stepId).toBe("stream-err");
   });
@@ -912,7 +929,9 @@ describe("agent() streaming with writer", () => {
     });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.message).toBe("no cause error");
   });
@@ -978,7 +997,9 @@ describe("map() with aborted signal", () => {
     });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("STEP_ERROR");
     expect(result.error.message).toBe("Aborted");
   });

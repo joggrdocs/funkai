@@ -323,7 +323,8 @@ export function createFlowEngine<
     } as FlowAgentConfig<TInput, any>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-    const wrappedHandler: FlowAgentHandler<TInput, any> = async (params) => handler({
+    const wrappedHandler: FlowAgentHandler<TInput, any> = async (params) =>
+      handler({
         input: params.input,
         $: params.$ as StepBuilder & TypedCustomSteps<TCustomSteps>,
         log: params.log,
@@ -337,31 +338,40 @@ export function createFlowEngine<
         handler: FlowAgentHandler<TInput, any>,
         _internal?: InternalFlowAgentOptions,
       ) => FlowAgent<TInput, any>
-    // oxlint-enable @typescript-eslint/no-explicit-any
-    )(mergedConfig, wrappedHandler, {
-      augment$: ($, ctx) => {
-        const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
+    )(
+      // oxlint-enable @typescript-eslint/no-explicit-any
+      mergedConfig,
+      wrappedHandler,
+      {
+        augment$: ($, ctx) => {
+          const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
 
-        for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
-          // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-          customSteps[name] = async (config: unknown) => {
-            let stepId = name;
-            if (config !== null && config !== undefined && typeof config === "object" && "id" in config) {
-              stepId = (config as { id: string }).id;
-            }
-            const result = await $.step({
-              id: stepId,
-              execute: async () =>
-                factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
-            });
-            if (!result.ok) {
-              throw result.error;
-            }
-            return result.value;
-          };
-        }
-        return { ...$, ...customSteps } as StepBuilder;
+          for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
+            // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
+            customSteps[name] = async (config: unknown) => {
+              let stepId = name;
+              if (
+                config !== null &&
+                config !== undefined &&
+                typeof config === "object" &&
+                "id" in config
+              ) {
+                stepId = (config as { id: string }).id;
+              }
+              const result = await $.step({
+                id: stepId,
+                execute: async () =>
+                  factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+              });
+              if (!result.ok) {
+                throw result.error;
+              }
+              return result.value;
+            };
+          }
+          return { ...$, ...customSteps } as StepBuilder;
+        },
       },
-    });
+    );
   } as FlowFactory<TCustomSteps>;
 }

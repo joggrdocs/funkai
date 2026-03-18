@@ -25,6 +25,9 @@
     "funkai": "./bin/funkai.mjs"
   },
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "kidd dev",
     "build": "kidd build",
@@ -46,9 +49,6 @@
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "engines": {
     "node": ">=24.0.0"

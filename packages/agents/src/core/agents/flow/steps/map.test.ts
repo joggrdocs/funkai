@@ -34,7 +34,9 @@ describe("map()", () => {
       execute: async ({ item }) => {
         state.current++;
         state.maxConcurrent = Math.max(state.maxConcurrent, state.current);
-        await new Promise((resolve) => { setTimeout(resolve, 10); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
         state.current--;
         return item;
       },
@@ -52,7 +54,9 @@ describe("map()", () => {
       input: [3, 1, 2],
       concurrency: 2,
       execute: async ({ item }) => {
-        await new Promise((resolve) => { setTimeout(resolve, item * 5); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, item * 5);
+        });
         return item * 10;
       },
     });
@@ -263,7 +267,9 @@ describe("map()", () => {
       concurrency: 1,
       execute: async ({ item }) => {
         order.push(item);
-        await new Promise((resolve) => { setTimeout(resolve, 5); });
+        await new Promise((resolve) => {
+          setTimeout(resolve, 5);
+        });
         return item;
       },
     });

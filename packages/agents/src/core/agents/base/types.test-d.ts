@@ -46,7 +46,9 @@ describe("outputParam accepts raw Zod schemas", () => {
 
 describe("outputParam is assignable to config fields", () => {
   it("is assignable to AgentConfig.output", () => {
-    expectTypeOf<OutputParam>().toExtend<AgentConfig<string, string, Record<string, never>, Record<string, never>>["output"]>();
+    expectTypeOf<OutputParam>().toExtend<
+      AgentConfig<string, string, Record<string, never>, Record<string, never>>["output"]
+    >();
   });
 
   it("is assignable to AgentOverrides.output", () => {

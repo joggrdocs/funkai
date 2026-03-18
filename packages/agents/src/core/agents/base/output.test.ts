@@ -1,9 +1,9 @@
 import { Output } from "ai";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import type * as ZodUtils from "@/utils/zod.js";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
+import type * as ZodUtils from "@/utils/zod.js";
 
 const mockIsZodArray = vi.hoisted(() =>
   vi.fn<(...args: unknown[]) => boolean>((...args: unknown[]) => {
@@ -18,7 +18,7 @@ const mockIsZodArray = vi.hoisted(() =>
   }),
 );
 
-vi.mock(import('@/utils/zod.js'), async (importOriginal) => {
+vi.mock(import("@/utils/zod.js"), async (importOriginal) => {
   const original = await importOriginal<typeof ZodUtils>();
   return {
     ...original,

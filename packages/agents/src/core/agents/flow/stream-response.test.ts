@@ -33,7 +33,9 @@ async function readResponseText(response: Response): Promise<string> {
 
   for (;;) {
     const { done, value } = await reader.read();
-    if (done) {break;}
+    if (done) {
+      break;
+    }
     result += decoder.decode(value, { stream: true });
   }
   return result;

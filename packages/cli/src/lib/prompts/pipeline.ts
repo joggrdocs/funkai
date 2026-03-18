@@ -3,12 +3,12 @@ import { resolve } from "node:path";
 
 import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
 
-import type { ParsedPrompt } from './codegen.js';
+import type { ParsedPrompt } from "./codegen.js";
 import { extractVariables } from "./extract-variables.js";
 import { flattenPartials } from "./flatten.js";
 import { parseFrontmatter } from "./frontmatter.js";
-import { lintPrompt } from './lint.js';
-import type { LintResult } from './lint.js';
+import { lintPrompt } from "./lint.js";
+import type { LintResult } from "./lint.js";
 import { discoverPrompts } from "./paths.js";
 
 /**

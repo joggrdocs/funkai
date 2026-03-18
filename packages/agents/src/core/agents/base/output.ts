@@ -58,7 +58,12 @@ export function resolveOutput(output: OutputParam): OutputSpec {
           const def = (schema as unknown as Record<string, unknown>)._zod as
             | { def: { element?: ZodType } }
             | undefined;
-          if (def !== null && def !== undefined && def.def.element !== null && def.def.element !== undefined) {
+          if (
+            def !== null &&
+            def !== undefined &&
+            def.def.element !== null &&
+            def.def.element !== undefined
+          ) {
             return Output.array({ element: def.def.element });
           }
           throw new Error(

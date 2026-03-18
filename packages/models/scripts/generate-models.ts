@@ -96,8 +96,12 @@ function toPerToken(perMillion: number): number {
  * very small values.
  */
 function fmtNum(n: number): string {
-  if (n === 0) {return "0";}
-  if (n < 0.000_000_1) {return n.toExponential();}
+  if (n === 0) {
+    return "0";
+  }
+  if (n < 0.000_000_1) {
+    return n.toExponential();
+  }
   return String(n);
 }
 
@@ -187,7 +191,11 @@ function getModelLimits(limit: ApiModel["limit"]): { contextWindow: number; maxO
  * Escape a string for use in a TypeScript single-quoted string literal.
  */
 function escapeStr(s: string): string {
-  return s.replaceAll("\\", String.raw`\\`).replaceAll("'", String.raw`\'`).replaceAll("\n", String.raw`\n`).replaceAll("\r", String.raw`\r`);
+  return s
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll("'", String.raw`\'`)
+    .replaceAll("\n", String.raw`\n`)
+    .replaceAll("\r", String.raw`\r`);
 }
 
 function isFresh(reqPath: string): boolean {

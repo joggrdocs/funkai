@@ -1,6 +1,11 @@
 import type { AsyncIterableStream } from "ai";
 
-import type { GenerateResult, Message, StreamPart, StreamResult } from "@/core/agents/base/types.js";
+import type {
+  GenerateResult,
+  Message,
+  StreamPart,
+  StreamResult,
+} from "@/core/agents/base/types.js";
 import {
   collectTextFromMessages,
   createAssistantMessage,
@@ -25,8 +30,8 @@ import type { Logger } from "@/core/logger.js";
 import { sumTokenUsage } from "@/core/provider/usage.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
-import { RUNNABLE_META } from '@/lib/runnable.js';
-import type { RunnableMeta } from '@/lib/runnable.js';
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import type { TraceEntry } from "@/lib/trace.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import { toError } from "@/utils/error.js";
@@ -546,7 +551,7 @@ export function flowAgent<TInput, TOutput = any>(
       name: config.name,
       inputSchema: config.input,
     } satisfies RunnableMeta,
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   } as FlowAgent<TInput, any>; // oxlint-disable-line @typescript-eslint/no-explicit-any
 
   return agent;

@@ -26,7 +26,9 @@ describe(createFlowEngine, () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 10 });
     expect(result.duration).toBeGreaterThanOrEqual(0);
     expect(result.trace).toBeDefined();
@@ -52,7 +54,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 7 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 14 });
     });
 
@@ -86,9 +90,13 @@ describe(createFlowEngine, () => {
 
       expect(factorySpy).toHaveBeenCalledTimes(1);
       const [firstCall] = factorySpy.mock.calls;
-      if (!firstCall) {return;}
+      if (!firstCall) {
+        return;
+      }
       const [call] = firstCall;
-      if (!call) {return;}
+      if (!call) {
+        return;
+      }
       expect(call.config).toEqual({ value: 10 });
       expect(call.ctx).toHaveProperty("signal");
       expect(call.ctx).toHaveProperty("log");
@@ -116,7 +124,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 4 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ sum: 7, product: 12 });
     });
 
@@ -144,7 +154,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 42 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 42 });
     });
   });
@@ -328,7 +340,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 3 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 9 });
       expect(order).toEqual([
         "engine:onStart",
@@ -353,7 +367,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: "not-a-number" } as unknown as { x: number });
 
       expect(result.ok).toBeFalsy();
-      if (result.ok) {return;}
+      if (result.ok) {
+        return;
+      }
       expect(result.error.code).toBe("VALIDATION_ERROR");
     });
 
@@ -368,7 +384,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 10 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 11 });
     });
 
@@ -382,7 +400,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 1 });
 
       expect(result.ok).toBeFalsy();
-      if (result.ok) {return;}
+      if (result.ok) {
+        return;
+      }
       expect(result.error.code).toBe("FLOW_AGENT_ERROR");
       expect(result.error.message).toBe("handler failed");
     });
@@ -406,7 +426,9 @@ describe(createFlowEngine, () => {
 
       expect(r1.ok).toBeTruthy();
       expect(r2.ok).toBeTruthy();
-      if (!r1.ok || !r2.ok) {return;}
+      if (!r1.ok || !r2.ok) {
+        return;
+      }
       expect(r1.output).toEqual({ y: 6 });
       expect(r2.output).toEqual({ y: 105 });
     });
@@ -428,7 +450,9 @@ describe(createFlowEngine, () => {
       const result = await fa.generate({ x: 5 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
       expect(typeof result.output).toBe("string");
     });
 

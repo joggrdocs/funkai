@@ -1,7 +1,7 @@
-import { wrapLanguageModel } from 'ai';
-import type { LanguageModelMiddleware } from 'ai';
+import { wrapLanguageModel } from "ai";
+import type { LanguageModelMiddleware } from "ai";
 
-import type { LanguageModel } from '@/core/provider/types.js';
+import type { LanguageModel } from "@/core/provider/types.js";
 
 /**
  * Options for {@link withModelMiddleware}.

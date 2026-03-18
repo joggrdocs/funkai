@@ -77,7 +77,11 @@ describe("all()", () => {
         () => Promise.reject(new Error("fail fast")),
         (signal) => {
           signals.entry = signal;
-          return new Promise((resolve) => { setTimeout(() => { resolve("late"); }, 500); });
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("late");
+            }, 500);
+          });
         },
       ],
     });
@@ -127,9 +131,19 @@ describe("all()", () => {
     const result = await $.all({
       id: "all-order",
       entries: [
-        () => new Promise((resolve) => { setTimeout(() => { resolve("slow"); }, 30); }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("slow");
+            }, 30);
+          }),
         () => Promise.resolve("fast"),
-        () => new Promise((resolve) => { setTimeout(() => { resolve("medium"); }, 10); }),
+        () =>
+          new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("medium");
+            }, 10);
+          }),
       ],
     });
 

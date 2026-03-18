@@ -113,6 +113,9 @@
       "import": "./dist/providers/inception.mjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "generate:models": "lauf run @funkai/models/generate-models",
     "build": "tsdown",
@@ -130,9 +133,6 @@
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "engines": {
     "node": ">=24.0.0"

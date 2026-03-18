@@ -22,11 +22,11 @@
     "@changesets/cli": "^2.30.0",
     "@vitest/coverage-v8": "catalog:",
     "@zpress/kit": "^0.2.4",
-    "laufen": "^1.2.1",
-    "oxfmt": "^0.41.0",
     "eslint-plugin-functional": "^9.0.4",
     "eslint-plugin-jsdoc": "^62.8.0",
     "eslint-plugin-security": "^4.0.0",
+    "laufen": "^1.2.1",
+    "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
     "turbo": "^2.8.17",
     "vitest": "catalog:"

@@ -3,7 +3,6 @@ import type { AsyncIterableStream, LanguageModel } from "ai";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
-import type { Result } from "@/utils/result.js";
 import type {
   Agent,
   AgentConfig,
@@ -26,9 +25,10 @@ import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
-import { RUNNABLE_META } from '@/lib/runnable.js';
-import type { RunnableMeta } from '@/lib/runnable.js';
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
+import type { Result } from "@/utils/result.js";
 
 /**
  * Create an agent with typed input, tools, subagents, and hooks.
@@ -538,9 +538,7 @@ function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
  *
  * @private
  */
-function resolveOptionalOutput(
-  param: OutputParam | undefined,
-): OutputSpec | undefined {
+function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | undefined {
   if (param !== undefined) {
     return resolveOutput(param);
   }

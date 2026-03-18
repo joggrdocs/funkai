@@ -1,6 +1,5 @@
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { StreamPart, GenerateResult, StreamResult } from "@/core/agents/base/types.js";
-import type { TokenUsage } from "@/core/provider/types.js";
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -17,6 +16,7 @@ import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 import type { StepInfo } from "@/core/agents/flow/types.js";
+import type { TokenUsage } from "@/core/provider/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -251,7 +251,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           } as StreamPart)
           /* V8 ignore start -- defensive; writer.write rarely rejects in practice */
           .catch((writeError) => {
-            ctx.log.warn({ error: writeError, toolCallId }, "failed to write error tool-result event to stream");
+            ctx.log.warn(
+              { error: writeError, toolCallId },
+              "failed to write error tool-result event to stream",
+            );
           });
         /* V8 ignore stop */
       }
@@ -270,9 +273,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   async function agent<TInput>(
     config: AgentStepConfig<TInput>,
   ): Promise<StepResult<GenerateResult>> {
-    const onFinishHandler = buildOnFinishHandler<
-      GenerateResult
-    >(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<GenerateResult>(config.onFinish);
 
     return executeStep<GenerateResult>({
       id: config.id,
@@ -294,10 +295,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           }
           // Safe after the `!streamResult.ok` guard above — the Result union
           // Doesn't spread StreamResult props at the type level, so we cast.
-          const full =
-            streamResult as unknown as StreamResult & {
-              ok: true;
-            };
+          const full = streamResult as unknown as StreamResult & {
+            ok: true;
+          };
 
           // Forward text-delta events from sub-agent to parent stream
           for await (const part of full.fullStream) {
@@ -345,7 +345,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "map",
       input: config.input,
       execute: async ({ $ }) => {
-        const {concurrency} = config;
+        const { concurrency } = config;
         if (concurrency !== null && concurrency !== undefined && concurrency !== Infinity) {
           return poolMap(config.input, concurrency, ctx.signal, (item, index) =>
             config.execute({ item, index, $ }),

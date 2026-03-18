@@ -2,32 +2,40 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { z } from "zod";
 
 import { agent } from "@/core/agents/base/agent.js";
-import { RUNNABLE_META } from '@/lib/runnable.js';
-import type { RunnableMeta } from '@/lib/runnable.js';
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 
 const mockGenerateText = vi.fn();
 const mockStreamText = vi.fn();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
 
-vi.mock(import('ai'), () => ({
-  generateText: (...args: unknown[]) => mockGenerateText(...args),
-  streamText: (...args: unknown[]) => mockStreamText(...args),
-  stepCountIs: (n: number) => mockStepCountIs(n),
-  Output: {
-    text: () => ({ parseCompleteOutput: vi.fn() }),
-    object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
-    array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
-    choice: () => ({ parseCompleteOutput: vi.fn() }),
-    json: () => ({ parseCompleteOutput: vi.fn() }),
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
-} as any));
+vi.mock(
+  import("ai"),
+  () =>
+    ({
+      generateText: (...args: unknown[]) => mockGenerateText(...args),
+      streamText: (...args: unknown[]) => mockStreamText(...args),
+      stepCountIs: (n: number) => mockStepCountIs(n),
+      Output: {
+        text: () => ({ parseCompleteOutput: vi.fn() }),
+        object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
+        array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
+        choice: () => ({ parseCompleteOutput: vi.fn() }),
+        json: () => ({ parseCompleteOutput: vi.fn() }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
+    }) as any,
+);
 
-vi.mock(import('@/lib/middleware.js'), () => ({
-  withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
-} as any));
+vi.mock(
+  import("@/lib/middleware.js"),
+  () =>
+    ({
+      withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
+    }) as any,
+);
 
 const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
 
@@ -79,7 +87,7 @@ function createMockStreamResult(overrides?: {
     finishReason: "stop",
   };
   const merged = { ...defaults, ...overrides };
-  const {chunks} = merged;
+  const { chunks } = merged;
   const textValue = merged.text ?? chunks.join("");
 
   async function* makeFullStream() {
@@ -506,7 +514,9 @@ describe("generate() hooks", () => {
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
-    if (!firstCall) {throw new Error("Expected onStepFinish first call");}
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
     // ExtractProperty returns {} when key is missing, safeSerializedLength({}) = 2
     expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 2 }]);
     expect(firstCall[0].toolResults).toEqual([{ toolName: "t", resultTextLength: 2 }]);
@@ -532,7 +542,9 @@ describe("generate() hooks", () => {
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
-    if (!firstCall) {throw new Error("Expected onStepFinish first call");}
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
     expect(firstCall[0].usage).toEqual({
       inputTokens: 0,
       outputTokens: 0,
@@ -564,7 +576,9 @@ describe("generate() hooks", () => {
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
-    if (!firstCall) {throw new Error("Expected onStepFinish first call");}
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
     // SafeSerializedLength returns 0 for circular references
     expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 0 }]);
   });
@@ -1035,7 +1049,9 @@ describe("stream() hooks", () => {
     }
 
     // Allow microtasks to settle
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
 
     expect(onStepFinish).toHaveBeenCalled();
   });
@@ -1076,7 +1092,9 @@ describe("stream() hooks", () => {
     }
 
     // Allow microtasks to settle
-    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
@@ -1385,7 +1403,9 @@ describe("stream() async error during consumption", () => {
     const result = await a.stream("test");
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress derived promise rejections
     result.output.catch(() => {});
@@ -1402,7 +1422,9 @@ describe("stream() async error during consumption", () => {
       try {
         // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
         const { done, value } = await reader.read();
-        if (done) {break;}
+        if (done) {
+          break;
+        }
         parts.push(value);
       } catch {
         streamErrored = true;
@@ -1426,7 +1448,9 @@ describe("stream() async error during consumption", () => {
     const result = await a.stream("test");
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     result.output.catch(() => {});
     result.messages.catch(() => {});
@@ -1440,14 +1464,18 @@ describe("stream() async error during consumption", () => {
       try {
         // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
         const { done } = await reader.read();
-        if (done) {break;}
+        if (done) {
+          break;
+        }
       } catch {
         break;
       }
     }
 
     // Wait for async error handling to settle
-    await new Promise((resolve) => { setTimeout(resolve, 100); });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
 
     expect(onError).toHaveBeenCalledTimes(1);
     const [firstCall] = onError.mock.calls;
@@ -1494,7 +1522,9 @@ describe("stream() unhandled rejection safety", () => {
       const result = await a.stream("test");
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
 
       // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
       // Before the fix, this would cause unhandled rejection warnings.
@@ -1505,14 +1535,18 @@ describe("stream() unhandled rejection safety", () => {
         try {
           // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
           const { done } = await reader.read();
-          if (done) {break;}
+          if (done) {
+            break;
+          }
         } catch {
           break;
         }
       }
 
       // Allow microtasks to settle so any unhandled rejections would fire
-      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       expect(unhandledRejections).toEqual([]);
     } finally {
@@ -1537,7 +1571,9 @@ describe("stream() response methods", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const init = { status: 200, headers: { "x-custom": "value" } };
     const response = result.toTextStreamResponse(init);
@@ -1556,7 +1592,9 @@ describe("stream() response methods", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toUIMessageStreamResponse();
     expect(mockToUI).toHaveBeenCalledWith(undefined);
@@ -1574,7 +1612,9 @@ describe("stream() response methods", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toTextStreamResponse();
     expect(mockToText).toHaveBeenCalledWith(undefined);

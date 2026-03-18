@@ -1,4 +1,4 @@
-import type { LanguageModelMiddleware } from 'ai';
+import type { LanguageModelMiddleware } from "ai";
 import { describe, expect, it, vi } from "vitest";
 
 import { withModelMiddleware } from "@/lib/middleware.js";

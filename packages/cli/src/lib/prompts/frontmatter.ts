@@ -64,7 +64,7 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     throw new Error(`Frontmatter is not a valid object in ${filePath}`);
   }
 
-  const {name} = parsed;
+  const { name } = parsed;
   if (typeof name !== "string" || name.length === 0) {
     throw new Error(`Missing or empty "name" in frontmatter: ${filePath}`);
   }

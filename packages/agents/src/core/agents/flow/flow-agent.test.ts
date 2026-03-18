@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { z } from "zod";
 
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
-import { RUNNABLE_META } from '@/lib/runnable.js';
-import type { RunnableMeta } from '@/lib/runnable.js';
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 
 const Input = z.object({ x: z.number() });
@@ -54,7 +54,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 10 });
   });
 
@@ -63,7 +65,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 3 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.messages.length).toBeGreaterThanOrEqual(2);
     expect(result.messages[0]?.role).toBe("user");
     expect(result.messages.at(-1)?.role).toBe("assistant");
@@ -74,7 +78,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.usage).toEqual({
       inputTokens: 0,
       outputTokens: 0,
@@ -90,7 +96,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.finishReason).toBe("stop");
   });
 
@@ -99,7 +107,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.trace).toBeInstanceOf(Array);
   });
 
@@ -108,7 +118,9 @@ describe("generate() success", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 });
@@ -138,7 +150,9 @@ describe("generate() with steps", () => {
     const result = await fa.generate({ x: 7 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 14 });
   });
 
@@ -163,7 +177,9 @@ describe("generate() with steps", () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Should have: user msg, tool-call msg, tool-result msg, assistant msg
     expect(result.messages.length).toBeGreaterThanOrEqual(4);
@@ -194,7 +210,9 @@ describe("generate() input validation", () => {
     const result = await fa.generate({ x: "not-a-number" });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("VALIDATION_ERROR");
     expect(result.error.message).toContain("Input validation failed");
   });
@@ -206,7 +224,9 @@ describe("generate() input validation", () => {
     const result = await fa.generate({});
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("VALIDATION_ERROR");
   });
 
@@ -244,7 +264,9 @@ describe("generate() output validation", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("VALIDATION_ERROR");
     expect(result.error.message).toContain("Output validation failed");
   });
@@ -259,7 +281,9 @@ describe("generate() error handling", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("FLOW_AGENT_ERROR");
     expect(result.error.message).toBe("handler exploded");
     expect(result.error.cause).toBeInstanceOf(Error);
@@ -273,7 +297,9 @@ describe("generate() error handling", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("FLOW_AGENT_ERROR");
     expect(result.error.message).toBe("string error");
   });
@@ -287,7 +313,9 @@ describe("generate() hooks", () => {
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
-    if (!firstCall) {throw new Error("Expected onStart first call");}
+    if (!firstCall) {
+      throw new Error("Expected onStart first call");
+    }
     expect(firstCall[0]).toEqual({ input: { x: 5 } });
   });
 
@@ -298,7 +326,9 @@ describe("generate() hooks", () => {
 
     expect(onFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onFinish.mock.calls;
-    if (!firstCall) {throw new Error("Expected onFinish first call");}
+    if (!firstCall) {
+      throw new Error("Expected onFinish first call");
+    }
     const [event] = firstCall;
     expect(event.input).toEqual({ x: 3 });
     expect(event.result).toHaveProperty("output");
@@ -316,7 +346,9 @@ describe("generate() hooks", () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     const [firstCall] = onError.mock.calls;
-    if (!firstCall) {throw new Error("Expected onError first call");}
+    if (!firstCall) {
+      throw new Error("Expected onError first call");
+    }
     expect(firstCall[0].input).toEqual({ x: 1 });
     expect(firstCall[0].error).toBeInstanceOf(Error);
     expect(firstCall[0].error.message).toBe("boom");
@@ -385,8 +417,12 @@ describe("generate() hooks", () => {
 
     const [configCall] = configOnStepFinish.mock.calls;
     const [overrideCall] = overrideOnStepFinish.mock.calls;
-    if (!configCall) {throw new Error("Expected configOnStepFinish first call");}
-    if (!overrideCall) {throw new Error("Expected overrideOnStepFinish first call");}
+    if (!configCall) {
+      throw new Error("Expected configOnStepFinish first call");
+    }
+    if (!overrideCall) {
+      throw new Error("Expected overrideOnStepFinish first call");
+    }
     expect(configCall[0]).toHaveProperty("step");
     expect(configCall[0]).toHaveProperty("duration");
     expect(overrideCall[0]).toHaveProperty("step");
@@ -457,7 +493,9 @@ describe("generate() hook resilience", () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 10 });
   });
 
@@ -471,7 +509,9 @@ describe("generate() hook resilience", () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 10 });
   });
 
@@ -490,7 +530,9 @@ describe("generate() hook resilience", () => {
     const result = await fa.generate({ x: 1 });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("FLOW_AGENT_ERROR");
     expect(result.error.message).toBe("handler fail");
   });
@@ -533,7 +575,9 @@ describe("generate() void output", () => {
     const result = await fa.generate({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(typeof result.output).toBe("string");
   });
 });
@@ -544,7 +588,9 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.fullStream).toBeInstanceOf(ReadableStream);
     expect(result.output).toBeInstanceOf(Promise);
     expect(result.messages).toBeInstanceOf(Promise);
@@ -557,13 +603,17 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 4 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     const output = await result.output;
@@ -575,13 +625,17 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 2 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const parts: unknown[] = [];
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
       parts.push(value);
     }
 
@@ -597,13 +651,17 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     const messages = await result.messages;
@@ -616,13 +674,17 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     const usage = await result.usage;
@@ -641,13 +703,17 @@ describe("stream() success", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     const finishReason = await result.finishReason;
@@ -677,13 +743,17 @@ describe("stream() with steps", () => {
     const result = await fa.stream({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const parts: Record<string, unknown>[] = [];
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
       parts.push(value as Record<string, unknown>);
     }
 
@@ -713,7 +783,9 @@ describe("stream() input validation", () => {
     const result = await fa.stream({ x: "not-a-number" });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("VALIDATION_ERROR");
     expect(result.error.message).toContain("Input validation failed");
   });
@@ -728,7 +800,9 @@ describe("stream() error handling", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress all derived promise rejections to avoid unhandled rejection noise
     result.messages.catch(() => {});
@@ -739,7 +813,9 @@ describe("stream() error handling", () => {
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     await expect(result.output).rejects.toThrow("stream handler fail");
@@ -753,7 +829,9 @@ describe("stream() error handling", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress derived promise rejections
     result.messages.catch(() => {});
@@ -765,7 +843,9 @@ describe("stream() error handling", () => {
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
       parts.push(value as Record<string, unknown>);
     }
 
@@ -793,7 +873,9 @@ describe("stream() output validation", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress derived promise rejections
     result.messages.catch(() => {});
@@ -804,7 +886,9 @@ describe("stream() output validation", () => {
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     await expect(result.output).rejects.toThrow("Output validation failed");
@@ -819,7 +903,9 @@ describe("stream() hooks", () => {
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
-    if (!firstCall) {throw new Error("Expected onStart first call");}
+    if (!firstCall) {
+      throw new Error("Expected onStart first call");
+    }
     expect(firstCall[0]).toEqual({ input: { x: 5 } });
   });
 
@@ -829,13 +915,17 @@ describe("stream() hooks", () => {
     const result = await fa.stream({ x: 3 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     // Wait for output to settle (which means onFinish has fired)
@@ -852,13 +942,17 @@ describe("stream() hooks", () => {
     const result = await fa.stream({ x: 7 }, { onStart: overrideOnStart });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     await result.output;
@@ -867,8 +961,12 @@ describe("stream() hooks", () => {
     expect(overrideOnStart).toHaveBeenCalledTimes(1);
     const [configCall] = configOnStart.mock.calls;
     const [overrideCall] = overrideOnStart.mock.calls;
-    if (!configCall) {throw new Error("Expected configOnStart first call");}
-    if (!overrideCall) {throw new Error("Expected overrideOnStart first call");}
+    if (!configCall) {
+      throw new Error("Expected configOnStart first call");
+    }
+    if (!overrideCall) {
+      throw new Error("Expected overrideOnStart first call");
+    }
     expect(configCall[0]).toEqual({ input: { x: 7 } });
     expect(overrideCall[0]).toEqual({ input: { x: 7 } });
   });
@@ -881,7 +979,9 @@ describe("stream() hooks", () => {
     const result = await fa.stream({ x: 1 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress all derived promise rejections
     result.messages.catch(() => {});
@@ -892,7 +992,9 @@ describe("stream() hooks", () => {
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     // Wait for the error to settle
@@ -921,13 +1023,17 @@ describe("stream() void output", () => {
     const result = await fa.stream({ x: 5 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     const reader = result.fullStream.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
 
     const output = await result.output;
@@ -943,7 +1049,9 @@ describe("fn()", () => {
     const result = await fn({ x: 6 });
 
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 12 });
   });
 
@@ -965,7 +1073,9 @@ describe("fn()", () => {
     const result = await fn({ x: "bad" });
 
     expect(result.ok).toBeFalsy();
-    if (result.ok) {return;}
+    if (result.ok) {
+      return;
+    }
     expect(result.error.code).toBe("VALIDATION_ERROR");
   });
 });
@@ -1029,7 +1139,9 @@ describe("stream() unhandled rejection safety", () => {
       const result = await fa.stream({ x: 1 });
 
       expect(result.ok).toBeTruthy();
-      if (!result.ok) {return;}
+      if (!result.ok) {
+        return;
+      }
 
       // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
       // Before the fix, this would cause unhandled rejection warnings.
@@ -1038,11 +1150,15 @@ describe("stream() unhandled rejection safety", () => {
       const reader = result.fullStream.getReader();
       for (;;) {
         const { done } = await reader.read();
-        if (done) {break;}
+        if (done) {
+          break;
+        }
       }
 
       // Allow microtasks to settle so any unhandled rejections would fire
-      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       expect(unhandledRejections).toEqual([]);
     } finally {
@@ -1060,7 +1176,9 @@ describe("stream() response methods", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ x: 5 });
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toTextStreamResponse();
 
@@ -1071,7 +1189,9 @@ describe("stream() response methods", () => {
     const reader = response.body!.getReader();
     for (;;) {
       const { done } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
     }
   });
 
@@ -1079,7 +1199,9 @@ describe("stream() response methods", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ x: 1 });
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toTextStreamResponse({
       status: 201,
@@ -1094,7 +1216,9 @@ describe("stream() response methods", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ x: 5 });
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toUIMessageStreamResponse();
 
@@ -1107,7 +1231,9 @@ describe("stream() response methods", () => {
     let text = "";
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) {break;}
+      if (done) {
+        break;
+      }
       text += decoder.decode(value, { stream: true });
     }
 
@@ -1118,7 +1244,9 @@ describe("stream() response methods", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ x: 1 });
     expect(result.ok).toBeTruthy();
-    if (!result.ok) {return;}
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toUIMessageStreamResponse({
       status: 201,

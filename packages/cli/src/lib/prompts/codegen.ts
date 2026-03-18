@@ -49,7 +49,10 @@ function toCamelCase(name: string): string {
  * @private
  */
 function escapeTemplateLiteral(str: string): string {
-  return str.replaceAll("\\", String.raw`\\`).replaceAll("`", "\\`").replaceAll("${", "\\${");
+  return str
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll("`", "\\`")
+    .replaceAll("${", "\\${");
 }
 
 /**
