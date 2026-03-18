@@ -536,6 +536,11 @@ export function agent<
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
+        // Safe to delegate: the AI SDK internally tees its baseStream for each
+        // accessor (fullStream, textStream, toTextStreamResponse, etc.), so
+        // consuming fullStream above does not conflict with these methods.
+        toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
+        toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
 
       // Prevent unhandled rejection warnings when consumers don't await all promises

@@ -1,5 +1,12 @@
 import type { ModelResolver } from "@funkai/models";
-import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from "ai";
+import type {
+  AsyncIterableStream,
+  ModelMessage,
+  TextStreamPart,
+  ToolSet,
+  UIMessage,
+  UIMessageStreamOptions,
+} from "ai";
 import type { ZodType } from "zod";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
@@ -170,6 +177,56 @@ export interface StreamResult<TOutput = string> {
    * `fullStream.getReader()`.
    */
   fullStream: AsyncIterableStream<StreamPart>;
+
+  /**
+   * Creates a plain text stream HTTP response.
+   *
+   * Each text delta is encoded as UTF-8 and sent as a separate chunk.
+   * Non-text events are ignored. Useful for API endpoints (Hono,
+   * Express, Bun) that return plain streamed text.
+   *
+   * Note: this reads from the underlying AI SDK stream, not from
+   * `fullStream`. Do not consume both simultaneously.
+   *
+   * @param init - Optional response headers, status code, and status text.
+   * @returns A web standard `Response` with streamed text content.
+   *
+   * @example
+   * ```typescript
+   * app.post('/chat', async (c) => {
+   *   const result = await myAgent.stream('Hello');
+   *   if (!result.ok) return c.text('Error', 500);
+   *   return result.toTextStreamResponse();
+   * });
+   * ```
+   */
+  toTextStreamResponse(init?: ResponseInit): Response;
+
+  /**
+   * Creates a UI message stream HTTP response.
+   *
+   * Returns a `Response` suitable for the Vercel AI SDK's `useChat`
+   * hook on the client. Includes tool calls, tool results, reasoning,
+   * sources, and other structured events.
+   *
+   * Note: this reads from the underlying AI SDK stream, not from
+   * `fullStream`. Do not consume both simultaneously.
+   *
+   * @param options - Optional response init and UI message stream options.
+   * @returns A web standard `Response` with a UI message stream body.
+   *
+   * @example
+   * ```typescript
+   * app.post('/chat', async (c) => {
+   *   const result = await myAgent.stream('Hello');
+   *   if (!result.ok) return c.text('Error', 500);
+   *   return result.toUIMessageStreamResponse();
+   * });
+   * ```
+   */
+  toUIMessageStreamResponse<UI_MESSAGE extends UIMessage = UIMessage>(
+    options?: ResponseInit & UIMessageStreamOptions<UI_MESSAGE>,
+  ): Response;
 }
 
 /**
