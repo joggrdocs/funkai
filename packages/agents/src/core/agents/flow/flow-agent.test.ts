@@ -1134,3 +1134,82 @@ describe("stream() unhandled rejection safety", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// stream() response methods
+// ---------------------------------------------------------------------------
+
+describe("stream() response methods", () => {
+  it("toTextStreamResponse returns a Response with correct content type", async () => {
+    const fa = createSimpleFlowAgent();
+    const result = await fa.stream({ x: 5 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toTextStreamResponse();
+
+    expect(response).toBeInstanceOf(Response);
+    expect(response.headers.get("Content-Type")).toBe("text/plain; charset=utf-8");
+
+    // Consume the response to verify it's a valid readable stream
+    const reader = response.body!.getReader();
+    for (;;) {
+      const { done } = await reader.read();
+      if (done) break;
+    }
+  });
+
+  it("toTextStreamResponse accepts custom init", async () => {
+    const fa = createSimpleFlowAgent();
+    const result = await fa.stream({ x: 1 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toTextStreamResponse({
+      status: 201,
+      headers: { "X-Custom": "value" },
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.headers.get("X-Custom")).toBe("value");
+  });
+
+  it("toUIMessageStreamResponse returns a readable Response", async () => {
+    const fa = createSimpleFlowAgent();
+    const result = await fa.stream({ x: 5 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toUIMessageStreamResponse();
+
+    expect(response).toBeInstanceOf(Response);
+    expect(response.body).toBeTruthy();
+
+    // Consume the response to verify it's a valid readable stream
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let text = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text += decoder.decode(value, { stream: true });
+    }
+
+    expect(text.length).toBeGreaterThan(0);
+  });
+
+  it("toUIMessageStreamResponse accepts custom init", async () => {
+    const fa = createSimpleFlowAgent();
+    const result = await fa.stream({ x: 1 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const response = result.toUIMessageStreamResponse({
+      status: 201,
+      headers: { "X-Custom": "test" },
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.headers.get("X-Custom")).toBe("test");
+  });
+});

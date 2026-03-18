@@ -6,8 +6,8 @@ import type { StreamPart } from "@/core/agents/base/types.js";
 /**
  * Response conversion methods built from a `StreamPart` readable stream.
  *
- * Used by both base agents and flow agents to provide consistent
- * HTTP response conversion from any stream of `StreamPart` events.
+ * Used by flow agents to provide HTTP response conversion from
+ * a manually constructed stream of `StreamPart` events.
  *
  * @internal
  */

@@ -1,6 +1,6 @@
 import type { AsyncIterableStream } from "ai";
 
-import { buildStreamResponseMethods } from "@/core/agents/base/stream-response.js";
+import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
 
 import type { Message, StreamPart } from "@/core/agents/base/types.js";
 import {
