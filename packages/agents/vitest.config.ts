@@ -7,6 +7,7 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}"],
     passWithNoTests: true,
     typecheck: {
+      enabled: true,
       include: ["src/**/*.test-d.{ts,tsx}"],
     },
     coverage: {

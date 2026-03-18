@@ -1,6 +1,7 @@
 import type { ProviderRegistry } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
+import { isNil, isNotNil } from "es-toolkit";
 import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
@@ -53,8 +54,8 @@ export function buildAITools(
   agents?: Record<string, Agent<any, any, any, any>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): Record<string, any> | undefined {
-  const hasTools = tools !== null && tools !== undefined && Object.keys(tools).length > 0;
-  const hasAgents = agents !== null && agents !== undefined && Object.keys(agents).length > 0;
+  const hasTools = isNotNil(tools) && Object.keys(tools).length > 0;
+  const hasAgents = isNotNil(agents) && Object.keys(agents).length > 0;
 
   if (!hasTools && !hasAgents) {
     return undefined;
@@ -70,17 +71,19 @@ export function buildAITools(
             | RunnableMeta
             | undefined;
           const toolName = resolveToolName(meta, name);
-          const agentToolName = `agent:${name}`;
+          validateToolName(name);
+          const agentToolName = `agent_${name}`;
+          if (isNotNil(tools) && Object.hasOwn(tools, agentToolName)) {
+            throw new Error(
+              `Tool name collision: "${agentToolName}" already exists in tools. ` +
+                `Rename sub-agent key "${name}" or the existing tool.`,
+            );
+          }
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
           const agentTool: ReturnType<typeof tool<any, any>> = (() => {
             // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-            if (
-              meta !== null &&
-              meta !== undefined &&
-              meta.inputSchema !== null &&
-              meta.inputSchema !== undefined
-            ) {
+            if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
               return tool({
                 description: `Delegate to ${toolName}`,
                 inputSchema: meta.inputSchema,
@@ -123,7 +126,7 @@ export function resolveSystem<TInput>(
   system: string | ((params: { input: TInput }) => string) | undefined,
   input: TInput,
 ): string | undefined {
-  if (system === null || system === undefined) {
+  if (isNil(system)) {
     return undefined;
   }
   if (typeof system === "function") {
@@ -212,6 +215,63 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
 // ---------------------------------------------------------------------------
 
 /**
+ * Pattern matching the universally safe tool-name subset accepted by
+ * all major LLM providers (OpenAI, Anthropic, Google Gemini, Mistral).
+ *
+ * Must start with a letter or underscore, then letters, digits, or
+ * underscores only — the strictest common denominator (Gemini).
+ *
+ * @private
+ */
+const SAFE_TOOL_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+/**
+ * Validate that a tool name is safe for all major LLM providers.
+ *
+ * Throws with a descriptive error if the name contains characters
+ * that would be rejected by any provider (OpenAI, Anthropic, Gemini, Mistral).
+ *
+ * @param name - The tool name to validate.
+ * @throws {Error} If the name contains unsupported characters.
+ *
+ * @private
+ */
+function validateToolName(name: string): void {
+  if (SAFE_TOOL_NAME_RE.test(name)) {
+    return;
+  }
+
+  const reasons: readonly string[] = match(name)
+    .when(
+      (n) => n.length === 0,
+      () => ["name must not be empty"],
+    )
+    .otherwise((n) => {
+      const invalidChars = [...new Set(n.replaceAll(/[a-zA-Z0-9_]/g, ""))].filter(
+        (c) => c.length > 0,
+      );
+
+      return [
+        ...match(/^[0-9]/.test(n))
+          .with(true, () => [`must start with a letter or underscore, got "${n[0]}"`])
+          .otherwise(() => []),
+        ...match(invalidChars.length > 0)
+          .with(true, () => [
+            `invalid character(s): ${invalidChars.map((c) => `"${c}"`).join(", ")}`,
+          ])
+          .otherwise(() => []),
+      ];
+    });
+
+  throw new Error(
+    `Invalid sub-agent key "${name}": tool names must match /^[a-zA-Z_][a-zA-Z0-9_]*$/ ` +
+      `to work across all LLM providers (OpenAI, Anthropic, Gemini, Mistral). ` +
+      `${reasons.join("; ")}. ` +
+      `Use camelCase (e.g. "myAgent") or snake_case (e.g. "my_agent") instead.`,
+  );
+}
+
+/**
  * Resolve a display name for a sub-agent tool from its runnable
  * metadata, falling back to the provided name.
  *
@@ -222,7 +282,7 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
  * @private
  */
 function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
-  if (meta !== null && meta !== undefined && meta.name !== null && meta.name !== undefined) {
+  if (isNotNil(meta) && isNotNil(meta.name)) {
     return meta.name;
   }
   return fallback;

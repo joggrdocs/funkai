@@ -27,7 +27,7 @@ import type {
 } from "@/core/agents/flow/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
-import { sumTokenUsage } from "@/core/provider/usage.js";
+import type { TokenUsage } from "@/core/provider/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
@@ -354,7 +354,7 @@ export function flowAgent<TInput, TOutput = any>(
 
       const duration = Date.now() - startedAt;
 
-      const usage = sumTokenUsage(collectUsages(trace));
+      const usage = sumTokenUsages(collectUsages(trace));
       const frozenTrace = snapshotTrace(trace);
 
       const result: FlowAgentGenerateResult<unknown> = {
@@ -444,7 +444,7 @@ export function flowAgent<TInput, TOutput = any>(
 
         const duration = Date.now() - startedAt;
 
-        const usage = sumTokenUsage(collectUsages(trace));
+        const usage = sumTokenUsages(collectUsages(trace));
 
         const result: FlowAgentGenerateResult<unknown> = {
           output: resolvedOutput,
@@ -555,4 +555,25 @@ export function flowAgent<TInput, TOutput = any>(
   } as FlowAgent<TInput, any>; // oxlint-disable-line @typescript-eslint/no-explicit-any
 
   return agent;
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Sum multiple {@link TokenUsage} objects field-by-field.
+ *
+ * @private
+ */
+function sumTokenUsages(usages: TokenUsage[]): TokenUsage {
+  const sum = (fn: (u: TokenUsage) => number): number => usages.reduce((acc, u) => acc + fn(u), 0);
+  return {
+    inputTokens: sum((u) => u.inputTokens),
+    outputTokens: sum((u) => u.outputTokens),
+    totalTokens: sum((u) => u.totalTokens),
+    cacheReadTokens: sum((u) => u.cacheReadTokens),
+    cacheWriteTokens: sum((u) => u.cacheWriteTokens),
+    reasoningTokens: sum((u) => u.reasoningTokens),
+  };
 }

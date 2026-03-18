@@ -294,6 +294,9 @@ importers:
       ts-pattern:
         specifier: 'catalog:'
         version: 5.9.0
+      type-fest:
+        specifier: ^5.4.4
+        version: 5.4.4
       zod:
         specifier: 'catalog:'
         version: 4.3.6

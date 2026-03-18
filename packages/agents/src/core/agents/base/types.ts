@@ -7,6 +7,7 @@ import type {
   UIMessage,
   UIMessageStreamOptions,
 } from "ai";
+import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
@@ -26,12 +27,55 @@ import type { Result } from "@/utils/result.js";
 export type StreamPart = TextStreamPart<ToolSet>;
 
 /**
+ * Compile-time guard that validates a string is a provider-safe tool name.
+ *
+ * Accepts camelCase and snake_case — the two naming styles that work
+ * across all major LLM providers (OpenAI, Anthropic, Gemini, Mistral).
+ * Rejects kebab-case, dot.case, colons, spaces, and other formats that
+ * contain characters outside `^[a-zA-Z_][a-zA-Z0-9_]*$`.
+ *
+ * Uses type-fest's `SnakeCase` and `CamelCase` converters as validators:
+ * if converting `S` to snake_case (or camelCase) returns the same string,
+ * then `S` is already in that format and therefore safe.
+ *
+ * @remarks
+ * Runtime validation in `validateToolName()` is the authoritative check.
+ * This type is a best-effort compile-time guard.
+ *
+ * @param S - Candidate key string to validate; must start with a letter or
+ *   underscore and contain only letters, digits, or underscores.
+ * @returns The input string `S` if it matches camelCase or snake_case, otherwise `never`.
+ *
+ * @example
+ * ```typescript
+ * type Good = ToolName<'myAgent'>;     // 'myAgent'
+ * type Also = ToolName<'my_agent'>;    // 'my_agent'
+ * type Bad  = ToolName<'my-agent'>;    // never
+ * type Nope = ToolName<'agent:plan'>;  // never
+ * ```
+ */
+export type ToolName<S extends string> = S extends ""
+  ? never
+  : S extends Uppercase<S>
+    ? S
+    : S extends SnakeCase<S>
+      ? S
+      : S extends CamelCase<S>
+        ? S
+        : never;
+
+/**
  * Record of named subagents available for delegation.
  *
  * Each entry maps a subagent name to an {@link Agent} instance. When
  * passed to an agent's `agents` config, each subagent is automatically
  * wrapped as a callable tool that the parent can invoke during its
  * tool loop. Abort signals propagate from parent to child.
+ *
+ * Keys must be provider-safe identifiers matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
+ * — camelCase or snake_case only. Non-alphanumeric characters (except
+ * underscore) are rejected at both the type level ({@link ToolName})
+ * and at runtime.
  *
  * @example
  * ```typescript
@@ -465,8 +509,18 @@ export interface AgentConfig<
    *
    * Each subagent becomes a callable tool that the parent agent can
    * invoke. Abort signals propagate automatically from parent to child.
+   *
+   * Keys must match `^[a-zA-Z_][a-zA-Z0-9_]*$` (camelCase or snake_case).
+   * Non-alphanumeric characters (except underscore) cause a compile
+   * error via {@link ToolName} and a runtime error from validation.
    */
-  agents?: TSubAgents;
+  agents?: {
+    [K in keyof TSubAgents]: K extends string
+      ? ToolName<K> extends never
+        ? never
+        : TSubAgents[K]
+      : TSubAgents[K];
+  };
 
   /**
    * Maximum tool-loop iterations.

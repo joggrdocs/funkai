@@ -2,7 +2,7 @@ export { tool } from "@/core/tool.js";
 export { agent } from "@/core/agents/base/agent.js";
 export { flowAgent } from "@/core/agents/flow/flow-agent.js";
 export { ok, err, isOk, isErr } from "@/utils/result.js";
-export { usage, sumTokenUsage } from "@/core/provider/usage.js";
+export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
 export type { Runnable, Model, ModelRef } from "@/core/types.js";
@@ -20,6 +20,7 @@ export type { Tool, ToolConfig } from "@/core/tool.js";
 export type { OutputSpec, OutputParam } from "@/core/agents/base/output.js";
 
 export type {
+  ToolName,
   SubAgents,
   Message,
   Agent,
@@ -52,7 +53,12 @@ export type { AllConfig, EntryFactory } from "@/core/agents/flow/steps/all.js";
 export type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 
 export type { LanguageModel, TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
-export type { AgentSource, ResolvedUsage, UnattributedSource } from "@/core/provider/usage.js";
+export type {
+  AgentSource,
+  AgentTokenUsage,
+  ModelTokenUsage,
+  UnattributedSource,
+} from "@/core/provider/usage.js";
 
 export type { Output } from "ai";
 
