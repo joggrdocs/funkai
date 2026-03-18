@@ -38,6 +38,14 @@ export interface ProviderRegistryConfig {
 
 /**
  * A function that resolves a model ID to a {@link LanguageModel} instance.
+ *
+ * @param modelId - Catalog model identifier in `provider/model` format.
+ * @returns The resolved AI SDK {@link LanguageModel}.
+ *
+ * @example
+ * ```typescript
+ * const model = registry("openai/gpt-4.1");
+ * ```
  */
 export type ProviderRegistry = (modelId: ModelId) => LanguageModel;
 

@@ -383,10 +383,10 @@ export interface AgentConfig<
   /**
    * Model to use for generation.
    *
-   * Accepts a string model ID (resolved via `resolver`) or an
+   * Accepts a string model ID (resolved via `registry`) or an
    * AI SDK `LanguageModel` instance — including middleware-wrapped models.
    *
-   * When passing a string, a `resolver` must also be configured.
+   * When passing a string, a `registry` must also be configured.
    *
    * @see {@link Model}
    */
