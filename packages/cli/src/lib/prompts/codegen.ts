@@ -219,6 +219,7 @@ function serializeTree(node: TreeNode, indent: number): string[] {
     if (typeof value === "string") {
       return [`${pad}${key},`];
     }
+    // oxlint-disable-next-line no-map-spread -- tiny tree, readability over micro-optimization
     return [`${pad}${key}: {`, ...serializeTree(value, indent + 1), `${pad}},`];
   });
 }
