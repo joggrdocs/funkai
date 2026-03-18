@@ -14,7 +14,7 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm build && changeset publish",
-    "docs": "zpress dev",
+    "docs:dev": "zpress dev",
     "docs:build": "zpress build",
     "docs:serve": "zpress serve"
   },

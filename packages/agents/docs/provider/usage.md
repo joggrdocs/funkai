@@ -1,6 +1,6 @@
 # Token Usage
 
-Token tracking and aggregation for agent and workflow executions.
+Token tracking and aggregation for agent and flow agent executions.
 
 ## TokenUsageRecord
 
@@ -21,7 +21,7 @@ The `source` field identifies which component produced the record:
 
 ```ts
 source?: {
-  workflowId?: string
+  flowAgentId?: string
   stepId?: string
   agentId: string
   scope: string[]
@@ -42,14 +42,14 @@ console.log(usage.outputTokens);
 console.log(usage.totalTokens);
 ```
 
-## Workflow Usage
+## Flow Agent Usage
 
-`workflowUsage()` groups records by `source.agentId` and computes per-agent usage.
+`flowAgentUsage()` groups records by `source.agentId` and computes per-agent usage.
 
 ```ts
-import { workflowUsage } from "@funkai/agents";
+import { flowAgentUsage } from "@funkai/agents";
 
-const usage = workflowUsage(allRecords);
+const usage = flowAgentUsage(allRecords);
 for (const entry of usage.usages) {
   console.log(`${entry.agentId}: ${entry.totalTokens} tokens`);
 }
@@ -87,7 +87,7 @@ Walk a `TraceEntry[]` tree and collect all `usage` values into a flat array (rec
 ```ts
 import { collectUsages, sumTokenUsage } from "@funkai/agents";
 
-const result = await myWorkflow.generate(input);
+const result = await myFlowAgent.generate(input);
 if (result.ok) {
   // result.usage is already computed, but you can also derive it from the trace:
   const usage = sumTokenUsage(collectUsages(result.trace));

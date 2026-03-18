@@ -219,6 +219,6 @@ const result = await helper.generate("Explain monads", {
 ## References
 
 - [Create a Tool](create-tool.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)
 - [Provider Overview](../provider/overview.md)
 - [Troubleshooting](../troubleshooting.md)

@@ -1,4 +1,4 @@
-# Create a Workflow
+# Create a Flow Agent
 
 ## Prerequisites
 
@@ -8,15 +8,15 @@
 
 ## Steps
 
-### 1. Define a basic workflow
+### 1. Define a basic flow agent
 
-A workflow has typed `input` and `output` Zod schemas and a handler function. The handler receives validated input and a `$` step builder for tracked operations.
+A flow agent has typed `input` and `output` Zod schemas and a handler function. The handler receives validated input and a `$` step builder for tracked operations.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
-const myWorkflow = workflow(
+const myFlowAgent = flowAgent(
   {
     name: "data-processor",
     input: z.object({ url: z.url() }),
@@ -73,10 +73,10 @@ if (result.ok) {
 
 ### 3. Use `$.agent` for agent calls
 
-Run an agent as a tracked workflow step. The framework records the agent name, input, and output in the trace.
+Run an agent as a tracked flow agent step. The framework records the agent name, input, and output in the trace.
 
 ```ts
-import { agent } from "@funkai/agents";
+import { agent, flowAgent } from "@funkai/agents";
 
 const analyzer = agent({
   name: "analyzer",
@@ -85,7 +85,7 @@ const analyzer = agent({
   prompt: ({ input }) => `Analyze this text:\n\n${input.text}`,
 });
 
-const wf = workflow(
+const wf = flowAgent(
   {
     name: "analysis-pipeline",
     input: z.object({ content: z.string() }),
@@ -205,10 +205,10 @@ const converged = await $.while({
 
 ### 8. Stream step progress events
 
-Use `.stream()` to receive `StepEvent` objects as the workflow executes.
+Use `.stream()` to receive `StepEvent` objects as the flow agent executes.
 
 ```ts
-const result = await myWorkflow.stream({ url: "https://example.com" });
+const result = await myFlowAgent.stream({ url: "https://example.com" });
 
 if (result.ok) {
   const reader = result.stream.getReader();
@@ -226,8 +226,8 @@ if (result.ok) {
       case "step:error":
         console.error(`Step failed: ${event.step.id}`, event.error);
         break;
-      case "workflow:finish":
-        console.log(`Workflow complete (${event.duration}ms)`);
+      case "flow:finish":
+        console.log(`Flow agent complete (${event.duration}ms)`);
         break;
     }
   }
@@ -243,7 +243,7 @@ if (result.ok) {
 Use `.fn()` for clean single-function exports.
 
 ```ts
-export const processData = myWorkflow.fn();
+export const processData = myFlowAgent.fn();
 
 // Callers use it like a regular async function
 const result = await processData({ url: "https://example.com" });
@@ -252,12 +252,12 @@ const result = await processData({ url: "https://example.com" });
 ### 10. Add hooks for observability
 
 ```ts
-const wf = workflow(
+const wf = flowAgent(
   {
-    name: "observed-workflow",
+    name: "observed-flow-agent",
     input: InputSchema,
     output: OutputSchema,
-    onStart: ({ input }) => console.log("Workflow started"),
+    onStart: ({ input }) => console.log("Flow agent started"),
     onFinish: ({ input, output, duration }) => console.log(`Done in ${duration}ms`),
     onError: ({ input, error }) => console.error("Failed:", error.message),
     onStepStart: ({ step }) => console.log(`Step ${step.id} started`),
@@ -271,7 +271,7 @@ const wf = workflow(
 ## Full example
 
 ```ts
-import { agent, workflow, tool } from "@funkai/agents";
+import { agent, flowAgent, tool } from "@funkai/agents";
 import { z } from "zod";
 
 // Define tools
@@ -292,8 +292,8 @@ const summarizer = agent({
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });
 
-// Define workflow
-const pipeline = workflow(
+// Define flow agent
+const pipeline = flowAgent(
   {
     name: "summarize-pages",
     input: z.object({ urls: z.array(z.url()) }),
@@ -343,7 +343,7 @@ export const summarizePages = pipeline.fn();
 ## Verification
 
 - `result.ok` is `true` on success
-- `result.output` contains the validated workflow output
+- `result.output` contains the validated flow agent output
 - `result.trace` contains the frozen execution trace
 - `result.usage` contains aggregated token usage from all `$.agent()` calls
 - `result.duration` contains total wall-clock time in milliseconds

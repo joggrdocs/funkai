@@ -1,12 +1,12 @@
 # Build Cost-Aware Agents
 
-Track token usage, calculate costs, enforce budgets, and optimize model selection for cost-efficient workflows.
+Track token usage, calculate costs, enforce budgets, and optimize model selection for cost-efficient flow agents.
 
 ## Prerequisites
 
 - `@funkai/agents` installed
 - `@funkai/models` installed (provides `calculateCost`, `model`, `models`)
-- Familiarity with `agent()`, `workflow()`, and hooks
+- Familiarity with `agent()`, `flowAgent()`, and hooks
 
 ## Steps
 
@@ -120,12 +120,12 @@ const result = await assistant.generate(
 );
 ```
 
-### 5. Aggregate workflow cost
+### 5. Aggregate flow agent cost
 
-Workflow results include `result.usage` with aggregated token counts from all `$.agent()` calls. Combine with `calculateCost()` for the total workflow cost.
+Flow agent results include `result.usage` with aggregated token counts from all `$.agent()` calls. Combine with `calculateCost()` for the total flow agent cost.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
@@ -136,7 +136,7 @@ const analyzer = agent({
   prompt: ({ input }) => `Analyze:\n\n${input.text}`,
 });
 
-const pipeline = workflow(
+const pipeline = flowAgent(
   {
     name: "analysis-pipeline",
     input: z.object({ texts: z.array(z.string()) }),
@@ -177,7 +177,7 @@ const result = await pipeline.generate({ texts: ["Text A", "Text B", "Text C"] }
 if (result.ok) {
   const modelDef = model("gpt-4.1");
   const cost = calculateCost(result.usage, modelDef.pricing);
-  console.log(`Workflow total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
+  console.log(`Flow agent total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
 }
 ```
 
@@ -198,12 +198,12 @@ for (const m of sorted.slice(0, 5)) {
 }
 ```
 
-### 7. Log per-step costs in workflows
+### 7. Log per-step costs in flow agents
 
 Use `onStepFinish` to calculate and log the cost of each agent step as it completes.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
@@ -217,7 +217,7 @@ const writer = agent({
   prompt: ({ input }) => `Write about: ${input.topic}`,
 });
 
-const traced = workflow(
+const traced = flowAgent(
   {
     name: "cost-traced",
     input: z.object({ topics: z.array(z.string()) }),
@@ -256,7 +256,7 @@ const traced = workflow(
 - `result.usage` contains non-negative token counts for all fields
 - `calculateCost()` returns a `UsageCost` with `input`, `output`, `cacheRead`, `cacheWrite`, and `total` fields
 - Budget hooks fire after each successful generation
-- Workflow `result.usage` aggregates all `$.agent()` calls
+- Flow agent `result.usage` aggregates all `$.agent()` calls
 - `model()` throws for unknown IDs; use `models()` to list available models
 
 ## Troubleshooting
@@ -279,7 +279,7 @@ const traced = workflow(
 
 **Fix:** Hooks are observability callbacks -- they cannot abort execution. To enforce a hard budget, check the cumulative cost before each call and skip or abort manually using an `AbortController`.
 
-### Workflow usage does not include non-agent steps
+### Flow agent usage does not include non-agent steps
 
 **Issue:** `result.usage` only includes tokens from `$.agent()` calls.
 
@@ -291,4 +291,4 @@ const traced = workflow(
 - [Models](../provider/models.md)
 - [Hooks](../core/hooks.md)
 - [Create an Agent](create-agent.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)

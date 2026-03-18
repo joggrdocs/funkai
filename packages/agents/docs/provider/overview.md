@@ -47,18 +47,18 @@ const reasoningModels = models((m) => m.category === "reasoning");
 
 ## Token Usage
 
-Aggregate token counts across agent and workflow executions.
+Aggregate token counts across agent and flow agent executions.
 
 ```ts
-import { agentUsage, workflowUsage } from "@funkai/agents";
+import { agentUsage, flowAgentUsage } from "@funkai/agents";
 
 // Single agent usage
 const usage = agentUsage("my-agent", tokenRecords);
 console.log(usage.inputTokens, usage.outputTokens, usage.totalTokens);
 
-// Workflow usage with per-agent breakdown
-const wfUsage = workflowUsage(allTokenRecords);
-for (const entry of wfUsage.usages) {
+// Flow agent usage with per-agent breakdown
+const faUsage = flowAgentUsage(allTokenRecords);
+for (const entry of faUsage.usages) {
   console.log(`${entry.agentId}: ${entry.totalTokens} tokens`);
 }
 ```
@@ -73,7 +73,7 @@ for (const entry of wfUsage.usages) {
 | `tryModel(id)`                 | Look up a model definition (returns `undefined` if not found)     |
 | `models(filter?)`              | Get model definitions, optionally filtered by predicate           |
 | `agentUsage(agentId, records)` | Aggregate token counts for a single agent                         |
-| `workflowUsage(records)`       | Aggregate token counts for a workflow with per-agent breakdown    |
+| `flowAgentUsage(records)`      | Aggregate token counts for a flow agent with per-agent breakdown  |
 
 ## Model Reference
 

@@ -5,7 +5,7 @@ Patterns for coordinating multiple agents: sequential chains, parallel execution
 ## Prerequisites
 
 - `@funkai/agents` installed
-- Familiarity with `agent()`, `workflow()`, `$.agent`, `$.map`, `$.all`, and `$.race`
+- Familiarity with `agent()`, `flowAgent()`, `$.agent`, `$.map`, `$.all`, and `$.race`
 - Understanding of subagents (the `agents` field on `AgentConfig`)
 
 ## Steps
@@ -15,7 +15,7 @@ Patterns for coordinating multiple agents: sequential chains, parallel execution
 Pass the output of one agent as input to the next using `$.agent` steps in sequence.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const researcher = agent({
@@ -40,7 +40,7 @@ const editor = agent({
   prompt: ({ input }) => `Edit this article for clarity and correctness:\n\n${input.draft}`,
 });
 
-const pipeline = workflow(
+const pipeline = flowAgent(
   {
     name: "content-pipeline",
     input: z.object({ topic: z.string() }),
@@ -77,7 +77,7 @@ const pipeline = workflow(
 Process multiple inputs concurrently with the same agent using `$.map`.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const translator = agent({
@@ -87,7 +87,7 @@ const translator = agent({
   prompt: ({ input }) => `Translate to ${input.targetLang}:\n\n${input.text}`,
 });
 
-const batchTranslate = workflow(
+const batchTranslate = flowAgent(
   {
     name: "batch-translate",
     input: z.object({
@@ -126,7 +126,7 @@ const batchTranslate = workflow(
 When different agents need to run concurrently on different tasks, use `$.all`.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const sentimentAgent = agent({
@@ -150,7 +150,7 @@ const keywordAgent = agent({
   prompt: ({ input }) => `Extract keywords from this text:\n\n${input.text}`,
 });
 
-const analyze = workflow(
+const analyze = flowAgent(
   {
     name: "parallel-analysis",
     input: z.object({ text: z.string() }),
@@ -230,7 +230,7 @@ const result = await techLead.generate("Build a rate limiter module");
 Race or poll multiple models and select the most common answer.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const OutputSchema = z.object({
@@ -280,7 +280,7 @@ const majorityVote = (
   return best;
 };
 
-const voter = workflow(
+const voter = flowAgent(
   {
     name: "voting-classifier",
     input: z.object({ text: z.string() }),
@@ -319,7 +319,7 @@ const voter = workflow(
 Use `$.race` to get the first successful response from multiple providers or models.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
 import { z } from "zod";
 
 const fastAgent = agent({
@@ -334,7 +334,7 @@ const qualityAgent = agent({
   system: "Respond concisely.",
 });
 
-const racingWorkflow = workflow(
+const racingFlowAgent = flowAgent(
   {
     name: "fastest-response",
     input: z.object({ question: z.string() }),
@@ -364,10 +364,10 @@ const racingWorkflow = workflow(
 
 ### 7. Build hierarchical agent trees
 
-Combine subagents with workflows for multi-level delegation. Each level can have its own subagents.
+Combine subagents with flow agents for multi-level delegation. Each level can have its own subagents.
 
 ```ts
-import { agent, workflow } from "@funkai/agents";
+import { agent, flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
 // Level 2: Specialist agents
@@ -400,8 +400,8 @@ const analysisLead = agent({
   agents: { dataAnalyst },
 });
 
-// Level 0: Top-level workflow
-const project = workflow(
+// Level 0: Top-level flow agent
+const project = flowAgent(
   {
     name: "research-project",
     input: z.object({ question: z.string() }),
@@ -476,6 +476,6 @@ const project = workflow(
 - [Agent](../core/agent.md)
 - [Step Builder ($)](../core/step.md)
 - [Create an Agent](create-agent.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)
 - [Hooks](../core/hooks.md)
 - [Troubleshooting](../troubleshooting.md)

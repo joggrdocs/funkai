@@ -82,4 +82,4 @@ See the [Prompts SDK docs](../prompts/docs/overview.md) for the full file format
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)

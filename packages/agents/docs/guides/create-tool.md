@@ -133,5 +133,5 @@ const createFile = tool({
 ## References
 
 - [Create an Agent](create-agent.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)
 - [Troubleshooting](../troubleshooting.md)

@@ -1,6 +1,6 @@
 # Core Concepts
 
-The core module provides the fundamental building blocks: `agent()`, `workflow()`, `tool()`, and the `$` step builder. All public operations return `Result<T>` so callers never need try/catch.
+The core module provides the fundamental building blocks: `agent()`, `flowAgent()`, `tool()`, and the `$` step builder. All public operations return `Result<T>` so callers never need try/catch.
 
 ## Result Type
 
@@ -29,7 +29,7 @@ Helper constructors and type guards are exported: `ok()`, `err()`, `isOk()`, `is
 
 ## Context
 
-The framework creates an internal `Context` for each workflow execution. Users never create or pass this directly.
+The framework creates an internal `Context` for each flow agent execution. Users never create or pass this directly.
 
 ```ts
 interface ExecutionContext {
@@ -38,7 +38,7 @@ interface ExecutionContext {
 }
 ```
 
-`ExecutionContext` is the public subset exposed to custom step factories via `createWorkflowEngine()`. The internal `Context` extends it with a mutable `trace: TraceEntry[]` array for recording the execution graph.
+`ExecutionContext` is the public subset exposed to custom step factories via `createFlowEngine()`. The internal `Context` extends it with a mutable `trace: TraceEntry[]` array for recording the execution graph.
 
 ## Logger
 
@@ -56,7 +56,7 @@ interface Logger {
 
 Each level also supports pino's object-first overload: `log.info({ key: 'val' }, 'message')`.
 
-The framework calls `child()` at scope boundaries (workflow, step, agent) so log output automatically includes execution context (`workflowId`, `stepId`, `agentId`). When no logger is injected, `createDefaultLogger()` provides a console-based fallback.
+The framework calls `child()` at scope boundaries (flow agent, step, agent) so log output automatically includes execution context (`flowAgentId`, `stepId`, `agentId`). When no logger is injected, `createDefaultLogger()` provides a console-based fallback.
 
 ## TraceEntry
 
@@ -76,12 +76,12 @@ interface TraceEntry {
 }
 ```
 
-The trace is exposed on `WorkflowResult.trace` as a frozen (immutable) snapshot after workflow completion.
+The trace is exposed on `FlowAgentGenerateResult.trace` as a frozen (immutable) snapshot after flow agent completion.
 
 ## References
 
 - [Agent](agent.md)
-- [Workflow](workflow.md)
+- [Flow Agent](flow-agent.md)
 - [Step Builder ($)](step.md)
 - [Tools](tools.md)
 - [Hooks](hooks.md)

@@ -234,4 +234,4 @@ if (result.ok) {
 
 - [Agent](../core/agent.md)
 - [Core Types](../core/types.md)
-- [Workflow](../core/workflow.md)
+- [Flow Agent](../core/flow-agent.md)

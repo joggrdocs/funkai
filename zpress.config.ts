@@ -11,67 +11,76 @@ export default defineConfig({
   packages: [
     {
       title: "@funkai/agents",
-      description: "Lightweight workflow and agent orchestration framework",
+      description: "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
       icon: "pixelarticons:robot",
       prefix: "/agents",
       tags: [],
-      discovery: {},
+    },
+    {
+      title: "@funkai/models",
+      description: "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+      icon: "pixelarticons:coin",
+      prefix: "/models",
+      tags: [],
     },
     {
       title: "@funkai/prompts",
-      description: "Prompt SDK with LiquidJS templating and Zod validation",
+      description: "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
       icon: "pixelarticons:message-text",
       prefix: "/prompts",
       tags: [],
-      discovery: {},
     },
     {
       title: "@funkai/cli",
-      description: "CLI for the funkai prompt SDK",
+      description: "Generate, lint, and scaffold prompt files from the terminal",
       icon: "pixelarticons:terminal",
       prefix: "/cli",
       tags: [],
-      discovery: {},
     },
   ],
   sections: [
-    // ── Getting Started ──
+    // ── Root ──
     {
-      title: "Getting Started",
-      link: "/getting-started",
+      title: "Introduction",
+      link: "/introduction",
+      icon: "pixelarticons:book-open",
+      from: "docs/introduction.md",
+      hidden: true,
+    },
+    {
+      title: "Quick Start",
+      link: "/quick-start",
       icon: "pixelarticons:speed-fast",
-      content: [
-        "# Getting Started",
-        "",
-        "funkai is a lightweight, functional TypeScript framework for AI agent orchestration.",
-        "",
-        "## Packages",
-        "",
-        "| Package | Description |",
-        "| --- | --- |",
-        "| [`@funkai/agents`](/agents/) | Lightweight workflow and agent orchestration framework |",
-        "| [`@funkai/prompts`](/prompts/) | Prompt SDK with LiquidJS templating and Zod validation |",
-        "| [`@funkai/cli`](/cli/) | CLI for the funkai prompt SDK |",
-        "",
-        "## Quick Start",
-        "",
-        "```bash",
-        "pnpm add @funkai/agents",
-        "```",
-        "",
-        "Then check out the [Agents overview](/agents/) or the [Create an Agent guide](/agents/guides/create-agent).",
-      ].join("\n"),
+      from: "docs/quick-start.md",
+      hidden: true,
+    },
+    {
+      title: "Principles",
+      link: "/principles",
+      icon: "pixelarticons:label",
+      from: "docs/principles.md",
+      hidden: true,
+    },
+    {
+      title: "Architecture",
+      link: "/architecture",
+      icon: "pixelarticons:layout-sidebar-right",
+      from: "docs/architecture.md",
+      hidden: true,
     },
 
     // ── Agents ──
     {
       title: "Agents",
       icon: "pixelarticons:robot",
-      content: "Lightweight workflow and agent orchestration framework",
+      frontmatter: {
+        description:
+          "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
+      },
       items: [
         {
           title: "Overview",
-          link: "/agents/",
+          link: "/agents",
           from: "packages/agents/docs/overview.md",
         },
         {
@@ -89,9 +98,9 @@ export default defineConfig({
               from: "packages/agents/docs/core/agent.md",
             },
             {
-              title: "Workflow",
-              link: "/agents/core/workflow",
-              from: "packages/agents/docs/core/workflow.md",
+              title: "Flow Agent",
+              link: "/agents/core/flow-agent",
+              from: "packages/agents/docs/core/flow-agent.md",
             },
             {
               title: "Step",
@@ -108,6 +117,37 @@ export default defineConfig({
               link: "/agents/core/hooks",
               from: "packages/agents/docs/core/hooks.md",
             },
+            {
+              title: "Context",
+              link: "/agents/core/context",
+              from: "packages/agents/docs/core/context.md",
+            },
+            {
+              title: "Middleware",
+              link: "/agents/core/middleware",
+              from: "packages/agents/docs/core/middleware.md",
+            },
+            {
+              title: "Tracing",
+              link: "/agents/core/tracing",
+              from: "packages/agents/docs/core/tracing.md",
+            },
+          ],
+        },
+        {
+          title: "Advanced",
+          prefix: "/agents/advanced",
+          items: [
+            {
+              title: "Custom Steps",
+              link: "/agents/advanced/custom-steps",
+              from: "packages/agents/docs/advanced/custom-steps.md",
+            },
+            {
+              title: "Streaming",
+              link: "/agents/advanced/streaming",
+              from: "packages/agents/docs/advanced/streaming.md",
+            },
           ],
         },
         {
@@ -116,6 +156,27 @@ export default defineConfig({
           from: "packages/agents/docs/guides/*.md",
           titleFrom: "heading",
           sort: "alpha",
+        },
+        {
+          title: "Reference",
+          prefix: "/agents/reference",
+          items: [
+            {
+              title: "Types",
+              link: "/agents/reference/types",
+              from: "packages/agents/docs/core/types.md",
+            },
+            {
+              title: "Output Strategies",
+              link: "/agents/reference/output-strategies",
+              from: "packages/agents/docs/reference/output-strategies.md",
+            },
+            {
+              title: "Token Usage",
+              link: "/agents/reference/token-usage",
+              from: "packages/agents/docs/provider/usage.md",
+            },
+          ],
         },
         {
           title: "Provider",
@@ -131,11 +192,6 @@ export default defineConfig({
               link: "/agents/provider/models",
               from: "packages/agents/docs/provider/models.md",
             },
-            {
-              title: "Usage",
-              link: "/agents/provider/usage",
-              from: "packages/agents/docs/provider/usage.md",
-            },
           ],
         },
         {
@@ -146,17 +202,94 @@ export default defineConfig({
       ],
     },
 
+    // ── Models ──
+    {
+      title: "Models",
+      icon: "pixelarticons:coin",
+      frontmatter: {
+        description:
+          "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+      },
+      items: [
+        {
+          title: "Overview",
+          link: "/models",
+          from: "packages/models/docs/overview.md",
+        },
+        {
+          title: "Catalog",
+          prefix: "/models/catalog",
+          items: [
+            {
+              title: "Overview",
+              link: "/models/catalog/overview",
+              from: "packages/models/docs/catalog/overview.md",
+            },
+            {
+              title: "Filtering",
+              link: "/models/catalog/filtering",
+              from: "packages/models/docs/catalog/filtering.md",
+            },
+            {
+              title: "Providers",
+              link: "/models/catalog/providers",
+              from: "packages/models/docs/catalog/providers.md",
+            },
+          ],
+        },
+        {
+          title: "Provider",
+          prefix: "/models/provider",
+          items: [
+            {
+              title: "Overview",
+              link: "/models/provider/overview",
+              from: "packages/models/docs/provider/overview.md",
+            },
+            {
+              title: "Configuration",
+              link: "/models/provider/configuration",
+              from: "packages/models/docs/provider/configuration.md",
+            },
+            {
+              title: "OpenRouter",
+              link: "/models/provider/openrouter",
+              from: "packages/models/docs/provider/openrouter.md",
+            },
+          ],
+        },
+        {
+          title: "Cost",
+          link: "/models/cost",
+          from: "packages/models/docs/cost/overview.md",
+        },
+        {
+          title: "Guides",
+          prefix: "/models/guides",
+          from: "packages/models/docs/guides/*.md",
+          titleFrom: "heading",
+          sort: "alpha",
+        },
+        {
+          title: "Troubleshooting",
+          link: "/models/troubleshooting",
+          from: "packages/models/docs/troubleshooting.md",
+        },
+      ],
+    },
+
     // ── Prompts ──
     {
       title: "Prompts",
       icon: "pixelarticons:message-text",
       frontmatter: {
-        description: "Prompt SDK with LiquidJS templating and Zod validation",
+        description:
+          "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
       },
       items: [
         {
           title: "Overview",
-          link: "/prompts/",
+          link: "/prompts",
           from: "packages/prompts/docs/overview.md",
         },
         {
@@ -177,22 +310,6 @@ export default defineConfig({
               title: "Partials",
               link: "/prompts/file-format/partials",
               from: "packages/prompts/docs/file-format/partials.md",
-            },
-          ],
-        },
-        {
-          title: "CLI",
-          prefix: "/prompts/cli",
-          items: [
-            {
-              title: "Overview",
-              link: "/prompts/cli/overview",
-              from: "packages/prompts/docs/cli/overview.md",
-            },
-            {
-              title: "Commands",
-              link: "/prompts/cli/commands",
-              from: "packages/prompts/docs/cli/commands.md",
             },
           ],
         },
@@ -225,8 +342,35 @@ export default defineConfig({
     {
       title: "CLI",
       icon: "pixelarticons:terminal",
-      link: "/cli/",
-      from: "packages/cli/README.md",
+      frontmatter: {
+        description:
+          "Generate, lint, and scaffold prompt files from the terminal",
+      },
+      items: [
+        {
+          title: "Overview",
+          link: "/cli",
+          from: "packages/prompts/docs/cli/overview.md",
+        },
+        {
+          title: "Commands",
+          link: "/cli/commands",
+          from: "packages/prompts/docs/cli/commands.md",
+        },
+      ],
+    },
+
+    // ── Examples ──
+    {
+      title: "Examples",
+      icon: "pixelarticons:file-alt",
+      items: [
+        {
+          title: "Real-World CLI",
+          link: "/examples/realworld-cli",
+          from: "examples/realworld-cli/README.md",
+        },
+      ],
     },
 
     // ── Contributing ──
@@ -234,6 +378,7 @@ export default defineConfig({
       title: "Contributing",
       icon: "pixelarticons:git-merge",
       isolated: true,
+      hidden: true,
       items: [
         {
           title: "Overview",

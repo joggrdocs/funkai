@@ -1,34 +1,34 @@
-# workflow()
+# flowAgent()
 
-`workflow()` creates a `Workflow` from a configuration object and an imperative handler function. The handler IS the workflow -- no step arrays, no definition objects. State is just variables. `$` is passed in for tracked operations.
+`flowAgent()` creates a `FlowAgent` from a configuration object and an imperative handler function. The handler IS the flow agent -- no step arrays, no definition objects. State is just variables. `$` is passed in for tracked operations.
 
 ## Signature
 
 ```ts
-function workflow<TInput, TOutput>(
-  config: WorkflowConfig<TInput, TOutput>,
-  handler: WorkflowHandler<TInput, TOutput>,
-): Workflow<TInput, TOutput>;
+function flowAgent<TInput, TOutput>(
+  config: FlowAgentConfig<TInput, TOutput>,
+  handler: FlowAgentHandler<TInput, TOutput>,
+): FlowAgent<TInput, TOutput>;
 ```
 
-## WorkflowConfig
+## FlowAgentConfig
 
-| Field          | Required | Type                                                            | Description                                 |
-| -------------- | -------- | --------------------------------------------------------------- | ------------------------------------------- |
-| `name`         | Yes      | `string`                                                        | Unique workflow name (used in logs, traces) |
+| Field          | Required | Type                                                            | Description                                    |
+| -------------- | -------- | --------------------------------------------------------------- | ---------------------------------------------- |
+| `name`         | Yes      | `string`                                                        | Unique flow agent name (used in logs, traces)  |
 | `input`        | Yes      | `ZodType<TInput>`                                               | Zod schema for validating input             |
 | `output`       | Yes      | `ZodType<TOutput>`                                              | Zod schema for validating output            |
 | `logger`       | No       | `Logger`                                                        | Pino-compatible logger                      |
-| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the workflow starts        |
+| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts      |
 | `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                      |
 | `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                        |
 | `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts        |
 | `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes      |
 
-## WorkflowHandler
+## FlowAgentHandler
 
 ```ts
-type WorkflowHandler<TInput, TOutput> = (params: WorkflowParams<TInput>) => Promise<TOutput>;
+type FlowAgentHandler<TInput, TOutput> = (params: FlowAgentParams<TInput>) => Promise<TOutput>;
 ```
 
 The handler receives `{ input, $ }`:
@@ -38,22 +38,22 @@ The handler receives `{ input, $ }`:
 
 The handler returns `TOutput`, which is validated against the `output` Zod schema before being returned to the caller.
 
-## Workflow Interface
+## FlowAgent Interface
 
 ```ts
-interface Workflow<TInput, TOutput> {
-  generate(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowResult<TOutput>>>;
-  stream(input: TInput, config?: WorkflowOverrides): Promise<Result<WorkflowStreamResult<TOutput>>>;
-  fn(): (input: TInput, config?: WorkflowOverrides) => Promise<Result<WorkflowResult<TOutput>>>;
+interface FlowAgent<TInput, TOutput> {
+  generate(input: TInput, config?: FlowAgentOverrides): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  stream(input: TInput, config?: FlowAgentOverrides): Promise<Result<FlowAgentStreamResult<TOutput>>>;
+  fn(): (input: TInput, config?: FlowAgentOverrides) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 ```
 
 ### generate()
 
-Runs the workflow to completion. Returns `Result<WorkflowResult<TOutput>>`.
+Runs the flow agent to completion. Returns `Result<FlowAgentGenerateResult<TOutput>>`.
 
 ```ts
-interface WorkflowResult<TOutput> {
+interface FlowAgentGenerateResult<TOutput> {
   output: TOutput; // validated output
   trace: readonly TraceEntry[]; // frozen execution trace tree
   usage: TokenUsage; // aggregated token usage from all $.agent() calls
@@ -65,10 +65,10 @@ On success, `result.ok` is `true` and `output`, `trace`, `duration` are flat on 
 
 ### stream()
 
-Runs the workflow with streaming step progress. Returns `Result<WorkflowStreamResult<TOutput>>`.
+Runs the flow agent with streaming step progress. Returns `Result<FlowAgentStreamResult<TOutput>>`.
 
 ```ts
-interface WorkflowStreamResult<TOutput> {
+interface FlowAgentStreamResult<TOutput> {
   output: TOutput; // available after stream completes
   trace: readonly TraceEntry[]; // available after stream completes
   usage: TokenUsage; // aggregated token usage (available after stream completes)
@@ -81,20 +81,20 @@ Subscribe to `stream` for real-time step progress events.
 
 ### StepEvent
 
-Events emitted on the workflow stream:
+Events emitted on the flow agent stream:
 
 | Type              | Fields                       | Description               |
 | ----------------- | ---------------------------- | ------------------------- |
 | `step:start`      | `step: StepInfo`             | A `$` operation started   |
 | `step:finish`     | `step`, `result`, `duration` | A `$` operation completed |
 | `step:error`      | `step`, `error`              | A `$` operation failed    |
-| `workflow:finish` | `output`, `duration`         | The workflow completed    |
+| `flow:finish`     | `output`, `duration`         | The flow agent completed  |
 
 ### fn()
 
 Returns a plain function with the same signature as `.generate()`. Use for clean single-function exports.
 
-## WorkflowOverrides
+## FlowAgentOverrides
 
 Per-call overrides passed as the optional second parameter to `.generate()` or `.stream()`.
 
@@ -104,28 +104,28 @@ Per-call overrides passed as the optional second parameter to `.generate()` or `
 
 When the signal fires, all in-flight `$` operations check `signal.aborted` and abort. The signal propagates through the entire execution tree.
 
-## createWorkflowEngine()
+## createFlowEngine()
 
-For custom step types, use `createWorkflowEngine()`. It returns a `workflow()`-like factory with custom methods added to `$`.
+For custom step types, use `createFlowEngine()`. It returns a `flowAgent()`-like factory with custom methods added to `$`.
 
 ```ts
-function createWorkflowEngine<TCustomSteps>(
-  config: EngineConfig<TCustomSteps>,
-): WorkflowFactory<TCustomSteps>;
+function createFlowEngine<TCustomSteps>(
+  config: FlowEngineConfig<TCustomSteps>,
+): FlowFactory<TCustomSteps>;
 ```
 
-### EngineConfig
+### FlowEngineConfig
 
 | Field          | Type                    | Description                     |
 | -------------- | ----------------------- | ------------------------------- |
 | `$`            | `CustomStepDefinitions` | Custom step types to add to `$` |
-| `onStart`      | hook                    | Default hook for all workflows  |
-| `onFinish`     | hook                    | Default hook for all workflows  |
-| `onError`      | hook                    | Default hook for all workflows  |
-| `onStepStart`  | hook                    | Default hook for all workflows  |
-| `onStepFinish` | hook                    | Default hook for all workflows  |
+| `onStart`      | hook                    | Default hook for all flow agents |
+| `onFinish`     | hook                    | Default hook for all flow agents |
+| `onError`      | hook                    | Default hook for all flow agents |
+| `onStepStart`  | hook                    | Default hook for all flow agents |
+| `onStepFinish` | hook                    | Default hook for all flow agents |
 
-Engine-level hooks fire first, then workflow-level hooks fire second.
+Engine-level hooks fire first, then flow agent-level hooks fire second.
 
 Each custom step factory receives `{ ctx: ExecutionContext, config }` where `ExecutionContext` provides the abort signal and scoped logger:
 
@@ -139,7 +139,7 @@ type CustomStepFactory<TConfig, TResult> = (params: {
 ### Example
 
 ```ts
-const engine = createWorkflowEngine({
+const engine = createFlowEngine({
   $: {
     retry: async ({ ctx, config }) => {
       let lastError: Error | undefined;
@@ -159,9 +159,9 @@ const engine = createWorkflowEngine({
   onFinish: ({ output, duration }) => telemetry.trackFinish(output, duration),
 });
 
-const myWorkflow = engine(
+const myFlowAgent = engine(
   {
-    name: "my-workflow",
+    name: "my-flow-agent",
     input: MyInput,
     output: MyOutput,
   },
@@ -180,7 +180,7 @@ const myWorkflow = engine(
 ## Full Example
 
 ```ts
-import { workflow, agent, tool } from "@joggr/agent-sdk";
+import { flowAgent, agent, tool } from "@funkai/agents";
 import { z } from "zod";
 
 const analyzeAgent = agent({
@@ -193,7 +193,7 @@ const analyzeAgent = agent({
 const InputSchema = z.object({ repo: z.string() });
 const OutputSchema = z.object({ report: z.string(), fileCount: z.number() });
 
-const reporter = workflow(
+const reporter = flowAgent(
   {
     name: "reporter",
     input: InputSchema,
@@ -232,4 +232,4 @@ const result = await reporter.generate({ repo: "my-org/my-repo" });
 - [Core Overview](overview.md)
 - [Step Builder ($)](step.md)
 - [Hooks](hooks.md)
-- [Guide: Create a Workflow](../guides/create-workflow.md)
+- [Guide: Create a Flow Agent](../guides/create-flow-agent.md)

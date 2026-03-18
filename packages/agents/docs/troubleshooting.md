@@ -38,7 +38,7 @@ By design. Hook errors are caught and never propagate. Handle errors inside the 
 
 ## Abort signal propagation
 
-Signals propagate through the entire execution tree: agents, workflows, subagents, and `$.all`/`$.race` entries.
+Signals propagate through the entire execution tree: agents, flow agents, subagents, and `$.all`/`$.race` entries.
 
 ## Tool not being called by agent
 
@@ -48,13 +48,13 @@ Signals propagate through the entire execution tree: agents, workflows, subagent
 
 **Fix:** Always check `.ok` before accessing success fields. Use `result.error.code` on failure.
 
-## Workflow output validation failed
+## Flow agent output validation failed
 
 **Fix:** Ensure the handler returns an object matching the `output` Zod schema exactly.
 
 ## References
 
 - [Agent](core/agent.md)
-- [Workflow](core/workflow.md)
+- [Flow Agent](core/flow-agent.md)
 - [Provider Overview](provider/overview.md)
 - [Create an Agent](guides/create-agent.md)

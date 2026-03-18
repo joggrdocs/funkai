@@ -1,14 +1,14 @@
 # Agent SDK
 
-`@funkai/agents` is a lightweight agent orchestration framework built on the [Vercel AI SDK](https://ai-sdk.dev). It provides typed primitives for creating AI agents, tools, and multi-step workflows with observable execution traces.
+`@funkai/agents` is a lightweight agent orchestration framework built on the [Vercel AI SDK](https://ai-sdk.dev). It provides typed primitives for creating AI agents, tools, and multi-step flow agents with observable execution traces.
 
 ## Design Principles
 
 | Principle                      | Description                                                                                |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| Functions all the way down     | `agent()`, `tool()`, `workflow()` return plain objects, no classes                         |
+| Functions all the way down     | `agent()`, `tool()`, `flowAgent()` return plain objects, no classes                       |
 | Composition over configuration | Combine small functions instead of large option bags                                       |
-| Closures are state             | Workflow state is just variables in your handler                                           |
+| Closures are state             | Flow agent state is just variables in your handler                                         |
 | Result, never throw            | Every public method returns `Result<T>`, callers pattern-match                             |
 | Zero hidden state              | No singletons, no module-level registries                                                  |
 | `$` is optional sugar          | The `$` helpers register data flow for observability; you can always use plain `for` loops |
@@ -40,8 +40,8 @@ flowchart LR
   subgraph core [" "]
     tool["tool()"]:::coreNode
     agent["agent()"]:::coreNode
-    workflow["workflow()"]:::coreNode
-    engine["createWorkflowEngine()"]:::coreNode
+    flowAgent["flowAgent()"]:::coreNode
+    engine["createFlowEngine()"]:::coreNode
   end
 
   subgraph steps [" "]
@@ -61,11 +61,11 @@ flowchart LR
   end
 
   Input --> agent
-  Input --> workflow
+  Input --> flowAgent
   agent -- ".generate() / .stream()" --> Result:::coreNode
-  workflow -- ".generate() / .stream()" --> Result
-  engine --> workflow
-  workflow --> dollar
+  flowAgent -- ".generate() / .stream()" --> Result
+  engine --> flowAgent
+  flowAgent --> dollar
   dollar --> stepOp & agentOp & mapOp & reduceOp & concOp
   agentOp --> agent
   tool --> agent
@@ -123,12 +123,12 @@ if (result.ok) {
 
 Every agent exposes `.generate()`, `.stream()`, and `.fn()`.
 
-### `workflow()`
+### `flowAgent()`
 
-Create a workflow with typed I/O, `$` step builder, hooks, and execution trace. The handler IS the workflow -- state is just variables.
+Create a flow agent with typed I/O, `$` step builder, hooks, and execution trace. The handler IS the flow agent -- state is just variables.
 
 ```ts
-const wf = workflow(
+const wf = flowAgent(
   {
     name: "analyze",
     input: InputSchema,
@@ -164,12 +164,12 @@ The `$` step builder provides tracked operations:
 | `$.all`    | Heterogeneous concurrent operations (like `Promise.all`)      |
 | `$.race`   | Concurrent operations, first to finish wins                   |
 
-### `createWorkflowEngine()`
+### `createFlowEngine()`
 
-Create a custom workflow factory that adds additional step types to `$` and/or sets default hooks.
+Create a custom flow agent factory that adds additional step types to `$` and/or sets default hooks.
 
 ```ts
-const engine = createWorkflowEngine({
+const engine = createFlowEngine({
   $: {
     retry: async ({ ctx, config }) => {
       // custom step implementation with access to ExecutionContext
@@ -189,19 +189,19 @@ Every public method returns `Result<T>` instead of throwing:
 type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 ```
 
-Error codes: `VALIDATION_ERROR`, `AGENT_ERROR`, `WORKFLOW_ERROR`, `ABORT_ERROR`. Helpers: `ok()`, `err()`, `isOk()`, `isErr()`.
+Error codes: `VALIDATION_ERROR`, `AGENT_ERROR`, `FLOW_AGENT_ERROR`, `ABORT_ERROR`. Helpers: `ok()`, `err()`, `isOk()`, `isErr()`.
 
 ### Runnable
 
-Both `Agent` and `Workflow` satisfy the `Runnable` interface, enabling composition. Subagents passed to `agent({ agents })` are automatically wrapped as callable tools.
+Both `Agent` and `FlowAgent` satisfy the `Runnable` interface, enabling composition. Subagents passed to `agent({ agents })` are automatically wrapped as callable tools.
 
 ### Context
 
-Internal -- never exposed to users. The framework creates it automatically. Custom step factories (via `createWorkflowEngine`) receive `ExecutionContext` with `signal` and `log`.
+Internal -- never exposed to users. The framework creates it automatically. Custom step factories (via `createFlowEngine`) receive `ExecutionContext` with `signal` and `log`.
 
 ### Logger
 
-Pino-compatible interface with `child()` support. The framework creates scoped child loggers at each boundary (workflow, step, agent).
+Pino-compatible interface with `child()` support. The framework creates scoped child loggers at each boundary (flow agent, step, agent).
 
 ## Provider
 
@@ -217,7 +217,7 @@ OpenRouter integration for model resolution. The `Model` type accepted by `agent
 
 ## Execution Trace
 
-Workflows produce a frozen `TraceEntry[]` tree representing every tracked `$` operation:
+Flow agents produce a frozen `TraceEntry[]` tree representing every tracked `$` operation:
 
 | Field        | Type            | Description                                                         |
 | ------------ | --------------- | ------------------------------------------------------------------- |
@@ -232,7 +232,7 @@ Workflows produce a frozen `TraceEntry[]` tree representing every tracked `$` op
 ## References
 
 - [Agent](core/agent.md)
-- [Workflow](core/workflow.md)
+- [Flow Agent](core/flow-agent.md)
 - [Step Builder ($)](core/step.md)
 - [Tools](core/tools.md)
 - [Hooks](core/hooks.md)
@@ -240,5 +240,5 @@ Workflows produce a frozen `TraceEntry[]` tree representing every tracked `$` op
 - [Models](provider/models.md)
 - [Token Usage](provider/usage.md)
 - [Create an Agent](guides/create-agent.md)
-- [Create a Workflow](guides/create-workflow.md)
+- [Create a Flow Agent](guides/create-flow-agent.md)
 - [Create a Tool](guides/create-tool.md)
