@@ -20,7 +20,7 @@ export interface UnattributedSource {
 /**
  * Per-agent usage — token counts with agent source identity.
  */
-export interface AgentUsage extends TokenUsage {
+export interface AgentTokenUsage extends TokenUsage {
   /** Which agent (or unattributed source) produced this usage. */
   readonly source: AgentSource | UnattributedSource;
 }
@@ -28,7 +28,7 @@ export interface AgentUsage extends TokenUsage {
 /**
  * Per-model usage — token counts with model identity.
  */
-export interface ModelUsage extends TokenUsage {
+export interface ModelTokenUsage extends TokenUsage {
   /** The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`). */
   readonly modelId: string;
 }
@@ -70,7 +70,7 @@ export function usage(records: TokenUsageRecord[]): TokenUsage {
  * // [{ source: { type: 'agent', agentId: 'scanner' }, inputTokens: 150, ... }]
  * ```
  */
-export function usageByAgent(records: TokenUsageRecord[]): readonly AgentUsage[] {
+export function usageByAgent(records: TokenUsageRecord[]): readonly AgentTokenUsage[] {
   const UNATTRIBUTED = "__unattributed__";
 
   const grouped = groupBy(records, (r) => {
@@ -115,7 +115,7 @@ export function usageByAgent(records: TokenUsageRecord[]): readonly AgentUsage[]
  * // [{ modelId: 'openai/gpt-5.2-codex', inputTokens: 350, ... }]
  * ```
  */
-export function usageByModel(records: TokenUsageRecord[]): readonly ModelUsage[] {
+export function usageByModel(records: TokenUsageRecord[]): readonly ModelTokenUsage[] {
   const grouped = groupBy(records, (r) => r.modelId);
 
   return Object.entries(grouped).map(
