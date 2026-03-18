@@ -55,11 +55,13 @@ export type StreamPart = TextStreamPart<ToolSet>;
  * type Nope = ToolSafeKey<'agent:plan'>;  // never
  * ```
  */
-export type ToolSafeKey<S extends string> =
-  S extends "" ? never
-    : S extends `${number}${string}` ? never
-      : S extends `${string}${"-" | "." | ":" | " " | "/" | "\\" | "@" | "#" | "!" | "+" | "=" | "(" | ")" | "[" | "]" | "{" | "}" | "|" | ";" | "," | "<" | ">" | "?" | "*" | "&" | "%" | "$" | "^" | "~" | "\`" | "'" | "\""}${string}` ? never
-        : S;
+export type ToolSafeKey<S extends string> = S extends ""
+  ? never
+  : S extends `${number}${string}`
+    ? never
+    : S extends `${string}${"-" | "." | ":" | " " | "/" | "\\" | "@" | "#" | "!" | "+" | "=" | "(" | ")" | "[" | "]" | "{" | "}" | "|" | ";" | "," | "<" | ">" | "?" | "*" | "&" | "%" | "$" | "^" | "~" | "'" | '"'}${string}`
+      ? never
+      : S;
 
 /**
  * Record of named subagents available for delegation.
@@ -511,7 +513,13 @@ export interface AgentConfig<
    * Non-alphanumeric characters (except underscore) cause a compile
    * error via {@link ToolSafeKey} and a runtime error from validation.
    */
-  agents?: { [K in keyof TSubAgents]: K extends string ? ToolSafeKey<K> extends never ? never : TSubAgents[K] : TSubAgents[K] };
+  agents?: {
+    [K in keyof TSubAgents]: K extends string
+      ? ToolSafeKey<K> extends never
+        ? never
+        : TSubAgents[K]
+      : TSubAgents[K];
+  };
 
   /**
    * Maximum tool-loop iterations.

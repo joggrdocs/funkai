@@ -248,7 +248,7 @@ function validateToolName(name: string): void {
       reasons.push(`must start with a letter or underscore, got "${name[0]}"`);
     }
 
-    const invalidChars = [...new Set(name.replace(/[a-zA-Z0-9_]/g, "").split(""))].filter(
+    const invalidChars = [...new Set(name.replaceAll(/[a-zA-Z0-9_]/g, ""))].filter(
       (c) => c.length > 0,
     );
     if (invalidChars.length > 0) {
