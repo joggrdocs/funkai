@@ -17,7 +17,7 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
-"prompts:generate": {
+    "prompts:generate": {
       "dependsOn": ["^build"],
       "outputs": [".prompts/client/**"]
     },
