@@ -165,10 +165,18 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const finishedAt = Date.now();
       const duration = finishedAt - startedAt;
 
-      let usage: TokenUsage | undefined;
-      if (value !== null && value !== undefined && typeof value === "object" && "usage" in value) {
-        ({ usage } = value as { usage: TokenUsage });
-      }
+      const usage: TokenUsage | undefined = (() => {
+        if (
+          type === "agent" &&
+          value !== null &&
+          value !== undefined &&
+          typeof value === "object" &&
+          "usage" in value
+        ) {
+          return (value as { usage: TokenUsage }).usage;
+        }
+        return undefined;
+      })();
 
       const traceRecord: TraceEntry = {
         id,
@@ -346,7 +354,12 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       input: config.input,
       execute: async ({ $ }) => {
         const { concurrency } = config;
-        if (concurrency !== null && concurrency !== undefined && concurrency !== Infinity) {
+        if (
+          concurrency !== null &&
+          concurrency !== undefined &&
+          concurrency !== Infinity &&
+          concurrency > 0
+        ) {
           return poolMap(config.input, concurrency, ctx.signal, (item, index) =>
             config.execute({ item, index, $ }),
           );

@@ -50,13 +50,13 @@ export function handleGenerate(
 
   if (!silent) {
     for (const prompt of prompts) {
-      let varList: string;
       // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      if (prompt.schema.length > 0) {
-        varList = ` (${prompt.schema.map((v) => v.name).join(", ")})`;
-      } else {
-        varList = "";
-      }
+      const varList: string = (() => {
+        if (prompt.schema.length > 0) {
+          return ` (${prompt.schema.map((v) => v.name).join(", ")})`;
+        }
+        return "";
+      })();
       logger.step(`${prompt.name}${varList}`);
     }
   }

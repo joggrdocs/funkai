@@ -57,13 +57,13 @@ export default command({
       const currentRecs = (extensions.recommendations ?? []) as string[];
       const extensionId = "sissel.shopify-liquid";
 
-      let recommendations: string[];
       // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      if (currentRecs.includes(extensionId)) {
-        recommendations = currentRecs;
-      } else {
-        recommendations = [...currentRecs, extensionId];
-      }
+      const recommendations: string[] = (() => {
+        if (currentRecs.includes(extensionId)) {
+          return currentRecs;
+        }
+        return [...currentRecs, extensionId];
+      })();
       const updatedExtensions = {
         ...extensions,
         recommendations,
@@ -80,24 +80,24 @@ export default command({
 
     if (shouldGitignore) {
       const gitignorePath = resolve(GITIGNORE_FILE);
-      let existing: string;
       // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      if (existsSync(gitignorePath)) {
-        existing = readFileSync(gitignorePath, "utf8");
-      } else {
-        existing = "";
-      }
+      const existing: string = (() => {
+        if (existsSync(gitignorePath)) {
+          return readFileSync(gitignorePath, "utf8");
+        }
+        return "";
+      })();
 
       if (existing.includes(GITIGNORE_ENTRY)) {
         ctx.logger.info(`${GITIGNORE_ENTRY} already in ${gitignorePath}`);
       } else {
-        let separator: string;
         // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-        if (existing.length > 0 && !existing.endsWith("\n")) {
-          separator = "\n";
-        } else {
-          separator = "";
-        }
+        const separator: string = (() => {
+          if (existing.length > 0 && !existing.endsWith("\n")) {
+            return "\n";
+          }
+          return "";
+        })();
         const block = `${separator}\n# Generated prompt client (created by \`funkai prompts generate\`)\n${GITIGNORE_ENTRY}\n`;
         writeFileSync(gitignorePath, `${existing}${block}`, "utf8");
         ctx.logger.success(`Added ${GITIGNORE_ENTRY} to ${gitignorePath}`);

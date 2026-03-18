@@ -349,15 +349,17 @@ export function createFlowEngine<
           for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
             // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
             customSteps[name] = async (config: unknown) => {
-              let stepId = name;
-              if (
-                config !== null &&
-                config !== undefined &&
-                typeof config === "object" &&
-                "id" in config
-              ) {
-                stepId = (config as { id: string }).id;
-              }
+              const stepId = (() => {
+                if (
+                  config !== null &&
+                  config !== undefined &&
+                  typeof config === "object" &&
+                  "id" in config
+                ) {
+                  return (config as { id: string }).id;
+                }
+                return name;
+              })();
               const result = await $.step({
                 id: stepId,
                 execute: async () =>

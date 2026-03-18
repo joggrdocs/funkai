@@ -76,21 +76,25 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     );
   }
 
-  let group: string | undefined;
-  if (typeof parsed.group === "string") {
-    const g = parsed.group as string;
-    const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
-    if (invalidSegment !== undefined) {
-      throw new Error(
-        `Invalid group segment "${invalidSegment}" in ${filePath}. Group segments must be lowercase alphanumeric with hyphens only.`,
-      );
+  const group: string | undefined = (() => {
+    if (typeof parsed.group === "string") {
+      const g = parsed.group as string;
+      const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
+      if (invalidSegment !== undefined) {
+        throw new Error(
+          `Invalid group segment "${invalidSegment}" in ${filePath}. Group segments must be lowercase alphanumeric with hyphens only.`,
+        );
+      }
+      return g;
     }
-    group = g;
-  }
-  let version: string | undefined;
-  if (parsed.version !== null && parsed.version !== undefined) {
-    version = String(parsed.version);
-  }
+    return undefined;
+  })();
+  const version: string | undefined = (() => {
+    if (parsed.version !== null && parsed.version !== undefined) {
+      return String(parsed.version);
+    }
+    return undefined;
+  })();
 
   const schema = parseSchemaBlock(parsed.schema, filePath);
 
@@ -122,18 +126,20 @@ function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
 
     if (typeof value === "object" && value !== null && !Array.isArray(value)) {
       const def = value as Record<string, unknown>;
-      let type: string;
       // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      if (typeof def.type === "string") {
-        type = def.type as string;
-      } else {
-        type = "string";
-      }
+      const type: string = (() => {
+        if (typeof def.type === "string") {
+          return def.type as string;
+        }
+        return "string";
+      })();
       const required = def.required !== false;
-      let description: string | undefined;
-      if (typeof def.description === "string") {
-        description = def.description as string;
-      }
+      const description: string | undefined = (() => {
+        if (typeof def.description === "string") {
+          return def.description as string;
+        }
+        return undefined;
+      })();
 
       return { name: varName, type, required, description };
     }

@@ -77,8 +77,10 @@ import type { Result } from "@/utils/result.js";
 export function agent<
   TInput = string | Message[],
   TOutput = string,
-  TTools extends Record<string, Tool> = Record<string, never>,
-  TSubAgents extends SubAgents = Record<string, never>,
+  // oxlint-disable-next-line typescript-eslint/ban-types -- {} is intentional: allows unconstrained tool/subagent defaults
+  TTools extends Record<string, Tool> = {},
+  // oxlint-disable-next-line typescript-eslint/ban-types
+  TSubAgents extends SubAgents = {},
 >(
   config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
 ): Agent<TInput, TOutput, TTools, TSubAgents> {
@@ -422,9 +424,10 @@ export function agent<
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
-        // Safe to delegate: the AI SDK internally tees its baseStream for each
-        // Accessor (fullStream, textStream, toTextStreamResponse, etc.), so
-        // Consuming fullStream above does not conflict with these methods.
+        // NOTE: toTextStreamResponse and toUIMessageStreamResponse delegate directly to
+        // The underlying AI SDK stream, NOT from the TransformStream above.
+        // Do NOT consume fullStream concurrently with these methods —
+        // They share the same underlying stream source.
         toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
         toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };

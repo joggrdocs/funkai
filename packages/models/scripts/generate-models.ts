@@ -109,16 +109,18 @@ function fmtNum(n: number): string {
  * Build the pricing object literal string for a model.
  */
 function buildPricing(cost: ApiModel["cost"]): string {
-  let costInput = 0;
-  let costOutput = 0;
-  if (cost !== undefined && cost !== null) {
-    if (cost.input !== undefined && cost.input !== null) {
-      costInput = cost.input;
+  const costInput: number = (() => {
+    if (cost !== undefined && cost !== null && cost.input !== undefined && cost.input !== null) {
+      return cost.input;
     }
-    if (cost.output !== undefined && cost.output !== null) {
-      costOutput = cost.output;
+    return 0;
+  })();
+  const costOutput: number = (() => {
+    if (cost !== undefined && cost !== null && cost.output !== undefined && cost.output !== null) {
+      return cost.output;
     }
-  }
+    return 0;
+  })();
   const input = toPerToken(costInput);
   const output = toPerToken(costOutput);
   const parts: string[] = [`input: ${fmtNum(input)}`, `output: ${fmtNum(output)}`];
@@ -142,16 +144,28 @@ function buildPricing(cost: ApiModel["cost"]): string {
  * Build the modalities object literal string.
  */
 function buildModalities(modalities: ApiModel["modalities"]): string {
-  let modalInput: string[] = ["text"];
-  let modalOutput: string[] = ["text"];
-  if (modalities !== undefined && modalities !== null) {
-    if (modalities.input !== undefined && modalities.input !== null) {
-      modalInput = modalities.input;
+  const modalInput: string[] = (() => {
+    if (
+      modalities !== undefined &&
+      modalities !== null &&
+      modalities.input !== undefined &&
+      modalities.input !== null
+    ) {
+      return modalities.input;
     }
-    if (modalities.output !== undefined && modalities.output !== null) {
-      modalOutput = modalities.output;
+    return ["text"];
+  })();
+  const modalOutput: string[] = (() => {
+    if (
+      modalities !== undefined &&
+      modalities !== null &&
+      modalities.output !== undefined &&
+      modalities.output !== null
+    ) {
+      return modalities.output;
     }
-  }
+    return ["text"];
+  })();
   const input = JSON.stringify(modalInput);
   const output = JSON.stringify(modalOutput);
   return `{ input: ${input}, output: ${output} }`;
@@ -176,14 +190,18 @@ function getModelLimits(limit: ApiModel["limit"]): { contextWindow: number; maxO
   if (limit === undefined || limit === null) {
     return { contextWindow: 0, maxOutput: 0 };
   }
-  let contextWindow = 0;
-  let maxOutput = 0;
-  if (limit.context !== undefined && limit.context !== null) {
-    contextWindow = limit.context;
-  }
-  if (limit.output !== undefined && limit.output !== null) {
-    maxOutput = limit.output;
-  }
+  const contextWindow: number = (() => {
+    if (limit.context !== undefined && limit.context !== null) {
+      return limit.context;
+    }
+    return 0;
+  })();
+  const maxOutput: number = (() => {
+    if (limit.output !== undefined && limit.output !== null) {
+      return limit.output;
+    }
+    return 0;
+  })();
   return { contextWindow, maxOutput };
 }
 
@@ -309,11 +327,14 @@ ${lines.join("\n")}
         const { prefix } = providerEntry;
         const camel = lowerFirst(prefix);
         const [firstModel] = Object.values(apiModels);
-        let exampleId = "example-id";
-        if (firstModel !== undefined) {
-          exampleId = firstModel.id;
-        }
-        exampleId = escapeStr(exampleId);
+        const exampleId = escapeStr(
+          (() => {
+            if (firstModel !== undefined) {
+              return firstModel.id;
+            }
+            return "example-id";
+          })(),
+        );
         const providerName = escapeStr(providerEntry.name);
         const art = article(providerEntry.name);
         const entryContent = `${BANNER}

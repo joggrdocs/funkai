@@ -37,13 +37,12 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  let partialsDirs: string[];
-  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-  if (existsSync(customPartialsDir)) {
-    partialsDirs = [customPartialsDir, PARTIALS_DIR];
-  } else {
-    partialsDirs = [PARTIALS_DIR];
-  }
+  const partialsDirs: string[] = (() => {
+    if (existsSync(customPartialsDir)) {
+      return [customPartialsDir, PARTIALS_DIR];
+    }
+    return [PARTIALS_DIR];
+  })();
 
   const results = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
@@ -87,13 +86,12 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
   const discovered = discoverPrompts([...options.roots]);
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-  let partialsDirs: string[];
-  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-  if (existsSync(customPartialsDir)) {
-    partialsDirs = [customPartialsDir, PARTIALS_DIR];
-  } else {
-    partialsDirs = [PARTIALS_DIR];
-  }
+  const partialsDirs: string[] = (() => {
+    if (existsSync(customPartialsDir)) {
+      return [customPartialsDir, PARTIALS_DIR];
+    }
+    return [PARTIALS_DIR];
+  })();
 
   const processed = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file

@@ -39,20 +39,13 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
-    let rawParams: string;
-    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-    if (m[2] !== null && m[2] !== undefined) {
-      rawParams = m[2].trim();
-    } else {
-      rawParams = "";
-    }
-    let params: Record<string, string>;
-    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-    if (rawParams.length > 0) {
-      params = parseParams(rawParams, m[1]);
-    } else {
-      params = {};
-    }
+    const rawParams: string = (m[2] ?? "").trim();
+    const params: Record<string, string> = (() => {
+      if (rawParams.length > 0) {
+        return parseParams(rawParams, m[1]);
+      }
+      return {};
+    })();
 
     return { fullMatch: m[0], partialName: m[1], params };
   });

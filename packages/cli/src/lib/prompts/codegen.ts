@@ -68,13 +68,13 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
   const fields = vars
     .map((v) => {
       const base = "z.string()";
-      let expr: string;
       // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      if (v.required) {
-        expr = base;
-      } else {
-        expr = `${base}.optional()`;
-      }
+      const expr: string = (() => {
+        if (v.required) {
+          return base;
+        }
+        return `${base}.optional()`;
+      })();
       return `  ${v.name}: ${expr},`;
     })
     .join("\n");
@@ -102,13 +102,13 @@ const HEADER = [
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
-  let groupValue: string;
   // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-  if (prompt.group !== null && prompt.group !== undefined) {
-    groupValue = `'${prompt.group}' as const`;
-  } else {
-    groupValue = "undefined";
-  }
+  const groupValue: string = (() => {
+    if (prompt.group !== null && prompt.group !== undefined) {
+      return `'${prompt.group}' as const`;
+    }
+    return "undefined";
+  })();
 
   const lines: string[] = [
     HEADER,
@@ -171,13 +171,13 @@ interface TreeNode {
 function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
   return prompts.reduce<Record<string, unknown>>((root, prompt) => {
     const importName = toCamelCase(prompt.name);
-    let segments: string[];
     // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-    if (prompt.group) {
-      segments = prompt.group.split("/").map(toCamelCase);
-    } else {
-      segments = [];
-    }
+    const segments: string[] = (() => {
+      if (prompt.group) {
+        return prompt.group.split("/").map(toCamelCase);
+      }
+      return [];
+    })();
 
     const target = segments.reduce<Record<string, unknown>>((current, segment) => {
       const existing = current[segment];

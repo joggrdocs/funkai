@@ -1144,7 +1144,8 @@ describe("stream() error handling", () => {
 
   it("wraps non-Error throws into Error", async () => {
     mockStreamText.mockImplementation(() => {
-      throw new Error("string stream error");
+      // oxlint-disable-next-line no-throw-literal -- testing non-Error throw handling
+      throw "string stream error";
     });
 
     const a = createSimpleAgent();

@@ -137,9 +137,8 @@ describe("TraceEntry type", () => {
     const entries: TraceEntry[] = types.map((type) => createEntry({ id: type, type }));
 
     expect(entries).toHaveLength(8);
-    for (let i = 0; i < entries.length; i++) {
-      // oxlint-disable-next-line security/detect-object-injection -- Array index, not user input
-      expect(entries[i]!.type).toBe(types[i]);
+    for (const [i, entry] of entries.entries()) {
+      expect(entry.type).toBe(types[i]);
     }
   });
 

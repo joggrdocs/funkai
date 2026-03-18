@@ -60,58 +60,58 @@ export function buildAITools(
     return undefined;
   }
 
-  let agentTools: Record<string, unknown>;
   // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-  if (agents) {
-    agentTools = Object.fromEntries(
-      Object.entries(agents).map(([name, runnable]) => {
-        // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-        const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
-          | RunnableMeta
-          | undefined;
-        const toolName = resolveToolName(meta, name);
-        const agentToolName = `agent:${name}`;
+  const agentTools: Record<string, unknown> = (() => {
+    if (agents) {
+      return Object.fromEntries(
+        Object.entries(agents).map(([name, runnable]) => {
+          // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+          const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
+            | RunnableMeta
+            | undefined;
+          const toolName = resolveToolName(meta, name);
+          const agentToolName = `agent:${name}`;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
-        let agentTool: ReturnType<typeof tool<any, any>>;
-        // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-        if (
-          meta !== null &&
-          meta !== undefined &&
-          meta.inputSchema !== null &&
-          meta.inputSchema !== undefined
-        ) {
-          agentTool = tool({
-            description: `Delegate to ${toolName}`,
-            inputSchema: meta.inputSchema,
-            execute: async (input, { abortSignal }) => {
-              const r = await runnable.generate(input, { signal: abortSignal, tools });
-              if (!r.ok) {
-                throw new Error(r.error.message);
-              }
-              return r.output;
-            },
-          });
-        } else {
-          agentTool = tool({
-            description: `Delegate to ${toolName}`,
-            inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
-            execute: async (input: { prompt: string }, { abortSignal }) => {
-              const r = await runnable.generate(input.prompt, { signal: abortSignal, tools });
-              if (!r.ok) {
-                throw new Error(r.error.message);
-              }
-              return r.output;
-            },
-          });
-        }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
+          const agentTool: ReturnType<typeof tool<any, any>> = (() => {
+            // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
+            if (
+              meta !== null &&
+              meta !== undefined &&
+              meta.inputSchema !== null &&
+              meta.inputSchema !== undefined
+            ) {
+              return tool({
+                description: `Delegate to ${toolName}`,
+                inputSchema: meta.inputSchema,
+                execute: async (input, { abortSignal }) => {
+                  const r = await runnable.generate(input, { signal: abortSignal, tools });
+                  if (!r.ok) {
+                    throw new Error(r.error.message);
+                  }
+                  return r.output;
+                },
+              });
+            }
+            return tool({
+              description: `Delegate to ${toolName}`,
+              inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
+              execute: async (input: { prompt: string }, { abortSignal }) => {
+                const r = await runnable.generate(input.prompt, { signal: abortSignal, tools });
+                if (!r.ok) {
+                  throw new Error(r.error.message);
+                }
+                return r.output;
+              },
+            });
+          })();
 
-        return [agentToolName, agentTool];
-      }),
-    );
-  } else {
-    agentTools = {};
-  }
+          return [agentToolName, agentTool];
+        }),
+      );
+    }
+    return {};
+  })();
 
   return { ...tools, ...agentTools };
 }
