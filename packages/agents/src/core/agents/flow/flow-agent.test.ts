@@ -5,10 +5,6 @@ import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const Input = z.object({ x: z.number() });
 const Output = z.object({ y: z.number() });
 
@@ -28,17 +24,9 @@ function createSimpleFlowAgent(
   );
 }
 
-// ---------------------------------------------------------------------------
-// Setup
-// ---------------------------------------------------------------------------
-
 beforeEach(() => {
   vi.clearAllMocks();
 });
-
-// ---------------------------------------------------------------------------
-// FlowAgent creation
-// ---------------------------------------------------------------------------
 
 describe("flowAgent creation", () => {
   it("returns an object with generate, stream, and fn methods", () => {
@@ -58,10 +46,6 @@ describe("flowAgent creation", () => {
     expect(meta.inputSchema).toBe(Input);
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — success path
-// ---------------------------------------------------------------------------
 
 describe("generate() success", () => {
   it("returns ok: true with computed output", async () => {
@@ -127,10 +111,6 @@ describe("generate() success", () => {
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — with steps
-// ---------------------------------------------------------------------------
 
 describe("generate() with steps", () => {
   it("handler receives $ step builder and can use $.step()", async () => {
@@ -202,10 +182,6 @@ describe("generate() with steps", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — input validation
-// ---------------------------------------------------------------------------
-
 describe("generate() input validation", () => {
   it("returns VALIDATION_ERROR when input fails safeParse", async () => {
     const fa = createSimpleFlowAgent();
@@ -249,10 +225,6 @@ describe("generate() input validation", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — output validation
-// ---------------------------------------------------------------------------
-
 describe("generate() output validation", () => {
   it("returns VALIDATION_ERROR when output fails safeParse", async () => {
     const fa = flowAgent<{ x: number }, { y: number }>(
@@ -273,10 +245,6 @@ describe("generate() output validation", () => {
     expect(result.error.message).toContain("Output validation failed");
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — error handling
-// ---------------------------------------------------------------------------
 
 describe("generate() error handling", () => {
   it("returns FLOW_AGENT_ERROR when handler throws an Error", async () => {
@@ -306,10 +274,6 @@ describe("generate() error handling", () => {
     expect(result.error.message).toBe("string error");
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — hooks
-// ---------------------------------------------------------------------------
 
 describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
@@ -478,10 +442,6 @@ describe("generate() hooks", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — hook resilience
-// ---------------------------------------------------------------------------
-
 describe("generate() hook resilience", () => {
   it("onStart throwing does not prevent execution", async () => {
     const fa = createSimpleFlowAgent({
@@ -532,10 +492,6 @@ describe("generate() hook resilience", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — overrides
-// ---------------------------------------------------------------------------
-
 describe("generate() overrides", () => {
   it("uses override signal when provided", async () => {
     const controller = new AbortController();
@@ -553,10 +509,6 @@ describe("generate() overrides", () => {
     expect(overrideLogger.child).toHaveBeenCalledWith({ flowAgentId: "test-flow" });
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — void output (no output schema)
-// ---------------------------------------------------------------------------
 
 describe("generate() void output", () => {
   it("collects text from messages when no output schema is defined", async () => {
@@ -581,10 +533,6 @@ describe("generate() void output", () => {
     expect(typeof result.output).toBe("string");
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — success path
-// ---------------------------------------------------------------------------
 
 describe("stream() success", () => {
   it("returns ok: true with fullStream, output, messages, usage, and finishReason", async () => {
@@ -703,10 +651,6 @@ describe("stream() success", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — with steps
-// ---------------------------------------------------------------------------
-
 describe("stream() with steps", () => {
   it("emits typed tool-call and tool-result events through fullStream", async () => {
     const fa = flowAgent<{ x: number }, { y: number }>(
@@ -757,10 +701,6 @@ describe("stream() with steps", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — input validation
-// ---------------------------------------------------------------------------
-
 describe("stream() input validation", () => {
   it("returns VALIDATION_ERROR when input fails safeParse", async () => {
     const fa = createSimpleFlowAgent();
@@ -774,10 +714,6 @@ describe("stream() input validation", () => {
     expect(result.error.message).toContain("Input validation failed");
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — error handling
-// ---------------------------------------------------------------------------
 
 describe("stream() error handling", () => {
   it("stream closes and output promise rejects when handler throws", async () => {
@@ -838,10 +774,6 @@ describe("stream() error handling", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — output validation
-// ---------------------------------------------------------------------------
-
 describe("stream() output validation", () => {
   it("rejects output promise with Output validation failed when handler returns invalid data", async () => {
     const fa = flowAgent<{ x: number }, { y: number }>(
@@ -874,10 +806,6 @@ describe("stream() output validation", () => {
     await expect(result.output).rejects.toThrow("Output validation failed");
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — hooks
-// ---------------------------------------------------------------------------
 
 describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
@@ -970,10 +898,6 @@ describe("stream() hooks", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — void output (no output schema)
-// ---------------------------------------------------------------------------
-
 describe("stream() void output", () => {
   it("collects text from messages when no output schema is defined", async () => {
     const fa = flowAgent<{ x: number }>(
@@ -1006,10 +930,6 @@ describe("stream() void output", () => {
     expect(typeof output).toBe("string");
   });
 });
-
-// ---------------------------------------------------------------------------
-// fn() — delegates to generate()
-// ---------------------------------------------------------------------------
 
 describe("fn()", () => {
   it("returns a function that delegates to generate()", async () => {
@@ -1045,10 +965,6 @@ describe("fn()", () => {
     expect(result.error.code).toBe("VALIDATION_ERROR");
   });
 });
-
-// ---------------------------------------------------------------------------
-// Edge cases
-// ---------------------------------------------------------------------------
 
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
@@ -1092,10 +1008,6 @@ describe("edge cases", () => {
     expect(receivedLog).toBeDefined();
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — no unhandled rejections on derived promises
-// ---------------------------------------------------------------------------
 
 describe("stream() unhandled rejection safety", () => {
   it("does not emit unhandledRejection when consumer ignores derived promises", async () => {

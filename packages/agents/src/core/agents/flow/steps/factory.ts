@@ -480,8 +480,12 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 }
 
 // ---------------------------------------------------------------------------
-// Helper: build hook callback without ternary or optional chaining
+// Private
 // ---------------------------------------------------------------------------
+
+/**
+ * @private
+ */
 function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>) | undefined>(
   handler: F,
   invoke: (fn: NonNullable<F>) => void | Promise<void>,
@@ -492,9 +496,9 @@ function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>
   return undefined;
 }
 
-// ---------------------------------------------------------------------------
-// Helper: build parent hook callback without ternary or optional chaining
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
   hooks: StepBuilderOptions["parentHooks"],
   key: K,
@@ -513,9 +517,9 @@ function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
   return () => invoke(fn);
 }
 
-// ---------------------------------------------------------------------------
-// Helper: build onFinish handler (generic step) without ternary or !
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 function buildOnFinishHandler<T>(
   onFinish?: (event: { id: string; result: T; duration: number }) => void | Promise<void>,
 ):
@@ -527,9 +531,9 @@ function buildOnFinishHandler<T>(
   return (event) => onFinish({ id: event.id, result: event.result as T, duration: event.duration });
 }
 
-// ---------------------------------------------------------------------------
-// Helper: build onFinish handler for void-returning steps (each)
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 function buildOnFinishHandlerVoid(
   onFinish?: (event: { id: string; duration: number }) => void | Promise<void>,
 ):
@@ -541,9 +545,9 @@ function buildOnFinishHandlerVoid(
   return (event) => onFinish({ id: event.id, duration: event.duration });
 }
 
-// ---------------------------------------------------------------------------
-// Helper: build onFinish handler for race (result is unknown, no cast needed)
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 function buildOnFinishHandlerRace(
   onFinish?: (event: { id: string; result: unknown; duration: number }) => void | Promise<void>,
 ):
@@ -555,9 +559,9 @@ function buildOnFinishHandlerRace(
   return (event) => onFinish({ id: event.id, result: event.result, duration: event.duration });
 }
 
-// ---------------------------------------------------------------------------
-// Helper: sequential reduce without let
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 async function reduceSequential<T, R>(
   items: readonly T[],
   initial: R,
@@ -578,9 +582,9 @@ async function reduceSequential<T, R>(
   return loop(initial, 0);
 }
 
-// ---------------------------------------------------------------------------
-// Helper: sequential while without let
-// ---------------------------------------------------------------------------
+/**
+ * @private
+ */
 async function whileSequential<T>(
   condition: (state: { value: T | undefined; index: number }) => boolean,
   signal: AbortSignal,
@@ -604,6 +608,8 @@ async function whileSequential<T>(
  *
  * Runs `fn` over `items` with at most `concurrency` concurrent
  * executions. Results are returned in input order.
+ *
+ * @private
  */
 async function poolMap<T, R>(
   items: readonly T[],

@@ -2,10 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import { model, models, MODELS } from "@/catalog/index.js";
 
-// ---------------------------------------------------------------------------
-// MODELS constant
-// ---------------------------------------------------------------------------
-
 describe("MODELS", () => {
   it("is a non-empty array", () => {
     expect(MODELS.length).toBeGreaterThan(0);
@@ -41,10 +37,6 @@ describe("MODELS", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// model()
-// ---------------------------------------------------------------------------
-
 describe("model()", () => {
   it("returns the model definition for a known ID", () => {
     const result = model("gpt-4o-mini");
@@ -77,10 +69,6 @@ describe("model()", () => {
     expect(result!.modalities.output).toContain("text");
   });
 });
-
-// ---------------------------------------------------------------------------
-// models()
-// ---------------------------------------------------------------------------
 
 describe("models()", () => {
   it("returns all models when called without filter", () => {

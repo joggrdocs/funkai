@@ -20,10 +20,6 @@ const translator = agent({
   system: "Translate the given text to Spanish.",
 });
 
-// ---------------------------------------------------------------------------
-// 2. Create a flow agent that orchestrates multiple agents
-// ---------------------------------------------------------------------------
-
 const summarizeAndTranslate = flowAgent(
   {
     name: "summarize-and-translate",
@@ -70,10 +66,6 @@ const summarizeAndTranslate = flowAgent(
     };
   },
 );
-
-// ---------------------------------------------------------------------------
-// 3. Run the flow
-// ---------------------------------------------------------------------------
 
 const result = await summarizeAndTranslate.generate({
   text: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.",

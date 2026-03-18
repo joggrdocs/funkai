@@ -3,10 +3,6 @@ import { z } from "zod";
 
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 
-// ---------------------------------------------------------------------------
-// RUNNABLE_META symbol
-// ---------------------------------------------------------------------------
-
 describe("RUNNABLE_META", () => {
   it("is a symbol", () => {
     expect(typeof RUNNABLE_META).toBe("symbol");

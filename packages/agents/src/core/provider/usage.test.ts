@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
-import { agentUsage, sumTokenUsage, flowAgentUsage } from "@/core/provider/usage.js";
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+import { usage, sumTokenUsage } from "@/core/provider/usage.js";
 
 function createRecord(overrides?: Partial<TokenUsageRecord>): TokenUsageRecord {
   return {
@@ -20,16 +16,13 @@ function createRecord(overrides?: Partial<TokenUsageRecord>): TokenUsageRecord {
   };
 }
 
-// ---------------------------------------------------------------------------
-// agentUsage()
-// ---------------------------------------------------------------------------
-
-describe("agentUsage()", () => {
+describe("usage()", () => {
   it("returns zero counts for a record with all undefined fields", () => {
-    const result = agentUsage("agent-1", createRecord());
+    const result = usage(createRecord({ source: { agentId: "agent-1", scope: [] } }));
 
-    expect(result).toEqual({
-      agentId: "agent-1",
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual({
+      source: { agentId: "agent-1" },
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
@@ -47,68 +40,91 @@ describe("agentUsage()", () => {
       cacheReadTokens: 10,
       cacheWriteTokens: 5,
       reasoningTokens: 20,
+      source: { agentId: "agent-2", scope: [] },
     });
 
-    const result = agentUsage("agent-2", record);
+    const result = usage(record);
 
-    expect(result.agentId).toBe("agent-2");
-    expect(result.inputTokens).toBe(100);
-    expect(result.outputTokens).toBe(50);
-    expect(result.totalTokens).toBe(150);
-    expect(result.cacheReadTokens).toBe(10);
-    expect(result.cacheWriteTokens).toBe(5);
-    expect(result.reasoningTokens).toBe(20);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.source.agentId).toBe("agent-2");
+    expect(result[0]!.inputTokens).toBe(100);
+    expect(result[0]!.outputTokens).toBe(50);
+    expect(result[0]!.totalTokens).toBe(150);
+    expect(result[0]!.cacheReadTokens).toBe(10);
+    expect(result[0]!.cacheWriteTokens).toBe(5);
+    expect(result[0]!.reasoningTokens).toBe(20);
   });
 
   it("accepts a single record (not wrapped in array)", () => {
-    const record = createRecord({ inputTokens: 42 });
+    const record = createRecord({
+      inputTokens: 42,
+      source: { agentId: "agent-single", scope: [] },
+    });
 
-    const result = agentUsage("agent-single", record);
+    const result = usage(record);
 
-    expect(result.inputTokens).toBe(42);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.inputTokens).toBe(42);
   });
 
-  it("aggregates token counts across multiple records", () => {
+  it("aggregates token counts across multiple records from the same agent", () => {
     const records: TokenUsageRecord[] = [
-      createRecord({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
-      createRecord({ inputTokens: 200, outputTokens: 100, totalTokens: 300 }),
-      createRecord({ inputTokens: 50, outputTokens: 25, totalTokens: 75 }),
+      createRecord({
+        inputTokens: 100,
+        outputTokens: 50,
+        totalTokens: 150,
+        source: { agentId: "agent-multi", scope: [] },
+      }),
+      createRecord({
+        inputTokens: 200,
+        outputTokens: 100,
+        totalTokens: 300,
+        source: { agentId: "agent-multi", scope: [] },
+      }),
+      createRecord({
+        inputTokens: 50,
+        outputTokens: 25,
+        totalTokens: 75,
+        source: { agentId: "agent-multi", scope: [] },
+      }),
     ];
 
-    const result = agentUsage("agent-multi", records);
+    const result = usage(records);
 
-    expect(result.inputTokens).toBe(350);
-    expect(result.outputTokens).toBe(175);
-    expect(result.totalTokens).toBe(525);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.inputTokens).toBe(350);
+    expect(result[0]!.outputTokens).toBe(175);
+    expect(result[0]!.totalTokens).toBe(525);
   });
 
   it("treats undefined fields as 0 during aggregation", () => {
     const records: TokenUsageRecord[] = [
-      createRecord({ inputTokens: 100, cacheReadTokens: undefined }),
-      createRecord({ inputTokens: undefined, cacheReadTokens: 30 }),
+      createRecord({
+        inputTokens: 100,
+        cacheReadTokens: undefined,
+        source: { agentId: "agent-mixed", scope: [] },
+      }),
+      createRecord({
+        inputTokens: undefined,
+        cacheReadTokens: 30,
+        source: { agentId: "agent-mixed", scope: [] },
+      }),
     ];
 
-    const result = agentUsage("agent-mixed", records);
+    const result = usage(records);
 
-    expect(result.inputTokens).toBe(100);
-    expect(result.cacheReadTokens).toBe(30);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.inputTokens).toBe(100);
+    expect(result[0]!.cacheReadTokens).toBe(30);
   });
 
-  it("returns zero counts for an empty array", () => {
-    const result = agentUsage("agent-empty", []);
+  it("returns empty array for empty records", () => {
+    const result = usage([]);
 
-    expect(result.inputTokens).toBe(0);
-    expect(result.outputTokens).toBe(0);
-    expect(result.totalTokens).toBe(0);
+    expect(result).toEqual([]);
   });
-});
 
-// ---------------------------------------------------------------------------
-// flowAgentUsage()
-// ---------------------------------------------------------------------------
-
-describe("flowAgentUsage()", () => {
-  it("groups records by source.agentId and returns per-agent usage", () => {
+  it("groups records by source.agentId", () => {
     const records: TokenUsageRecord[] = [
       createRecord({
         inputTokens: 100,
@@ -130,25 +146,21 @@ describe("flowAgentUsage()", () => {
       }),
     ];
 
-    const result = flowAgentUsage(records);
+    const result = usage(records);
 
-    expect(result.usages).toHaveLength(2);
+    expect(result).toHaveLength(2);
 
-    const agentA = result.usages.find((u) => u.agentId === "agent-a");
-    if (!agentA) {
-      throw new Error("Expected agent-a usage to exist");
-    }
-    expect(agentA.inputTokens).toBe(150);
-    expect(agentA.outputTokens).toBe(75);
-    expect(agentA.totalTokens).toBe(225);
+    const agentA = result.find((u) => u.source.agentId === "agent-a");
+    expect(agentA).toBeDefined();
+    expect(agentA!.inputTokens).toBe(150);
+    expect(agentA!.outputTokens).toBe(75);
+    expect(agentA!.totalTokens).toBe(225);
 
-    const agentB = result.usages.find((u) => u.agentId === "agent-b");
-    if (!agentB) {
-      throw new Error("Expected agent-b usage to exist");
-    }
-    expect(agentB.inputTokens).toBe(200);
-    expect(agentB.outputTokens).toBe(100);
-    expect(agentB.totalTokens).toBe(300);
+    const agentB = result.find((u) => u.source.agentId === "agent-b");
+    expect(agentB).toBeDefined();
+    expect(agentB!.inputTokens).toBe(200);
+    expect(agentB!.outputTokens).toBe(100);
+    expect(agentB!.totalTokens).toBe(300);
   });
 
   it('assigns records without source to "unknown" agent', () => {
@@ -157,15 +169,11 @@ describe("flowAgentUsage()", () => {
       createRecord({ inputTokens: 50 }),
     ];
 
-    const result = flowAgentUsage(records);
+    const result = usage(records);
 
-    expect(result.usages).toHaveLength(1);
-    const unknown = result.usages[0];
-    if (!unknown) {
-      throw new Error("Expected unknown usage to exist");
-    }
-    expect(unknown.agentId).toBe("unknown");
-    expect(unknown.inputTokens).toBe(150);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.source.agentId).toBe("unknown");
+    expect(result[0]!.inputTokens).toBe(150);
   });
 
   it('assigns records with source but no agentId to "unknown"', () => {
@@ -176,23 +184,13 @@ describe("flowAgentUsage()", () => {
       }),
     ];
 
-    const result = flowAgentUsage(records);
+    const result = usage(records);
 
-    expect(result.usages).toHaveLength(1);
-    const unknown = result.usages[0];
-    if (!unknown) {
-      throw new Error("Expected unknown usage to exist");
-    }
-    expect(unknown.agentId).toBe("unknown");
+    expect(result).toHaveLength(1);
+    expect(result[0]!.source.agentId).toBe("unknown");
   });
 
-  it("returns empty usages array for empty records", () => {
-    const result = flowAgentUsage([]);
-
-    expect(result.usages).toEqual([]);
-  });
-
-  it("preserves workflow and step IDs in source grouping", () => {
+  it("groups records from different steps under the same agentId", () => {
     const records: TokenUsageRecord[] = [
       createRecord({
         inputTokens: 10,
@@ -204,21 +202,13 @@ describe("flowAgentUsage()", () => {
       }),
     ];
 
-    const result = flowAgentUsage(records);
+    const result = usage(records);
 
-    expect(result.usages).toHaveLength(1);
-    const agentX = result.usages[0];
-    if (!agentX) {
-      throw new Error("Expected agent-x usage to exist");
-    }
-    expect(agentX.agentId).toBe("agent-x");
-    expect(agentX.inputTokens).toBe(30);
+    expect(result).toHaveLength(1);
+    expect(result[0]!.source.agentId).toBe("agent-x");
+    expect(result[0]!.inputTokens).toBe(30);
   });
 });
-
-// ---------------------------------------------------------------------------
-// Helpers for sumTokenUsage
-// ---------------------------------------------------------------------------
 
 const ZERO_USAGE: TokenUsage = {
   inputTokens: 0,
@@ -232,10 +222,6 @@ const ZERO_USAGE: TokenUsage = {
 function createUsage(overrides?: Partial<TokenUsage>): TokenUsage {
   return { ...ZERO_USAGE, ...overrides };
 }
-
-// ---------------------------------------------------------------------------
-// sumTokenUsage()
-// ---------------------------------------------------------------------------
 
 describe("sumTokenUsage()", () => {
   it("sums all fields across multiple usage objects", () => {
@@ -271,11 +257,11 @@ describe("sumTokenUsage()", () => {
   });
 
   it("returns the same values for a single-element array", () => {
-    const usage = createUsage({ inputTokens: 42, outputTokens: 21, totalTokens: 63 });
+    const u = createUsage({ inputTokens: 42, outputTokens: 21, totalTokens: 63 });
 
-    const result = sumTokenUsage([usage]);
+    const result = sumTokenUsage([u]);
 
-    expect(result).toEqual(usage);
+    expect(result).toEqual(u);
   });
 
   it("sums three or more usage objects", () => {

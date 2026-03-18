@@ -17,11 +17,7 @@
       "dependsOn": ["^build"],
       "outputs": []
     },
-    "test:coverage": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
-    },
-    "prompts:generate": {
+"prompts:generate": {
       "dependsOn": ["^build"],
       "outputs": [".prompts/client/**"]
     },

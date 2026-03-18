@@ -5,10 +5,6 @@ import { agent } from "@/core/agents/base/agent.js";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 
-// ---------------------------------------------------------------------------
-// Mocks
-// ---------------------------------------------------------------------------
-
 const mockGenerateText = vi.fn();
 const mockStreamText = vi.fn();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
@@ -29,10 +25,6 @@ vi.mock("@/lib/middleware.js", () => ({
 }));
 
 const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const MOCK_TOTAL_USAGE = {
   inputTokens: 100,
@@ -127,19 +119,11 @@ function createTypedAgent(
   });
 }
 
-// ---------------------------------------------------------------------------
-// Setup
-// ---------------------------------------------------------------------------
-
 beforeEach(() => {
   vi.clearAllMocks();
   mockGenerateText.mockResolvedValue(createMockGenerateResult());
   mockStreamText.mockReturnValue(createMockStreamResult());
 });
-
-// ---------------------------------------------------------------------------
-// Agent creation
-// ---------------------------------------------------------------------------
 
 describe("agent creation", () => {
   it("returns an object with generate, stream, and fn methods", () => {
@@ -168,10 +152,6 @@ describe("agent creation", () => {
     expect(meta.inputSchema).toBeDefined();
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — success path
-// ---------------------------------------------------------------------------
 
 describe("generate() success", () => {
   it("returns ok: true with text output for simple agent", async () => {
@@ -274,10 +254,6 @@ describe("generate() success", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — input validation
-// ---------------------------------------------------------------------------
-
 describe("generate() input validation", () => {
   it("returns VALIDATION_ERROR when typed input fails safeParse", async () => {
     const a = createTypedAgent();
@@ -323,10 +299,6 @@ describe("generate() input validation", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — output resolution
-// ---------------------------------------------------------------------------
-
 describe("generate() output resolution", () => {
   it("returns text output when no output config is set", async () => {
     mockGenerateText.mockResolvedValue(createMockGenerateResult({ text: "text output" }));
@@ -358,10 +330,6 @@ describe("generate() output resolution", () => {
     expect(result.output).toEqual({ summary: "structured" });
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — system prompt resolution
-// ---------------------------------------------------------------------------
 
 describe("generate() system prompt", () => {
   it("passes static string system prompt", async () => {
@@ -410,10 +378,6 @@ describe("generate() system prompt", () => {
     expect(callArgs[0].system).toBe("overridden");
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — hooks
-// ---------------------------------------------------------------------------
 
 describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
@@ -645,10 +609,6 @@ describe("generate() hooks", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — error handling
-// ---------------------------------------------------------------------------
-
 describe("generate() error handling", () => {
   it("returns AGENT_ERROR when generateText throws an Error", async () => {
     mockGenerateText.mockRejectedValue(new Error("model exploded"));
@@ -730,10 +690,6 @@ describe("generate() error handling", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — hook resilience
-// ---------------------------------------------------------------------------
-
 describe("generate() hook resilience", () => {
   it("onStart throwing does not prevent generation", async () => {
     const a = createSimpleAgent({
@@ -787,10 +743,6 @@ describe("generate() hook resilience", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — overrides
-// ---------------------------------------------------------------------------
-
 describe("generate() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "override-model" } as never;
@@ -835,10 +787,6 @@ describe("generate() overrides", () => {
     expect(overrideLogger.child).toHaveBeenCalledWith({ agentId: "test-agent" });
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — success path
-// ---------------------------------------------------------------------------
 
 describe("stream() success", () => {
   it("returns ok: true with fullStream, output, messages, usage, and finishReason", async () => {
@@ -971,10 +919,6 @@ describe("stream() success", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — input validation
-// ---------------------------------------------------------------------------
-
 describe("stream() input validation", () => {
   it("returns VALIDATION_ERROR when typed input fails safeParse", async () => {
     const a = createTypedAgent();
@@ -999,10 +943,6 @@ describe("stream() input validation", () => {
     expect(mockStreamText).not.toHaveBeenCalled();
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — hooks
-// ---------------------------------------------------------------------------
 
 describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
@@ -1142,10 +1082,6 @@ describe("stream() hooks", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — error handling
-// ---------------------------------------------------------------------------
-
 describe("stream() error handling", () => {
   it("returns AGENT_ERROR when streamText throws synchronously", async () => {
     mockStreamText.mockImplementation(() => {
@@ -1220,10 +1156,6 @@ describe("stream() error handling", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — overrides
-// ---------------------------------------------------------------------------
-
 describe("stream() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "stream-override" } as never;
@@ -1249,10 +1181,6 @@ describe("stream() overrides", () => {
     expect(callArgs[0].abortSignal).toBe(controller.signal);
   });
 });
-
-// ---------------------------------------------------------------------------
-// fn() — delegates to generate()
-// ---------------------------------------------------------------------------
 
 describe("fn()", () => {
   it("returns a function that delegates to generate()", async () => {
@@ -1308,10 +1236,6 @@ describe("fn()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Tool integration
-// ---------------------------------------------------------------------------
-
 describe("tool integration", () => {
   it("passes tools to generateText when tools are configured", async () => {
     const mockTool = {
@@ -1360,10 +1284,6 @@ describe("tool integration", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Edge cases
-// ---------------------------------------------------------------------------
-
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
     const a = createSimpleAgent();
@@ -1379,11 +1299,11 @@ describe("edge cases", () => {
     expect(result.ok).toBe(true);
   });
 
-  it("model string ID is resolved via configured resolver", async () => {
+  it("model string ID is resolved via configured registry", async () => {
     const a = agent({
       name: "string-model-agent",
       model: "openai/gpt-4.1",
-      resolver: mockResolver,
+      registry: mockResolver,
       system: "test",
       logger: createMockLogger(),
     });
@@ -1393,9 +1313,9 @@ describe("edge cases", () => {
     expect(mockResolver).toHaveBeenCalledWith("openai/gpt-4.1");
   });
 
-  it("throws when string model ID is used without a resolver", async () => {
+  it("throws when string model ID is used without a registry", async () => {
     const a = agent({
-      name: "no-resolver-agent",
+      name: "no-registry-agent",
       model: "openai/gpt-4.1",
       system: "test",
       logger: createMockLogger(),
@@ -1405,7 +1325,7 @@ describe("edge cases", () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.message).toContain("no resolver configured");
+      expect(result.error.message).toContain("no registry configured");
     }
   });
 
@@ -1421,10 +1341,6 @@ describe("edge cases", () => {
     expect(result.ok).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — async error during consumption
-// ---------------------------------------------------------------------------
 
 describe("stream() async error during consumption", () => {
   function createErrorStreamResult(error: Error) {
@@ -1534,10 +1450,6 @@ describe("stream() async error during consumption", () => {
     expect(onFinish).not.toHaveBeenCalled();
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — no unhandled rejections on derived promises
-// ---------------------------------------------------------------------------
 
 describe("stream() unhandled rejection safety", () => {
   it("does not emit unhandledRejection when consumer ignores derived promises", async () => {

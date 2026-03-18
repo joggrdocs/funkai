@@ -1,79 +1,49 @@
 import { groupBy, sumBy } from "es-toolkit";
-import { match, P } from "ts-pattern";
 
-import type {
-  TokenUsage,
-  TokenUsageRecord,
-  AgentTokenUsage,
-  FlowAgentTokenUsage,
-} from "@/core/provider/types.js";
+import type { TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
 
 /**
- * Aggregate token counts across multiple raw tracking records.
- *
- * Sums each field, treating `undefined` as `0`.
+ * Resolved usage for a single agent — token counts with source identity.
  */
-function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
-  return {
-    inputTokens: sumBy(usages, (u) => u.inputTokens ?? 0),
-    outputTokens: sumBy(usages, (u) => u.outputTokens ?? 0),
-    totalTokens: sumBy(usages, (u) => u.totalTokens ?? 0),
-    cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens ?? 0),
-    cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens ?? 0),
-    reasoningTokens: sumBy(usages, (u) => u.reasoningTokens ?? 0),
+export interface ResolvedUsage extends TokenUsage {
+  /** Which agent produced this usage. */
+  readonly source: {
+    readonly agentId: string;
   };
 }
 
 /**
- * Compute final usage for a single agent call.
+ * Compute per-agent token usage from raw tracking records.
  *
- * Aggregates token counts from one or more raw tracking records.
- * Returns a flat object with tokens + agentId.
+ * Groups records by `source.agentId`, aggregates token counts per group,
+ * and returns a flat array of per-agent usage. Records without a
+ * `source.agentId` are grouped under `"unknown"`.
  *
- * @param agentId - The agent that produced these records.
- * @param records - Raw tracking records from the agent's execution.
- * @returns Flat {@link AgentTokenUsage} with resolved token counts.
+ * Works for both single-agent and multi-agent (flow) scenarios — a single
+ * agent's records simply produce a one-element array.
+ *
+ * @param records - Raw tracking records from agent execution(s).
+ * @returns Per-agent usage breakdown.
+ *
+ * @example
+ * ```typescript
+ * const records = collectUsages(result.trace)
+ * const perAgent = usage(records)
+ * // [{ source: { agentId: 'scanner' }, inputTokens: 150, ... }]
+ * ```
  */
-export function agentUsage(
-  agentId: string,
-  records: TokenUsageRecord | TokenUsageRecord[],
-): AgentTokenUsage {
-  const arr = match(records)
-    .when(Array.isArray, (r) => r)
-    .otherwise((r) => [r]);
-  const tokens = aggregateTokens(arr);
+export function usage(records: TokenUsageRecord | TokenUsageRecord[]): readonly ResolvedUsage[] {
+  const arr = Array.isArray(records) ? records : [records];
 
-  return {
-    agentId,
-    ...tokens,
-  };
-}
+  const grouped = groupBy(arr, (r) => {
+    const agentId = r.source?.agentId;
+    return typeof agentId === "string" ? agentId : "unknown";
+  });
 
-/**
- * Compute final usage for a flow agent with multiple agent calls.
- *
- * Groups raw tracking records by `source.agentId`, computes per-agent
- * usage via {@link agentUsage}.
- *
- * @param records - Raw tracking records from all agents in the flow.
- * @returns {@link FlowAgentTokenUsage} with per-agent breakdown.
- */
-export function flowAgentUsage(records: TokenUsageRecord[]): FlowAgentTokenUsage {
-  const grouped = groupBy(records, (r) =>
-    match(r.source)
-      .with(P.nonNullable, (s) =>
-        match(s.agentId)
-          .with(P.string, (id) => id)
-          .otherwise(() => "unknown"),
-      )
-      .otherwise(() => "unknown"),
-  );
-
-  const usages = Object.entries(grouped).map(([id, group]) => agentUsage(id, group));
-
-  return {
-    usages,
-  };
+  return Object.entries(grouped).map(([agentId, group]) => ({
+    source: { agentId },
+    ...aggregateTokens(group),
+  }));
 }
 
 /**
@@ -93,5 +63,27 @@ export function sumTokenUsage(usages: TokenUsage[]): TokenUsage {
     cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens),
     cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens),
     reasoningTokens: sumBy(usages, (u) => u.reasoningTokens),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Aggregate token counts across multiple raw tracking records.
+ *
+ * Sums each field, treating `undefined` as `0`.
+ *
+ * @private
+ */
+function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
+  return {
+    inputTokens: sumBy(usages, (u) => u.inputTokens ?? 0),
+    outputTokens: sumBy(usages, (u) => u.outputTokens ?? 0),
+    totalTokens: sumBy(usages, (u) => u.totalTokens ?? 0),
+    cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens ?? 0),
+    cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens ?? 0),
+    reasoningTokens: sumBy(usages, (u) => u.reasoningTokens ?? 0),
   };
 }

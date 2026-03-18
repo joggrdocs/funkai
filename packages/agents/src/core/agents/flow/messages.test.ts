@@ -9,20 +9,12 @@ import {
   createUserMessage,
 } from "@/core/agents/flow/messages.js";
 
-// ---------------------------------------------------------------------------
-// buildToolCallId
-// ---------------------------------------------------------------------------
-
 describe("buildToolCallId", () => {
   it("concatenates stepId and index with a dash", () => {
     expect(buildToolCallId("scan-repo", 0)).toBe("scan-repo-0");
     expect(buildToolCallId("write-doc", 3)).toBe("write-doc-3");
   });
 });
-
-// ---------------------------------------------------------------------------
-// createToolCallMessage
-// ---------------------------------------------------------------------------
 
 describe("createToolCallMessage", () => {
   it("returns an assistant message with a tool-call content part", () => {
@@ -46,10 +38,6 @@ describe("createToolCallMessage", () => {
     expect(part?.input).toEqual({});
   });
 });
-
-// ---------------------------------------------------------------------------
-// createToolResultMessage
-// ---------------------------------------------------------------------------
 
 describe("createToolResultMessage", () => {
   it("returns a tool message with a tool-result content part", () => {
@@ -88,10 +76,6 @@ describe("createToolResultMessage", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// createUserMessage
-// ---------------------------------------------------------------------------
-
 describe("createUserMessage", () => {
   it("creates a user message from a string input", () => {
     const msg = createUserMessage("hello world");
@@ -123,10 +107,6 @@ describe("createUserMessage", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// createAssistantMessage
-// ---------------------------------------------------------------------------
-
 describe("createAssistantMessage", () => {
   it("creates an assistant message from a string output", () => {
     const msg = createAssistantMessage("response text");
@@ -150,10 +130,6 @@ describe("createAssistantMessage", () => {
     expect(createAssistantMessage(circular).role).toBe("assistant");
   });
 });
-
-// ---------------------------------------------------------------------------
-// collectTextFromMessages
-// ---------------------------------------------------------------------------
 
 describe("collectTextFromMessages", () => {
   it("collects text from assistant messages with string content", () => {

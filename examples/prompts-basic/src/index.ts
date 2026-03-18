@@ -1,10 +1,6 @@
 import { agent } from "@funkai/agents";
 import { prompts } from "~prompts";
 
-// ---------------------------------------------------------------------------
-// 1. Create an agent using a typed prompt
-// ---------------------------------------------------------------------------
-
 const writer = agent({
   name: "writer",
   model: "openai/gpt-4.1",
@@ -13,10 +9,6 @@ const writer = agent({
     context: "You are writing for a developer audience.",
   }),
 });
-
-// ---------------------------------------------------------------------------
-// 2. Run the agent
-// ---------------------------------------------------------------------------
 
 const result = await writer.generate("Write a short guide on closures in JavaScript");
 

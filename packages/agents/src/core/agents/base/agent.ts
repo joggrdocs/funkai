@@ -29,122 +29,6 @@ import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
 
 /**
- * Safely read a property from `overrides`, which may be undefined.
- * Replaces `overrides?.prop` optional chaining.
- *
- * @private
- */
-function readOverride<
-  TTools extends Record<string, Tool>,
-  TSubAgents extends SubAgents,
-  K extends keyof AgentOverrides<TTools, TSubAgents>,
->(
-  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
-  key: K,
-): AgentOverrides<TTools, TSubAgents>[K] | undefined {
-  if (overrides !== undefined) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return overrides[key];
-  }
-  return undefined;
-}
-
-/**
- * Safely compute the JSON-serialized length of a value.
- * Returns 0 if serialization fails (e.g. circular refs, BigInt).
- *
- * @private
- */
-function safeSerializedLength(value: unknown): number {
-  try {
-    const json = JSON.stringify(value);
-    return typeof json === "string" ? json.length : 0;
-  } catch {
-    return 0;
-  }
-}
-
-/**
- * Return the value if the predicate is true, otherwise undefined.
- * Replaces `predicate ? value : undefined` ternary.
- *
- * @private
- */
-function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
-  if (predicate) {
-    return value;
-  }
-  return undefined;
-}
-
-/**
- * Resolve an optional output param. Returns `resolveOutput(param)` if
- * param is defined, otherwise undefined.
- *
- * @private
- */
-function resolveOptionalOutput(
-  param: import("@/core/agents/base/output.js").OutputParam | undefined,
-): import("@/core/agents/base/output.js").OutputSpec | undefined {
-  if (param !== undefined) {
-    return resolveOutput(param);
-  }
-  return undefined;
-}
-
-/**
- * Safely extract a property from an object, returning `{}` if the
- * property does not exist. Replaces `'key' in obj ? obj[key] : {}` ternary.
- *
- * @private
- */
-function extractProperty(obj: Record<string, unknown>, key: string): unknown {
-  if (key in obj) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return obj[key];
-  }
-  return {};
-}
-
-/**
- * Extract token usage from a step's usage object, defaulting to 0
- * when usage is undefined. Replaces optional chaining on `step.usage`.
- *
- * @private
- */
-function extractUsage(
-  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
-): {
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-} {
-  if (usage !== undefined) {
-    const inputTokens = usage.inputTokens ?? 0;
-    const outputTokens = usage.outputTokens ?? 0;
-    return {
-      inputTokens,
-      outputTokens,
-      totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
-    };
-  }
-  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-}
-
-/**
- * Return `ifOutput` when `output` is defined, `ifText` otherwise.
- * Replaces `output ? aiResult.output : aiResult.text` ternary.
- *
- * @private
- */
-function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
-  if (output !== undefined) {
-    return ifOutput;
-  }
-  return ifText;
-}
-
-/**
  * Create an agent with typed input, tools, subagents, and hooks.
  *
  * Agents run a tool loop (via the AI SDK's `generateText`) until a
@@ -267,7 +151,7 @@ export function agent<
   ): Promise<PreparedGeneration> {
     const overrideModel = readOverride(overrides, "model");
     const modelRef = overrideModel ?? config.model;
-    const baseModel = resolveModel(modelRef, config.resolver);
+    const baseModel = resolveModel(modelRef, config.registry);
     const model = await withModelMiddleware({ model: baseModel });
 
     const overrideTools = readOverride(overrides, "tools");
@@ -582,4 +466,124 @@ export function agent<
   } satisfies RunnableMeta;
 
   return agent;
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely read a property from `overrides`, which may be undefined.
+ * Replaces `overrides?.prop` optional chaining.
+ *
+ * @private
+ */
+function readOverride<
+  TTools extends Record<string, Tool>,
+  TSubAgents extends SubAgents,
+  K extends keyof AgentOverrides<TTools, TSubAgents>,
+>(
+  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
+  key: K,
+): AgentOverrides<TTools, TSubAgents>[K] | undefined {
+  if (overrides !== undefined) {
+    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
+    return overrides[key];
+  }
+  return undefined;
+}
+
+/**
+ * Safely compute the JSON-serialized length of a value.
+ * Returns 0 if serialization fails (e.g. circular refs, BigInt).
+ *
+ * @private
+ */
+function safeSerializedLength(value: unknown): number {
+  try {
+    const json = JSON.stringify(value);
+    return typeof json === "string" ? json.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Return the value if the predicate is true, otherwise undefined.
+ * Replaces `predicate ? value : undefined` ternary.
+ *
+ * @private
+ */
+function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
+  if (predicate) {
+    return value;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve an optional output param. Returns `resolveOutput(param)` if
+ * param is defined, otherwise undefined.
+ *
+ * @private
+ */
+function resolveOptionalOutput(
+  param: import("@/core/agents/base/output.js").OutputParam | undefined,
+): import("@/core/agents/base/output.js").OutputSpec | undefined {
+  if (param !== undefined) {
+    return resolveOutput(param);
+  }
+  return undefined;
+}
+
+/**
+ * Safely extract a property from an object, returning `{}` if the
+ * property does not exist. Replaces `'key' in obj ? obj[key] : {}` ternary.
+ *
+ * @private
+ */
+function extractProperty(obj: Record<string, unknown>, key: string): unknown {
+  if (key in obj) {
+    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
+    return obj[key];
+  }
+  return {};
+}
+
+/**
+ * Extract token usage from a step's usage object, defaulting to 0
+ * when usage is undefined. Replaces optional chaining on `step.usage`.
+ *
+ * @private
+ */
+function extractUsage(
+  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
+): {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+} {
+  if (usage !== undefined) {
+    const inputTokens = usage.inputTokens ?? 0;
+    const outputTokens = usage.outputTokens ?? 0;
+    return {
+      inputTokens,
+      outputTokens,
+      totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
+    };
+  }
+  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+}
+
+/**
+ * Return `ifOutput` when `output` is defined, `ifText` otherwise.
+ * Replaces `output ? aiResult.output : aiResult.text` ternary.
+ *
+ * @private
+ */
+function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
+  if (output !== undefined) {
+    return ifOutput;
+  }
+  return ifText;
 }

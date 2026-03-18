@@ -2,10 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createDefaultLogger } from "@/core/logger.js";
 
-// ---------------------------------------------------------------------------
-// createDefaultLogger
-// ---------------------------------------------------------------------------
-
 describe("createDefaultLogger", () => {
   it("returns a logger with all required methods", () => {
     const log = createDefaultLogger();
@@ -96,10 +92,6 @@ describe("createDefaultLogger", () => {
     spy.mockRestore();
   });
 });
-
-// ---------------------------------------------------------------------------
-// child loggers
-// ---------------------------------------------------------------------------
 
 describe("child loggers", () => {
   it("creates a child logger that inherits parent bindings", () => {

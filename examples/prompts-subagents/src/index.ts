@@ -2,10 +2,6 @@ import { agent, flowAgent } from "@funkai/agents";
 import { z } from "zod";
 import { prompts } from "~prompts";
 
-// ---------------------------------------------------------------------------
-// 1. Define agents with typed prompts
-// ---------------------------------------------------------------------------
-
 const researcher = agent({
   name: "researcher",
   model: "openai/gpt-4.1",
@@ -30,10 +26,6 @@ const reviewer = agent({
     standard: "technical blog post",
   }),
 });
-
-// ---------------------------------------------------------------------------
-// 2. Orchestrate with a flow agent
-// ---------------------------------------------------------------------------
 
 const pipeline = flowAgent(
   {
@@ -83,10 +75,6 @@ const pipeline = flowAgent(
     };
   },
 );
-
-// ---------------------------------------------------------------------------
-// 3. Run the pipeline
-// ---------------------------------------------------------------------------
 
 const result = await pipeline.generate({
   topic: "functional programming patterns in TypeScript",
