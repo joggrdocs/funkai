@@ -215,13 +215,19 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
 function serializeTree(node: TreeNode, indent: number): string[] {
   const pad = "  ".repeat(indent);
 
-  return Object.entries(node).flatMap(([key, value]) => {
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(node)) {
     if (typeof value === "string") {
-      return [`${pad}${key},`];
+      lines.push(`${pad}${key},`);
+    } else {
+      lines.push(`${pad}${key}: {`);
+      for (const child of serializeTree(value, indent + 1)) {
+        lines.push(child);
+      }
+      lines.push(`${pad}},`);
     }
-    // oxlint-disable-next-line no-map-spread -- tiny tree, readability over micro-optimization
-    return [`${pad}${key}: {`, ...serializeTree(value, indent + 1), `${pad}},`];
-  });
+  }
+  return lines;
 }
 
 /**
