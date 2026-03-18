@@ -247,7 +247,7 @@ function validateToolName(name: string): void {
       () => ["name must not be empty"],
     )
     .otherwise((n) => {
-      const invalidChars = [...new Set([...n.replaceAll(/[a-zA-Z0-9_]/g, "")])].filter(
+      const invalidChars = [...new Set(n.replaceAll(/[a-zA-Z0-9_]/g, ""))].filter(
         (c) => c.length > 0,
       );
 

@@ -56,7 +56,7 @@ describe("outputParam is assignable to config fields", () => {
   });
 });
 
-describe("ToolName accepts valid tool names", () => {
+describe("toolName accepts valid tool names", () => {
   it("accepts camelCase", () => {
     expectTypeOf<ToolName<"myAgent">>().toEqualTypeOf<"myAgent">();
   });
@@ -78,7 +78,7 @@ describe("ToolName accepts valid tool names", () => {
   });
 });
 
-describe("ToolName rejects invalid tool names", () => {
+describe("toolName rejects invalid tool names", () => {
   it("rejects empty string", () => {
     expectTypeOf<ToolName<"">>().toBeNever();
   });
@@ -92,7 +92,7 @@ describe("ToolName rejects invalid tool names", () => {
   });
 });
 
-describe("ToolName works in AgentConfig.agents", () => {
+describe("toolName works in AgentConfig.agents", () => {
   it("accepts valid agent keys", () => {
     expectTypeOf<{
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
