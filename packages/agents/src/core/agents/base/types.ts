@@ -44,13 +44,13 @@ export type StreamPart = TextStreamPart<ToolSet>;
  *
  * @example
  * ```typescript
- * type Good = SafeToolName<'myAgent'>;     // 'myAgent'
- * type Also = SafeToolName<'my_agent'>;    // 'my_agent'
- * type Bad  = SafeToolName<'my-agent'>;    // never
- * type Nope = SafeToolName<'agent:plan'>;  // never
+ * type Good = ToolName<'myAgent'>;     // 'myAgent'
+ * type Also = ToolName<'my_agent'>;    // 'my_agent'
+ * type Bad  = ToolName<'my-agent'>;    // never
+ * type Nope = ToolName<'agent:plan'>;  // never
  * ```
  */
-export type SafeToolName<S extends string> = S extends ""
+export type ToolName<S extends string> = S extends ""
   ? never
   : S extends SnakeCase<S>
     ? S
@@ -68,7 +68,7 @@ export type SafeToolName<S extends string> = S extends ""
  *
  * Keys must be provider-safe identifiers matching `^[a-zA-Z_][a-zA-Z0-9_]*$`
  * — camelCase or snake_case only. Non-alphanumeric characters (except
- * underscore) are rejected at both the type level ({@link SafeToolName})
+ * underscore) are rejected at both the type level ({@link ToolName})
  * and at runtime.
  *
  * @example
@@ -506,11 +506,11 @@ export interface AgentConfig<
    *
    * Keys must match `^[a-zA-Z_][a-zA-Z0-9_]*$` (camelCase or snake_case).
    * Non-alphanumeric characters (except underscore) cause a compile
-   * error via {@link SafeToolName} and a runtime error from validation.
+   * error via {@link ToolName} and a runtime error from validation.
    */
   agents?: {
     [K in keyof TSubAgents]: K extends string
-      ? SafeToolName<K> extends never
+      ? ToolName<K> extends never
         ? never
         : TSubAgents[K]
       : TSubAgents[K];
