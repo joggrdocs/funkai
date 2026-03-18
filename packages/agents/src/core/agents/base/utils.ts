@@ -1,4 +1,4 @@
-import type { ModelResolver } from "@funkai/models";
+import type { ProviderRegistry } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { match, P } from "ts-pattern";
@@ -12,42 +12,25 @@ import type { Model } from "@/core/types.js";
 import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 
 /**
- * Resolve a display name for a sub-agent tool from its runnable
- * metadata, falling back to the provided name.
- *
- * @param meta - The runnable metadata, or undefined if not available.
- * @param fallback - The fallback name to use if metadata is missing.
- * @returns The resolved tool name.
- *
- * @private
- */
-function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
-  if (meta != null && meta.name != null) {
-    return meta.name;
-  }
-  return fallback;
-}
-
-/**
  * Resolve a {@link Model} to an AI SDK `LanguageModel`.
  *
  * When `ref` is already a `LanguageModel`, it is returned as-is.
- * When `ref` is a string model ID, the optional `resolver` is used
- * to convert it. If no resolver is provided, an error is thrown.
+ * When `ref` is a string model ID, the optional `registry` is used
+ * to convert it. If no registry is provided, an error is thrown.
  *
  * @param ref - A string model ID or an AI SDK `LanguageModel` instance.
- * @param resolver - Optional resolver for string model IDs.
+ * @param registry - Optional provider registry for string model IDs.
  * @returns The resolved `LanguageModel`.
  */
-export function resolveModel(ref: Model, resolver?: ModelResolver): LanguageModel {
+export function resolveModel(ref: Model, registry?: ProviderRegistry): LanguageModel {
   if (typeof ref === "string") {
-    if (!resolver) {
+    if (!registry) {
       throw new Error(
-        `Cannot resolve string model ID "${ref}": no resolver configured. ` +
-          `Pass a ModelResolver via agent config, or pass an AI SDK LanguageModel instance directly.`,
+        `Cannot resolve string model ID "${ref}": no registry configured. ` +
+          `Pass a ProviderRegistry via agent config, or pass an AI SDK LanguageModel instance directly.`,
       );
     }
-    return resolver(ref);
+    return registry(ref);
   }
   return ref as LanguageModel;
 }
@@ -208,4 +191,25 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
     cacheWriteTokens: inputDetails.cacheWriteTokens,
     reasoningTokens: outputDetails.reasoningTokens,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a display name for a sub-agent tool from its runnable
+ * metadata, falling back to the provided name.
+ *
+ * @param meta - The runnable metadata, or undefined if not available.
+ * @param fallback - The fallback name to use if metadata is missing.
+ * @returns The resolved tool name.
+ *
+ * @private
+ */
+function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
+  if (meta != null && meta.name != null) {
+    return meta.name;
+  }
+  return fallback;
 }

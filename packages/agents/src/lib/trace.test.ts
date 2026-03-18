@@ -3,10 +3,6 @@ import { describe, expect, it } from "vitest";
 import type { TokenUsage } from "@/core/provider/types.js";
 import { collectUsages, snapshotTrace, type TraceEntry } from "@/lib/trace.js";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function createEntry(overrides?: Partial<TraceEntry>): TraceEntry {
   return {
     id: "entry-1",
@@ -15,10 +11,6 @@ function createEntry(overrides?: Partial<TraceEntry>): TraceEntry {
     ...overrides,
   };
 }
-
-// ---------------------------------------------------------------------------
-// snapshotTrace
-// ---------------------------------------------------------------------------
 
 describe("snapshotTrace", () => {
   it("returns a frozen array", () => {
@@ -138,10 +130,6 @@ describe("snapshotTrace", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// TraceEntry shape
-// ---------------------------------------------------------------------------
-
 describe("TraceEntry", () => {
   it("supports all operation types", () => {
     const types = ["step", "agent", "map", "each", "reduce", "while", "all", "race"] as const;
@@ -165,10 +153,6 @@ describe("TraceEntry", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Helpers for collectUsages
-// ---------------------------------------------------------------------------
-
 const ZERO_USAGE: TokenUsage = {
   inputTokens: 0,
   outputTokens: 0,
@@ -181,10 +165,6 @@ const ZERO_USAGE: TokenUsage = {
 function createUsage(overrides?: Partial<TokenUsage>): TokenUsage {
   return { ...ZERO_USAGE, ...overrides };
 }
-
-// ---------------------------------------------------------------------------
-// collectUsages()
-// ---------------------------------------------------------------------------
 
 describe("collectUsages()", () => {
   it("returns empty array for an empty trace", () => {

@@ -119,6 +119,10 @@ export function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool
   return aiTool(result);
 }
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
 /**
  * Resolve an optional Zod output schema into a zodSchema-wrapped value.
  *

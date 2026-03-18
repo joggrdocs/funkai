@@ -6,10 +6,6 @@ import * as p from "@clack/prompts";
 import type { AnalyzeEvent, ToolResultPayload } from "../shared/types.js";
 import { createLocalTools } from "./tools.js";
 
-// ---------------------------------------------------------------------------
-// 1. CLI intro and input
-// ---------------------------------------------------------------------------
-
 p.intro("Test Quality Analyzer");
 
 const targetInput = await p.text({
@@ -32,15 +28,7 @@ const baseDir = resolve(process.cwd(), targetInput);
 
 p.log.info(`Target directory: ${baseDir}`);
 
-// ---------------------------------------------------------------------------
-// 2. Create local tool executors
-// ---------------------------------------------------------------------------
-
 const localTools = createLocalTools(baseDir);
-
-// ---------------------------------------------------------------------------
-// 3. Start the analysis via the API
-// ---------------------------------------------------------------------------
 
 const spinner = p.spinner();
 spinner.start("Connecting to analysis server...");
@@ -68,10 +56,6 @@ if (!response.ok) {
 }
 
 spinner.message("Scanning for test files...");
-
-// ---------------------------------------------------------------------------
-// 4. Consume SSE stream and execute tools locally
-// ---------------------------------------------------------------------------
 
 const analyses: Array<{ filePath: string; summary: string }> = [];
 let scannedFiles: readonly string[] = [];
@@ -250,10 +234,6 @@ if (spinnerActive) {
   p.log.success("Analysis complete.");
 }
 
-// ---------------------------------------------------------------------------
-// 5. Display results
-// ---------------------------------------------------------------------------
-
 if (analyses.length === 0) {
   p.log.warning("No test files found in the specified directory.");
   p.outro("Done — no tests to analyze.");
@@ -263,10 +243,6 @@ if (analyses.length === 0) {
 for (const analysis of analyses) {
   p.note(analysis.summary, analysis.filePath);
 }
-
-// ---------------------------------------------------------------------------
-// 6. Write report
-// ---------------------------------------------------------------------------
 
 const now = new Date();
 const timestamp = now.toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);

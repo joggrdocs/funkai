@@ -1,8 +1,7 @@
-// Re-export shared types from @funkai/models
-export type { LanguageModel, TokenUsage } from "@funkai/models";
-
 import type { ModelId } from "@funkai/models";
 import type { TokenUsage } from "@funkai/models";
+
+export type { LanguageModel, TokenUsage } from "@funkai/models";
 
 /**
  * Raw tracking record from a single AI model invocation.
@@ -44,24 +43,4 @@ export interface TokenUsageRecord {
     readonly agentId: string;
     readonly scope: readonly string[];
   };
-}
-
-/**
- * Final agent-level usage — tokens flat, with agentId.
- *
- * Produced by `agentUsage()` at the end of an agent's execution.
- */
-export interface AgentTokenUsage extends TokenUsage {
-  /** The agent that produced this usage. */
-  readonly agentId: string;
-}
-
-/**
- * Final flow agent-level usage — per-agent breakdown.
- *
- * Produced by `flowAgentUsage()` at the end of a flow agent's execution.
- */
-export interface FlowAgentTokenUsage {
-  /** Per-agent usage entries. */
-  readonly usages: readonly AgentTokenUsage[];
 }

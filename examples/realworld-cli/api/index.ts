@@ -12,20 +12,12 @@ import type { RemoteExecutor } from "./tools.js";
 
 const app = new Hono();
 
-// ---------------------------------------------------------------------------
-// Pending tool calls — keyed by callId, resolved when CLI posts back
-// ---------------------------------------------------------------------------
-
 const pendingCalls = new Map<
   string,
   { resolve: (value: unknown) => void; reject: (error: Error) => void }
 >();
 
 let callCounter = 0;
-
-// ---------------------------------------------------------------------------
-// POST /tool-result — CLI posts tool execution results here
-// ---------------------------------------------------------------------------
 
 const toolResultSchema = z.object({
   callId: z.string(),
@@ -56,10 +48,6 @@ app.post("/tool-result", async (c) => {
 
   return c.json({ ok: true });
 });
-
-// ---------------------------------------------------------------------------
-// POST /analyze — starts the pipeline, streams events via SSE
-// ---------------------------------------------------------------------------
 
 const analyzeInputSchema = z.object({
   targetDir: z.string(),
@@ -143,10 +131,6 @@ app.post("/analyze", async (c) => {
     });
   });
 });
-
-// ---------------------------------------------------------------------------
-// Start server
-// ---------------------------------------------------------------------------
 
 const port = Number(process.env.PORT ?? 4321);
 

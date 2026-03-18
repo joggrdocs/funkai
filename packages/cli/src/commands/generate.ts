@@ -4,7 +4,7 @@ import { generateArgs, handleGenerate } from "./prompts/generate.js";
 
 export default command({
   description: "Run all code generation across the funkai SDK",
-  args: generateArgs,
+  options: generateArgs,
   handler(ctx) {
     const { silent } = ctx.args;
 

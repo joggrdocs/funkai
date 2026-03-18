@@ -13,7 +13,7 @@ name: ${name}
 
 export default command({
   description: "Create a new .prompt file",
-  args: z.object({
+  options: z.object({
     name: z.string().describe("Prompt name (kebab-case)"),
     out: z.string().optional().describe("Output directory (defaults to cwd)"),
     partial: z.boolean().default(false).describe("Create as a partial in .prompts/partials/"),

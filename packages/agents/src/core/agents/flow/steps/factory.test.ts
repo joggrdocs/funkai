@@ -6,10 +6,6 @@ import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";
 
-// ---------------------------------------------------------------------------
-// step() — the core primitive
-// ---------------------------------------------------------------------------
-
 describe("step()", () => {
   it("returns ok: true with value on success", async () => {
     const ctx = createMockCtx();
@@ -295,10 +291,6 @@ describe("step()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// agent() — delegates to step() with agent.generate() unwrap
-// ---------------------------------------------------------------------------
-
 describe("agent()", () => {
   const MOCK_USAGE = {
     inputTokens: 100,
@@ -454,10 +446,6 @@ describe("agent()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// map() — delegates to step() with parallel execution
-// ---------------------------------------------------------------------------
-
 describe("map()", () => {
   it("maps items in parallel via Promise.all by default", async () => {
     const ctx = createMockCtx();
@@ -528,10 +516,6 @@ describe("map()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// each() — delegates to step() with sequential iteration
-// ---------------------------------------------------------------------------
-
 describe("each()", () => {
   it("iterates items sequentially", async () => {
     const ctx = createMockCtx();
@@ -572,10 +556,6 @@ describe("each()", () => {
     expect(result.error.message).toBe("stop at 2");
   });
 });
-
-// ---------------------------------------------------------------------------
-// reduce() — delegates to step() with accumulator loop
-// ---------------------------------------------------------------------------
 
 describe("reduce()", () => {
   it("accumulates values sequentially", async () => {
@@ -624,10 +604,6 @@ describe("reduce()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// while() — delegates to step() with conditional loop
-// ---------------------------------------------------------------------------
-
 describe("while()", () => {
   it("loops while condition is true", async () => {
     const ctx = createMockCtx();
@@ -667,10 +643,6 @@ describe("while()", () => {
     expect(traceEntry.output).toBeUndefined();
   });
 });
-
-// ---------------------------------------------------------------------------
-// all() — delegates to step() with Promise.all
-// ---------------------------------------------------------------------------
 
 describe("all()", () => {
   it("resolves all entries concurrently", async () => {
@@ -740,10 +712,6 @@ describe("all()", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// race() — delegates to step() with Promise.race
-// ---------------------------------------------------------------------------
-
 describe("race()", () => {
   it("returns first resolved value", async () => {
     const ctx = createMockCtx();
@@ -796,10 +764,6 @@ describe("race()", () => {
     expect(signals.loser.aborted).toBe(true);
   });
 });
-
-// ---------------------------------------------------------------------------
-// agent() streaming — exercises the stream path (lines 264-290)
-// ---------------------------------------------------------------------------
 
 describe("agent() streaming with writer", () => {
   const MOCK_USAGE = {
@@ -998,10 +962,6 @@ describe("agent() streaming with writer", () => {
     expect(textDeltas).toHaveLength(1);
   });
 });
-
-// ---------------------------------------------------------------------------
-// map() with aborted signal — exercises poolMap signal.aborted (line 613)
-// ---------------------------------------------------------------------------
 
 describe("map() with aborted signal", () => {
   it("throws immediately when signal is already aborted", async () => {

@@ -11,21 +11,17 @@ import {
 } from "@/core/agents/base/utils.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
-// ---------------------------------------------------------------------------
-// resolveModel
-// ---------------------------------------------------------------------------
-
 describe("resolveModel", () => {
-  it("resolves a string model ID using the provided resolver", () => {
-    const resolver = vi.fn((id: string) => ({ modelId: id }) as never);
-    const result = resolveModel("openai/gpt-4.1", resolver);
-    expect(resolver).toHaveBeenCalledWith("openai/gpt-4.1");
+  it("resolves a string model ID using the provided registry", () => {
+    const registry = vi.fn((id: string) => ({ modelId: id }) as never);
+    const result = resolveModel("openai/gpt-4.1", registry);
+    expect(registry).toHaveBeenCalledWith("openai/gpt-4.1");
     expect(result).toEqual({ modelId: "openai/gpt-4.1" });
   });
 
-  it("throws when a string model ID is passed without a resolver", () => {
+  it("throws when a string model ID is passed without a registry", () => {
     expect(() => resolveModel("openai/gpt-4.1")).toThrow(
-      'Cannot resolve string model ID "openai/gpt-4.1": no resolver configured',
+      'Cannot resolve string model ID "openai/gpt-4.1": no registry configured',
     );
   });
 
@@ -35,17 +31,13 @@ describe("resolveModel", () => {
     expect(result).toBe(model);
   });
 
-  it("does not call resolver when ref is a LanguageModel", () => {
-    const resolver = vi.fn();
+  it("does not call registry when ref is a LanguageModel", () => {
+    const registry = vi.fn();
     const model = { modelId: "custom-model" } as never;
-    resolveModel(model, resolver);
-    expect(resolver).not.toHaveBeenCalled();
+    resolveModel(model, registry);
+    expect(registry).not.toHaveBeenCalled();
   });
 });
-
-// ---------------------------------------------------------------------------
-// resolveSystem
-// ---------------------------------------------------------------------------
 
 describe("resolveSystem", () => {
   it("returns undefined when system is undefined", () => {
@@ -67,10 +59,6 @@ describe("resolveSystem", () => {
     expect(resolveSystem(system, "topic")).toBe("System for topic");
   });
 });
-
-// ---------------------------------------------------------------------------
-// buildPrompt
-// ---------------------------------------------------------------------------
 
 describe("buildPrompt", () => {
   it("returns { prompt } for a simple string input", () => {
@@ -119,10 +107,6 @@ describe("buildPrompt", () => {
     );
   });
 });
-
-// ---------------------------------------------------------------------------
-// toTokenUsage
-// ---------------------------------------------------------------------------
 
 describe("toTokenUsage", () => {
   it("converts a fully populated LanguageModelUsage to TokenUsage", () => {
@@ -264,10 +248,6 @@ describe("toTokenUsage", () => {
     expect(result.reasoningTokens).toBe(0);
   });
 });
-
-// ---------------------------------------------------------------------------
-// buildAITools
-// ---------------------------------------------------------------------------
 
 describe("buildAITools", () => {
   it("returns undefined when no tools or agents are provided", () => {

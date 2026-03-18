@@ -117,11 +117,9 @@
     "generate:models": "lauf run @funkai/models/generate-models",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --typecheck",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest run --typecheck"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.3.1",
     "ai": "^6.0.116",
     "type-fest": "^5.4.4"
   },

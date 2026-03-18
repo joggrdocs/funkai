@@ -4,10 +4,6 @@ import { calculateCost } from "./calculate.js";
 import type { ModelPricing } from "@/catalog/types.js";
 import type { TokenUsage } from "@/provider/types.js";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const ZERO_USAGE: TokenUsage = {
   inputTokens: 0,
   outputTokens: 0,
@@ -36,10 +32,6 @@ const REASONING_PRICING: ModelPricing = {
   cacheWrite: 0.000001,
   reasoning: 0.000012,
 };
-
-// ---------------------------------------------------------------------------
-// calculateCost()
-// ---------------------------------------------------------------------------
 
 describe("calculateCost()", () => {
   it("returns all zeros for zero usage", () => {
