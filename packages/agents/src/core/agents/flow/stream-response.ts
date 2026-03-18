@@ -30,6 +30,17 @@ export interface StreamResponseMethods {
  *   so the stream is only consumed when a response method is invoked.
  * @returns An object with both response conversion methods.
  *
+ * @example
+ * ```typescript
+ * const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
+ * const methods = buildStreamResponseMethods(() => readable);
+ *
+ * // Use one of these — not both simultaneously:
+ * return methods.toTextStreamResponse();
+ * // or
+ * return methods.toUIMessageStreamResponse();
+ * ```
+ *
  * @internal
  */
 export function buildStreamResponseMethods(
@@ -48,12 +59,14 @@ export function buildStreamResponseMethods(
         }),
       );
 
+      const headers = new Headers(init?.headers);
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "text/plain; charset=utf-8");
+      }
+
       return new Response(textStream, {
         ...init,
-        headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          ...init?.headers,
-        },
+        headers,
       });
     },
 
@@ -64,14 +77,7 @@ export function buildStreamResponseMethods(
 
       const stream = createUIMessageStream({
         execute({ writer }) {
-          const uiStream = source.pipeThrough(
-            new TransformStream<StreamPart, StreamPart>({
-              transform(part, controller) {
-                controller.enqueue(part);
-              },
-            }),
-          );
-          writer.merge(uiStream as ReadableStream);
+          writer.merge(source as ReadableStream);
         },
       });
 

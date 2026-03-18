@@ -74,6 +74,26 @@ describe("buildStreamResponseMethods", () => {
       expect(response.headers.get("X-Custom")).toBe("value");
     });
 
+    it("preserves headers when init.headers is a Headers instance", () => {
+      const methods = buildStreamResponseMethods(() => createTextStream(["hi"]));
+      const headers = new Headers({ "X-From-Headers": "yes" });
+
+      const response = methods.toTextStreamResponse({ headers });
+
+      expect(response.headers.get("X-From-Headers")).toBe("yes");
+      expect(response.headers.get("Content-Type")).toBe("text/plain; charset=utf-8");
+    });
+
+    it("does not override caller-provided Content-Type", () => {
+      const methods = buildStreamResponseMethods(() => createTextStream(["hi"]));
+
+      const response = methods.toTextStreamResponse({
+        headers: { "Content-Type": "text/html" },
+      });
+
+      expect(response.headers.get("Content-Type")).toBe("text/html");
+    });
+
     it("returns empty body when stream has no text-delta events", async () => {
       const parts: StreamPart[] = [
         {
