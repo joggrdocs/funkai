@@ -1,7 +1,5 @@
 import type { AsyncIterableStream } from "ai";
 
-import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
-
 import type { Message, StreamPart } from "@/core/agents/base/types.js";
 import {
   collectTextFromMessages,
@@ -10,6 +8,7 @@ import {
 } from "@/core/agents/flow/messages.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
+import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
 import type {
   FlowAgent,
   FlowAgentConfig,

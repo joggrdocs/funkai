@@ -1,8 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { simulateReadableStream } from "ai";
+import { describe, expect, it } from "vitest";
 
 import type { StreamPart } from "@/core/agents/base/types.js";
-
 import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
 
 // ---------------------------------------------------------------------------
@@ -12,9 +11,7 @@ import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.j
 function createTextStream(chunks: string[]): ReadableStream<StreamPart> {
   const parts: StreamPart[] = [
     { type: "text-start", id: "t1" } as StreamPart,
-    ...chunks.map(
-      (text) => ({ type: "text-delta", id: "t1", text } as unknown as StreamPart),
-    ),
+    ...chunks.map((text) => ({ type: "text-delta", id: "t1", text }) as unknown as StreamPart),
     { type: "text-end", id: "t1" } as StreamPart,
     {
       type: "finish",
@@ -49,9 +46,7 @@ async function readResponseText(response: Response): Promise<string> {
 describe("buildStreamResponseMethods", () => {
   describe("toTextStreamResponse", () => {
     it("streams only text-delta content as UTF-8", async () => {
-      const methods = buildStreamResponseMethods(() =>
-        createTextStream(["Hello", ", ", "world!"]),
-      );
+      const methods = buildStreamResponseMethods(() => createTextStream(["Hello", ", ", "world!"]));
 
       const response = methods.toTextStreamResponse();
       const text = await readResponseText(response);
@@ -107,9 +102,7 @@ describe("buildStreamResponseMethods", () => {
 
   describe("toUIMessageStreamResponse", () => {
     it("returns a Response object", () => {
-      const methods = buildStreamResponseMethods(() =>
-        createTextStream(["Hello"]),
-      );
+      const methods = buildStreamResponseMethods(() => createTextStream(["Hello"]));
 
       const response = methods.toUIMessageStreamResponse();
 
@@ -118,9 +111,7 @@ describe("buildStreamResponseMethods", () => {
     });
 
     it("accepts custom response init options", () => {
-      const methods = buildStreamResponseMethods(() =>
-        createTextStream(["Hello"]),
-      );
+      const methods = buildStreamResponseMethods(() => createTextStream(["Hello"]));
 
       const response = methods.toUIMessageStreamResponse({
         status: 201,
@@ -132,9 +123,7 @@ describe("buildStreamResponseMethods", () => {
     });
 
     it("produces a readable stream body", async () => {
-      const methods = buildStreamResponseMethods(() =>
-        createTextStream(["Hello", " world"]),
-      );
+      const methods = buildStreamResponseMethods(() => createTextStream(["Hello", " world"]));
 
       const response = methods.toUIMessageStreamResponse();
       const text = await readResponseText(response);
