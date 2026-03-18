@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 
 import { toError, safeStringify, safeStringifyJSON } from "@/utils/error.js";
 
-describe("toError", () => {
+describe(toError, () => {
   it("returns Error instances as-is", () => {
     const original = new Error("boom");
     const result = toError(original);
@@ -90,7 +90,7 @@ describe("toError", () => {
   });
 });
 
-describe("safeStringify", () => {
+describe(safeStringify, () => {
   it("stringifies a plain object as JSON", () => {
     expect(safeStringify({ status: 400 })).toBe('{"status":400}');
   });
@@ -134,7 +134,7 @@ describe("safeStringify", () => {
   });
 });
 
-describe("safeStringifyJSON", () => {
+describe(safeStringifyJSON, () => {
   it("serializes a plain object", () => {
     expect(safeStringifyJSON({ a: 1, b: "two" })).toBe('{"a":1,"b":"two"}');
   });

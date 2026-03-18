@@ -5,7 +5,7 @@ import { command } from "@kidd-cli/core";
 import { match, P } from "ts-pattern";
 import { z } from "zod";
 
-const TEMPLATE = (name: string) => `---
+const createTemplate = (name: string) => `---
 name: ${name}
 ---
 
@@ -13,7 +13,7 @@ name: ${name}
 
 export default command({
   description: "Create a new .prompt file",
-  args: z.object({
+  options: z.object({
     name: z.string().describe("Prompt name (kebab-case)"),
     out: z.string().optional().describe("Output directory (defaults to cwd)"),
     partial: z.boolean().default(false).describe("Create as a partial in .prompts/partials/"),
@@ -34,7 +34,7 @@ export default command({
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: directory derived from user CLI path argument
     mkdirSync(dir, { recursive: true });
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: file path derived from user CLI path argument
-    writeFileSync(filePath, TEMPLATE(name), "utf-8");
+    writeFileSync(filePath, createTemplate(name), "utf8");
 
     ctx.logger.success(`Created ${filePath}`);
   },

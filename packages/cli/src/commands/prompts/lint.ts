@@ -50,13 +50,14 @@ export function handleLint(
   const warnCount = diagnostics.filter((d) => d.level !== "error").length;
 
   if (!silent) {
-    const summary = [
-      `${discovered} prompt(s) linted`,
-      errorCount > 0 ? `${errorCount} error(s)` : undefined,
-      warnCount > 0 ? `${warnCount} warning(s)` : undefined,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    const summaryParts: string[] = [`${discovered} prompt(s) linted`];
+    if (errorCount > 0) {
+      summaryParts.push(`${errorCount} error(s)`);
+    }
+    if (warnCount > 0) {
+      summaryParts.push(`${warnCount} warning(s)`);
+    }
+    const summary = summaryParts.join(", ");
 
     logger.info(summary);
   }
@@ -68,7 +69,7 @@ export function handleLint(
 
 export default command({
   description: "Validate .prompt files for schema/template mismatches",
-  args: lintArgs,
+  options: lintArgs,
   handler(ctx) {
     handleLint(ctx.args, ctx.logger, ctx.fail);
   },

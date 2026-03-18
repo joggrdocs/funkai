@@ -1,11 +1,7 @@
-import { type LanguageModelMiddleware } from "ai";
+import type { LanguageModelMiddleware } from "ai";
 import { describe, expect, it, vi } from "vitest";
 
 import { withModelMiddleware } from "@/lib/middleware.js";
-
-// ---------------------------------------------------------------------------
-// Helpers — minimal model stubs
-// ---------------------------------------------------------------------------
 
 function createStubModel() {
   return {
@@ -28,11 +24,7 @@ function createStubMiddleware(
   } as LanguageModelMiddleware;
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
-describe("withModelMiddleware", () => {
+describe(withModelMiddleware, () => {
   it("returns the model unchanged when there is no middleware and devtools is off", async () => {
     const model = createStubModel();
 
@@ -83,7 +75,7 @@ describe("withModelMiddleware", () => {
       devtools: true,
     });
 
-    // devtools middleware should wrap the model
+    // Devtools middleware should wrap the model
     expect(result).not.toBe(model);
   });
 
@@ -113,7 +105,7 @@ describe("withModelMiddleware", () => {
       model: model as never,
     });
 
-    // devtools middleware should wrap the model automatically
+    // Devtools middleware should wrap the model automatically
     expect(result).not.toBe(model);
     expect(result.modelId).toBe("test-model");
 

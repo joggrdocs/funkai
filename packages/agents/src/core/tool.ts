@@ -51,7 +51,7 @@ export interface ToolConfig<TInput, TOutput> {
    * `addToolInputExamplesMiddleware` to inject examples into the
    * tool description.
    */
-  inputExamples?: Array<{ input: TInput }>;
+  inputExamples?: { input: TInput }[];
 
   /**
    * Execute the tool with validated input.
@@ -119,6 +119,10 @@ export function tool<TInput, TOutput>(config: ToolConfig<TInput, TOutput>): Tool
   return aiTool(result);
 }
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
 /**
  * Resolve an optional Zod output schema into a zodSchema-wrapped value.
  *
@@ -147,7 +151,7 @@ function resolveOutputSchema<TOutput>(
  *
  * @private
  */
-/* v8 ignore start -- defensive guard; tool() always constructs a valid object */
+/* V8 ignore start -- defensive guard; tool() always constructs a valid object */
 function assertTool<TInput, TOutput>(value: unknown): asserts value is Tool<TInput, TOutput> {
   if (isNil(value) || !isObject(value)) {
     throw new TypeError("Expected tool to be an object");
@@ -161,4 +165,4 @@ function assertTool<TInput, TOutput>(value: unknown): asserts value is Tool<TInp
     throw new TypeError("Tool is missing required property: execute");
   }
 }
-/* v8 ignore stop */
+/* V8 ignore stop */

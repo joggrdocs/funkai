@@ -23,7 +23,7 @@ function extractName(content: string): string | undefined {
     return undefined;
   }
 
-  const frontmatter = match[1];
+  const [, frontmatter] = match;
   const nameLine = frontmatter.split("\n").find((line) => line.startsWith("name:"));
   if (!nameLine) {
     return undefined;
@@ -74,7 +74,7 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
 
       if (entry.isFile() && extname(entry.name) === PROMPT_EXT) {
         // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading prompt file content for name extraction
-        const content = readFileSync(fullPath, "utf-8");
+        const content = readFileSync(fullPath, "utf8");
         const name = extractName(content) ?? deriveNameFromPath(fullPath);
 
         if (!NAME_RE.test(name)) {

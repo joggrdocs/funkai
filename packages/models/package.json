@@ -1,6 +1,6 @@
 {
   "name": "@funkai/models",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": false,
   "description": "Model catalog, provider resolution, and cost calculations for the funkai AI SDK",
   "keywords": [
@@ -113,15 +113,16 @@
       "import": "./dist/providers/inception.mjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "generate:models": "lauf run @funkai/models/generate-models",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --typecheck",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest run --typecheck"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.3.1",
     "ai": "^6.0.116",
     "type-fest": "^5.4.4"
   },

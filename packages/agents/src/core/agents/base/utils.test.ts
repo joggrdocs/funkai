@@ -11,21 +11,17 @@ import {
 } from "@/core/agents/base/utils.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
-// ---------------------------------------------------------------------------
-// resolveModel
-// ---------------------------------------------------------------------------
-
-describe("resolveModel", () => {
-  it("resolves a string model ID using the provided resolver", () => {
-    const resolver = vi.fn((id: string) => ({ modelId: id }) as never);
-    const result = resolveModel("openai/gpt-4.1", resolver);
-    expect(resolver).toHaveBeenCalledWith("openai/gpt-4.1");
+describe(resolveModel, () => {
+  it("resolves a string model ID using the provided registry", () => {
+    const registry = vi.fn((id: string) => ({ modelId: id }) as never);
+    const result = resolveModel("openai/gpt-4.1", registry);
+    expect(registry).toHaveBeenCalledWith("openai/gpt-4.1");
     expect(result).toEqual({ modelId: "openai/gpt-4.1" });
   });
 
-  it("throws when a string model ID is passed without a resolver", () => {
+  it("throws when a string model ID is passed without a registry", () => {
     expect(() => resolveModel("openai/gpt-4.1")).toThrow(
-      'Cannot resolve string model ID "openai/gpt-4.1": no resolver configured',
+      'Cannot resolve string model ID "openai/gpt-4.1": no registry configured',
     );
   });
 
@@ -35,19 +31,15 @@ describe("resolveModel", () => {
     expect(result).toBe(model);
   });
 
-  it("does not call resolver when ref is a LanguageModel", () => {
-    const resolver = vi.fn();
+  it("does not call registry when ref is a LanguageModel", () => {
+    const registry = vi.fn();
     const model = { modelId: "custom-model" } as never;
-    resolveModel(model, resolver);
-    expect(resolver).not.toHaveBeenCalled();
+    resolveModel(model, registry);
+    expect(registry).not.toHaveBeenCalled();
   });
 });
 
-// ---------------------------------------------------------------------------
-// resolveSystem
-// ---------------------------------------------------------------------------
-
-describe("resolveSystem", () => {
+describe(resolveSystem, () => {
   it("returns undefined when system is undefined", () => {
     expect(resolveSystem(undefined, "input")).toBeUndefined();
   });
@@ -68,11 +60,7 @@ describe("resolveSystem", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildPrompt
-// ---------------------------------------------------------------------------
-
-describe("buildPrompt", () => {
+describe(buildPrompt, () => {
   it("returns { prompt } for a simple string input", () => {
     const result = buildPrompt("hello", {});
     expect(result).toEqual({ prompt: "hello" });
@@ -120,11 +108,7 @@ describe("buildPrompt", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// toTokenUsage
-// ---------------------------------------------------------------------------
-
-describe("toTokenUsage", () => {
+describe(toTokenUsage, () => {
   it("converts a fully populated LanguageModelUsage to TokenUsage", () => {
     const result = toTokenUsage({
       inputTokens: 100,
@@ -265,11 +249,7 @@ describe("toTokenUsage", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// buildAITools
-// ---------------------------------------------------------------------------
-
-describe("buildAITools", () => {
+describe(buildAITools, () => {
   it("returns undefined when no tools or agents are provided", () => {
     expect(buildAITools()).toBeUndefined();
     expect(buildAITools(undefined, undefined)).toBeUndefined();
@@ -311,7 +291,10 @@ describe("buildAITools", () => {
 
     expect(result).toBeDefined();
     expect(result).toHaveProperty("agent:sub");
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     expect(tools["agent:sub"]).toHaveProperty("description");
     // Description should use meta name
     expect(tools["agent:sub"].description).toContain("custom-name");
@@ -324,7 +307,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { fallbackKey: mockAgent as never });
 
     expect(result).toBeDefined();
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     expect(tools["agent:fallbackKey"].description).toContain("fallbackKey");
   });
 
@@ -347,7 +333,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
 
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     const output = await tools["agent:sub"].execute(
       { prompt: "hello" },
       { toolCallId: "tc-1", messages: [] },
@@ -363,7 +352,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
 
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     await expect(
       tools["agent:sub"].execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("agent failed");
@@ -380,7 +372,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
 
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     const output = await tools["agent:sub"].execute(
       { query: "test" },
       { toolCallId: "tc-1", messages: [] },
@@ -400,7 +395,10 @@ describe("buildAITools", () => {
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
 
-    const tools = result as Record<string, { description: string; execute: Function }>;
+    const tools = result as Record<
+      string,
+      { description: string; execute: (...args: unknown[]) => unknown }
+    >;
     await expect(
       tools["agent:sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("typed failed");

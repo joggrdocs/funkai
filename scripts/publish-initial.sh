@@ -39,6 +39,18 @@ npm_published_version() {
   npm view "$1" version 2>/dev/null || true
 }
 
+restore_version() {
+  local pkg_json="$1"
+  local version="$2"
+  node -e "
+    const fs = require('fs');
+    const p = JSON.parse(fs.readFileSync('${pkg_json}', 'utf8'));
+    p.version = '${version}';
+    fs.writeFileSync('${pkg_json}', JSON.stringify(p, null, 2) + '\n');
+  "
+}
+
+
 handle_package() {
   local pkg_dir="$1"
   local pkg_json="${pkg_dir}/package.json"
@@ -71,12 +83,9 @@ handle_package() {
 
   # temporarily set to 0.1.0 if needed
   if [[ "$current_version" != "$INITIAL_VERSION" ]]; then
-    node -e "
-      const fs = require('fs');
-      const p = JSON.parse(fs.readFileSync('${pkg_json}', 'utf8'));
-      p.version = '${INITIAL_VERSION}';
-      fs.writeFileSync('${pkg_json}', JSON.stringify(p, null, 2) + '\n');
-    "
+    # Set up trap to restore version on any failure
+    trap "restore_version '${pkg_json}' '${current_version}'; echo '     version restored (cleanup after failure)'" ERR
+    restore_version "$pkg_json" "$INITIAL_VERSION"
     echo "     version: ${current_version} -> ${INITIAL_VERSION}"
   fi
 
@@ -86,14 +95,12 @@ handle_package() {
   echo "     publishing..."
   pnpm --filter "$name" exec npm publish --access public --no-provenance
 
+  # Clear the ERR trap after successful publish
+  trap - ERR
+
   # restore original version
   if [[ "$current_version" != "$INITIAL_VERSION" ]]; then
-    node -e "
-      const fs = require('fs');
-      const p = JSON.parse(fs.readFileSync('${pkg_json}', 'utf8'));
-      p.version = '${current_version}';
-      fs.writeFileSync('${pkg_json}', JSON.stringify(p, null, 2) + '\n');
-    "
+    restore_version "$pkg_json" "$current_version"
     echo "     version restored: ${current_version}"
   fi
 

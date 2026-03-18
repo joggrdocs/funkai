@@ -32,9 +32,9 @@ export interface PromptModule<T = unknown> {
  * A nested namespace node in the prompt tree.
  * Values are either PromptModule leaves or further nested namespaces.
  */
-export type PromptNamespace = {
+export interface PromptNamespace {
   readonly [key: string]: PromptModule | PromptNamespace;
-};
+}
 
 /**
  * Deep-readonly version of a prompt tree.

@@ -64,6 +64,10 @@ export function createToolResultMessage(
   isError?: boolean,
 ): Message {
   // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
+  const errorField: { isError?: true } = {};
+  if (isError) {
+    errorField.isError = true;
+  }
   return {
     role: "tool",
     content: [
@@ -72,27 +76,10 @@ export function createToolResultMessage(
         toolCallId,
         toolName,
         output: result ?? {},
-        ...(isError ? { isError: true } : {}),
+        ...errorField,
       },
     ],
   } as Message;
-}
-
-/**
- * Safely serialize a value to a string for message content.
- *
- * Returns the value as-is when it's already a string. Otherwise
- * delegates to {@link safeStringify} which handles circular refs,
- * Maps, Sets, bigints, and other non-JSON-serializable types.
- *
- * @param value - The value to serialize.
- * @returns A string representation of the value.
- */
-function serializeMessageContent(value: unknown): string {
-  if (typeof value === "string") {
-    return value;
-  }
-  return safeStringify(value ?? null);
 }
 
 /**
@@ -138,4 +125,27 @@ export function collectTextFromMessages(messages: readonly Message[]): string {
     .map((m) => m.content as string)
     .join("\n")
     .trim();
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely serialize a value to a string for message content.
+ *
+ * Returns the value as-is when it's already a string. Otherwise
+ * delegates to {@link safeStringify} which handles circular refs,
+ * Maps, Sets, bigints, and other non-JSON-serializable types.
+ *
+ * @param value - The value to serialize.
+ * @returns A string representation of the value.
+ *
+ * @private
+ */
+function serializeMessageContent(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return safeStringify(value ?? null);
 }

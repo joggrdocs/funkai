@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { clean } from "@/clean.js";
 
-describe("clean", () => {
+describe(clean, () => {
   it("should strip YAML frontmatter from a prompt file", () => {
     const input = "---\nname: test-prompt\ngroup: agents\n---\nHello {{ name }}";
     expect(clean(input)).toBe("Hello {{ name }}");

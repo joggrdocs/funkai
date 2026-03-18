@@ -38,7 +38,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -59,7 +59,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -78,7 +78,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-cause", agent, input: "test" });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -95,7 +95,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-no-cause", agent, input: "test" });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -157,7 +157,7 @@ describe("agent()", () => {
 
     await $.agent({ id: "ag-trace", agent, input: "my-input" });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -257,7 +257,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-empty-msgs", agent, input: "test" });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -271,7 +271,7 @@ describe("agent()", () => {
 
     await $.agent({ id: "ag-trace-usage", agent, input: "test" });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }

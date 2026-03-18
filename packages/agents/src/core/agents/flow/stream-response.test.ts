@@ -33,17 +33,19 @@ async function readResponseText(response: Response): Promise<string> {
 
   for (;;) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      break;
+    }
     result += decoder.decode(value, { stream: true });
   }
   return result;
 }
 
 // ---------------------------------------------------------------------------
-// toTextStreamResponse
+// ToTextStreamResponse
 // ---------------------------------------------------------------------------
 
-describe("buildStreamResponseMethods", () => {
+describe(buildStreamResponseMethods, () => {
   describe("toTextStreamResponse", () => {
     it("streams only text-delta content as UTF-8", async () => {
       const methods = buildStreamResponseMethods(() => createTextStream(["Hello", ", ", "world!"]));
@@ -117,7 +119,7 @@ describe("buildStreamResponseMethods", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // toUIMessageStreamResponse
+  // ToUIMessageStreamResponse
   // ---------------------------------------------------------------------------
 
   describe("toUIMessageStreamResponse", () => {

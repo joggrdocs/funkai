@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
+import type * as ZodUtils from "@/utils/zod.js";
 
 const mockIsZodArray = vi.hoisted(() =>
   vi.fn<(...args: unknown[]) => boolean>((...args: unknown[]) => {
+    // oxlint-disable-next-line node/global-require -- dynamic require needed inside vi.hoisted
     const { z: zod } = require("zod");
     // Default: use real JSON schema check
     try {
@@ -16,15 +18,15 @@ const mockIsZodArray = vi.hoisted(() =>
   }),
 );
 
-vi.mock("@/utils/zod.js", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@/utils/zod.js")>();
+vi.mock(import("@/utils/zod.js"), async (importOriginal) => {
+  const original = await importOriginal<typeof ZodUtils>();
   return {
     ...original,
     isZodArray: (...args: unknown[]) => mockIsZodArray(...args),
   };
 });
 
-describe("resolveOutput", () => {
+describe(resolveOutput, () => {
   it("passes through Output.text()", () => {
     const text = Output.text();
     expect(resolveOutput(text)).toBe(text);

@@ -1,8 +1,6 @@
-// Re-export shared types from @funkai/models
-export type { LanguageModel, TokenUsage } from "@funkai/models";
+import type { ModelId, TokenUsage } from "@funkai/models";
 
-import type { ModelId } from "@funkai/models";
-import type { TokenUsage } from "@funkai/models";
+export type { LanguageModel, TokenUsage } from "@funkai/models";
 
 /**
  * Raw tracking record from a single AI model invocation.
@@ -17,22 +15,34 @@ export interface TokenUsageRecord {
    */
   readonly modelId: ModelId;
 
-  /** Number of input (prompt) tokens. */
+  /**
+   * Number of input (prompt) tokens.
+   */
   readonly inputTokens: number | undefined;
 
-  /** Number of output (completion) tokens. */
+  /**
+   * Number of output (completion) tokens.
+   */
   readonly outputTokens: number | undefined;
 
-  /** Total tokens (input + output). */
+  /**
+   * Total tokens (input + output).
+   */
   readonly totalTokens: number | undefined;
 
-  /** Tokens served from the provider's prompt cache. */
+  /**
+   * Tokens served from the provider's prompt cache.
+   */
   readonly cacheReadTokens: number | undefined;
 
-  /** Tokens written into the provider's prompt cache. */
+  /**
+   * Tokens written into the provider's prompt cache.
+   */
   readonly cacheWriteTokens: number | undefined;
 
-  /** Tokens consumed by the model's internal reasoning (e.g. o3/o4). */
+  /**
+   * Tokens consumed by the model's internal reasoning (e.g. o3/o4).
+   */
   readonly reasoningTokens: number | undefined;
 
   /**
@@ -44,24 +54,4 @@ export interface TokenUsageRecord {
     readonly agentId: string;
     readonly scope: readonly string[];
   };
-}
-
-/**
- * Final agent-level usage — tokens flat, with agentId.
- *
- * Produced by `agentUsage()` at the end of an agent's execution.
- */
-export interface AgentTokenUsage extends TokenUsage {
-  /** The agent that produced this usage. */
-  readonly agentId: string;
-}
-
-/**
- * Final flow agent-level usage — per-agent breakdown.
- *
- * Produced by `flowAgentUsage()` at the end of a flow agent's execution.
- */
-export interface FlowAgentTokenUsage {
-  /** Per-agent usage entries. */
-  readonly usages: readonly AgentTokenUsage[];
 }

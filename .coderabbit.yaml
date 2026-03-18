@@ -64,6 +64,7 @@ reviews:
         - Subjective improvements or suggestions
         - Pre-existing issues not introduced in this PR
         - Issues already handled by linters or type checkers
+        - The "no ternaries" rule as contradictory — it is intentional and consistent across AGENTS.md, CLAUDE.md, contributing/standards/, and .claude/rules/
 
     - path: "**/package.json"
       instructions: |
@@ -113,6 +114,8 @@ reviews:
         - Avoid using 'any' type - use 'unknown' and narrow appropriately
         - Use const exclusively - no let declarations
         - No classes - use plain objects, factory functions, closures
+        - No ternaries — use `match()`, `if`/`else`, or early returns. This is an intentional project-wide rule; do not flag "no ternaries" as a contradiction
+        - Immutable data only — no in-place mutation of shared state or function arguments (e.g., no `acc.push()` in reducers; prefer `flatMap`, spread, or concat)
         - JSDoc on all exports with @param, @returns, @example
 
   finishing_touches:

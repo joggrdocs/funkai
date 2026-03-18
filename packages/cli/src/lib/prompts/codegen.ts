@@ -24,7 +24,7 @@ export interface ParsedPrompt {
 function toPascalCase(name: string): string {
   return name
     .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
     .join("");
 }
 
@@ -38,7 +38,7 @@ function toPascalCase(name: string): string {
  */
 function toCamelCase(name: string): string {
   const pascal = toPascalCase(name);
-  return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+  return `${pascal.charAt(0).toLowerCase()}${pascal.slice(1)}`;
 }
 
 /**
@@ -49,7 +49,10 @@ function toCamelCase(name: string): string {
  * @private
  */
 function escapeTemplateLiteral(str: string): string {
-  return str.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
+  return str
+    .replaceAll("\\", String.raw`\\`)
+    .replaceAll("`", "\\`")
+    .replaceAll("${", "\\${");
 }
 
 /**
@@ -65,7 +68,13 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
   const fields = vars
     .map((v) => {
       const base = "z.string()";
-      const expr = v.required ? base : `${base}.optional()`;
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      const expr: string = (() => {
+        if (v.required) {
+          return base;
+        }
+        return `${base}.optional()`;
+      })();
       return `  ${v.name}: ${expr},`;
     })
     .join("\n");
@@ -93,14 +102,20 @@ const HEADER = [
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
-  const groupValue = prompt.group != null ? `'${prompt.group}' as const` : "undefined";
+  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+  const groupValue: string = (() => {
+    if (prompt.group) {
+      return `'${prompt.group}' as const`;
+    }
+    return "undefined";
+  })();
 
   const lines: string[] = [
     HEADER,
     `// Source: ${prompt.sourcePath}`,
     "",
     "import { z } from 'zod'",
-    "import { liquidEngine } from '@funkai/prompts'",
+    "import { liquidEngine } from '@funkai/prompts/runtime'",
     "",
     `const schema = ${schemaExpr}`,
     "",
@@ -140,9 +155,9 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
  * A tree node used during registry code generation.
  * Leaves hold the camelCase import name; branches hold nested nodes.
  */
-type TreeNode = {
+interface TreeNode {
   readonly [key: string]: string | TreeNode;
-};
+}
 
 /**
  * Build a nested tree from sorted prompts, grouped by their `group` field.
@@ -156,17 +171,22 @@ type TreeNode = {
 function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
   return prompts.reduce<Record<string, unknown>>((root, prompt) => {
     const importName = toCamelCase(prompt.name);
-    const segments = prompt.group ? prompt.group.split("/").map(toCamelCase) : [];
+    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+    const segments: string[] = (() => {
+      if (prompt.group) {
+        return prompt.group.split("/").map(toCamelCase);
+      }
+      return [];
+    })();
 
     const target = segments.reduce<Record<string, unknown>>((current, segment) => {
       const existing = current[segment];
       if (typeof existing === "string") {
-        throw new Error(
-          `Collision: prompt "${existing}" and group namespace "${segment}" ` +
-            "share the same key at the same level.",
+        throw new TypeError(
+          `Collision: prompt "${existing}" and group namespace "${segment}" share the same key at the same level.`,
         );
       }
-      if (existing == null) {
+      if (existing === null || existing === undefined) {
         current[segment] = {};
       }
       return current[segment] as Record<string, unknown>;
@@ -174,8 +194,7 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
 
     if (typeof target[importName] === "object" && target[importName] !== null) {
       throw new Error(
-        `Collision: prompt "${importName}" conflicts with existing group namespace ` +
-          `"${importName}" at the same level.`,
+        `Collision: prompt "${importName}" conflicts with existing group namespace "${importName}" at the same level.`,
       );
     }
 
@@ -196,11 +215,19 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
 function serializeTree(node: TreeNode, indent: number): string[] {
   const pad = "  ".repeat(indent);
 
-  return Object.entries(node).flatMap(([key, value]) =>
-    typeof value === "string"
-      ? [`${pad}${key},`]
-      : [`${pad}${key}: {`, ...serializeTree(value, indent + 1), `${pad}},`],
-  );
+  const lines: string[] = [];
+  for (const [key, value] of Object.entries(node)) {
+    if (typeof value === "string") {
+      lines.push(`${pad}${key},`);
+    } else {
+      lines.push(`${pad}${key}: {`);
+      for (const child of serializeTree(value, indent + 1)) {
+        lines.push(child);
+      }
+      lines.push(`${pad}},`);
+    }
+  }
+  return lines;
 }
 
 /**

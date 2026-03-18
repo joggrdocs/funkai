@@ -1,6 +1,11 @@
 import type { AsyncIterableStream } from "ai";
 
-import type { Message, StreamPart } from "@/core/agents/base/types.js";
+import type {
+  GenerateResult,
+  Message,
+  StreamPart,
+  StreamResult,
+} from "@/core/agents/base/types.js";
 import {
   collectTextFromMessages,
   createAssistantMessage,
@@ -25,13 +30,18 @@ import type { Logger } from "@/core/logger.js";
 import { sumTokenUsage } from "@/core/provider/usage.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import type { TraceEntry } from "@/lib/trace.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
 
-/** Hook signature for step-finish events. @private */
+/**
+ * Hook signature for step-finish events.
+ *
+ * @private
+ */
 type StepFinishHook = (event: {
   step: StepInfo;
   result: unknown;
@@ -370,7 +380,7 @@ export function flowAgent<TInput, TOutput = any>(
         ),
         wrapHook(overrides && overrides.onFinish, {
           input: parsedInput,
-          result: result as import("@/core/agents/base/types.js").GenerateResult,
+          result: result as GenerateResult,
           duration,
         }),
       );
@@ -378,8 +388,8 @@ export function flowAgent<TInput, TOutput = any>(
       log.debug("flowAgent.generate finish", { name: config.name, duration });
 
       return { ok: true, ...result };
-    } catch (thrown) {
-      const error = toError(thrown);
+    } catch (caughtError) {
+      const error = toError(caughtError);
       const duration = Date.now() - startedAt;
 
       log.error("flowAgent.generate error", { name: config.name, error: error.message, duration });
@@ -405,7 +415,7 @@ export function flowAgent<TInput, TOutput = any>(
     input: TInput,
     overrides?: FlowAgentOverrides,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-  ): Promise<Result<import("@/core/agents/base/types.js").StreamResult<any>>> {
+  ): Promise<Result<StreamResult<any>>> {
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
     const writer = writable.getWriter();
 
@@ -459,7 +469,7 @@ export function flowAgent<TInput, TOutput = any>(
           ),
           wrapHook(overrides && overrides.onFinish, {
             input: parsedInput,
-            result: result as import("@/core/agents/base/types.js").GenerateResult,
+            result: result as GenerateResult,
             duration,
           }),
         );
@@ -480,21 +490,21 @@ export function flowAgent<TInput, TOutput = any>(
         await writer.close();
 
         return result;
-      } catch (thrown) {
-        const error = toError(thrown);
+      } catch (caughtError) {
+        const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
         log.error("flowAgent.stream error", { name: config.name, error: error.message, duration });
 
         // Emit error event and close the stream
-        /* v8 ignore start -- defensive; writer rarely rejects in practice */
-        await writer.write({ type: "error", error } as StreamPart).catch((err) => {
-          log.debug("failed to write error event to stream", { err });
+        /* V8 ignore start -- defensive; writer rarely rejects in practice */
+        await writer.write({ type: "error", error } as StreamPart).catch((writeError) => {
+          log.debug("failed to write error event to stream", { error: writeError });
         });
-        await writer.close().catch((err) => {
-          log.debug("failed to close stream writer", { err });
+        await writer.close().catch((closeError) => {
+          log.debug("failed to close stream writer", { error: closeError });
         });
-        /* v8 ignore stop */
+        /* V8 ignore stop */
 
         await fireHooks(
           log,
@@ -512,7 +522,7 @@ export function flowAgent<TInput, TOutput = any>(
     const responseMethods = buildStreamResponseMethods(() => readable);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-    const streamResult: import("@/core/agents/base/types.js").StreamResult<any> = {
+    const streamResult: StreamResult<any> = {
       output: done.then((r) => r.output),
       messages: done.then((r) => r.messages),
       usage: done.then((r) => r.usage),
@@ -536,13 +546,13 @@ export function flowAgent<TInput, TOutput = any>(
     generate,
     stream,
     fn: () => generate,
-  };
-
-  // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-  (agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
-    name: config.name,
-    inputSchema: config.input,
-  } satisfies RunnableMeta;
+    // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property; symbols cannot be user-controlled
+    [RUNNABLE_META]: {
+      name: config.name,
+      inputSchema: config.input,
+    } satisfies RunnableMeta,
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
+  } as FlowAgent<TInput, any>; // oxlint-disable-line @typescript-eslint/no-explicit-any
 
   return agent;
 }

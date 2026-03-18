@@ -15,7 +15,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -34,7 +34,7 @@ describe("reduce()", () => {
       execute: async ({ accumulator }) => accumulator,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -52,7 +52,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -74,7 +74,7 @@ describe("reduce()", () => {
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -116,7 +116,7 @@ describe("reduce()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -159,7 +159,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -183,7 +183,7 @@ describe("reduce()", () => {
       }),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -271,7 +271,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -301,7 +301,7 @@ describe("reduce()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }

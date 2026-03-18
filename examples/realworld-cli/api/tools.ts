@@ -1,10 +1,6 @@
 import { tool } from "@funkai/agents";
 import { z } from "zod";
 
-// ---------------------------------------------------------------------------
-// Remote tool executor — resolves when the CLI posts back the result
-// ---------------------------------------------------------------------------
-
 export type RemoteExecutor = (toolName: string, input: unknown) => Promise<unknown>;
 
 // ---------------------------------------------------------------------------

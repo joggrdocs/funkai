@@ -2,7 +2,7 @@ import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream, LanguageModel } from "ai";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
-import type { OutputSpec } from "@/core/agents/base/output.js";
+import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import type {
   Agent,
   AgentConfig,
@@ -25,124 +25,10 @@ import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
-
-/**
- * Safely read a property from `overrides`, which may be undefined.
- * Replaces `overrides?.prop` optional chaining.
- *
- * @private
- */
-function readOverride<
-  TTools extends Record<string, Tool>,
-  TSubAgents extends SubAgents,
-  K extends keyof AgentOverrides<TTools, TSubAgents>,
->(
-  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
-  key: K,
-): AgentOverrides<TTools, TSubAgents>[K] | undefined {
-  if (overrides !== undefined) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return overrides[key];
-  }
-  return undefined;
-}
-
-/**
- * Safely compute the JSON-serialized length of a value.
- * Returns 0 if serialization fails (e.g. circular refs, BigInt).
- *
- * @private
- */
-function safeSerializedLength(value: unknown): number {
-  try {
-    const json = JSON.stringify(value);
-    return typeof json === "string" ? json.length : 0;
-  } catch {
-    return 0;
-  }
-}
-
-/**
- * Return the value if the predicate is true, otherwise undefined.
- * Replaces `predicate ? value : undefined` ternary.
- *
- * @private
- */
-function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
-  if (predicate) {
-    return value;
-  }
-  return undefined;
-}
-
-/**
- * Resolve an optional output param. Returns `resolveOutput(param)` if
- * param is defined, otherwise undefined.
- *
- * @private
- */
-function resolveOptionalOutput(
-  param: import("@/core/agents/base/output.js").OutputParam | undefined,
-): import("@/core/agents/base/output.js").OutputSpec | undefined {
-  if (param !== undefined) {
-    return resolveOutput(param);
-  }
-  return undefined;
-}
-
-/**
- * Safely extract a property from an object, returning `{}` if the
- * property does not exist. Replaces `'key' in obj ? obj[key] : {}` ternary.
- *
- * @private
- */
-function extractProperty(obj: Record<string, unknown>, key: string): unknown {
-  if (key in obj) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return obj[key];
-  }
-  return {};
-}
-
-/**
- * Extract token usage from a step's usage object, defaulting to 0
- * when usage is undefined. Replaces optional chaining on `step.usage`.
- *
- * @private
- */
-function extractUsage(
-  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
-): {
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-} {
-  if (usage !== undefined) {
-    const inputTokens = usage.inputTokens ?? 0;
-    const outputTokens = usage.outputTokens ?? 0;
-    return {
-      inputTokens,
-      outputTokens,
-      totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
-    };
-  }
-  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
-}
-
-/**
- * Return `ifOutput` when `output` is defined, `ifText` otherwise.
- * Replaces `output ? aiResult.output : aiResult.text` ternary.
- *
- * @private
- */
-function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
-  if (output !== undefined) {
-    return ifOutput;
-  }
-  return ifText;
-}
+import type { Result } from "@/utils/result.js";
 
 /**
  * Create an agent with typed input, tools, subagents, and hooks.
@@ -191,7 +77,9 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
 export function agent<
   TInput = string | Message[],
   TOutput = string,
+  // oxlint-disable-next-line typescript-eslint/ban-types -- {} is intentional: allows unconstrained tool/subagent defaults
   TTools extends Record<string, Tool> = {},
+  // oxlint-disable-next-line typescript-eslint/ban-types
   TSubAgents extends SubAgents = {},
 >(
   config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
@@ -243,8 +131,8 @@ export function agent<
     readonly maxSteps: number;
     readonly signal: AbortSignal | undefined;
     readonly onStepFinish: (step: {
-      toolCalls?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
-      toolResults?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
+      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
+      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
       usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
     }) => Promise<void>;
   }
@@ -267,7 +155,7 @@ export function agent<
   ): Promise<PreparedGeneration> {
     const overrideModel = readOverride(overrides, "model");
     const modelRef = overrideModel ?? config.model;
-    const baseModel = resolveModel(modelRef, config.resolver);
+    const baseModel = resolveModel(modelRef, config.registry);
     const model = await withModelMiddleware({ model: baseModel });
 
     const overrideTools = readOverride(overrides, "tools");
@@ -304,8 +192,8 @@ export function agent<
 
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: {
-      toolCalls?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
-      toolResults?: ReadonlyArray<{ toolName: string } & Record<string, unknown>>;
+      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
+      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
       usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
     }) => {
       const stepId = `${config.name}:${stepCounter.value++}`;
@@ -342,7 +230,7 @@ export function agent<
   async function generate(
     rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
-  ): Promise<import("@/utils/result.js").Result<GenerateResult<TOutput>>> {
+  ): Promise<Result<GenerateResult<TOutput>>> {
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
@@ -401,8 +289,8 @@ export function agent<
       log.debug("agent.generate finish", { name: config.name, duration });
 
       return { ok: true, ...generateResult };
-    } catch (thrown) {
-      const error = toError(thrown);
+    } catch (caughtError) {
+      const error = toError(caughtError);
       const duration = Date.now() - startedAt;
 
       log.error("agent.generate error", { name: config.name, error: error.message, duration });
@@ -427,7 +315,7 @@ export function agent<
   async function stream(
     rawInput: TInput,
     overrides?: AgentOverrides<TTools, TSubAgents>,
-  ): Promise<import("@/utils/result.js").Result<StreamResult<TOutput>>> {
+  ): Promise<Result<StreamResult<TOutput>>> {
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
@@ -517,8 +405,8 @@ export function agent<
       })();
 
       // Catch stream errors: fire onError hooks and prevent unhandled rejections
-      done.catch(async (thrown) => {
-        const error = toError(thrown);
+      done.catch(async (caughtError) => {
+        const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
         log.error("agent.stream error", { name: config.name, error: error.message, duration });
@@ -536,9 +424,10 @@ export function agent<
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
-        // Safe to delegate: the AI SDK internally tees its baseStream for each
-        // accessor (fullStream, textStream, toTextStreamResponse, etc.), so
-        // consuming fullStream above does not conflict with these methods.
+        // NOTE: toTextStreamResponse and toUIMessageStreamResponse delegate directly to
+        // The underlying AI SDK stream, NOT from the TransformStream above.
+        // Do NOT consume fullStream concurrently with these methods —
+        // They share the same underlying stream source.
         toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
         toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
@@ -550,8 +439,8 @@ export function agent<
       streamResult.finishReason.catch(() => {});
 
       return { ok: true, ...streamResult };
-    } catch (thrown) {
-      const error = toError(thrown);
+    } catch (caughtError) {
+      const error = toError(caughtError);
       const duration = Date.now() - startedAt;
 
       log.error("agent.stream error", { name: config.name, error: error.message, duration });
@@ -581,10 +470,132 @@ export function agent<
   };
 
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+  // oxlint-disable-next-line unicorn/no-immediate-mutation -- Symbol-keyed property must be assigned after object creation
   (agent as unknown as Record<symbol, unknown>)[RUNNABLE_META] = {
     name: config.name,
     inputSchema: config.input,
   } satisfies RunnableMeta;
 
   return agent;
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Safely read a property from `overrides`, which may be undefined.
+ * Replaces `overrides?.prop` optional chaining.
+ *
+ * @private
+ */
+function readOverride<
+  TTools extends Record<string, Tool>,
+  TSubAgents extends SubAgents,
+  K extends keyof AgentOverrides<TTools, TSubAgents>,
+>(
+  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
+  key: K,
+): AgentOverrides<TTools, TSubAgents>[K] | undefined {
+  if (overrides !== undefined) {
+    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
+    return overrides[key];
+  }
+  return undefined;
+}
+
+/**
+ * Safely compute the JSON-serialized length of a value.
+ * Returns 0 if serialization fails (e.g. circular refs, BigInt).
+ *
+ * @private
+ */
+function safeSerializedLength(value: unknown): number {
+  try {
+    const json = JSON.stringify(value);
+    if (typeof json === "string") {
+      return json.length;
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Return the value if the predicate is true, otherwise undefined.
+ * Replaces `predicate ? value : undefined` ternary.
+ *
+ * @private
+ */
+function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
+  if (predicate) {
+    return value;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve an optional output param. Returns `resolveOutput(param)` if
+ * param is defined, otherwise undefined.
+ *
+ * @private
+ */
+function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | undefined {
+  if (param !== undefined) {
+    return resolveOutput(param);
+  }
+  return undefined;
+}
+
+/**
+ * Safely extract a property from an object, returning `{}` if the
+ * property does not exist. Replaces `'key' in obj ? obj[key] : {}` ternary.
+ *
+ * @private
+ */
+function extractProperty(obj: Record<string, unknown>, key: string): unknown {
+  if (key in obj) {
+    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
+    return obj[key];
+  }
+  return {};
+}
+
+/**
+ * Extract token usage from a step's usage object, defaulting to 0
+ * when usage is undefined. Replaces optional chaining on `step.usage`.
+ *
+ * @private
+ */
+function extractUsage(
+  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
+): {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+} {
+  if (usage !== undefined) {
+    const inputTokens = usage.inputTokens ?? 0;
+    const outputTokens = usage.outputTokens ?? 0;
+    return {
+      inputTokens,
+      outputTokens,
+      totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
+    };
+  }
+  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+}
+
+/**
+ * Return `ifOutput` when `output` is defined, `ifText` otherwise.
+ * Replaces `output ? aiResult.output : aiResult.text` ternary.
+ *
+ * @private
+ */
+function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
+  if (output !== undefined) {
+    return ifOutput;
+  }
+  return ifText;
 }

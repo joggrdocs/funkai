@@ -2,37 +2,42 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { z } from "zod";
 
 import { agent } from "@/core/agents/base/agent.js";
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
-
-// ---------------------------------------------------------------------------
-// Mocks
-// ---------------------------------------------------------------------------
 
 const mockGenerateText = vi.fn();
 const mockStreamText = vi.fn();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
 
-vi.mock("ai", () => ({
-  generateText: (...args: unknown[]) => mockGenerateText(...args),
-  streamText: (...args: unknown[]) => mockStreamText(...args),
-  stepCountIs: (n: number) => mockStepCountIs(n),
-  Output: {
-    text: () => ({ parseCompleteOutput: vi.fn() }),
-    object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
-    array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
-  },
-}));
+vi.mock(
+  import("ai"),
+  () =>
+    ({
+      generateText: (...args: unknown[]) => mockGenerateText(...args),
+      streamText: (...args: unknown[]) => mockStreamText(...args),
+      stepCountIs: (n: number) => mockStepCountIs(n),
+      Output: {
+        text: () => ({ parseCompleteOutput: vi.fn() }),
+        object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
+        array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
+        choice: () => ({ parseCompleteOutput: vi.fn() }),
+        json: () => ({ parseCompleteOutput: vi.fn() }),
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
+    }) as any,
+);
 
-vi.mock("@/lib/middleware.js", () => ({
-  withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
-}));
+vi.mock(
+  import("@/lib/middleware.js"),
+  () =>
+    ({
+      withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
+    }) as any,
+);
 
 const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const MOCK_TOTAL_USAGE = {
   inputTokens: 100,
@@ -82,7 +87,7 @@ function createMockStreamResult(overrides?: {
     finishReason: "stop",
   };
   const merged = { ...defaults, ...overrides };
-  const chunks = merged.chunks;
+  const { chunks } = merged;
   const textValue = merged.text ?? chunks.join("");
 
   async function* makeFullStream() {
@@ -129,19 +134,11 @@ function createTypedAgent(
   });
 }
 
-// ---------------------------------------------------------------------------
-// Setup
-// ---------------------------------------------------------------------------
-
 beforeEach(() => {
   vi.clearAllMocks();
   mockGenerateText.mockResolvedValue(createMockGenerateResult());
   mockStreamText.mockReturnValue(createMockStreamResult());
 });
-
-// ---------------------------------------------------------------------------
-// Agent creation
-// ---------------------------------------------------------------------------
 
 describe("agent creation", () => {
   it("returns an object with generate, stream, and fn methods", () => {
@@ -171,16 +168,12 @@ describe("agent creation", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — success path
-// ---------------------------------------------------------------------------
-
 describe("generate() success", () => {
   it("returns ok: true with text output for simple agent", async () => {
     const a = createSimpleAgent();
     const result = await a.generate("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -201,7 +194,7 @@ describe("generate() success", () => {
     const a = createTypedAgent();
     const result = await a.generate({ topic: "TypeScript" });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -213,7 +206,7 @@ describe("generate() success", () => {
     await a.generate("test");
 
     expect(mockGenerateText).toHaveBeenCalledTimes(1);
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -224,7 +217,7 @@ describe("generate() success", () => {
     const a = createSimpleAgent();
     await a.generate("hello world");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -235,7 +228,7 @@ describe("generate() success", () => {
     const a = createTypedAgent();
     await a.generate({ topic: "Rust" });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -247,7 +240,7 @@ describe("generate() success", () => {
     const messages = [{ role: "user" as const, content: "hello" }];
     await a.generate(messages as never);
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -276,10 +269,6 @@ describe("generate() success", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — input validation
-// ---------------------------------------------------------------------------
-
 describe("generate() input validation", () => {
   it("returns VALIDATION_ERROR when typed input fails safeParse", async () => {
     const a = createTypedAgent();
@@ -287,7 +276,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.generate({ topic: 123 });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -301,7 +290,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally missing field
     const result = await a.generate({});
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -321,13 +310,9 @@ describe("generate() input validation", () => {
     const a = createSimpleAgent();
     const result = await a.generate("anything");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — output resolution
-// ---------------------------------------------------------------------------
 
 describe("generate() output resolution", () => {
   it("returns text output when no output config is set", async () => {
@@ -336,7 +321,7 @@ describe("generate() output resolution", () => {
     const a = createSimpleAgent();
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -353,7 +338,7 @@ describe("generate() output resolution", () => {
     });
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -361,16 +346,12 @@ describe("generate() output resolution", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — system prompt resolution
-// ---------------------------------------------------------------------------
-
 describe("generate() system prompt", () => {
   it("passes static string system prompt", async () => {
     const a = createSimpleAgent({ system: "Static system" });
     await a.generate("test");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -383,7 +364,7 @@ describe("generate() system prompt", () => {
     });
     await a.generate("my-input");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -394,7 +375,7 @@ describe("generate() system prompt", () => {
     const a = createSimpleAgent({ system: undefined });
     await a.generate("test");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -405,17 +386,13 @@ describe("generate() system prompt", () => {
     const a = createSimpleAgent({ system: "original" });
     await a.generate("test", { system: "overridden" });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
     expect(callArgs[0].system).toBe("overridden");
   });
 });
-
-// ---------------------------------------------------------------------------
-// generate() — hooks
-// ---------------------------------------------------------------------------
 
 describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
@@ -424,7 +401,7 @@ describe("generate() hooks", () => {
     await a.generate("hello");
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    const firstCall = onStart.mock.calls[0];
+    const [firstCall] = onStart.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onStart first call");
     }
@@ -437,11 +414,11 @@ describe("generate() hooks", () => {
     await a.generate("hello");
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onFinish.mock.calls[0];
+    const [firstCall] = onFinish.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
     expect(event.input).toBe("hello");
     expect(event.result).toHaveProperty("output");
     expect(event.result).toHaveProperty("messages");
@@ -475,13 +452,13 @@ describe("generate() hooks", () => {
     await a.generate("test");
 
     expect(onStepFinish).toHaveBeenCalledTimes(2);
-    const firstCall = onStepFinish.mock.calls[0];
+    const [firstCall] = onStepFinish.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
     expect(firstCall[0].stepId).toBe("test-agent:0");
 
-    const secondCall = onStepFinish.mock.calls[1];
+    const [, secondCall] = onStepFinish.mock.calls;
     if (!secondCall) {
       throw new Error("Expected onStepFinish second call");
     }
@@ -508,7 +485,7 @@ describe("generate() hooks", () => {
     await a.generate("test");
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onStepFinish.mock.calls[0];
+    const [firstCall] = onStepFinish.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
@@ -536,9 +513,11 @@ describe("generate() hooks", () => {
     await a.generate("test");
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onStepFinish.mock.calls[0];
-    if (!firstCall) throw new Error("Expected onStepFinish first call");
-    // extractProperty returns {} when key is missing, safeSerializedLength({}) = 2
+    const [firstCall] = onStepFinish.mock.calls;
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
+    // ExtractProperty returns {} when key is missing, safeSerializedLength({}) = 2
     expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 2 }]);
     expect(firstCall[0].toolResults).toEqual([{ toolName: "t", resultTextLength: 2 }]);
   });
@@ -562,8 +541,10 @@ describe("generate() hooks", () => {
     await a.generate("test");
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onStepFinish.mock.calls[0];
-    if (!firstCall) throw new Error("Expected onStepFinish first call");
+    const [firstCall] = onStepFinish.mock.calls;
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
     expect(firstCall[0].usage).toEqual({
       inputTokens: 0,
       outputTokens: 0,
@@ -594,9 +575,11 @@ describe("generate() hooks", () => {
     await a.generate("test");
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onStepFinish.mock.calls[0];
-    if (!firstCall) throw new Error("Expected onStepFinish first call");
-    // safeSerializedLength returns 0 for circular references
+    const [firstCall] = onStepFinish.mock.calls;
+    if (!firstCall) {
+      throw new Error("Expected onStepFinish first call");
+    }
+    // SafeSerializedLength returns 0 for circular references
     expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 0 }]);
   });
 
@@ -647,10 +630,6 @@ describe("generate() hooks", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — error handling
-// ---------------------------------------------------------------------------
-
 describe("generate() error handling", () => {
   it("returns AGENT_ERROR when generateText throws an Error", async () => {
     mockGenerateText.mockRejectedValue(new Error("model exploded"));
@@ -658,7 +637,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -673,7 +652,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -690,7 +669,7 @@ describe("generate() error handling", () => {
     await a.generate("test");
 
     expect(onError).toHaveBeenCalledTimes(1);
-    const firstCall = onError.mock.calls[0];
+    const [firstCall] = onError.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onError first call");
     }
@@ -732,10 +711,6 @@ describe("generate() error handling", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — hook resilience
-// ---------------------------------------------------------------------------
-
 describe("generate() hook resilience", () => {
   it("onStart throwing does not prevent generation", async () => {
     const a = createSimpleAgent({
@@ -746,7 +721,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -762,7 +737,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -780,7 +755,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -789,17 +764,13 @@ describe("generate() hook resilience", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// generate() — overrides
-// ---------------------------------------------------------------------------
-
 describe("generate() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "override-model" } as never;
     const a = createSimpleAgent();
     await a.generate("test", { model: overrideModel });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -810,7 +781,7 @@ describe("generate() overrides", () => {
     const a = createSimpleAgent({ system: "original" });
     await a.generate("test", { system: "override system" });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -822,7 +793,7 @@ describe("generate() overrides", () => {
     const a = createSimpleAgent();
     await a.generate("test", { signal: controller.signal });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -838,16 +809,12 @@ describe("generate() overrides", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — success path
-// ---------------------------------------------------------------------------
-
 describe("stream() success", () => {
   it("returns ok: true with fullStream, output, messages, usage, and finishReason", async () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -864,7 +831,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -892,7 +859,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -920,7 +887,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -943,7 +910,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -973,10 +940,6 @@ describe("stream() success", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — input validation
-// ---------------------------------------------------------------------------
-
 describe("stream() input validation", () => {
   it("returns VALIDATION_ERROR when typed input fails safeParse", async () => {
     const a = createTypedAgent();
@@ -984,7 +947,7 @@ describe("stream() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.stream({ topic: 123 });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -1002,10 +965,6 @@ describe("stream() input validation", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — hooks
-// ---------------------------------------------------------------------------
-
 describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
     const onStart = vi.fn();
@@ -1013,7 +972,7 @@ describe("stream() hooks", () => {
     await a.stream("hello");
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    const firstCall = onStart.mock.calls[0];
+    const [firstCall] = onStart.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onStart first call");
     }
@@ -1025,7 +984,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onFinish });
     const result = await a.stream("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -1044,7 +1003,7 @@ describe("stream() hooks", () => {
     await result.output;
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onFinish.mock.calls[0];
+    const [firstCall] = onFinish.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onFinish first call");
     }
@@ -1074,7 +1033,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -1090,7 +1049,9 @@ describe("stream() hooks", () => {
     }
 
     // Allow microtasks to settle
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
 
     expect(onStepFinish).toHaveBeenCalled();
   });
@@ -1115,7 +1076,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -1131,10 +1092,12 @@ describe("stream() hooks", () => {
     }
 
     // Allow microtasks to settle
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const firstCall = onStepFinish.mock.calls[0];
+    const [firstCall] = onStepFinish.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
@@ -1143,10 +1106,6 @@ describe("stream() hooks", () => {
     expect(firstCall[0].toolResults).toEqual([{ toolName: "myTool", resultTextLength: 13 }]);
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — error handling
-// ---------------------------------------------------------------------------
 
 describe("stream() error handling", () => {
   it("returns AGENT_ERROR when streamText throws synchronously", async () => {
@@ -1157,7 +1116,7 @@ describe("stream() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -1176,7 +1135,7 @@ describe("stream() error handling", () => {
     await a.stream("test");
 
     expect(onError).toHaveBeenCalledTimes(1);
-    const firstCall = onError.mock.calls[0];
+    const [firstCall] = onError.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onError first call");
     }
@@ -1185,13 +1144,14 @@ describe("stream() error handling", () => {
 
   it("wraps non-Error throws into Error", async () => {
     mockStreamText.mockImplementation(() => {
+      // oxlint-disable-next-line no-throw-literal -- testing non-Error throw handling
       throw "string stream error";
     });
 
     const a = createSimpleAgent();
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -1222,17 +1182,13 @@ describe("stream() error handling", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — overrides
-// ---------------------------------------------------------------------------
-
 describe("stream() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "stream-override" } as never;
     const a = createSimpleAgent();
     await a.stream("test", { model: overrideModel });
 
-    const callArgs = mockStreamText.mock.calls[0];
+    const [callArgs] = mockStreamText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected streamText to be called");
     }
@@ -1244,17 +1200,13 @@ describe("stream() overrides", () => {
     const a = createSimpleAgent();
     await a.stream("test", { signal: controller.signal });
 
-    const callArgs = mockStreamText.mock.calls[0];
+    const [callArgs] = mockStreamText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected streamText to be called");
     }
     expect(callArgs[0].abortSignal).toBe(controller.signal);
   });
 });
-
-// ---------------------------------------------------------------------------
-// fn() — delegates to generate()
-// ---------------------------------------------------------------------------
 
 describe("fn()", () => {
   it("returns a function that delegates to generate()", async () => {
@@ -1263,7 +1215,7 @@ describe("fn()", () => {
 
     const result = await fn("hello");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -1277,8 +1229,8 @@ describe("fn()", () => {
     const resultGenerate = await a.generate("test");
     const resultFn = await fn("test");
 
-    expect(resultGenerate.ok).toBe(true);
-    expect(resultFn.ok).toBe(true);
+    expect(resultGenerate.ok).toBeTruthy();
+    expect(resultFn.ok).toBeTruthy();
     if (!resultGenerate.ok || !resultFn.ok) {
       return;
     }
@@ -1302,17 +1254,13 @@ describe("fn()", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fn({ topic: 123 });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
     expect(result.error.code).toBe("VALIDATION_ERROR");
   });
 });
-
-// ---------------------------------------------------------------------------
-// Tool integration
-// ---------------------------------------------------------------------------
 
 describe("tool integration", () => {
   it("passes tools to generateText when tools are configured", async () => {
@@ -1325,7 +1273,7 @@ describe("tool integration", () => {
     const a = createSimpleAgent({ tools: { myTool: mockTool as never } });
     await a.generate("test");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -1336,7 +1284,7 @@ describe("tool integration", () => {
     const a = createSimpleAgent();
     await a.generate("test");
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -1354,7 +1302,7 @@ describe("tool integration", () => {
     const a = createSimpleAgent({ tools: { configTool: configTool as never } });
     await a.generate("test", { tools: { overrideTool: overrideTool as never } });
 
-    const callArgs = mockGenerateText.mock.calls[0];
+    const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
       throw new Error("Expected generateText to be called");
     }
@@ -1362,30 +1310,26 @@ describe("tool integration", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Edge cases
-// ---------------------------------------------------------------------------
-
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
     const a = createSimpleAgent();
     const result = await a.generate("test", undefined);
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
   });
 
   it("handles empty string input for simple agent", async () => {
     const a = createSimpleAgent();
     const result = await a.generate("");
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
   });
 
-  it("model string ID is resolved via configured resolver", async () => {
+  it("model string ID is resolved via configured registry", async () => {
     const a = agent({
       name: "string-model-agent",
       model: "openai/gpt-4.1",
-      resolver: mockResolver,
+      registry: mockResolver,
       system: "test",
       logger: createMockLogger(),
     });
@@ -1395,9 +1339,9 @@ describe("edge cases", () => {
     expect(mockResolver).toHaveBeenCalledWith("openai/gpt-4.1");
   });
 
-  it("throws when string model ID is used without a resolver", async () => {
+  it("throws when string model ID is used without a registry", async () => {
     const a = agent({
-      name: "no-resolver-agent",
+      name: "no-registry-agent",
       model: "openai/gpt-4.1",
       system: "test",
       logger: createMockLogger(),
@@ -1405,9 +1349,9 @@ describe("edge cases", () => {
 
     const result = await a.generate("test");
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (!result.ok) {
-      expect(result.error.message).toContain("no resolver configured");
+      expect(result.error.message).toContain("no registry configured");
     }
   });
 
@@ -1420,37 +1364,38 @@ describe("edge cases", () => {
 
     // Should not throw when no logger is provided
     const result = await a.generate("test");
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
   });
 });
 
-// ---------------------------------------------------------------------------
-// stream() — async error during consumption
-// ---------------------------------------------------------------------------
+// oxlint-disable-next-line promise/no-promise-in-callback -- test helper intentionally creates suppressed rejections
+function makeSuppressedRejection<T>(error: Error): Promise<T> {
+  // oxlint-disable-next-line promise/no-promise-in-callback
+  const p = Promise.reject<T>(error);
+  // oxlint-disable-next-line promise/no-promise-in-callback
+  p.catch(() => {
+    // Suppress unhandled rejection warning — the test asserts rejection behavior
+  });
+  return p;
+}
 
-describe("stream() async error during consumption", () => {
-  function createErrorStreamResult(error: Error) {
-    async function* makeFullStream() {
-      yield { type: "text-delta" as const, textDelta: "partial" };
-      throw error;
-    }
-
-    const rejected = <T>(): Promise<T> => {
-      const p = Promise.reject(error);
-      p.catch(() => {});
-      return p;
-    };
-
-    return {
-      fullStream: makeFullStream(),
-      text: rejected<string>(),
-      output: rejected<unknown>(),
-      response: rejected<{ messages: unknown[] }>(),
-      totalUsage: rejected<typeof MOCK_TOTAL_USAGE>(),
-      finishReason: rejected<string>(),
-    };
+function createErrorStreamResult(error: Error) {
+  async function* makeFullStream() {
+    yield { type: "text-delta" as const, textDelta: "partial" };
+    throw error;
   }
 
+  return {
+    fullStream: makeFullStream(),
+    text: makeSuppressedRejection<string>(error),
+    output: makeSuppressedRejection<unknown>(error),
+    response: makeSuppressedRejection<{ messages: unknown[] }>(error),
+    totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(error),
+    finishReason: makeSuppressedRejection<string>(error),
+  };
+}
+
+describe("stream() async error during consumption", () => {
   it("closes the stream when fullStream throws during iteration", async () => {
     const streamError = new Error("async stream failure");
     mockStreamText.mockReturnValue(createErrorStreamResult(streamError));
@@ -1458,8 +1403,10 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent();
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress derived promise rejections
     result.output.catch(() => {});
@@ -1468,7 +1415,7 @@ describe("stream() async error during consumption", () => {
     result.finishReason.catch(() => {});
 
     // Drain the stream — writer.abort() errors the readable side, so
-    // reader.read() will reject once the error propagates.
+    // Reader.read() will reject once the error propagates.
     const parts: unknown[] = [];
     const reader = result.fullStream.getReader();
     let streamErrored = false;
@@ -1476,7 +1423,9 @@ describe("stream() async error during consumption", () => {
       try {
         // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
         parts.push(value);
       } catch {
         streamErrored = true;
@@ -1487,7 +1436,7 @@ describe("stream() async error during consumption", () => {
     // Should have received the partial chunk before error closed the stream
     expect(parts.length).toBeGreaterThanOrEqual(1);
     expect(parts[0]).toEqual({ type: "text-delta", textDelta: "partial" });
-    expect(streamErrored).toBe(true);
+    expect(streamErrored).toBeTruthy();
   });
 
   it("fires onError hook when fullStream throws during iteration", async () => {
@@ -1499,8 +1448,10 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent({ onError, onFinish });
     const result = await a.stream("test");
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
 
     result.output.catch(() => {});
     result.messages.catch(() => {});
@@ -1508,23 +1459,27 @@ describe("stream() async error during consumption", () => {
     result.finishReason.catch(() => {});
 
     // Drain the stream to trigger the error — reader.read() rejects
-    // once the writer aborts the transform stream.
+    // Once the writer aborts the transform stream.
     const reader = result.fullStream.getReader();
     for (;;) {
       try {
         // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
         const { done } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
       } catch {
         break;
       }
     }
 
     // Wait for async error handling to settle
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
 
     expect(onError).toHaveBeenCalledTimes(1);
-    const firstCall = onError.mock.calls[0];
+    const [firstCall] = onError.mock.calls;
     if (!firstCall) {
       throw new Error("Expected onError first call");
     }
@@ -1532,14 +1487,10 @@ describe("stream() async error during consumption", () => {
     expect(firstCall[0].error).toBeInstanceOf(Error);
     expect(firstCall[0].error.message).toBe("async hook error");
 
-    // onFinish should NOT be called when the stream errors
+    // OnFinish should NOT be called when the stream errors
     expect(onFinish).not.toHaveBeenCalled();
   });
 });
-
-// ---------------------------------------------------------------------------
-// stream() — no unhandled rejections on derived promises
-// ---------------------------------------------------------------------------
 
 describe("stream() unhandled rejection safety", () => {
   it("does not emit unhandledRejection when consumer ignores derived promises", async () => {
@@ -1550,19 +1501,13 @@ describe("stream() unhandled rejection safety", () => {
       throw streamError;
     }
 
-    const rejected = <T>(): Promise<T> => {
-      const p = Promise.reject(streamError);
-      p.catch(() => {});
-      return p;
-    };
-
     mockStreamText.mockReturnValue({
       fullStream: makeFullStream(),
-      text: rejected<string>(),
-      output: rejected<unknown>(),
-      response: rejected<{ messages: unknown[] }>(),
-      totalUsage: rejected<typeof MOCK_TOTAL_USAGE>(),
-      finishReason: rejected<string>(),
+      text: makeSuppressedRejection<string>(streamError),
+      output: makeSuppressedRejection<unknown>(streamError),
+      response: makeSuppressedRejection<{ messages: unknown[] }>(streamError),
+      totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
+      finishReason: makeSuppressedRejection<string>(streamError),
       toTextStreamResponse: vi.fn(() => new Response("")),
       toUIMessageStreamResponse: vi.fn(() => new Response("")),
     });
@@ -1577,8 +1522,10 @@ describe("stream() unhandled rejection safety", () => {
       const a = createSimpleAgent();
       const result = await a.stream("test");
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
 
       // Intentionally do NOT .catch() any derived promises (output, messages, usage, finishReason).
       // Before the fix, this would cause unhandled rejection warnings.
@@ -1589,14 +1536,18 @@ describe("stream() unhandled rejection safety", () => {
         try {
           // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption
           const { done } = await reader.read();
-          if (done) break;
+          if (done) {
+            break;
+          }
         } catch {
           break;
         }
       }
 
       // Allow microtasks to settle so any unhandled rejections would fire
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
 
       expect(unhandledRejections).toEqual([]);
     } finally {
@@ -1606,7 +1557,7 @@ describe("stream() unhandled rejection safety", () => {
 });
 
 // ---------------------------------------------------------------------------
-// stream() response methods
+// Stream() response methods
 // ---------------------------------------------------------------------------
 
 describe("stream() response methods", () => {
@@ -1620,8 +1571,10 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream("hello");
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
 
     const init = { status: 200, headers: { "x-custom": "value" } };
     const response = result.toTextStreamResponse(init);
@@ -1639,8 +1592,10 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream("hello");
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toUIMessageStreamResponse();
     expect(mockToUI).toHaveBeenCalledWith(undefined);
@@ -1657,8 +1612,10 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream("hello");
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
 
     const response = result.toTextStreamResponse();
     expect(mockToText).toHaveBeenCalledWith(undefined);

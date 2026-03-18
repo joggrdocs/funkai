@@ -1,10 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { resolve, relative } from "node:path";
 
-// ---------------------------------------------------------------------------
-// Local tool executors — run on the CLI side against the user's filesystem
-// ---------------------------------------------------------------------------
-
 type ToolExecutor = (input: Record<string, unknown>) => Promise<unknown>;
 
 /**

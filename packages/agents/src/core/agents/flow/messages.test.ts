@@ -9,22 +9,14 @@ import {
   createUserMessage,
 } from "@/core/agents/flow/messages.js";
 
-// ---------------------------------------------------------------------------
-// buildToolCallId
-// ---------------------------------------------------------------------------
-
-describe("buildToolCallId", () => {
+describe(buildToolCallId, () => {
   it("concatenates stepId and index with a dash", () => {
     expect(buildToolCallId("scan-repo", 0)).toBe("scan-repo-0");
     expect(buildToolCallId("write-doc", 3)).toBe("write-doc-3");
   });
 });
 
-// ---------------------------------------------------------------------------
-// createToolCallMessage
-// ---------------------------------------------------------------------------
-
-describe("createToolCallMessage", () => {
+describe(createToolCallMessage, () => {
   it("returns an assistant message with a tool-call content part", () => {
     const msg = createToolCallMessage("call-1", "my-step", { x: 42 });
 
@@ -42,16 +34,12 @@ describe("createToolCallMessage", () => {
   it("defaults input to {} when null/undefined", () => {
     const msg = createToolCallMessage("call-1", "step", undefined);
 
-    const part = (msg.content as Array<{ input: unknown }>)[0];
+    const [part] = msg.content as { input: unknown }[];
     expect(part?.input).toEqual({});
   });
 });
 
-// ---------------------------------------------------------------------------
-// createToolResultMessage
-// ---------------------------------------------------------------------------
-
-describe("createToolResultMessage", () => {
+describe(createToolResultMessage, () => {
   it("returns a tool message with a tool-result content part", () => {
     const msg = createToolResultMessage("call-1", "my-step", { result: "ok" });
 
@@ -69,30 +57,26 @@ describe("createToolResultMessage", () => {
   it("includes isError when true", () => {
     const msg = createToolResultMessage("call-1", "step", "failed", true);
 
-    const part = (msg.content as Array<Record<string, unknown>>)[0];
-    expect(part?.isError).toBe(true);
+    const [part] = msg.content as Record<string, unknown>[];
+    expect(part?.isError).toBeTruthy();
   });
 
   it("omits isError when falsy", () => {
     const msg = createToolResultMessage("call-1", "step", "ok");
 
-    const part = (msg.content as Array<Record<string, unknown>>)[0];
+    const [part] = msg.content as Record<string, unknown>[];
     expect(part?.isError).toBeUndefined();
   });
 
   it("defaults output to empty object when undefined", () => {
     const msg = createToolResultMessage("call-1", "step", undefined);
 
-    const part = (msg.content as Array<{ output: unknown }>)[0];
+    const [part] = msg.content as { output: unknown }[];
     expect(part?.output).toEqual({});
   });
 });
 
-// ---------------------------------------------------------------------------
-// createUserMessage
-// ---------------------------------------------------------------------------
-
-describe("createUserMessage", () => {
+describe(createUserMessage, () => {
   it("creates a user message from a string input", () => {
     const msg = createUserMessage("hello world");
 
@@ -123,11 +107,7 @@ describe("createUserMessage", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// createAssistantMessage
-// ---------------------------------------------------------------------------
-
-describe("createAssistantMessage", () => {
+describe(createAssistantMessage, () => {
   it("creates an assistant message from a string output", () => {
     const msg = createAssistantMessage("response text");
 
@@ -151,11 +131,7 @@ describe("createAssistantMessage", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// collectTextFromMessages
-// ---------------------------------------------------------------------------
-
-describe("collectTextFromMessages", () => {
+describe(collectTextFromMessages, () => {
   it("collects text from assistant messages with string content", () => {
     const messages = [
       { role: "user" as const, content: "hello" },

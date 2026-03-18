@@ -39,8 +39,13 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
-    const rawParams = m[2] != null ? m[2].trim() : "";
-    const params = rawParams.length > 0 ? parseParams(rawParams, m[1]) : {};
+    const rawParams: string = (m[2] ?? "").trim();
+    const params: Record<string, string> = (() => {
+      if (rawParams.length > 0) {
+        return parseParams(rawParams, m[1]);
+      }
+      return {};
+    })();
 
     return { fullMatch: m[0], partialName: m[1], params };
   });
@@ -60,15 +65,15 @@ function parseRenderTags(template: string): RenderTag[] {
  * @param partialsDirs - Directories to search for partial `.prompt` files.
  * @returns Flattened template with all render tags resolved.
  */
-export function flattenPartials(template: string, partialsDirs: string[]): string {
+export function flattenPartials(template: string, partialsDirs: readonly string[]): string {
   const tags = parseRenderTags(template);
   if (tags.length === 0) {
     return template;
   }
 
   const engine = new Liquid({
-    root: partialsDirs,
-    partials: partialsDirs,
+    root: [...partialsDirs],
+    partials: [...partialsDirs],
     extname: ".prompt",
   });
 

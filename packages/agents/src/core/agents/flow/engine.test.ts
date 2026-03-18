@@ -4,10 +4,6 @@ import { z } from "zod";
 import { createFlowEngine } from "@/core/agents/flow/engine.js";
 import { createMockLogger } from "@/testing/index.js";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const Input = z.object({ x: z.number() });
 const Output = z.object({ y: z.number() });
 
@@ -21,11 +17,7 @@ function defaultConfig(overrides?: Record<string, unknown>) {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Engine with no custom steps (plain flow agent)
-// ---------------------------------------------------------------------------
-
-describe("createFlowEngine", () => {
+describe(createFlowEngine, () => {
   it("works as a plain flow agent when no custom steps are defined", async () => {
     const engine = createFlowEngine({});
 
@@ -33,8 +25,10 @@ describe("createFlowEngine", () => {
 
     const result = await fa.generate({ x: 5 });
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 10 });
     expect(result.duration).toBeGreaterThanOrEqual(0);
     expect(result.trace).toBeDefined();
@@ -59,8 +53,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 7 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 14 });
     });
 
@@ -93,10 +89,14 @@ describe("createFlowEngine", () => {
       await fa.generate({ x: 10 });
 
       expect(factorySpy).toHaveBeenCalledTimes(1);
-      const firstCall = factorySpy.mock.calls[0];
-      if (!firstCall) return;
-      const call = firstCall[0];
-      if (!call) return;
+      const [firstCall] = factorySpy.mock.calls;
+      if (!firstCall) {
+        return;
+      }
+      const [call] = firstCall;
+      if (!call) {
+        return;
+      }
       expect(call.config).toEqual({ value: 10 });
       expect(call.ctx).toHaveProperty("signal");
       expect(call.ctx).toHaveProperty("log");
@@ -123,8 +123,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 4 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ sum: 7, product: 12 });
     });
 
@@ -151,8 +153,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 42 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 42 });
     });
   });
@@ -213,7 +217,7 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 1 });
 
-      expect(result.ok).toBe(false);
+      expect(result.ok).toBeFalsy();
       expect(order).toEqual(["engine:onError", "flow:onError"]);
     });
 
@@ -335,8 +339,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 3 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 9 });
       expect(order).toEqual([
         "engine:onStart",
@@ -360,8 +366,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: "not-a-number" } as unknown as { x: number });
 
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
+      expect(result.ok).toBeFalsy();
+      if (result.ok) {
+        return;
+      }
       expect(result.error.code).toBe("VALIDATION_ERROR");
     });
 
@@ -375,8 +383,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 10 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(result.output).toEqual({ y: 11 });
     });
 
@@ -389,8 +399,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 1 });
 
-      expect(result.ok).toBe(false);
-      if (result.ok) return;
+      expect(result.ok).toBeFalsy();
+      if (result.ok) {
+        return;
+      }
       expect(result.error.code).toBe("FLOW_AGENT_ERROR");
       expect(result.error.message).toBe("handler failed");
     });
@@ -412,9 +424,11 @@ describe("createFlowEngine", () => {
 
       const [r1, r2] = await Promise.all([fa1.generate({ x: 5 }), fa2.generate({ x: 5 })]);
 
-      expect(r1.ok).toBe(true);
-      expect(r2.ok).toBe(true);
-      if (!r1.ok || !r2.ok) return;
+      expect(r1.ok).toBeTruthy();
+      expect(r2.ok).toBeTruthy();
+      if (!r1.ok || !r2.ok) {
+        return;
+      }
       expect(r1.output).toEqual({ y: 6 });
       expect(r2.output).toEqual({ y: 105 });
     });
@@ -435,8 +449,10 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 5 });
 
-      expect(result.ok).toBe(true);
-      if (!result.ok) return;
+      expect(result.ok).toBeTruthy();
+      if (!result.ok) {
+        return;
+      }
       expect(typeof result.output).toBe("string");
     });
 
@@ -460,7 +476,7 @@ describe("createFlowEngine", () => {
 
       const result = await fa.generate({ x: 3 });
 
-      expect(result.ok).toBe(true);
+      expect(result.ok).toBeTruthy();
       expect(sideEffects).toEqual([30]);
     });
 

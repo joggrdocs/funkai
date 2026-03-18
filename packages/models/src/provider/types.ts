@@ -1,4 +1,4 @@
-import { type LanguageModel as BaseLanguageModel } from "ai";
+import type { LanguageModel as BaseLanguageModel } from "ai";
 
 /**
  * AI SDK language model instance (v3 specification).

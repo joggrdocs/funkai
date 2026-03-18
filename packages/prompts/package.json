@@ -1,6 +1,6 @@
 {
   "name": "@funkai/prompts",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
   "description": "Prompt SDK with LiquidJS templating and Zod validation",
   "keywords": [
@@ -27,13 +27,23 @@
     ".": {
       "types": "./dist/lib/index.d.mts",
       "import": "./dist/lib/index.mjs"
+    },
+    "./runtime": {
+      "types": "./dist/lib/runtime.d.mts",
+      "import": "./dist/lib/runtime.mjs"
+    },
+    "./cli": {
+      "types": "./dist/lib/cli.d.mts",
+      "import": "./dist/lib/cli.mjs"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsdown && cp -r src/prompts dist/prompts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest run"
   },
   "dependencies": {
     "es-toolkit": "catalog:",

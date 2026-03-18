@@ -14,7 +14,7 @@ describe("map()", () => {
       execute: async ({ item }) => item * 2,
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -34,7 +34,9 @@ describe("map()", () => {
       execute: async ({ item }) => {
         state.current++;
         state.maxConcurrent = Math.max(state.maxConcurrent, state.current);
-        await new Promise((r) => setTimeout(r, 10));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 10);
+        });
         state.current--;
         return item;
       },
@@ -52,12 +54,14 @@ describe("map()", () => {
       input: [3, 1, 2],
       concurrency: 2,
       execute: async ({ item }) => {
-        await new Promise((r) => setTimeout(r, item * 5));
+        await new Promise((resolve) => {
+          setTimeout(resolve, item * 5);
+        });
         return item * 10;
       },
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -74,7 +78,7 @@ describe("map()", () => {
       execute: async () => "should not be called",
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -91,7 +95,7 @@ describe("map()", () => {
       execute: async ({ item }) => item.toUpperCase(),
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
     }
@@ -132,7 +136,7 @@ describe("map()", () => {
       },
     });
 
-    expect(result.ok).toBe(false);
+    expect(result.ok).toBeFalsy();
     if (result.ok) {
       return;
     }
@@ -150,7 +154,7 @@ describe("map()", () => {
       execute: async ({ item }) => item,
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -179,7 +183,7 @@ describe("map()", () => {
     });
 
     expect(order[0]).toBe("onStart");
-    expect(order[order.length - 1]).toBe("onFinish");
+    expect(order.at(-1)).toBe("onFinish");
   });
 
   it("fires onError hook on failure", async () => {
@@ -245,7 +249,7 @@ describe("map()", () => {
       },
     });
 
-    const traceEntry = ctx.trace[0];
+    const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
     }
@@ -263,7 +267,9 @@ describe("map()", () => {
       concurrency: 1,
       execute: async ({ item }) => {
         order.push(item);
-        await new Promise((r) => setTimeout(r, 5));
+        await new Promise((resolve) => {
+          setTimeout(resolve, 5);
+        });
         return item;
       },
     });

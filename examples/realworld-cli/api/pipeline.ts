@@ -6,10 +6,6 @@ import type { AnalyzeEvent } from "../shared/types.js";
 import { createAnalyzerAgent } from "./agents/analyzer.js";
 import { createScannerAgent } from "./agents/scanner.js";
 
-// ---------------------------------------------------------------------------
-// Output schemas
-// ---------------------------------------------------------------------------
-
 const fileAnalysisSchema = z.object({
   filePath: z.string(),
   summary: z.string(),
@@ -23,10 +19,6 @@ const pipelineOutputSchema = z.object({
 
 export type PipelineOutput = z.infer<typeof pipelineOutputSchema>;
 export type FileAnalysis = z.infer<typeof fileAnalysisSchema>;
-
-// ---------------------------------------------------------------------------
-// Pipeline factory
-// ---------------------------------------------------------------------------
 
 /**
  * Create the test analysis pipeline flow agent.
@@ -133,10 +125,6 @@ export const createPipeline = (
       };
     },
   );
-
-// ---------------------------------------------------------------------------
-// Private helpers
-// ---------------------------------------------------------------------------
 
 /**
  * Extract test file paths from scanner agent free-form output.

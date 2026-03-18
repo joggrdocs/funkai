@@ -8,7 +8,7 @@ paths:
 
 ## Always
 
-- ts-pattern `match()` for 2+ conditional branches; ternary for single booleans.
+- ts-pattern `match()` for 2+ conditional branches; `if`/`else` for single booleans. No ternaries.
 - Search [es-toolkit](https://es-toolkit.slash.page/) before writing any utility function; use named imports.
 - `const` exclusively — use functional patterns for iteration (`Array.reduce`, `for...of` with local `const` array + `.push()`, `match()` expressions).
 - Named functions — extract logic, compose with `flow`, `pipe`, or direct calls.
@@ -23,7 +23,7 @@ paths:
 - `let` — use `const` with functional patterns.
 - `class` — exception: instantiating framework classes (Vercel AI SDK, etc.).
 - `switch` — use ts-pattern `match()`.
-- Nested ternaries — use `match()` for 2+ branches.
+- Ternaries — use `match()` for 2+ branches, `if`/`else` for simple conditions.
 - IIFEs — extract to named functions.
 - Mutate function arguments or shared state.
 - `any` type — use `unknown` and narrow appropriately.

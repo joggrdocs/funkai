@@ -38,7 +38,7 @@ export default command({
         "liquid.engine": "standard",
       };
 
-      writeFileSync(settingsPath, JSON.stringify(updatedSettings, null, 2) + "\n", "utf-8");
+      writeFileSync(settingsPath, `${JSON.stringify(updatedSettings, null, 2)}\n`, "utf8");
       ctx.logger.success(`Updated ${settingsPath}`);
     }
 
@@ -57,14 +57,19 @@ export default command({
       const currentRecs = (extensions.recommendations ?? []) as string[];
       const extensionId = "sissel.shopify-liquid";
 
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      const recommendations: string[] = (() => {
+        if (currentRecs.includes(extensionId)) {
+          return currentRecs;
+        }
+        return [...currentRecs, extensionId];
+      })();
       const updatedExtensions = {
         ...extensions,
-        recommendations: currentRecs.includes(extensionId)
-          ? currentRecs
-          : [...currentRecs, extensionId],
+        recommendations,
       };
 
-      writeFileSync(extensionsPath, JSON.stringify(updatedExtensions, null, 2) + "\n", "utf-8");
+      writeFileSync(extensionsPath, `${JSON.stringify(updatedExtensions, null, 2)}\n`, "utf8");
       ctx.logger.success(`Updated ${extensionsPath}`);
     }
 
@@ -75,15 +80,27 @@ export default command({
 
     if (shouldGitignore) {
       const gitignorePath = resolve(GITIGNORE_FILE);
-      const existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, "utf-8") : "";
+      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+      const existing: string = (() => {
+        if (existsSync(gitignorePath)) {
+          return readFileSync(gitignorePath, "utf8");
+        }
+        return "";
+      })();
 
-      if (!existing.includes(GITIGNORE_ENTRY)) {
-        const separator = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";
-        const block = `${separator}\n# Generated prompt client (created by \`funkai prompts generate\`)\n${GITIGNORE_ENTRY}\n`;
-        writeFileSync(gitignorePath, existing + block, "utf-8");
-        ctx.logger.success(`Added ${GITIGNORE_ENTRY} to ${gitignorePath}`);
-      } else {
+      if (existing.includes(GITIGNORE_ENTRY)) {
         ctx.logger.info(`${GITIGNORE_ENTRY} already in ${gitignorePath}`);
+      } else {
+        // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
+        const separator: string = (() => {
+          if (existing.length > 0 && !existing.endsWith("\n")) {
+            return "\n";
+          }
+          return "";
+        })();
+        const block = `${separator}\n# Generated prompt client (created by \`funkai prompts generate\`)\n${GITIGNORE_ENTRY}\n`;
+        writeFileSync(gitignorePath, `${existing}${block}`, "utf8");
+        ctx.logger.success(`Added ${GITIGNORE_ENTRY} to ${gitignorePath}`);
       }
     }
 
@@ -100,7 +117,9 @@ export default command({
       const existingPaths = (compilerOptions.paths ?? {}) as Record<string, string[]>;
 
       // oxlint-disable-next-line security/detect-object-injection -- safe: PROMPTS_ALIAS is a known constant string
-      if (!existingPaths[PROMPTS_ALIAS]) {
+      if (existingPaths[PROMPTS_ALIAS]) {
+        ctx.logger.info(`${PROMPTS_ALIAS} alias already in ${tsconfigPath}`);
+      } else {
         const updatedTsconfig = {
           ...tsconfig,
           compilerOptions: {
@@ -113,10 +132,8 @@ export default command({
           },
         };
 
-        writeFileSync(tsconfigPath, JSON.stringify(updatedTsconfig, null, 2) + "\n", "utf-8");
+        writeFileSync(tsconfigPath, `${JSON.stringify(updatedTsconfig, null, 2)}\n`, "utf8");
         ctx.logger.success(`Added ${PROMPTS_ALIAS} alias to ${tsconfigPath}`);
-      } else {
-        ctx.logger.info(`${PROMPTS_ALIAS} alias already in ${tsconfigPath}`);
       }
     }
 
@@ -136,7 +153,7 @@ function readJsonFile(filePath: string): Record<string, unknown> {
 
   try {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading tsconfig file
-    const content = readFileSync(filePath, "utf-8");
+    const content = readFileSync(filePath, "utf8");
     return JSON.parse(content) as Record<string, unknown>;
   } catch {
     return {};

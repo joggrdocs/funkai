@@ -86,7 +86,7 @@ export function safeStringifyJSON(value: unknown): string {
 }
 
 // ---------------------------------------------------------------------------
-// private helpers
+// Private
 // ---------------------------------------------------------------------------
 
 /**
@@ -103,10 +103,10 @@ export function safeStringifyJSON(value: unknown): string {
  */
 function toSerializable(value: unknown): unknown {
   if (isMap(value)) {
-    return Array.from(value.entries());
+    return [...value.entries()];
   }
   if (isSet(value)) {
-    return Array.from(value);
+    return [...value];
   }
   return value;
 }

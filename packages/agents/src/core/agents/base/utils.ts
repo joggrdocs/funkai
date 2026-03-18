@@ -1,4 +1,4 @@
-import type { ModelResolver } from "@funkai/models";
+import type { ProviderRegistry } from "@funkai/models";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { match, P } from "ts-pattern";
@@ -9,45 +9,29 @@ import type { Agent, Message } from "@/core/agents/base/types.js";
 import type { LanguageModel, TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
-import { RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
-
-/**
- * Resolve a display name for a sub-agent tool from its runnable
- * metadata, falling back to the provided name.
- *
- * @param meta - The runnable metadata, or undefined if not available.
- * @param fallback - The fallback name to use if metadata is missing.
- * @returns The resolved tool name.
- *
- * @private
- */
-function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
-  if (meta != null && meta.name != null) {
-    return meta.name;
-  }
-  return fallback;
-}
+import { RUNNABLE_META } from "@/lib/runnable.js";
+import type { RunnableMeta } from "@/lib/runnable.js";
 
 /**
  * Resolve a {@link Model} to an AI SDK `LanguageModel`.
  *
  * When `ref` is already a `LanguageModel`, it is returned as-is.
- * When `ref` is a string model ID, the optional `resolver` is used
- * to convert it. If no resolver is provided, an error is thrown.
+ * When `ref` is a string model ID, the optional `registry` is used
+ * to convert it. If no registry is provided, an error is thrown.
  *
  * @param ref - A string model ID or an AI SDK `LanguageModel` instance.
- * @param resolver - Optional resolver for string model IDs.
+ * @param registry - Optional provider registry for string model IDs.
  * @returns The resolved `LanguageModel`.
  */
-export function resolveModel(ref: Model, resolver?: ModelResolver): LanguageModel {
+export function resolveModel(ref: Model, registry?: ProviderRegistry): LanguageModel {
   if (typeof ref === "string") {
-    if (!resolver) {
+    if (!registry) {
       throw new Error(
-        `Cannot resolve string model ID "${ref}": no resolver configured. ` +
-          `Pass a ModelResolver via agent config, or pass an AI SDK LanguageModel instance directly.`,
+        `Cannot resolve string model ID "${ref}": no registry configured. ` +
+          `Pass a ProviderRegistry via agent config, or pass an AI SDK LanguageModel instance directly.`,
       );
     }
-    return resolver(ref);
+    return registry(ref);
   }
   return ref as LanguageModel;
 }
@@ -69,15 +53,17 @@ export function buildAITools(
   agents?: Record<string, Agent<any, any, any, any>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): Record<string, any> | undefined {
-  const hasTools = tools != null && Object.keys(tools).length > 0;
-  const hasAgents = agents != null && Object.keys(agents).length > 0;
+  const hasTools = tools !== null && tools !== undefined && Object.keys(tools).length > 0;
+  const hasAgents = agents !== null && agents !== undefined && Object.keys(agents).length > 0;
 
   if (!hasTools && !hasAgents) {
     return undefined;
   }
 
-  const agentTools = agents
-    ? Object.fromEntries(
+  // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
+  const agentTools: Record<string, unknown> = (() => {
+    if (agents) {
+      return Object.fromEntries(
         Object.entries(agents).map(([name, runnable]) => {
           // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
           const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
@@ -86,35 +72,46 @@ export function buildAITools(
           const toolName = resolveToolName(meta, name);
           const agentToolName = `agent:${name}`;
 
-          const agentTool =
-            meta != null && meta.inputSchema != null
-              ? tool({
-                  description: `Delegate to ${toolName}`,
-                  inputSchema: meta.inputSchema,
-                  execute: async (input, { abortSignal }) => {
-                    const r = await runnable.generate(input, { signal: abortSignal, tools });
-                    if (!r.ok) {
-                      throw new Error(r.error.message);
-                    }
-                    return r.output;
-                  },
-                })
-              : tool({
-                  description: `Delegate to ${toolName}`,
-                  inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
-                  execute: async (input: { prompt: string }, { abortSignal }) => {
-                    const r = await runnable.generate(input.prompt, { signal: abortSignal, tools });
-                    if (!r.ok) {
-                      throw new Error(r.error.message);
-                    }
-                    return r.output;
-                  },
-                });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
+          const agentTool: ReturnType<typeof tool<any, any>> = (() => {
+            // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
+            if (
+              meta !== null &&
+              meta !== undefined &&
+              meta.inputSchema !== null &&
+              meta.inputSchema !== undefined
+            ) {
+              return tool({
+                description: `Delegate to ${toolName}`,
+                inputSchema: meta.inputSchema,
+                execute: async (input, { abortSignal }) => {
+                  const r = await runnable.generate(input, { signal: abortSignal, tools });
+                  if (!r.ok) {
+                    throw new Error(r.error.message);
+                  }
+                  return r.output;
+                },
+              });
+            }
+            return tool({
+              description: `Delegate to ${toolName}`,
+              inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
+              execute: async (input: { prompt: string }, { abortSignal }) => {
+                const r = await runnable.generate(input.prompt, { signal: abortSignal, tools });
+                if (!r.ok) {
+                  throw new Error(r.error.message);
+                }
+                return r.output;
+              },
+            });
+          })();
 
           return [agentToolName, agentTool];
         }),
-      )
-    : {};
+      );
+    }
+    return {};
+  })();
 
   return { ...tools, ...agentTools };
 }
@@ -126,7 +123,7 @@ export function resolveSystem<TInput>(
   system: string | ((params: { input: TInput }) => string) | undefined,
   input: TInput,
 ): string | undefined {
-  if (system == null) {
+  if (system === null || system === undefined) {
     return undefined;
   }
   if (typeof system === "function") {
@@ -163,7 +160,7 @@ export function buildPrompt<TInput>(
       );
     })
     .with({ hasInput: true, hasPrompt: true }, () => {
-      // config.prompt is guaranteed non-null by the match
+      // Config.prompt is guaranteed non-null by the match
       const promptFn = config.prompt as NonNullable<typeof config.prompt>;
       const built = promptFn({ input });
       return match(typeof built === "string")
@@ -208,4 +205,25 @@ export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
     cacheWriteTokens: inputDetails.cacheWriteTokens,
     reasoningTokens: outputDetails.reasoningTokens,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolve a display name for a sub-agent tool from its runnable
+ * metadata, falling back to the provided name.
+ *
+ * @param meta - The runnable metadata, or undefined if not available.
+ * @param fallback - The fallback name to use if metadata is missing.
+ * @returns The resolved tool name.
+ *
+ * @private
+ */
+function resolveToolName(meta: RunnableMeta | undefined, fallback: string): string {
+  if (meta !== null && meta !== undefined && meta.name !== null && meta.name !== undefined) {
+    return meta.name;
+  }
+  return fallback;
 }
