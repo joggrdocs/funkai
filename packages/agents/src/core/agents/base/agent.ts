@@ -536,6 +536,8 @@ export function agent<
         usage: done.then((r) => r.usage),
         finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
+        toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
+        toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
 
       // Prevent unhandled rejection warnings when consumers don't await all promises

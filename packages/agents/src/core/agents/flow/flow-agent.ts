@@ -515,6 +515,16 @@ export function flowAgent<TInput, TOutput = any>(
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
+      toTextStreamResponse() {
+        throw new Error(
+          "toTextStreamResponse is not supported on flow agents. Use fullStream to consume events directly.",
+        );
+      },
+      toUIMessageStreamResponse() {
+        throw new Error(
+          "toUIMessageStreamResponse is not supported on flow agents. Use fullStream to consume events directly.",
+        );
+      },
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
