@@ -361,7 +361,11 @@ describe("agent()", () => {
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      expect.objectContaining({ input: "hello", signal: config.signal, logger: expect.any(Object) }),
+      expect.objectContaining({
+        input: "hello",
+        signal: config.signal,
+        logger: expect.any(Object),
+      }),
     );
   });
 

@@ -168,7 +168,9 @@ export function agent<
    *
    * @private
    */
-  function resolveSignal(params: GenerateParams<TInput, TTools, TSubAgents>): AbortSignal | undefined {
+  function resolveSignal(
+    params: GenerateParams<TInput, TTools, TSubAgents>,
+  ): AbortSignal | undefined {
     if (params.signal && params.timeout) {
       return AbortSignal.any([params.signal, AbortSignal.timeout(params.timeout)]);
     }
@@ -224,11 +226,7 @@ export function agent<
     const maxSteps = params.maxSteps ?? resolvedMaxSteps ?? 20;
     const signal = resolveSignal(params);
 
-    await fireHooks(
-      log,
-      wrapHook(config.onStart, { input }),
-      wrapHook(params.onStart, { input }),
-    );
+    await fireHooks(log, wrapHook(config.onStart, { input }), wrapHook(params.onStart, { input }));
 
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: {

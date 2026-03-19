@@ -342,9 +342,7 @@ export interface FlowAgent<TInput, TOutput> {
    * const result = await myFlow.generate({ input: { targetDir: '.' } })
    * ```
    */
-  generate(
-    params: FlowGenerateParams<TInput>,
-  ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  generate(params: FlowGenerateParams<TInput>): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 
   /**
    * Run the flow agent with streaming step progress.
@@ -361,9 +359,7 @@ export interface FlowAgent<TInput, TOutput> {
   /**
    * Returns a plain function that calls `.generate()`.
    */
-  fn(): (
-    params: FlowGenerateParams<TInput>,
-  ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  fn(): (params: FlowGenerateParams<TInput>) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 
 /**

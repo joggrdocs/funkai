@@ -364,7 +364,9 @@ describe(createFlowEngine, () => {
 
       const fa = engine(defaultConfig(), async ({ input }) => ({ y: input.x }));
 
-      const result = await fa.generate({ input: { x: "not-a-number" } as unknown as { x: number } });
+      const result = await fa.generate({
+        input: { x: "not-a-number" } as unknown as { x: number },
+      });
 
       expect(result.ok).toBeFalsy();
       if (result.ok) {
@@ -422,7 +424,10 @@ describe(createFlowEngine, () => {
         y: await $.add({ a: input.x, b: 100 }),
       }));
 
-      const [r1, r2] = await Promise.all([fa1.generate({ input: { x: 5 } }), fa2.generate({ input: { x: 5 } })]);
+      const [r1, r2] = await Promise.all([
+        fa1.generate({ input: { x: 5 } }),
+        fa2.generate({ input: { x: 5 } }),
+      ]);
 
       expect(r1.ok).toBeTruthy();
       expect(r2.ok).toBeTruthy();

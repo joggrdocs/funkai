@@ -398,7 +398,11 @@ describe(buildAITools, () => {
       { toolCallId: "tc-1", messages: [] },
     );
     expect(output).toBe("agent-output");
-    expect(mockAgent.generate).toHaveBeenCalledWith({ prompt: "hello", signal: undefined, tools: undefined });
+    expect(mockAgent.generate).toHaveBeenCalledWith({
+      prompt: "hello",
+      signal: undefined,
+      tools: undefined,
+    });
   });
 
   it("execute throws when prompt-based agent returns error", async () => {
@@ -437,7 +441,11 @@ describe(buildAITools, () => {
       { toolCallId: "tc-1", messages: [] },
     );
     expect(output).toBe("typed-output");
-    expect(mockAgent.generate).toHaveBeenCalledWith({ input: { query: "test" }, signal: undefined, tools: undefined });
+    expect(mockAgent.generate).toHaveBeenCalledWith({
+      input: { query: "test" },
+      signal: undefined,
+      tools: undefined,
+    });
   });
 
   it("execute throws when typed agent returns error", async () => {

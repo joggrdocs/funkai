@@ -75,7 +75,11 @@ export function buildAITools(
               description: `Delegate to ${toolName}`,
               inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
               execute: async (input: { prompt: string }, { abortSignal }) => {
-                const r = await runnable.generate({ prompt: input.prompt, signal: abortSignal, tools });
+                const r = await runnable.generate({
+                  prompt: input.prompt,
+                  signal: abortSignal,
+                  tools,
+                });
                 if (!r.ok) {
                   throw new Error(r.error.message);
                 }
