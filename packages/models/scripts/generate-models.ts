@@ -413,6 +413,7 @@ export function ${camel}Model(id: LiteralUnion<${prefix}ModelId, string>): Model
 
     const catalogBarrel = `${BANNER}
 
+// oxlint-disable eslint-plugin-import/max-dependencies
 import type { ModelDefinition } from '../types.js'
 ${imports}
 

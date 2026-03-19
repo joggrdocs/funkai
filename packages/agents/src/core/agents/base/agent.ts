@@ -347,11 +347,13 @@ export function agent<
         duration,
       });
 
-      await fireHooks(
-        errorLog,
-        wrapHook(config.onError, { input: resolvedInput as TInput, error }),
-        wrapHook(params.onError, { input: resolvedInput as TInput, error }),
-      );
+      if (isNotNil(resolvedInput)) {
+        await fireHooks(
+          errorLog,
+          wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+          wrapHook(params.onError, { input: resolvedInput as TInput, error }),
+        );
+      }
 
       return {
         ok: false,
@@ -516,11 +518,13 @@ export function agent<
         duration,
       });
 
-      await fireHooks(
-        errorLog,
-        wrapHook(config.onError, { input: resolvedInput as TInput, error }),
-        wrapHook(params.onError, { input: resolvedInput as TInput, error }),
-      );
+      if (isNotNil(resolvedInput)) {
+        await fireHooks(
+          errorLog,
+          wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+          wrapHook(params.onError, { input: resolvedInput as TInput, error }),
+        );
+      }
 
       return {
         ok: false,

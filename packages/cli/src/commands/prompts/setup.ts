@@ -2,7 +2,6 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { command } from "@kidd-cli/core";
-import { attempt } from "es-toolkit";
 
 const VSCODE_DIR = ".vscode";
 const SETTINGS_FILE = "settings.json";
@@ -129,6 +128,14 @@ export default command({
 // ---------------------------------------------------------------------------
 
 /** @private */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+/** @private */
 function ensureRecommendation(current: readonly string[], id: string): string[] {
   if (current.includes(id)) {
     return [...current];
@@ -154,8 +161,9 @@ function trailingSeparator(content: string): string {
 }
 
 /**
- * Read a JSON file, returning an empty object if it doesn't exist
- * or contains invalid JSON.
+ * Read a JSON file, returning an empty object if it doesn't exist.
+ * Throws if the file exists but contains invalid JSON, preventing
+ * silent data loss from overwriting malformed config files.
  *
  * @private
  */
@@ -167,9 +175,13 @@ function readJsonFile(filePath: string): Record<string, unknown> {
 
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading tsconfig file
   const content = readFileSync(filePath, "utf8");
-  const [error, parsed] = attempt(() => JSON.parse(content) as Record<string, unknown>);
-  if (error || parsed === null) {
-    return {};
+  try {
+    return JSON.parse(content) as Record<string, unknown>;
+  } catch (error) {
+    throw new Error(
+      `Failed to parse ${filePath}: ${errorMessage(error)}. ` +
+        "Fix the JSON syntax or remove the file before running setup.",
+      { cause: error },
+    );
   }
-  return parsed;
 }

@@ -46,7 +46,8 @@ function isPromptModule(value: unknown): value is PromptModule {
 /**
  * Recursively freeze a prompt namespace tree.
  * Only recurses into plain namespace nodes — PromptModule leaves
- * (which contain Zod schemas) are frozen shallowly.
+ * (which contain Zod schemas) are intentionally left unfrozen
+ * to avoid breaking Zod internal state.
  *
  * @param obj - The namespace object to freeze.
  * @returns The frozen object cast to its deep-readonly type.

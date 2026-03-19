@@ -18,9 +18,10 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
     partials: [partialsDir],
     extname: ".prompt",
     cache: true,
+    ...options,
+    // Safety defaults — applied after spread so callers cannot disable them
     strictFilters: true,
     ownPropertyOnly: true,
-    ...options,
   });
 }
 
