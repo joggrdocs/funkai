@@ -355,7 +355,6 @@ describe("evolve() with Agent mapper function", () => {
     expect(config?.input).toBe(Input);
     expect(config?.output).toBe(Output);
   });
-
 });
 
 describe("evolve() with FlowAgent mapper function", () => {
@@ -394,7 +393,6 @@ describe("evolve() with FlowAgent mapper function", () => {
       expect(result.output).toEqual({ result: "mapped:test" });
     }
   });
-
 });
 
 describe("evolve() error handling", () => {
