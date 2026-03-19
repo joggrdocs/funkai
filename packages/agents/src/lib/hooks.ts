@@ -1,3 +1,4 @@
+import { isNotNil } from "es-toolkit";
 import { match } from "ts-pattern";
 
 import type { Logger } from "@/core/logger.js";
@@ -24,7 +25,7 @@ export function wrapHook<T>(
   hookFn: ((event: T) => void | Promise<void>) | undefined,
   event: T,
 ): (() => void | Promise<void>) | undefined {
-  if (hookFn !== undefined) {
+  if (isNotNil(hookFn)) {
     return () => hookFn(event);
   }
   return undefined;
@@ -44,7 +45,7 @@ export async function fireHooks(
   ...handlers: ((() => void | Promise<void>) | undefined)[]
 ): Promise<void> {
   for (const h of handlers) {
-    if (h !== null && h !== undefined) {
+    if (isNotNil(h)) {
       try {
         // oxlint-disable-next-line no-await-in-loop - sequential by design
         await h();

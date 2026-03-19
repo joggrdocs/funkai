@@ -1,11 +1,12 @@
 export { tool } from "@/core/tool.js";
 export { agent } from "@/core/agents/base/agent.js";
 export { flowAgent } from "@/core/agents/flow/flow-agent.js";
+export { evolve } from "@/core/agents/evolve.js";
 export { ok, err, isOk, isErr } from "@/utils/result.js";
 export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
-export type { Runnable, Model } from "@/core/types.js";
+export type { Runnable, Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 export type {
   TextStreamPart,
   AsyncIterableStream,
@@ -20,25 +21,24 @@ export type { Tool, ToolConfig } from "@/core/tool.js";
 export type { OutputSpec, OutputParam } from "@/core/agents/base/output.js";
 
 export type {
+  Resolver,
   ToolName,
   SubAgents,
   Message,
   Agent,
   AgentConfig,
-  AgentOverrides,
+  BaseGenerateParams,
+  GenerateParams,
   GenerateResult,
   StreamResult,
-  StreamPart,
-} from "@/core/agents/base/types.js";
+} from "@/core/agents/types.js";
 
 export type {
   FlowAgent,
   FlowAgentConfig,
-  FlowAgentOverrides,
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 
 export type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";

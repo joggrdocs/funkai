@@ -93,7 +93,7 @@ app.post("/analyze", async (c) => {
 
     const pipeline = createPipeline(tools, emit);
 
-    const result = await pipeline.stream({ targetDir: parsed.data.targetDir });
+    const result = await pipeline.stream({ input: { targetDir: parsed.data.targetDir } });
 
     if (!result.ok) {
       emit({ type: "error", message: result.error.message });

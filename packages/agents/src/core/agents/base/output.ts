@@ -1,4 +1,5 @@
 import { Output } from "ai";
+import { isNotNil } from "es-toolkit";
 import { match } from "ts-pattern";
 import type { ZodType } from "zod";
 
@@ -49,7 +50,7 @@ export type OutputParam = OutputSpec | ZodType;
  */
 export function resolveOutput(output: OutputParam): OutputSpec {
   // OutputSpec instances have `parseCompleteOutput` — Zod schemas don't
-  return match("parseCompleteOutput" in output)
+  return match(Object.hasOwn(output, "parseCompleteOutput"))
     .with(true, () => output as OutputSpec)
     .otherwise(() => {
       const schema = output as ZodType;
@@ -58,12 +59,7 @@ export function resolveOutput(output: OutputParam): OutputSpec {
           const def = (schema as unknown as Record<string, unknown>)._zod as
             | { def: { element?: ZodType } }
             | undefined;
-          if (
-            def !== null &&
-            def !== undefined &&
-            def.def.element !== null &&
-            def.def.element !== undefined
-          ) {
+          if (isNotNil(def) && isNotNil(def.def.element)) {
             return Output.array({ element: def.def.element });
           }
           throw new Error(

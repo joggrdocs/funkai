@@ -11,7 +11,7 @@ const writer = agent({
   }),
 });
 
-const result = await writer.generate("Write a short guide on closures in JavaScript");
+const result = await writer.generate({ prompt: "Write a short guide on closures in JavaScript" });
 
 if (result.ok) {
   console.log("Output:", result.output);

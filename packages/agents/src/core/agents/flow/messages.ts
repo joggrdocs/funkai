@@ -1,4 +1,6 @@
-import type { Message } from "@/core/agents/base/types.js";
+import { isString } from "es-toolkit";
+
+import type { Message } from "@/core/agents/types.js";
 import { safeStringify } from "@/utils/error.js";
 
 /**
@@ -144,7 +146,7 @@ export function collectTextFromMessages(messages: readonly Message[]): string {
  * @private
  */
 function serializeMessageContent(value: unknown): string {
-  if (typeof value === "string") {
+  if (isString(value)) {
     return value;
   }
   return safeStringify(value ?? null);

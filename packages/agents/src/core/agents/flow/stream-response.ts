@@ -1,7 +1,8 @@
 import type { UIMessage, UIMessageStreamOptions } from "ai";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
+import { isNotNil } from "es-toolkit";
 
-import type { StreamPart } from "@/core/agents/base/types.js";
+import type { StreamPart } from "@/core/types.js";
 
 /**
  * Response conversion methods built from a `StreamPart` readable stream.
@@ -60,7 +61,7 @@ export function buildStreamResponseMethods(
       );
 
       const initHeaders: ResponseInit["headers"] = (() => {
-        if (init !== undefined) {
+        if (isNotNil(init)) {
           return init.headers;
         }
         return undefined;

@@ -1,5 +1,5 @@
 import { openai } from "@ai-sdk/openai";
-import { agent, tool } from "@funkai/agents";
+import { agent, evolve, tool } from "@funkai/agents";
 import { z } from "zod";
 
 const weatherTool = tool({
@@ -19,6 +19,9 @@ const weatherTool = tool({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Base agent — shared config that all variants inherit
+// ---------------------------------------------------------------------------
 const weatherAgent = agent({
   name: "weather-agent",
   model: openai("gpt-4o-mini"),
@@ -27,7 +30,24 @@ const weatherAgent = agent({
   tools: { "get-weather": weatherTool },
 });
 
-const result = await weatherAgent.generate("What is the weather in San Francisco?");
+// ---------------------------------------------------------------------------
+// Evolved agent — swap model dynamically based on the prompt
+// ---------------------------------------------------------------------------
+const smartWeatherAgent = evolve(weatherAgent, {
+  name: "weather-agent-smart",
+  model: openai("gpt-4.1"),
+  system: ({ input }) => {
+    if (typeof input === "string" && input.includes("detailed")) {
+      return "You are a detailed weather analyst. Provide comprehensive weather information including forecasts and trends.";
+    }
+    return "You are a helpful weather assistant. Use the get-weather tool to answer questions about the weather.";
+  },
+});
+
+// ---------------------------------------------------------------------------
+// Run both agents
+// ---------------------------------------------------------------------------
+const result = await weatherAgent.generate({ prompt: "What is the weather in San Francisco?" });
 
 if (result.ok) {
   console.log("Output:", result.output);
@@ -35,4 +55,14 @@ if (result.ok) {
   console.log("Usage:", result.usage);
 } else {
   console.error("Error:", result.error);
+}
+
+const detailedResult = await smartWeatherAgent.generate({
+  prompt: "Give me a detailed weather report for New York",
+});
+
+if (detailedResult.ok) {
+  console.log("\nSmart Agent Output:", detailedResult.output);
+} else {
+  console.error("Error:", detailedResult.error);
 }

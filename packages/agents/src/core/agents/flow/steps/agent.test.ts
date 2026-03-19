@@ -1,8 +1,8 @@
 import { match } from "ts-pattern";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Agent, GenerateResult } from "@/core/agents/base/types.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
+import type { Agent, GenerateResult } from "@/core/agents/types.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";
 
@@ -111,8 +111,11 @@ describe("agent()", () => {
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "hello",
-      expect.objectContaining({ signal: config.signal, logger: expect.any(Object) }),
+      expect.objectContaining({
+        input: "hello",
+        signal: config.signal,
+        logger: expect.any(Object),
+      }),
     );
   });
 
@@ -125,8 +128,7 @@ describe("agent()", () => {
     await $.agent({ id: "ag-ctx-signal", agent, input: "test" });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ signal: controller.signal }),
+      expect.objectContaining({ input: "test", signal: controller.signal }),
     );
   });
 
@@ -145,8 +147,7 @@ describe("agent()", () => {
     });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ signal: userController.signal }),
+      expect.objectContaining({ input: "test", signal: userController.signal }),
     );
   });
 
@@ -244,8 +245,7 @@ describe("agent()", () => {
     await $.agent({ id: "ag-logger", agent, input: "test" });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ logger: expect.any(Object) }),
+      expect.objectContaining({ input: "test", logger: expect.any(Object) }),
     );
     expect(ctx.log.child).toHaveBeenCalledWith({ stepId: "ag-logger" });
   });

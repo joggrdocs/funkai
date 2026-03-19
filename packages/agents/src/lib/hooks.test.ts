@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 
-import { fireHooks } from "@/lib/hooks.js";
+import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { createMockLogger } from "@/testing/logger.js";
 
 describe(fireHooks, () => {
@@ -98,5 +98,55 @@ describe(fireHooks, () => {
     const log = createMockLogger();
     await fireHooks(log);
     expect(log.warn).not.toHaveBeenCalled();
+  });
+});
+
+describe(wrapHook, () => {
+  it("returns a thunk that calls the hook with the event", () => {
+    const hook = vi.fn();
+    const event = { id: "test" };
+
+    const thunk = wrapHook(hook, event);
+
+    expect(thunk).toBeDefined();
+    expect(hook).not.toHaveBeenCalled();
+
+    thunk?.();
+
+    expect(hook).toHaveBeenCalledOnce();
+    expect(hook).toHaveBeenCalledWith(event);
+  });
+
+  it("returns undefined when hookFn is undefined", () => {
+    const thunk = wrapHook(undefined, { id: "test" });
+
+    expect(thunk).toBeUndefined();
+  });
+
+  it("returns undefined when hookFn is null", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing null edge case
+    const thunk = wrapHook(null as any, { id: "test" });
+
+    expect(thunk).toBeUndefined();
+  });
+
+  it("passes the exact event reference to the hook", () => {
+    const event = { nested: { value: 42 } };
+    const hook = vi.fn();
+
+    const thunk = wrapHook(hook, event);
+    thunk?.();
+
+    expect(hook.mock.calls[0]?.[0]).toBe(event);
+  });
+
+  it("works with async hooks", async () => {
+    const hook = vi.fn(async () => {});
+    const event = { id: "async-test" };
+
+    const thunk = wrapHook(hook, event);
+    await thunk?.();
+
+    expect(hook).toHaveBeenCalledWith(event);
   });
 });

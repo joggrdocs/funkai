@@ -1,3 +1,6 @@
+import { isFunction, isPlainObject } from "es-toolkit";
+import { match } from "ts-pattern";
+
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
@@ -7,10 +10,10 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
   InternalFlowAgentOptions,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
 import { createDefaultLogger } from "@/core/logger.js";
+import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { ExecutionContext } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 
@@ -92,11 +95,7 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Default hook: fires when any step finishes.
    */
-  onStepFinish?: (event: {
-    step: StepInfo;
-    result: unknown;
-    duration: number;
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**
@@ -298,7 +297,11 @@ export function createFlowEngine<
     }) => Promise<TOutput | void>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
   ): FlowAgent<TInput, any> {
-    const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
+    // Logger may be a Resolver function; for engine-level hooks use static value or default
+    const engineLogger = match(isFunction(flowConfig.logger))
+      .with(true, () => createDefaultLogger())
+      .otherwise(() => (flowConfig.logger as Logger | undefined) ?? createDefaultLogger());
+    const hookLog = engineLogger.child({ source: "engine" });
 
     const { onStart: engineOnStart } = engineConfig;
     const { onStart: flowOnStart } = flowConfig;
@@ -350,12 +353,7 @@ export function createFlowEngine<
             // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
             customSteps[name] = async (config: unknown) => {
               const stepId = (() => {
-                if (
-                  config !== null &&
-                  config !== undefined &&
-                  typeof config === "object" &&
-                  "id" in config
-                ) {
+                if (isPlainObject(config) && Object.hasOwn(config, "id")) {
                   return (config as { id: string }).id;
                 }
                 return name;

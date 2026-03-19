@@ -1,7 +1,7 @@
-import type { AsyncIterableStream } from "ai";
+import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from "ai";
 
-import type { StreamPart } from "@/core/agents/base/types.js";
 import type { LanguageModel } from "@/core/provider/types.js";
+import type { OperationType } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
 
 /**
@@ -36,19 +36,127 @@ import type { Result } from "@/utils/result.js";
 export type Model = LanguageModel;
 
 /**
+ * Concrete stream event type re-exported from the Vercel AI SDK.
+ *
+ * This is `TextStreamPart<ToolSet>` — the discriminated union of all
+ * possible stream events (`text-delta`, `tool-call`, `tool-result`,
+ * `finish`, `error`, etc.). Use `part.type` to discriminate.
+ */
+export type StreamPart = TextStreamPart<ToolSet>;
+
+/**
+ * Information about a step in execution.
+ *
+ * Passed to step-level hooks (`onStepStart`, `onStepFinish`)
+ * and included in step events. Used by both flow agent orchestration
+ * steps and agent tool-loop steps.
+ */
+export interface StepInfo {
+  /**
+   * The step identifier.
+   *
+   * For flow agents, matches the `id` field on the step config.
+   * For agents, auto-generated as `agentName:stepIndex`.
+   */
+  id: string;
+
+  /**
+   * Auto-incrementing index within the execution.
+   *
+   * Starts at `0` for the first step and increments for each
+   * subsequent tracked operation.
+   */
+  index: number;
+
+  /**
+   * What kind of operation produced this step.
+   *
+   * Discriminant for filtering or grouping step events.
+   */
+  type: OperationType;
+}
+
+/**
+ * Unified event emitted when a step completes.
+ *
+ * Used by both agents (tool-loop steps) and flow agents (orchestration
+ * steps). Agent steps populate the tool-loop fields (`stepId`, `toolCalls`,
+ * `toolResults`, `usage`); flow steps populate the orchestration fields
+ * (`step`, `result`, `duration`). Fields not relevant to the step type
+ * are `undefined`.
+ */
+export interface StepFinishEvent {
+  /**
+   * Agent tool-loop step ID (e.g. `"myAgent:0"`).
+   *
+   * Present on agent tool-loop steps. `undefined` on flow steps.
+   */
+  stepId?: string;
+
+  /**
+   * Tool calls made in this step.
+   *
+   * Present on agent tool-loop steps. `undefined` on flow steps.
+   */
+  toolCalls?: readonly { toolName: string; argsTextLength: number }[];
+
+  /**
+   * Tool results returned in this step.
+   *
+   * Present on agent tool-loop steps. `undefined` on flow steps.
+   */
+  toolResults?: readonly { toolName: string; resultTextLength: number }[];
+
+  /**
+   * Token usage for this step.
+   *
+   * Present on agent tool-loop steps. `undefined` on flow steps.
+   */
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+
+  /**
+   * Flow step info (id, index, type).
+   *
+   * Present on flow orchestration steps. `undefined` on agent steps.
+   */
+  step?: StepInfo;
+
+  /**
+   * Flow step result value.
+   *
+   * Present on flow orchestration steps. `undefined` on agent steps.
+   */
+  result?: unknown;
+
+  /**
+   * Flow step duration in milliseconds.
+   *
+   * Present on flow orchestration steps. `undefined` on agent steps.
+   */
+  duration?: number;
+}
+
+/**
  * A value that can be generated against — the shared contract
  * between Agent and FlowAgent.
  *
  * Both `Agent` and `FlowAgent` satisfy this interface. Any API that
  * accepts a `Runnable` works with either.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any -- Runnable config accepts implementation-specific options that cannot be narrowed at the interface level */
 export interface Runnable<TInput = unknown, TOutput = unknown> {
-  generate(input: TInput, config?: any): Promise<Result<{ output: TOutput }>>;
-  stream(
-    input: TInput,
-    config?: any,
-  ): Promise<Result<{ output: Promise<TOutput>; fullStream: AsyncIterableStream<StreamPart> }>>;
-  fn(): (input: TInput, config?: any) => Promise<Result<{ output: TOutput }>>;
+  generate(params: {
+    input?: TInput;
+    prompt?: string;
+    messages?: ModelMessage[];
+  }): Promise<Result<{ output: TOutput }>>;
+  stream(params: {
+    input?: TInput;
+    prompt?: string;
+    messages?: ModelMessage[];
+  }): Promise<Result<{ output: Promise<TOutput>; fullStream: AsyncIterableStream<StreamPart> }>>;
+  fn(): (params: {
+    input?: TInput;
+    prompt?: string;
+    messages?: ModelMessage[];
+  }) => Promise<Result<{ output: TOutput }>>;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */

@@ -33,7 +33,9 @@ const summarizeAndTranslate = flowAgent(
       console.log(`  → step started: ${step.id} (${step.type})`);
     },
     onStepFinish: ({ step, duration }) => {
-      console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      if (step) {
+        console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      }
     },
   },
   async ({ input, $ }) => {
@@ -69,7 +71,9 @@ const summarizeAndTranslate = flowAgent(
 );
 
 const result = await summarizeAndTranslate.generate({
-  text: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.",
+  input: {
+    text: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.",
+  },
 });
 
 if (result.ok) {
