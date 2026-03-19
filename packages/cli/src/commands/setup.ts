@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { command } from "@kidd-cli/core";
+import { match } from "ts-pattern";
 
 import { setupPrompts } from "@/commands/prompts/setup.js";
 
@@ -107,12 +108,10 @@ function buildConfigTemplate({ hasPrompts, hasAgents, roots, out }: ConfigTempla
 /** @private */
 function buildCustomTemplate(roots: readonly string[], out: string, includeAgents: boolean): string {
   const rootsStr = roots.map((r) => `"${r}"`).join(", ");
-  let agentsBlock: string;
-  if (includeAgents) {
-    agentsBlock = "\n  agents: {},\n";
-  } else {
-    agentsBlock = "\n";
-  }
+  const agentsBlock = match(includeAgents)
+    .with(true, () => "\n  agents: {},\n")
+    .with(false, () => "\n")
+    .exhaustive();
 
   return `import { defineConfig } from "@funkai/config";
 
