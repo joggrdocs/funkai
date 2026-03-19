@@ -17,6 +17,7 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentGenerateResult,
   FlowAgentHandler,
+  FlowSubAgents,
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
 import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/core/agents/types.js";
@@ -217,6 +218,7 @@ export function flowAgent<TInput, TOutput = any>(
     readonly $: StepBuilder;
     readonly trace: TraceEntry[];
     readonly messages: Message[];
+    readonly agents: Readonly<FlowSubAgents>;
   }
 
   /**
@@ -330,6 +332,8 @@ export function flowAgent<TInput, TOutput = any>(
       wrapHook(params.onStart, { input: parsedInput }),
     );
 
+    const agents = Object.freeze({ ...(config.agents ?? {}) });
+
     return {
       ok: true,
       parsedInput,
@@ -338,6 +342,7 @@ export function flowAgent<TInput, TOutput = any>(
       $,
       trace,
       messages,
+      agents,
     };
   }
 
@@ -349,7 +354,7 @@ export function flowAgent<TInput, TOutput = any>(
     if (!prepared.ok) {
       return { ok: false, error: prepared.error };
     }
-    const { parsedInput, startedAt, log, $, trace, messages } = prepared;
+    const { parsedInput, startedAt, log, $, trace, messages, agents } = prepared;
 
     log.debug("flowAgent.generate start", { name: config.name });
 
@@ -358,7 +363,7 @@ export function flowAgent<TInput, TOutput = any>(
         input: parsedInput,
         $,
         log,
-        agents: config.agents ?? {},
+        agents,
       });
 
       const outputResult = resolveFlowOutput(output, messages);
@@ -444,7 +449,7 @@ export function flowAgent<TInput, TOutput = any>(
     if (!prepared.ok) {
       return { ok: false, error: prepared.error };
     }
-    const { parsedInput, startedAt, log, $, trace, messages } = prepared;
+    const { parsedInput, startedAt, log, $, trace, messages, agents } = prepared;
 
     log.debug("flowAgent.stream start", { name: config.name });
 
@@ -455,7 +460,7 @@ export function flowAgent<TInput, TOutput = any>(
           input: parsedInput,
           $,
           log,
-          agents: config.agents ?? {},
+          agents,
         });
 
         const outputResult = resolveFlowOutput(output, messages);
