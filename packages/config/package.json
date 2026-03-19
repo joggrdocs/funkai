@@ -1,0 +1,47 @@
+{
+  "name": "@funkai/config",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Configuration schema and defineConfig helper for funkai projects",
+  "keywords": [
+    "ai",
+    "config",
+    "funkai",
+    "typescript"
+  ],
+  "homepage": "https://github.com/joggrdocs/funkai/tree/main/packages/config#readme",
+  "bugs": {
+    "url": "https://github.com/joggrdocs/funkai/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joggrdocs/funkai.git",
+    "directory": "packages/config"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

@@ -1,13 +1,15 @@
+import type { FunkaiConfig } from "@funkai/config";
 import { command } from "@kidd-cli/core";
 import { match } from "ts-pattern";
 import { z } from "zod";
 
+import { getConfig } from "@/config.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runLintPipeline } from "@/lib/prompts/pipeline.js";
 
 /** Zod schema for the `prompts lint` CLI arguments. */
 export const lintArgs = z.object({
-  roots: z.array(z.string()).describe("Root directories to scan for .prompt files"),
+  roots: z.array(z.string()).optional().describe("Root directories to scan for .prompt files"),
   partials: z.string().optional().describe("Custom partials directory"),
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
@@ -20,10 +22,11 @@ export type LintArgs = z.infer<typeof lintArgs>;
  */
 export interface HandleLintParams {
   readonly args: {
-    readonly roots: readonly string[];
+    readonly roots?: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
   };
+  readonly config?: FunkaiConfig["prompts"];
   readonly logger: {
     info: (msg: string) => void;
     error: (msg: string) => void;
@@ -33,12 +36,37 @@ export interface HandleLintParams {
 }
 
 /**
+ * Resolve lint args by merging CLI flags with config defaults.
+ *
+ * @param args - CLI arguments (take precedence).
+ * @param config - Prompts config from funkai.config.ts (fallback).
+ * @param fail - Error handler for missing required values.
+ * @returns Resolved args with required fields guaranteed.
+ */
+function resolveLintArgs(
+  args: HandleLintParams["args"],
+  config: FunkaiConfig["prompts"],
+  fail: (msg: string) => never,
+): { readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean } {
+  const configRoots = config && config.roots;
+  const configPartials = config && config.partials;
+  const roots = args.roots ?? configRoots;
+  const partials = args.partials ?? configPartials;
+
+  if (!roots || roots.length === 0) {
+    fail("Missing --roots flag. Provide it via CLI or set prompts.roots in funkai.config.ts.");
+  }
+
+  return { roots, partials, silent: args.silent };
+}
+
+/**
  * Shared handler for prompts lint/validation.
  *
- * @param params - Handler context with args, logger, and fail callback.
+ * @param params - Handler context with args, config, logger, and fail callback.
  */
-export function handleLint({ args, logger, fail }: HandleLintParams): void {
-  const { roots, partials, silent } = args;
+export function handleLint({ args, config, logger, fail }: HandleLintParams): void {
+  const { roots, partials, silent } = resolveLintArgs(args, config, fail);
 
   const { discovered, results } = runLintPipeline({ roots, partials });
 
@@ -80,6 +108,12 @@ export default command({
   description: "Validate .prompt files for schema/template mismatches",
   options: lintArgs,
   handler(ctx) {
-    handleLint({ args: ctx.args, logger: ctx.logger, fail: ctx.fail });
+    const config = getConfig(ctx);
+    handleLint({
+      args: ctx.args,
+      config: config.prompts,
+      logger: ctx.logger,
+      fail: ctx.fail,
+    });
   },
 });

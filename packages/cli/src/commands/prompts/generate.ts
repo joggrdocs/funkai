@@ -1,18 +1,20 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type { FunkaiConfig } from "@funkai/config";
 import { command } from "@kidd-cli/core";
 import { match } from "ts-pattern";
 import { z } from "zod";
 
+import { getConfig } from "@/config.js";
 import { generatePromptModule, generateRegistry } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline } from "@/lib/prompts/pipeline.js";
 
 /** Zod schema for the `prompts generate` CLI arguments. */
 export const generateArgs = z.object({
-  out: z.string().describe("Output directory for generated files"),
-  roots: z.array(z.string()).describe("Root directories to scan for .prompt files"),
+  out: z.string().optional().describe("Output directory for generated files"),
+  roots: z.array(z.string()).optional().describe("Root directories to scan for .prompt files"),
   partials: z.string().optional().describe("Custom partials directory"),
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
@@ -25,11 +27,12 @@ export type GenerateArgs = z.infer<typeof generateArgs>;
  */
 export interface HandleGenerateParams {
   readonly args: {
-    readonly out: string;
-    readonly roots: readonly string[];
+    readonly out?: string;
+    readonly roots?: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
   };
+  readonly config?: FunkaiConfig["prompts"];
   readonly logger: {
     info: (msg: string) => void;
     step: (msg: string) => void;
@@ -41,12 +44,47 @@ export interface HandleGenerateParams {
 }
 
 /**
+ * Resolve generate args by merging CLI flags with config defaults.
+ *
+ * @param args - CLI arguments (take precedence).
+ * @param config - Prompts config from funkai.config.ts (fallback).
+ * @param fail - Error handler for missing required values.
+ * @returns Resolved args with required fields guaranteed.
+ */
+function resolveGenerateArgs(
+  args: HandleGenerateParams["args"],
+  config: FunkaiConfig["prompts"],
+  fail: (msg: string) => never,
+): {
+  readonly out: string;
+  readonly roots: readonly string[];
+  readonly partials?: string;
+  readonly silent: boolean;
+} {
+  const configOut = config && config.out;
+  const configRoots = config && config.roots;
+  const configPartials = config && config.partials;
+  const out = args.out ?? configOut;
+  const roots = args.roots ?? configRoots;
+  const partials = args.partials ?? configPartials;
+
+  if (!out) {
+    fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");
+  }
+  if (!roots || roots.length === 0) {
+    fail("Missing --roots flag. Provide it via CLI or set prompts.roots in funkai.config.ts.");
+  }
+
+  return { out, roots, partials, silent: args.silent };
+}
+
+/**
  * Shared handler for prompts code generation.
  *
- * @param params - Handler context with args, logger, and fail callback.
+ * @param params - Handler context with args, config, logger, and fail callback.
  */
-export function handleGenerate({ args, logger, fail }: HandleGenerateParams): void {
-  const { out, roots, partials, silent } = args;
+export function handleGenerate({ args, config, logger, fail }: HandleGenerateParams): void {
+  const { out, roots, partials, silent } = resolveGenerateArgs(args, config, fail);
 
   const { discovered, lintResults, prompts } = runGeneratePipeline({ roots, out, partials });
 
@@ -107,6 +145,12 @@ export default command({
   description: "Generate TypeScript modules from .prompt files",
   options: generateArgs,
   handler(ctx) {
-    handleGenerate({ args: ctx.args, logger: ctx.logger, fail: ctx.fail });
+    const config = getConfig(ctx);
+    handleGenerate({
+      args: ctx.args,
+      config: config.prompts,
+      logger: ctx.logger,
+      fail: ctx.fail,
+    });
   },
 });
