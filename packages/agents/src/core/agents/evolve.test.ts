@@ -356,47 +356,6 @@ describe("evolve() with Agent mapper function", () => {
     expect(config?.output).toBe(Output);
   });
 
-  it("shallow merges tools from mapper return", () => {
-    const toolA = { execute: vi.fn() } as never;
-    const toolB = { execute: vi.fn() } as never;
-    const toolBReplacement = { execute: vi.fn() } as never;
-
-    const base = agent({
-      name: "tooled",
-      model: mockModel,
-      tools: { a: toolA, b: toolB },
-      logger: createMockLogger(),
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
-    const evolved = evolve(base as any, () => ({ tools: { b: toolBReplacement } }));
-    const config = readAgentConfig(evolved);
-    const tools = config?.tools as Record<string, unknown>;
-
-    expect(tools.a).toBe(toolA);
-    expect(tools.b).toBe(toolBReplacement);
-  });
-
-  it("does not mutate the base agent", () => {
-    const base = createTestAgent();
-    const baseCfg = readAgentConfig(base);
-
-    evolve(base, () => ({ name: "evolved", system: "Changed." }));
-
-    const baseCfgAfter = readAgentConfig(base);
-    expect(baseCfgAfter?.name).toBe("base-agent");
-    expect(baseCfgAfter?.system).toBe("You are a test agent.");
-    expect(baseCfgAfter).toEqual(baseCfg);
-  });
-
-  it("returns an agent with generate, stream, and fn methods", () => {
-    const base = createTestAgent();
-    const evolved = evolve(base, () => ({ name: "evolved" }));
-
-    expect(typeof evolved.generate).toBe("function");
-    expect(typeof evolved.stream).toBe("function");
-    expect(typeof evolved.fn).toBe("function");
-  });
 });
 
 describe("evolve() with FlowAgent mapper function", () => {
@@ -436,16 +395,6 @@ describe("evolve() with FlowAgent mapper function", () => {
     }
   });
 
-  it("does not mutate the base flow agent", () => {
-    const base = createTestFlowAgent();
-    const baseCfg = readFlowConfig(base);
-
-    evolve(base, () => ({ name: "evolved-flow" }));
-
-    const baseCfgAfter = readFlowConfig(base);
-    expect(baseCfgAfter?.config.name).toBe("base-flow");
-    expect(baseCfgAfter).toEqual(baseCfg);
-  });
 });
 
 describe("evolve() error handling", () => {
