@@ -14,6 +14,7 @@ import { discoverPrompts } from "./paths.js";
 /**
  * Resolve the list of partial directories to search.
  *
+ * @private
  * @param customDir - Custom partials directory path.
  * @returns Array of directories to search for partials.
  */
@@ -55,8 +56,8 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
   const results = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
     const raw = readFileSync(d.filePath, "utf8");
-    const frontmatter = parseFrontmatter(raw, d.filePath);
-    const template = flattenPartials(clean(raw), partialsDirs);
+    const frontmatter = parseFrontmatter({ content: raw, filePath: d.filePath });
+    const template = flattenPartials({ template: clean(raw), partialsDirs });
     const templateVars = extractVariables(template);
     return lintPrompt(frontmatter.name, d.filePath, frontmatter.schema, templateVars);
   });
@@ -98,8 +99,8 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
   const processed = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
     const raw = readFileSync(d.filePath, "utf8");
-    const frontmatter = parseFrontmatter(raw, d.filePath);
-    const template = flattenPartials(clean(raw), partialsDirs);
+    const frontmatter = parseFrontmatter({ content: raw, filePath: d.filePath });
+    const template = flattenPartials({ template: clean(raw), partialsDirs });
     const templateVars = extractVariables(template);
 
     return {

@@ -6,16 +6,23 @@ import { FRONTMATTER_RE, NAME_RE } from "./frontmatter.js";
 const MAX_DEPTH = 5;
 const PROMPT_EXT = ".prompt";
 
+/** A `.prompt` file discovered during directory scanning. */
 export interface DiscoveredPrompt {
   readonly name: string;
   readonly filePath: string;
 }
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
 
 /**
  * Extract the `name` field from YAML frontmatter.
  *
  * This is a lightweight extraction that avoids pulling in a full YAML parser.
  * It looks for `name: <value>` in the frontmatter block.
+ *
+ * @private
  */
 function extractName(content: string): string | undefined {
   const match = content.match(FRONTMATTER_RE);
@@ -37,6 +44,8 @@ function extractName(content: string): string | undefined {
  *
  * If the file is named `prompt.prompt`, uses the parent directory name.
  * Otherwise uses the file stem (e.g. `my-agent.prompt` -> `my-agent`).
+ *
+ * @private
  */
 function deriveNameFromPath(filePath: string): string {
   const stem = basename(filePath, PROMPT_EXT);
@@ -48,6 +57,8 @@ function deriveNameFromPath(filePath: string): string {
 
 /**
  * Recursively scan a directory for `.prompt` files.
+ *
+ * @private
  */
 function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
   if (depth > MAX_DEPTH) {
@@ -102,7 +113,7 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
  * @returns Sorted, deduplicated list of discovered prompts.
  * @throws If duplicate prompt names are found across roots.
  */
-export function discoverPrompts(roots: readonly string[]): DiscoveredPrompt[] {
+export function discoverPrompts(roots: readonly string[]): readonly DiscoveredPrompt[] {
   const all = roots.flatMap((root) => scanDirectory(resolve(root), 0));
 
   const byName = Map.groupBy(all, (prompt) => prompt.name);

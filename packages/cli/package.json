@@ -37,6 +37,7 @@
   "dependencies": {
     "@funkai/prompts": "workspace:*",
     "@kidd-cli/core": "^0.8.2",
+    "es-toolkit": "catalog:",
     "liquidjs": "^10.25.0",
     "ts-pattern": "catalog:",
     "yaml": "^2.8.2",

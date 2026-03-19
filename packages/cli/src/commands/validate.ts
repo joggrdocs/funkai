@@ -13,7 +13,7 @@ export default command({
       ctx.logger.info("Running prompts validation...");
     }
 
-    handleLint(ctx.args, ctx.logger, ctx.fail);
+    handleLint({ args: ctx.args, logger: ctx.logger, fail: ctx.fail });
 
     // --- Future: agents validation ---
 

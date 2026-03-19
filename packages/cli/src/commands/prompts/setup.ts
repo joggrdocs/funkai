@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { command } from "@kidd-cli/core";
+import { attempt } from "es-toolkit";
 
 const VSCODE_DIR = ".vscode";
 const SETTINGS_FILE = "settings.json";
@@ -57,13 +58,7 @@ export default command({
       const currentRecs = (extensions.recommendations ?? []) as string[];
       const extensionId = "sissel.shopify-liquid";
 
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const recommendations: string[] = (() => {
-        if (currentRecs.includes(extensionId)) {
-          return currentRecs;
-        }
-        return [...currentRecs, extensionId];
-      })();
+      const recommendations = ensureRecommendation(currentRecs, extensionId);
       const updatedExtensions = {
         ...extensions,
         recommendations,
@@ -80,24 +75,12 @@ export default command({
 
     if (shouldGitignore) {
       const gitignorePath = resolve(GITIGNORE_FILE);
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const existing: string = (() => {
-        if (existsSync(gitignorePath)) {
-          return readFileSync(gitignorePath, "utf8");
-        }
-        return "";
-      })();
+      const existing = readFileOrEmpty(gitignorePath);
 
       if (existing.includes(GITIGNORE_ENTRY)) {
         ctx.logger.info(`${GITIGNORE_ENTRY} already in ${gitignorePath}`);
       } else {
-        // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-        const separator: string = (() => {
-          if (existing.length > 0 && !existing.endsWith("\n")) {
-            return "\n";
-          }
-          return "";
-        })();
+        const separator = trailingSeparator(existing);
         const block = `${separator}\n# Generated prompt client (created by \`funkai prompts generate\`)\n${GITIGNORE_ENTRY}\n`;
         writeFileSync(gitignorePath, `${existing}${block}`, "utf8");
         ctx.logger.success(`Added ${GITIGNORE_ENTRY} to ${gitignorePath}`);
@@ -141,9 +124,40 @@ export default command({
   },
 });
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/** @private */
+function ensureRecommendation(current: readonly string[], id: string): string[] {
+  if (current.includes(id)) {
+    return [...current];
+  }
+  return [...current, id];
+}
+
+/** @private */
+function readFileOrEmpty(filePath: string): string {
+  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading file from CLI discovery
+  if (existsSync(filePath)) {
+    return readFileSync(filePath, "utf8");
+  }
+  return "";
+}
+
+/** @private */
+function trailingSeparator(content: string): string {
+  if (content.length > 0 && !content.endsWith("\n")) {
+    return "\n";
+  }
+  return "";
+}
+
 /**
  * Read a JSON file, returning an empty object if it doesn't exist
  * or contains invalid JSON.
+ *
+ * @private
  */
 function readJsonFile(filePath: string): Record<string, unknown> {
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: tsconfig path from CLI discovery
@@ -151,11 +165,11 @@ function readJsonFile(filePath: string): Record<string, unknown> {
     return {};
   }
 
-  try {
-    // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading tsconfig file
-    const content = readFileSync(filePath, "utf8");
-    return JSON.parse(content) as Record<string, unknown>;
-  } catch {
+  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading tsconfig file
+  const content = readFileSync(filePath, "utf8");
+  const [error, parsed] = attempt(() => JSON.parse(content) as Record<string, unknown>);
+  if (error || parsed === null) {
     return {};
   }
+  return parsed;
 }

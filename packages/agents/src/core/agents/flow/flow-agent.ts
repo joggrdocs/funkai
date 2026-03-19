@@ -185,19 +185,23 @@ export function flowAgent<TInput, TOutput = any>(
    */
   function resolveFlowOutput(
     output: unknown,
-    messages: Message[],
-  ): { ok: true; value: unknown } | { ok: false; message: string } {
+    messages: readonly Message[],
+  ):
+    | { ok: true; value: unknown; message: Message }
+    | { ok: false; message: string } {
     if (isNotNil(config.output)) {
       const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {
         return { ok: false, message: `Output validation failed: ${outputParsed.error.message}` };
       }
-      messages.push(createAssistantMessage(outputParsed.data));
-      return { ok: true, value: outputParsed.data };
+      return {
+        ok: true,
+        value: outputParsed.data,
+        message: createAssistantMessage(outputParsed.data),
+      };
     }
     const text = collectTextFromMessages(messages);
-    messages.push(createAssistantMessage(text));
-    return { ok: true, value: text };
+    return { ok: true, value: text, message: createAssistantMessage(text) };
   }
 
   /**
@@ -369,6 +373,7 @@ export function flowAgent<TInput, TOutput = any>(
         };
       }
       const resolvedOutput = outputResult.value;
+      const finalMessages = [...messages, outputResult.message];
 
       const duration = Date.now() - startedAt;
 
@@ -377,7 +382,7 @@ export function flowAgent<TInput, TOutput = any>(
 
       const result: FlowAgentGenerateResult<unknown> = {
         output: resolvedOutput,
-        messages: [...messages],
+        messages: finalMessages,
         usage,
         finishReason: "stop",
         trace: frozenTrace,
@@ -458,6 +463,7 @@ export function flowAgent<TInput, TOutput = any>(
           throw new Error(outputResult.message);
         }
         const resolvedOutput = outputResult.value;
+        const finalMessages = [...messages, outputResult.message];
 
         const duration = Date.now() - startedAt;
 
@@ -465,7 +471,7 @@ export function flowAgent<TInput, TOutput = any>(
 
         const result: FlowAgentGenerateResult<unknown> = {
           output: resolvedOutput,
-          messages: [...messages],
+          messages: finalMessages,
           usage,
           finishReason: "stop",
           trace: snapshotTrace(trace),

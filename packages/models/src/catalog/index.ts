@@ -1,7 +1,7 @@
 import type { LiteralUnion } from "type-fest";
 
-import type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing } from "./types.js";
 import { MODELS as GENERATED_MODELS } from "@/catalog/providers/index.js";
+import type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing } from "./types.js";
 
 export type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing };
 
@@ -23,6 +23,7 @@ export type ModelId = LiteralUnion<KnownModelId, string>;
  */
 export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
+/** @private */
 const MODEL_INDEX = new Map<string, ModelDefinition>(MODELS.map((m) => [m.id, m]));
 
 /**

@@ -1,6 +1,6 @@
-import type { UsageCost } from "./types.js";
 import type { ModelPricing } from "@/catalog/types.js";
 import type { TokenUsage } from "@/provider/types.js";
+import type { UsageCost } from "./types.js";
 
 /**
  * Calculate the dollar cost from token usage and model pricing.

@@ -36,34 +36,29 @@ export function lintPrompt(
   schemaVars: readonly SchemaVariable[],
   templateVars: readonly string[],
 ): LintResult {
-  const diagnostics: LintDiagnostic[] = [];
   const declared = new Set(schemaVars.map((v) => v.name));
   const used = new Set(templateVars);
 
-  for (const varName of used) {
-    if (!declared.has(varName)) {
-      diagnostics.push({
-        level: "error",
-        message:
-          `Undefined variable "${varName}" in ${name}.prompt\n` +
-          `  Variable "${varName}" is used in the template but not declared in frontmatter schema.\n` +
-          "  Add it to the schema section in the frontmatter.",
-      });
-    }
-  }
+  const undeclaredErrors: readonly LintDiagnostic[] = [...used]
+    .filter((varName) => !declared.has(varName))
+    .map((varName) => ({
+      level: "error" as const,
+      message:
+        `Undefined variable "${varName}" in ${name}.prompt\n` +
+        `  Variable "${varName}" is used in the template but not declared in frontmatter schema.\n` +
+        "  Add it to the schema section in the frontmatter.",
+    }));
 
-  for (const varName of declared) {
-    if (!used.has(varName)) {
-      diagnostics.push({
-        level: "warn",
-        message:
-          `Unused variable "${varName}" in ${name}.prompt\n` +
-          `  Variable "${varName}" is declared in the schema but never used in the template.`,
-      });
-    }
-  }
+  const unusedWarnings: readonly LintDiagnostic[] = [...declared]
+    .filter((varName) => !used.has(varName))
+    .map((varName) => ({
+      level: "warn" as const,
+      message:
+        `Unused variable "${varName}" in ${name}.prompt\n` +
+        `  Variable "${varName}" is declared in the schema but never used in the template.`,
+    }));
 
-  return { name, filePath, diagnostics };
+  return { name, filePath, diagnostics: [...undeclaredErrors, ...unusedWarnings] };
 }
 
 /**

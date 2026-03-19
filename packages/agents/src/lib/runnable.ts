@@ -2,6 +2,11 @@ import { isNil } from "es-toolkit";
 import { has, isObject } from "es-toolkit/compat";
 import type { ZodType } from "zod";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation for runtime type guard narrowing
+import type { Agent } from "@/core/agents/types.js";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation for runtime type guard narrowing
+import type { FlowAgent } from "@/core/agents/flow/types.js";
+
 /**
  * Symbol key for internal runnable metadata.
  *
@@ -47,11 +52,12 @@ export interface RunnableMeta {
  * Check if a value is an Agent created via the `agent()` factory.
  *
  * @param value - The value to check.
- * @returns `true` if the value has stored agent config.
+ * @returns `true` if the value is an `Agent`.
  *
  * @internal
  */
-export function isAgent(value: unknown): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation; concrete generics are unknown at runtime
+export function isAgent(value: unknown): value is Agent<any, any, any, any> {
   return isObject(value) && has(value, AGENT_CONFIG);
 }
 
@@ -59,11 +65,12 @@ export function isAgent(value: unknown): boolean {
  * Check if a value is a FlowAgent created via the `flowAgent()` factory.
  *
  * @param value - The value to check.
- * @returns `true` if the value has stored flow agent config.
+ * @returns `true` if the value is a `FlowAgent`.
  *
  * @internal
  */
-export function isFlowAgent(value: unknown): boolean {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation; concrete generics are unknown at runtime
+export function isFlowAgent(value: unknown): value is FlowAgent<any, any> {
   return isObject(value) && has(value, FLOW_AGENT_CONFIG);
 }
 
@@ -79,7 +86,7 @@ export function getAgentConfig<T>(value: unknown): T | undefined {
     return undefined;
   }
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-  const config = (value as Record<symbol, unknown>)[AGENT_CONFIG];
+  const config = (value as unknown as Record<symbol, unknown>)[AGENT_CONFIG];
   if (isNil(config)) {
     return undefined;
   }
@@ -98,7 +105,7 @@ export function getFlowAgentConfig<T>(value: unknown): T | undefined {
     return undefined;
   }
   // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-  const config = (value as Record<symbol, unknown>)[FLOW_AGENT_CONFIG];
+  const config = (value as unknown as Record<symbol, unknown>)[FLOW_AGENT_CONFIG];
   if (isNil(config)) {
     return undefined;
   }

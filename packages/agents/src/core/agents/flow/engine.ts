@@ -171,10 +171,24 @@ export interface FlowFactory<TCustomSteps extends CustomStepDefinitions> {
 }
 
 /**
+ * Extract a step ID from config if it has an `id` field, otherwise use the step name.
+ *
+ * @private
+ */
+function resolveStepId(config: unknown, name: string): string {
+  if (isPlainObject(config) && Object.hasOwn(config, "id")) {
+    return (config as { id: string }).id;
+  }
+  return name;
+}
+
+/**
  * Wrap a hook callback so it can be passed to `fireHooks`.
  *
  * Generic over `TEvent` so the hook is called with the correct
  * event type without resorting to `any`.
+ *
+ * @private
  */
 function createHookCaller<TEvent>(
   hook: ((event: TEvent) => void | Promise<void>) | undefined,
@@ -192,6 +206,8 @@ function createHookCaller<TEvent>(
  * The `(event: never)` constraint is the widest function type under
  * strict mode — any single-argument function is assignable via
  * contravariance (`never extends T` for all `T`).
+ *
+ * @private
  */
 function buildMergedHook<THook extends (event: never) => void | Promise<void>>(
   log: Logger,
@@ -281,10 +297,11 @@ export function createFlowEngine<
   TCustomSteps extends CustomStepDefinitions = Record<string, never>,
 >(engineConfig: FlowEngineConfig<TCustomSteps>): FlowFactory<TCustomSteps> {
   // Validate custom step names at engine creation time
-  for (const name of Object.keys(engineConfig.$ ?? {})) {
-    if (RESERVED_STEP_NAMES.has(name)) {
-      throw new Error(`Custom step "${name}" conflicts with a built-in StepBuilder method`);
-    }
+  const conflicting = Object.keys(engineConfig.$ ?? {}).find((name) =>
+    RESERVED_STEP_NAMES.has(name),
+  );
+  if (conflicting) {
+    throw new Error(`Custom step "${conflicting}" conflicts with a built-in StepBuilder method`);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- implementation signature must accept both overloads
@@ -347,28 +364,23 @@ export function createFlowEngine<
       wrappedHandler,
       {
         augment$: ($, ctx) => {
-          const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
-
-          for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
-            // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-            customSteps[name] = async (config: unknown) => {
-              const stepId = (() => {
-                if (isPlainObject(config) && Object.hasOwn(config, "id")) {
-                  return (config as { id: string }).id;
+          const customSteps = Object.fromEntries(
+            Object.entries(engineConfig.$ ?? {}).map(([name, factory]) => [
+              name,
+              async (config: unknown) => {
+                const stepId = resolveStepId(config, name);
+                const result = await $.step({
+                  id: stepId,
+                  execute: async () =>
+                    factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+                });
+                if (!result.ok) {
+                  throw result.error;
                 }
-                return name;
-              })();
-              const result = await $.step({
-                id: stepId,
-                execute: async () =>
-                  factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
-              });
-              if (!result.ok) {
-                throw result.error;
-              }
-              return result.value;
-            };
-          }
+                return result.value;
+              },
+            ]),
+          );
           return { ...$, ...customSteps } as StepBuilder;
         },
       },

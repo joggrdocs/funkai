@@ -5,6 +5,7 @@ import { command } from "@kidd-cli/core";
 import { match, P } from "ts-pattern";
 import { z } from "zod";
 
+/** @private */
 const createTemplate = (name: string) => `---
 name: ${name}
 ---

@@ -13,6 +13,10 @@ export interface ParsedPrompt {
   readonly sourcePath: string;
 }
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
 /**
  * Convert a kebab-case name to PascalCase.
  *
@@ -55,6 +59,22 @@ function escapeTemplateLiteral(str: string): string {
     .replaceAll("${", "\\${");
 }
 
+/** @private */
+function formatGroupValue(group: string | undefined): string {
+  if (group) {
+    return `'${group}' as const`;
+  }
+  return "undefined";
+}
+
+/** @private */
+function parseGroupSegments(group: string | undefined): string[] {
+  if (group) {
+    return group.split("/").map(toCamelCase);
+  }
+  return [];
+}
+
 /**
  * Generate the Zod schema expression for a list of schema variables.
  *
@@ -68,13 +88,9 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
   const fields = vars
     .map((v) => {
       const base = "z.string()";
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const expr: string = (() => {
-        if (v.required) {
-          return base;
-        }
-        return `${base}.optional()`;
-      })();
+      const expr = match(v.required)
+        .with(true, () => base)
+        .otherwise(() => `${base}.optional()`);
       return `  ${v.name}: ${expr},`;
     })
     .join("\n");
@@ -102,15 +118,9 @@ const HEADER = [
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
-  // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-  const groupValue: string = (() => {
-    if (prompt.group) {
-      return `'${prompt.group}' as const`;
-    }
-    return "undefined";
-  })();
+  const groupValue = formatGroupValue(prompt.group);
 
-  const lines: string[] = [
+  const lines: readonly string[] = [
     HEADER,
     `// Source: ${prompt.sourcePath}`,
     "",
@@ -171,13 +181,7 @@ interface TreeNode {
 function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
   return prompts.reduce<Record<string, unknown>>((root, prompt) => {
     const importName = toCamelCase(prompt.name);
-    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-    const segments: string[] = (() => {
-      if (prompt.group) {
-        return prompt.group.split("/").map(toCamelCase);
-      }
-      return [];
-    })();
+    const segments = parseGroupSegments(prompt.group);
 
     const target = segments.reduce<Record<string, unknown>>((current, segment) => {
       const existing = current[segment];
@@ -215,19 +219,11 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
 function serializeTree(node: TreeNode, indent: number): string[] {
   const pad = "  ".repeat(indent);
 
-  const lines: string[] = [];
-  for (const [key, value] of Object.entries(node)) {
-    if (typeof value === "string") {
-      lines.push(`${pad}${key},`);
-    } else {
-      lines.push(`${pad}${key}: {`);
-      for (const child of serializeTree(value, indent + 1)) {
-        lines.push(child);
-      }
-      lines.push(`${pad}},`);
-    }
-  }
-  return lines;
+  return Object.entries(node).flatMap(([key, value]) =>
+    match(typeof value)
+      .with("string", () => [`${pad}${key},`])
+      .otherwise(() => [`${pad}${key}: {`, ...serializeTree(value as TreeNode, indent + 1), `${pad}},`]),
+  );
 }
 
 /**
@@ -247,7 +243,7 @@ export function generateRegistry(prompts: readonly ParsedPrompt[]): string {
   const tree = buildTree(sorted);
   const treeLines = serializeTree(tree, 1);
 
-  const lines: string[] = [
+  const lines: readonly string[] = [
     HEADER,
     "",
     "import { createPromptRegistry } from '@funkai/prompts'",
