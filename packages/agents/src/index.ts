@@ -40,6 +40,7 @@ export type {
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,
+  FlowSubAgents,
 } from "@/core/agents/flow/types.js";
 
 export type {

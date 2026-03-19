@@ -1080,6 +1080,95 @@ describe("fn()", () => {
   });
 });
 
+describe("generate() with agents dependency", () => {
+  it("handler receives agents from config", async () => {
+    let receivedAgents: Record<string, unknown> | undefined;
+    const mockAgent = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "agents-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { core: mockAgent as never },
+      },
+      async ({ input, agents }) => {
+        receivedAgents = agents;
+        return { y: input.x };
+      },
+    );
+
+    await fa.generate({ input: { x: 1 } });
+
+    expect(receivedAgents).toBeDefined();
+    expect(receivedAgents?.core).toBe(mockAgent);
+  });
+
+  it("handler receives empty record when agents not configured", async () => {
+    let receivedAgents: Record<string, unknown> | undefined;
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "no-agents-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+      },
+      async ({ input, agents }) => {
+        receivedAgents = agents;
+        return { y: input.x };
+      },
+    );
+
+    await fa.generate({ input: { x: 1 } });
+
+    expect(receivedAgents).toBeDefined();
+    expect(receivedAgents).toEqual({});
+  });
+});
+
+describe("stream() with agents dependency", () => {
+  it("handler receives agents from config during streaming", async () => {
+    let receivedAgents: Record<string, unknown> | undefined;
+    const mockAgent = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
+
+    const fa = flowAgent<{ x: number }, { y: number }>(
+      {
+        name: "stream-agents-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { core: mockAgent as never },
+      },
+      async ({ input, agents }) => {
+        receivedAgents = agents;
+        return { y: input.x };
+      },
+    );
+
+    const result = await fa.stream({ input: { x: 1 } });
+    expect(result.ok).toBeTruthy();
+    if (!result.ok) {
+      return;
+    }
+
+    // Drain the stream
+    const reader = result.fullStream.getReader();
+    for (;;) {
+      const { done } = await reader.read();
+      if (done) {
+        break;
+      }
+    }
+
+    await result.output;
+
+    expect(receivedAgents).toBeDefined();
+    expect(receivedAgents?.core).toBe(mockAgent);
+  });
+});
+
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
     const fa = createSimpleFlowAgent();

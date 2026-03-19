@@ -320,6 +320,90 @@ describe("evolve() with FlowAgent", () => {
     const stored = readFlowConfig(evolved);
     expect(stored?.config.onStart).toBe(onStart);
   });
+
+  it("shallow merges agents — overriding an existing agent dependency", () => {
+    const subA = agent({ name: "sub-a", model: mockModel, logger: createMockLogger() });
+    const subB = agent({ name: "sub-b", model: mockModel, logger: createMockLogger() });
+    const subBReplacement = agent({
+      name: "sub-b-v2",
+      model: mockModel,
+      logger: createMockLogger(),
+    });
+
+    const base = flowAgent<{ text: string }, { result: string }>(
+      {
+        name: "flow-with-agents",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { a: subA, b: subB },
+      },
+      async ({ input }) => ({ result: input.text }),
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
+    const evolved = evolve(base as any, { agents: { b: subBReplacement } });
+    const stored = readFlowConfig(evolved);
+    const agents = stored?.config.agents as Record<string, unknown>;
+
+    expect(agents.a).toBe(subA);
+    expect(agents.b).toBe(subBReplacement);
+  });
+
+  it("preserves agents when override has no agents field", () => {
+    const subA = agent({ name: "sub-a", model: mockModel, logger: createMockLogger() });
+
+    const base = flowAgent<{ text: string }, { result: string }>(
+      {
+        name: "flow-keep-agents",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { a: subA },
+      },
+      async ({ input }) => ({ result: input.text }),
+    );
+
+    const evolved = evolve(base, { name: "renamed-flow" });
+    const stored = readFlowConfig(evolved);
+    const agents = stored?.config.agents as Record<string, unknown>;
+
+    expect(agents.a).toBe(subA);
+  });
+
+  it("handler receives evolved agents at runtime", async () => {
+    const subA = agent({ name: "sub-a", model: mockModel, logger: createMockLogger() });
+    const subB = agent({ name: "sub-b", model: mockModel, logger: createMockLogger() });
+    const subBReplacement = agent({
+      name: "sub-b-v2",
+      model: mockModel,
+      logger: createMockLogger(),
+    });
+
+    let receivedAgents: Record<string, unknown> | undefined;
+
+    const base = flowAgent<{ text: string }, { result: string }>(
+      {
+        name: "flow-receives-agents",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { a: subA, b: subB },
+      },
+      async ({ input, agents }) => {
+        receivedAgents = agents;
+        return { result: input.text };
+      },
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
+    const evolved = evolve(base as any, { agents: { b: subBReplacement } });
+    await evolved.generate({ input: { text: "hello" } });
+
+    expect(receivedAgents).toBeDefined();
+    expect(receivedAgents?.a).toBe(subA);
+    expect(receivedAgents?.b).toBe(subBReplacement);
+  });
 });
 
 describe("evolve() with Agent mapper function", () => {
@@ -377,6 +461,36 @@ describe("evolve() with FlowAgent mapper function", () => {
     if (result.ok) {
       expect(result.output).toEqual({ result: "HELLO" });
     }
+  });
+
+  it("mapper can override agents on flow agent", () => {
+    const subA = agent({ name: "sub-a", model: mockModel, logger: createMockLogger() });
+    const subAReplacement = agent({
+      name: "sub-a-v2",
+      model: mockModel,
+      logger: createMockLogger(),
+    });
+
+    const base = flowAgent<{ text: string }, { result: string }>(
+      {
+        name: "mapper-agents-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        agents: { a: subA },
+      },
+      async ({ input }) => ({ result: input.text }),
+    );
+
+    /* eslint-disable @typescript-eslint/no-explicit-any -- testing runtime merge behavior */
+    const evolved = evolve(base as any, (config: any) => ({
+      agents: { ...config.agents, a: subAReplacement },
+    }));
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+
+    const stored = readFlowConfig(evolved);
+    const agents = stored?.config.agents as Record<string, unknown>;
+    expect(agents.a).toBe(subAReplacement);
   });
 
   it("replaces handler when provided with mapper form", async () => {
