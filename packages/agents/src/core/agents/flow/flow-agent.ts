@@ -332,7 +332,7 @@ export function flowAgent<TInput, TOutput = any>(
       wrapHook(params.onStart, { input: parsedInput }),
     );
 
-    const agents = Object.freeze({ ...(config.agents ?? {}) });
+    const agents = Object.freeze({ ...config.agents });
 
     return {
       ok: true,
