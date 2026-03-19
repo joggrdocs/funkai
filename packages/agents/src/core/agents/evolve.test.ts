@@ -322,6 +322,79 @@ describe("evolve() with FlowAgent", () => {
   });
 });
 
+describe("evolve() with Agent mapper function", () => {
+  it("receives the stored config and applies returned overrides", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, (config) => ({
+      name: `${config.name}-evolved`,
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.name).toBe("base-agent-evolved");
+  });
+
+  it("can override model via mapper", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, () => ({
+      model: mockModelAlt,
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.model).toBe(mockModelAlt);
+  });
+
+  it("preserves base config fields not in mapper return", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, () => ({
+      name: "mapper-only-name",
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.system).toBe("You are a test agent.");
+    expect(config?.model).toBe(mockModel);
+    expect(config?.input).toBe(Input);
+    expect(config?.output).toBe(Output);
+  });
+});
+
+describe("evolve() with FlowAgent mapper function", () => {
+  it("receives the stored flow config and applies returned overrides", () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(base, (config) => ({
+      name: `${config.name}-evolved`,
+    }));
+
+    const stored = readFlowConfig(evolved);
+    expect(stored?.config.name).toBe("base-flow-evolved");
+  });
+
+  it("preserves handler when using mapper form", async () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(base, () => ({ name: "mapper-flow" }));
+
+    const result = await evolved.generate({ input: { text: "hello" } });
+    expect(result.ok).toBeTruthy();
+    if (result.ok) {
+      expect(result.output).toEqual({ result: "HELLO" });
+    }
+  });
+
+  it("replaces handler when provided with mapper form", async () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(
+      base,
+      () => ({ name: "mapper-flow" }),
+      async ({ input }) => ({ result: `mapped:${input.text}` }),
+    );
+
+    const result = await evolved.generate({ input: { text: "test" } });
+    expect(result.ok).toBeTruthy();
+    if (result.ok) {
+      expect(result.output).toEqual({ result: "mapped:test" });
+    }
+  });
+});
+
 describe("evolve() error handling", () => {
   it("throws for a plain object that is not an agent", () => {
     const fake = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
