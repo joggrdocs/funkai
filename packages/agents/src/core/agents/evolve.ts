@@ -63,10 +63,14 @@ interface StoredFlowAgentConfig<TInput, TOutput> {
  *   tools: { lint },
  * })
  *
- * // Mapper function — derive overrides from the current config
- * const proxied = evolve(base, (config) => ({
- *   model: proxy(config.model.modelId),
- * }))
+ * // Mapper function — derive overrides from the current config.
+ * // Note: config.model is a Resolver (may be a function or a Model).
+ * const proxied = evolve(base, (config) => {
+ *   if (isFunction(config.model)) {
+ *     return { model: proxy('default-model') }
+ *   }
+ *   return { model: proxy(config.model.modelId) }
+ * })
  * ```
  */
 export function evolve<
