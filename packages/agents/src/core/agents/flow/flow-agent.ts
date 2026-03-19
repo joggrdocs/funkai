@@ -1,7 +1,6 @@
 import type { AsyncIterableStream } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 
-
 import { resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,

@@ -2,7 +2,6 @@ import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream } from "ai";
 import { isNil, isNotNil, isString } from "es-toolkit";
 
-
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import {
