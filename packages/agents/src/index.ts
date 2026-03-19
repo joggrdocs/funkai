@@ -39,6 +39,7 @@ export type {
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,
+  FlowSubAgents,
 } from "@/core/agents/flow/types.js";
 
 export type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";

@@ -9,6 +9,7 @@ import type {
   FlowAgentConfigWithOutput,
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
+  FlowSubAgents,
 } from "@/core/agents/flow/types.js";
 import type { Agent, AgentConfig, SubAgents } from "@/core/agents/types.js";
 import type { Tool } from "@/core/tool.js";
@@ -215,7 +216,7 @@ function mergeAgentConfigs(
 }
 
 /**
- * Merge two flow agent configs. Scalars: override wins.
+ * Merge two flow agent configs. Scalars: override wins. Records (agents): shallow merge.
  *
  * @private
  */
@@ -224,9 +225,11 @@ function mergeFlowAgentConfigs(
   base: FlowAgentConfig<any, any>,
   overrides: Record<string, unknown>,
 ): FlowAgentConfig<any, any> {
+  const { agents: overrideAgents, ...restOverrides } = overrides;
   return {
     ...base,
-    ...overrides,
+    ...restOverrides,
+    agents: mergeRecordField(base.agents, overrideAgents as FlowSubAgents | undefined),
   };
 }
 

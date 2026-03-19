@@ -2,6 +2,7 @@ import type { ZodType } from "zod";
 
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
+  Agent,
   GenerateParams,
   GenerateResult,
   Resolver,
@@ -14,6 +15,34 @@ import type { TraceEntry } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
 
 export type { StepInfo } from "@/core/types.js";
+
+/**
+ * Record of named agent dependencies for a flow agent.
+ *
+ * Unlike regular agents where subagents become callable tools,
+ * flow agent dependencies are passed to the handler via `agents`
+ * so the handler can reference them explicitly in `$.agent()` calls.
+ *
+ * This makes agent references evolvable — `evolve(flow, { agents: { core: evolved } })`
+ * shallow-merges the record, and the handler receives the evolved agent.
+ *
+ * @example
+ * ```typescript
+ * import { flowAgent } from '@funkai/agents'
+ * import type { FlowSubAgents } from '@funkai/agents'
+ *
+ * const pipeline = flowAgent({
+ *   name: 'pipeline',
+ *   input: schema,
+ *   agents: { core: coreAgent, writer: writerAgent } satisfies FlowSubAgents,
+ * }, async ({ input, $, agents }) => {
+ *   const result = await $.agent({ agent: agents.core, input: ... })
+ *   return result
+ * })
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FlowSubAgents = Record<string, Agent<any, any, any, any> | FlowAgent<any, any>>;
 
 /**
  * Result of a completed flow agent generation.
@@ -63,6 +92,25 @@ export interface FlowAgentConfigBase<TInput> {
    * schema before the handler is called.
    */
   input: ZodType<TInput>;
+
+  /**
+   * Named agent dependencies for this flow agent.
+   *
+   * Unlike regular agents where subagents become callable tools,
+   * flow agent dependencies are passed to the handler via the
+   * `agents` param so the handler can reference them in `$.agent()`
+   * calls. This makes agent references evolvable:
+   *
+   * ```typescript
+   * evolve(flow, { agents: { core: evolvedCore } })
+   * ```
+   *
+   * Shallow-merged by `evolve()` — override keys replace base keys,
+   * unmentioned keys are preserved.
+   *
+   * @see {@link FlowSubAgents}
+   */
+  agents?: FlowSubAgents;
 
   /**
    * Pino-compatible logger.
@@ -203,6 +251,22 @@ export interface FlowAgentParams<TInput> {
    * Scoped logger for the current flow execution.
    */
   log: Logger;
+
+  /**
+   * Named agent dependencies declared in the flow agent config.
+   *
+   * Use these references (instead of module-level imports) so that
+   * `evolve()` can swap them out:
+   *
+   * ```typescript
+   * async ({ input, $, agents }) => {
+   *   await $.agent({ agent: agents.core, input: ... })
+   * }
+   * ```
+   *
+   * Defaults to an empty record when `agents` is not configured.
+   */
+  agents: FlowSubAgents;
 }
 
 /**

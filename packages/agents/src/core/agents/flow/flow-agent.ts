@@ -358,6 +358,7 @@ export function flowAgent<TInput, TOutput = any>(
         input: parsedInput,
         $,
         log,
+        agents: config.agents ?? {},
       });
 
       const outputResult = resolveFlowOutput(output, messages);
@@ -454,6 +455,7 @@ export function flowAgent<TInput, TOutput = any>(
           input: parsedInput,
           $,
           log,
+          agents: config.agents ?? {},
         });
 
         const outputResult = resolveFlowOutput(output, messages);
