@@ -1,5 +1,7 @@
 import { command } from "@kidd-cli/core";
 
+import { getConfig } from "@/config.js";
+
 import { handleLint, lintArgs } from "./prompts/lint.js";
 
 export default command({
@@ -7,13 +9,19 @@ export default command({
   options: lintArgs,
   handler(ctx) {
     const { silent } = ctx.args;
+    const config = getConfig(ctx);
 
     // --- Prompts validation ---
     if (!silent) {
       ctx.logger.info("Running prompts validation...");
     }
 
-    handleLint({ args: ctx.args, logger: ctx.logger, fail: ctx.fail });
+    handleLint({
+      args: ctx.args,
+      config: config.prompts,
+      logger: ctx.logger,
+      fail: ctx.fail,
+    });
 
     // --- Future: agents validation ---
 

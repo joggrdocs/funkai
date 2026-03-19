@@ -10,6 +10,7 @@ import promptsLint from "@/commands/prompts/lint.js";
 import promptsSetup from "@/commands/prompts/setup.js";
 import setup from "@/commands/setup.js";
 import validate from "@/commands/validate.js";
+import { configSchema } from "@/config.js";
 
 const require = createRequire(import.meta.url);
 const packageJson = require("../package.json") as { readonly version: string };
@@ -18,6 +19,9 @@ await cli({
   description: "CLI for the funkai AI SDK framework",
   name: "funkai",
   version: packageJson.version,
+  config: {
+    schema: configSchema,
+  },
   commands: {
     generate,
     setup,

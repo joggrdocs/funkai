@@ -35,6 +35,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@funkai/config": "workspace:*",
     "@funkai/prompts": "workspace:*",
     "@kidd-cli/core": "^0.10.0",
     "es-toolkit": "catalog:",
