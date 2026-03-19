@@ -1,5 +1,4 @@
-import type { GenerateParams, GenerateResult } from "@/core/agents/base/types.js";
-import type { Runnable } from "@/core/types.js";
+import type { Agent, GenerateParams, GenerateResult } from "@/core/agents/base/types.js";
 
 /**
  * Configuration for `$.agent()` — execute an agent call as a tracked operation.
@@ -23,7 +22,7 @@ export interface AgentStepConfig<TInput> {
    * The framework calls `agent.generate()` internally with the
    * provided `input` and optional `config` overrides.
    */
-  agent: Runnable<TInput>;
+  agent: Agent<TInput>;
 
   /**
    * Input to pass to the agent.

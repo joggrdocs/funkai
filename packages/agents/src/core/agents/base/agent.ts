@@ -268,20 +268,24 @@ export function agent<
   async function generate(
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<GenerateResult<TOutput>>> {
-    const rawInput = extractInput(params);
-    const validated = validateInput(rawInput);
-    if (!validated.ok) {
-      return { ok: false, error: validated.error };
-    }
-
-    const resolvedLogger =
-      params.logger ??
-      (await resolveOptionalValue(config.logger, validated.input)) ??
-      createDefaultLogger();
-    const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
+    let resolvedInput: TInput | undefined;
+    let log: Logger | undefined;
 
     try {
+      const rawInput = extractInput(params);
+      const validated = validateInput(rawInput);
+      if (!validated.ok) {
+        return { ok: false, error: validated.error };
+      }
+
+      resolvedInput = validated.input;
+
+      const resolvedLogger =
+        params.logger ??
+        (await resolveOptionalValue(config.logger, validated.input)) ??
+        createDefaultLogger();
+      log = resolvedLogger.child({ agentId: config.name });
       const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
@@ -333,13 +337,18 @@ export function agent<
     } catch (caughtError) {
       const error = toError(caughtError);
       const duration = Date.now() - startedAt;
+      const errorLog = log ?? createDefaultLogger().child({ agentId: config.name });
 
-      log.error("agent.generate error", { name: config.name, error: error.message, duration });
+      errorLog.error("agent.generate error", {
+        name: config.name,
+        error: error.message,
+        duration,
+      });
 
       await fireHooks(
-        log,
-        wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(params.onError, { input: validated.input, error }),
+        errorLog,
+        wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+        wrapHook(params.onError, { input: resolvedInput as TInput, error }),
       );
 
       return {
@@ -356,20 +365,24 @@ export function agent<
   async function stream(
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<StreamResult<TOutput>>> {
-    const rawInput = extractInput(params);
-    const validated = validateInput(rawInput);
-    if (!validated.ok) {
-      return { ok: false, error: validated.error };
-    }
-
-    const resolvedLogger =
-      params.logger ??
-      (await resolveOptionalValue(config.logger, validated.input)) ??
-      createDefaultLogger();
-    const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
+    let resolvedInput: TInput | undefined;
+    let log: Logger | undefined;
 
     try {
+      const rawInput = extractInput(params);
+      const validated = validateInput(rawInput);
+      if (!validated.ok) {
+        return { ok: false, error: validated.error };
+      }
+
+      resolvedInput = validated.input;
+
+      const resolvedLogger =
+        params.logger ??
+        (await resolveOptionalValue(config.logger, validated.input)) ??
+        createDefaultLogger();
+      log = resolvedLogger.child({ agentId: config.name });
       const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
@@ -429,7 +442,7 @@ export function agent<
           finishReason: finalFinishReason,
         };
         await fireHooks(
-          log,
+          log!,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
           wrapHook(params.onFinish, {
             input,
@@ -438,7 +451,7 @@ export function agent<
           }),
         );
 
-        log.debug("agent.stream finish", { name: config.name, duration });
+        log!.debug("agent.stream finish", { name: config.name, duration });
 
         return {
           output: finalOutput,
@@ -453,10 +466,10 @@ export function agent<
         const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
-        log.error("agent.stream error", { name: config.name, error: error.message, duration });
+        log!.error("agent.stream error", { name: config.name, error: error.message, duration });
 
         await fireHooks(
-          log,
+          log!,
           wrapHook(config.onError, { input, error }),
           wrapHook(params.onError, { input, error }),
         );
@@ -486,13 +499,18 @@ export function agent<
     } catch (caughtError) {
       const error = toError(caughtError);
       const duration = Date.now() - startedAt;
+      const errorLog = log ?? createDefaultLogger().child({ agentId: config.name });
 
-      log.error("agent.stream error", { name: config.name, error: error.message, duration });
+      errorLog.error("agent.stream error", {
+        name: config.name,
+        error: error.message,
+        duration,
+      });
 
       await fireHooks(
-        log,
-        wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(params.onError, { input: validated.input, error }),
+        errorLog,
+        wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+        wrapHook(params.onError, { input: resolvedInput as TInput, error }),
       );
 
       return {

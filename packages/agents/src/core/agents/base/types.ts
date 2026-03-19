@@ -302,72 +302,20 @@ export interface StreamResult<TOutput = string> {
 }
 
 /**
- * Unified parameters for `.generate()` and `.stream()`.
- *
- * Combines input and per-call overrides into a single object
- * (mirrors the Vercel AI SDK pattern). Input is specified via one
- * of three mutually exclusive fields: `prompt`, `messages`, or `input`.
+ * Shared overrides and hooks for `.generate()` and `.stream()` calls.
  *
  * Override fields replace the base config for that call only. Per-call
  * hooks **merge** with base hooks — base fires first, then call-level.
  *
- * @typeParam TInput - The agent's typed input type.
  * @typeParam TTools - The agent's tool record type.
  * @typeParam TSubAgents - The agent's subagent record type.
  *
- * @example
- * ```typescript
- * // Simple mode — string prompt
- * await myAgent.generate({ prompt: 'Hello' })
- *
- * // Simple mode — message array
- * await myAgent.generate({ messages: [{ role: 'user', content: 'Hi' }] })
- *
- * // Typed mode — structured input
- * await myAgent.generate({ input: { topic: 'TypeScript' } })
- *
- * // With overrides
- * await myAgent.generate({ prompt: 'Hello', model: openai('gpt-4.1'), signal })
- * ```
+ * @private — use `GenerateParams` instead.
  */
-export interface GenerateParams<
-  TInput = unknown,
+interface GenerateParamsBase<
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
 > {
-  // ---------------------------------------------------------------------------
-  // Input (at least one required — mutually exclusive)
-  // ---------------------------------------------------------------------------
-
-  /**
-   * String prompt to send to the model.
-   *
-   * Use for simple mode agents without an `input` schema.
-   * Mutually exclusive with `messages` and `input`.
-   */
-  prompt?: string;
-
-  /**
-   * Message array to send to the model.
-   *
-   * Use for multi-turn conversations or when passing structured
-   * message history. Mutually exclusive with `prompt` and `input`.
-   */
-  messages?: Message[];
-
-  /**
-   * Typed input for agents with an `input` schema.
-   *
-   * Validated against the agent's Zod schema before the `prompt`
-   * function transforms it. Mutually exclusive with `prompt` and
-   * `messages`.
-   */
-  input?: TInput;
-
-  // ---------------------------------------------------------------------------
-  // Overrides
-  // ---------------------------------------------------------------------------
-
   /**
    * Override the logger for this call.
    *
@@ -441,10 +389,6 @@ export interface GenerateParams<
    */
   output?: OutputParam;
 
-  // ---------------------------------------------------------------------------
-  // Hooks
-  // ---------------------------------------------------------------------------
-
   /**
    * Per-call hook — fires after base `onStart`.
    *
@@ -489,6 +433,59 @@ export interface GenerateParams<
     usage: { inputTokens: number; outputTokens: number; totalTokens: number };
   }) => void | Promise<void>;
 }
+
+/**
+ * Unified parameters for `.generate()` and `.stream()`.
+ *
+ * Combines input and per-call overrides into a single object
+ * (mirrors the Vercel AI SDK pattern). Input is specified via exactly
+ * one of three fields: `prompt`, `messages`, or `input`.
+ *
+ * Override fields replace the base config for that call only. Per-call
+ * hooks **merge** with base hooks — base fires first, then call-level.
+ *
+ * @typeParam TInput - The agent's typed input type.
+ * @typeParam TTools - The agent's tool record type.
+ * @typeParam TSubAgents - The agent's subagent record type.
+ *
+ * @example
+ * ```typescript
+ * // Simple mode — string prompt
+ * await myAgent.generate({ prompt: 'Hello' })
+ *
+ * // Simple mode — message array
+ * await myAgent.generate({ messages: [{ role: 'user', content: 'Hi' }] })
+ *
+ * // Typed mode — structured input
+ * await myAgent.generate({ input: { topic: 'TypeScript' } })
+ *
+ * // With overrides
+ * await myAgent.generate({ prompt: 'Hello', model: openai('gpt-4.1'), signal })
+ * ```
+ */
+export type GenerateParams<
+  TInput = unknown,
+  TTools extends Record<string, Tool> = Record<string, Tool>,
+  TSubAgents extends SubAgents = Record<string, never>,
+> =
+  | (GenerateParamsBase<TTools, TSubAgents> & {
+      /** String prompt to send to the model. */
+      prompt: string;
+      messages?: undefined;
+      input?: undefined;
+    })
+  | (GenerateParamsBase<TTools, TSubAgents> & {
+      /** Message array to send to the model. */
+      messages: Message[];
+      prompt?: undefined;
+      input?: undefined;
+    })
+  | (GenerateParamsBase<TTools, TSubAgents> & {
+      /** Typed input for agents with an `input` schema. */
+      input: TInput;
+      prompt?: undefined;
+      messages?: undefined;
+    });
 
 /**
  * Configuration for creating an agent.
