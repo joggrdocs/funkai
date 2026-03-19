@@ -64,6 +64,11 @@ export interface ParseFrontmatterParams {
  * @param params - Content and file path to parse.
  * @returns Parsed frontmatter with schema variables.
  * @throws If frontmatter is missing, malformed, or has an invalid name.
+ * @example
+ * ```ts
+ * const fm = parseFrontmatter({ content: "---\nname: greeting\n---\nHello!", filePath: "greeting.prompt" });
+ * // { name: "greeting", group: undefined, version: undefined, schema: [] }
+ * ```
  */
 export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams): ParsedFrontmatter {
   const fmMatch = content.match(FRONTMATTER_RE);

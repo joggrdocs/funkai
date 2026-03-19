@@ -216,7 +216,7 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
  *
  * @private
  */
-function serializeTree(node: TreeNode, indent: number): string[] {
+function serializeTree(node: TreeNode, indent: number): readonly string[] {
   const pad = "  ".repeat(indent);
 
   return Object.entries(node).flatMap(([key, value]) =>

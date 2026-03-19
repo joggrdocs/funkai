@@ -115,18 +115,29 @@ function fmtNum(n: number): string {
   return String(n);
 }
 
+/** @private */
+function extractExampleId(model: ApiModel | undefined): string {
+  if (model !== undefined && model !== null) {
+    return model.id;
+  }
+  return "example-id";
+}
+
 /**
  * Build the pricing object literal string for a model.
  *
  * @private
  */
-function buildPricing(cost: ApiModel["cost"]): string {
-  let costInput = 0;
-  let costOutput = 0;
+function extractCostField(cost: ApiModel["cost"], field: "input" | "output"): number {
   if (cost !== undefined && cost !== null) {
-    costInput = cost.input ?? 0;
-    costOutput = cost.output ?? 0;
+    return cost[field] ?? 0;
   }
+  return 0;
+}
+
+function buildPricing(cost: ApiModel["cost"]): string {
+  const costInput = extractCostField(cost, "input");
+  const costOutput = extractCostField(cost, "output");
   const input = toPerToken(costInput);
   const output = toPerToken(costOutput);
   const parts: string[] = [`input: ${fmtNum(input)}`, `output: ${fmtNum(output)}`];
@@ -151,13 +162,19 @@ function buildPricing(cost: ApiModel["cost"]): string {
  *
  * @private
  */
-function buildModalities(modalities: ApiModel["modalities"]): string {
-  let modalInput: string[] = ["text"];
-  let modalOutput: string[] = ["text"];
+function extractModalityField(
+  modalities: ApiModel["modalities"],
+  field: "input" | "output",
+): string[] {
   if (modalities !== undefined && modalities !== null) {
-    modalInput = modalities.input ?? ["text"];
-    modalOutput = modalities.output ?? ["text"];
+    return modalities[field] ?? ["text"];
   }
+  return ["text"];
+}
+
+function buildModalities(modalities: ApiModel["modalities"]): string {
+  const modalInput = extractModalityField(modalities, "input");
+  const modalOutput = extractModalityField(modalities, "output");
   const input = JSON.stringify(modalInput);
   const output = JSON.stringify(modalOutput);
   return `{ input: ${input}, output: ${output} }`;
@@ -321,11 +338,7 @@ ${lines.join("\n")}
       const { prefix } = providerEntry;
       const camel = lowerFirst(prefix);
       const [firstModel] = Object.values(apiModels);
-      let exampleRawId = "example-id";
-      if (firstModel !== undefined && firstModel !== null) {
-        exampleRawId = firstModel.id;
-      }
-      const exampleId = escapeStr(exampleRawId);
+      const exampleId = escapeStr(extractExampleId(firstModel));
       const providerName = escapeStr(providerEntry.name);
       const art = article(providerEntry.name);
       const entryContent = `${BANNER}
