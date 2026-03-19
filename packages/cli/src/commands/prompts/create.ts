@@ -28,10 +28,14 @@ export default command({
     const { name, out, partial } = ctx.args;
     const config = getConfig(ctx);
     const promptsConfig = config.prompts;
-    const firstRoot = match(promptsConfig)
-      .with({ roots: P.array(P.string).select() }, (roots) => {
-        if (roots.length > 0) {
-          return roots[0];
+    const firstInclude = match(promptsConfig)
+      .with({ includes: P.array(P.string).select() }, (includes) => {
+        if (includes.length > 0) {
+          // Extract the static base directory from the first include pattern
+          const pattern = includes[0];
+          const parts = pattern.split("/");
+          const staticParts = parts.filter((p) => !p.includes("*") && !p.includes("?"));
+          return staticParts.length > 0 ? staticParts.join("/") : undefined;
         }
         return undefined;
       })
@@ -41,8 +45,8 @@ export default command({
       .with({ partial: true }, () => resolve(".prompts/partials"))
       .with({ out: P.string }, ({ out: outDir }) => resolve(outDir))
       .otherwise(() => {
-        if (firstRoot) {
-          return resolve(firstRoot);
+        if (firstInclude) {
+          return resolve(firstInclude);
         }
         return process.cwd();
       });
