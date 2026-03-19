@@ -2,7 +2,7 @@
 import { isNil } from "es-toolkit";
 
 import { agent } from "@/core/agents/base/agent.js";
-import type { Agent, AgentConfig, SubAgents } from "@/core/agents/base/types.js";
+import type { Agent, AgentConfig, SubAgents } from "@/core/agents/types.js";
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import type {
   FlowAgent,

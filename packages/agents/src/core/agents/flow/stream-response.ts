@@ -1,7 +1,7 @@
 import type { UIMessage, UIMessageStreamOptions } from "ai";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 
-import type { StreamPart } from "@/core/agents/base/types.js";
+import type { StreamPart } from "@/core/types.js";
 
 /**
  * Response conversion methods built from a `StreamPart` readable stream.

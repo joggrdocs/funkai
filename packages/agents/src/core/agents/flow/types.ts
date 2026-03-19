@@ -1,46 +1,19 @@
 import type { ZodType } from "zod";
 
 import type {
-  BaseGenerateParams,
+  GenerateParams,
   GenerateResult,
   Resolver,
   StreamResult,
-} from "@/core/agents/base/types.js";
+} from "@/core/agents/types.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type { Logger } from "@/core/logger.js";
+import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
-import type { TraceEntry, OperationType } from "@/lib/trace.js";
+import type { TraceEntry } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
 
-/**
- * Information about a step in a flow agent execution.
- *
- * Passed to flow agent-level hooks (`onStepStart`, `onStepFinish`)
- * and included in step events.
- */
-export interface StepInfo {
-  /**
-   * The id from the `$` config.
-   *
-   * Matches the `id` field on the step config that produced this event.
-   */
-  id: string;
-
-  /**
-   * Auto-incrementing index within the flow agent execution.
-   *
-   * Starts at `0` for the first `$` call and increments for each
-   * subsequent tracked operation.
-   */
-  index: number;
-
-  /**
-   * What kind of `$` call produced this step.
-   *
-   * Discriminant for filtering or grouping step events.
-   */
-  type: OperationType;
-}
+export type { StepInfo } from "@/core/types.js";
 
 /**
  * Result of a completed flow agent generation.
@@ -127,13 +100,9 @@ export interface FlowAgentConfigBase<TInput> {
   /**
    * Hook: fires when any tracked `$` step finishes.
    *
-   * @param event - Event containing step info, result, and duration.
+   * Receives a unified {@link StepFinishEvent}.
    */
-  onStepFinish?: (event: {
-    step: StepInfo;
-    result: unknown;
-    duration: number;
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**
@@ -211,43 +180,6 @@ export type FlowAgentConfig<TInput, TOutput = void> =
   | FlowAgentConfigWithoutOutput<TInput>;
 
 /**
- * Unified parameters for flow agent `.generate()` and `.stream()`.
- *
- * Shares the same input union (`prompt`, `messages`, `input`) and
- * common fields (`signal`, `timeout`, `logger`, hooks) as `GenerateParams`.
- * Flow agents add their own `onStepFinish` hook with flow-specific shape.
- *
- * @typeParam TInput - The flow agent's typed input type.
- *
- * @example
- * ```typescript
- * // Typed input
- * await myFlow.generate({ input: { targetDir: '.' }, signal })
- *
- * // String prompt
- * await myFlow.generate({ prompt: 'Summarize this repo' })
- *
- * // Message array
- * await myFlow.generate({ messages: [{ role: 'user', content: 'Hi' }] })
- * ```
- */
-export type FlowGenerateParams<TInput = unknown> = BaseGenerateParams &
-  (
-    | { prompt: string; messages?: undefined; input?: undefined }
-    | { messages: readonly unknown[]; prompt?: undefined; input?: undefined }
-    | { input: TInput; prompt?: undefined; messages?: undefined }
-  ) & {
-    /**
-     * Per-call hook — fires after base `onStepFinish`.
-     */
-    onStepFinish?: (event: {
-      step: StepInfo;
-      result: unknown;
-      duration: number;
-    }) => void | Promise<void>;
-  };
-
-/**
  * Parameters passed to the flow agent handler function.
  *
  * @typeParam TInput - The validated input type.
@@ -311,7 +243,7 @@ export interface FlowAgent<TInput, TOutput> {
    * const result = await myFlow.generate({ input: { targetDir: '.' } })
    * ```
    */
-  generate(params: FlowGenerateParams<TInput>): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  generate(params: GenerateParams<TInput>): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 
   /**
    * Run the flow agent with streaming step progress.
@@ -323,12 +255,12 @@ export interface FlowAgent<TInput, TOutput> {
    * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`.
    */
-  stream(params: FlowGenerateParams<TInput>): Promise<Result<StreamResult<TOutput>>>;
+  stream(params: GenerateParams<TInput>): Promise<Result<StreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.
    */
-  fn(): (params: FlowGenerateParams<TInput>) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  fn(): (params: GenerateParams<TInput>) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 
 /**

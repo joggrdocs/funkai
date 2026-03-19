@@ -1,5 +1,5 @@
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
-import type { StreamPart, GenerateResult, StreamResult } from "@/core/agents/base/types.js";
+import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -15,8 +15,8 @@ import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
 import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
-import type { StepInfo } from "@/core/agents/flow/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
+import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -41,11 +41,7 @@ export interface StepBuilderOptions {
    */
   parentHooks?: {
     onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
-    onStepFinish?: (event: {
-      step: StepInfo;
-      result: unknown;
-      duration: number;
-    }) => void | Promise<void>;
+    onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
   };
 
   /**

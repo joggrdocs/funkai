@@ -1,4 +1,4 @@
-import type { StepInfo } from "@/core/agents/flow/types.js";
+import type { StepInfo } from "@/core/types.js";
 import type { ResultError } from "@/utils/result.js";
 
 /**

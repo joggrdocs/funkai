@@ -1,11 +1,12 @@
 import type { AsyncIterableStream } from "ai";
+import { isNil } from "es-toolkit";
 
 import type {
+  GenerateParams,
   GenerateResult,
   Message,
-  StreamPart,
   StreamResult,
-} from "@/core/agents/base/types.js";
+} from "@/core/agents/types.js";
 import { resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,
@@ -22,13 +23,12 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentGenerateResult,
   FlowAgentHandler,
-  FlowGenerateParams,
   InternalFlowAgentOptions,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
+import type { StepFinishEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { FLOW_AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -43,11 +43,7 @@ import type { Result } from "@/utils/result.js";
  *
  * @private
  */
-type StepFinishHook = (event: {
-  step: StepInfo;
-  result: unknown;
-  duration: number;
-}) => void | Promise<void>;
+type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
 /**
  * Build a merged `onStepFinish` parent hook that fires both the config-level
@@ -58,7 +54,7 @@ type StepFinishHook = (event: {
  *
  * @param log - Logger for `fireHooks` error reporting.
  * @param configHook - The hook from `FlowAgentConfig`.
- * @param overrideHook - The hook from `FlowGenerateParams`.
+ * @param overrideHook - The hook from `GenerateParams`.
  * @returns A merged hook callback, or `undefined`.
  *
  * @private
@@ -246,15 +242,15 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function extractInput(params: FlowGenerateParams<TInput>): unknown {
-    if ("input" in params) {
-      return params.input;
-    }
-    if ("prompt" in params) {
+  function extractInput(params: GenerateParams<TInput>): unknown {
+    if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt;
     }
-    if ("messages" in params) {
+    if (Object.hasOwn(params, "messages") && !isNil(params.messages)) {
       return params.messages;
+    }
+    if (Object.hasOwn(params, "input") && !isNil(params.input)) {
+      return params.input;
     }
     throw new Error(
       "Missing input: provide `prompt`, `messages`, or `input` in the params object.",
@@ -266,22 +262,22 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function resolveSignal(params: FlowGenerateParams<TInput>): AbortSignal {
-    const timeout = params.timeout;
-    if (params.signal && timeout !== undefined) {
-      return AbortSignal.any([params.signal, AbortSignal.timeout(timeout)]);
+  function resolveSignal(params: GenerateParams<TInput>): AbortSignal {
+    const { timeout, signal } = params;
+    if (signal && timeout !== undefined) {
+      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
     if (timeout !== undefined) {
       return AbortSignal.timeout(timeout);
     }
-    if (params.signal) {
-      return params.signal;
+    if (signal) {
+      return signal;
     }
     return new AbortController().signal;
   }
 
   async function prepareFlowAgent(
-    params: FlowGenerateParams<TInput>,
+    params: GenerateParams<TInput>,
     writer?: WritableStreamDefaultWriter<StreamPart>,
   ): Promise<
     { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
@@ -349,7 +345,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function generate(
-    params: FlowGenerateParams<TInput>,
+    params: GenerateParams<TInput>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<FlowAgentGenerateResult<any>>> {
     const prepared = await prepareFlowAgent(params);
@@ -439,7 +435,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function stream(
-    params: FlowGenerateParams<TInput>,
+    params: GenerateParams<TInput>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<StreamResult<any>>> {
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();

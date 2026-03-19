@@ -6,7 +6,7 @@ import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
-import type { Agent, Message, Resolver } from "@/core/agents/base/types.js";
+import type { Agent, Message, Resolver } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";

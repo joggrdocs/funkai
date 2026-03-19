@@ -1,4 +1,4 @@
-import type { Message } from "@/core/agents/base/types.js";
+import type { Message } from "@/core/agents/types.js";
 import { safeStringify } from "@/utils/error.js";
 
 /**

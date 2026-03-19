@@ -36,19 +36,19 @@ const geographyAgent = agent({
 
   // --- Observe tool calls as they happen during streaming ---
   onStepFinish: ({ stepId, toolCalls, toolResults, usage }) => {
-    if (toolCalls.length > 0) {
+    if (toolCalls && toolCalls.length > 0) {
       console.log(`\n[step ${stepId}] Tool calls:`);
       for (const tc of toolCalls) {
         console.log(`  → ${tc.toolName} (${tc.argsTextLength} chars args)`);
       }
     }
-    if (toolResults.length > 0) {
+    if (toolResults && toolResults.length > 0) {
       console.log(`[step ${stepId}] Tool results:`);
       for (const tr of toolResults) {
         console.log(`  ← ${tr.toolName} (${tr.resultTextLength} chars result)`);
       }
     }
-    if (usage.totalTokens > 0) {
+    if (usage && usage.totalTokens > 0) {
       console.log(`[step ${stepId}] Tokens: ${usage.inputTokens} in / ${usage.outputTokens} out`);
     }
   },
@@ -122,7 +122,9 @@ const researchFlow = flowAgent(
       console.log(`[step:start] ${step.id} (type: ${step.type}, index: ${step.index})`);
     },
     onStepFinish: ({ step, duration }) => {
-      console.log(`[step:finish] ${step.id} (${duration}ms)`);
+      if (step) {
+        console.log(`[step:finish] ${step.id} (${duration}ms)`);
+      }
     },
   },
   async ({ input, $ }) => {

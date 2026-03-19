@@ -1,4 +1,4 @@
-import type { GenerateResult } from "@/core/agents/base/types.js";
+import type { GenerateResult } from "@/core/agents/types.js";
 import type { AgentStepConfig } from "@/core/agents/flow/steps/agent.js";
 import type { AllConfig } from "@/core/agents/flow/steps/all.js";
 import type { EachConfig } from "@/core/agents/flow/steps/each.js";

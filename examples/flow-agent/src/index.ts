@@ -33,7 +33,9 @@ const summarizeAndTranslate = flowAgent(
       console.log(`  → step started: ${step.id} (${step.type})`);
     },
     onStepFinish: ({ step, duration }) => {
-      console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      if (step) {
+        console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      }
     },
   },
   async ({ input, $ }) => {

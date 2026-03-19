@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import { resolveOutput } from "@/core/agents/base/output.js";
-import type { AgentConfig, GenerateParams, ToolName } from "@/core/agents/base/types.js";
+import type { AgentConfig, GenerateParams, ToolName } from "@/core/agents/types.js";
 
 describe("outputParam accepts all Output factories", () => {
   it("accepts Output.text()", () => {

@@ -1,4 +1,4 @@
-import type { Agent, GenerateParams, GenerateResult } from "@/core/agents/base/types.js";
+import type { Agent, GenerateParams, GenerateResult } from "@/core/agents/types.js";
 
 /**
  * Configuration for `$.agent()` — execute an agent call as a tracked operation.

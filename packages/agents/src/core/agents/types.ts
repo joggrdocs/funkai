@@ -1,11 +1,4 @@
-import type {
-  AsyncIterableStream,
-  ModelMessage,
-  TextStreamPart,
-  ToolSet,
-  UIMessage,
-  UIMessageStreamOptions,
-} from "ai";
+import type { AsyncIterableStream, ModelMessage, UIMessage, UIMessageStreamOptions } from "ai";
 import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
@@ -13,8 +6,10 @@ import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { Model } from "@/core/types.js";
+import type { Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
+
+export type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 
 /**
  * A value that can be static or dynamically resolved from the agent's input.
@@ -42,15 +37,6 @@ import type { Result } from "@/utils/result.js";
  * ```
  */
 export type Resolver<TInput, T> = T | ((params: { input: TInput }) => T | Promise<T>);
-
-/**
- * Concrete stream event type re-exported from the Vercel AI SDK.
- *
- * This is `TextStreamPart<ToolSet>` — the discriminated union of all
- * possible stream events (`text-delta`, `tool-call`, `tool-result`,
- * `finish`, `error`, etc.). Use `part.type` to discriminate.
- */
-export type StreamPart = TextStreamPart<ToolSet>;
 
 /**
  * Compile-time guard that validates a string is a provider-safe tool name.
@@ -304,13 +290,14 @@ export interface StreamResult<TOutput = string> {
 /**
  * Shared fields for all `.generate()` / `.stream()` param types.
  *
- * Contains the common fields shared between `GenerateParams` (agents)
- * and `FlowGenerateParams` (flow agents): logger, signal, timeout,
- * and the start/finish/error hooks.
+ * Contains the common fields shared by agents and flow agents:
+ * logger, signal, timeout, and lifecycle hooks.
  *
- * @private — use `GenerateParams` or `FlowGenerateParams` instead.
+ * @typeParam TInput - The agent's input type.
+ *
+ * @private — use `GenerateParams` instead.
  */
-export interface BaseGenerateParams {
+export interface BaseGenerateParams<TInput = unknown> {
   /**
    * Override the logger for this call.
    *
@@ -342,7 +329,7 @@ export interface BaseGenerateParams {
    * @param event - Event containing the input.
    * @param event.input - The resolved input value.
    */
-  onStart?: (event: { input: unknown }) => void | Promise<void>;
+  onStart?: (event: { input: TInput }) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onFinish`.
@@ -353,7 +340,7 @@ export interface BaseGenerateParams {
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
-    input: unknown;
+    input: TInput;
     result: GenerateResult;
     duration: number;
   }) => void | Promise<void>;
@@ -365,7 +352,23 @@ export interface BaseGenerateParams {
    * @param event.input - The resolved input value.
    * @param event.error - The error that occurred.
    */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
+  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires when a step starts.
+   *
+   * Used by flow agents to receive step-start notifications.
+   * Agents accept but ignore this field for type compatibility.
+   */
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onStepFinish`.
+   *
+   * Receives a unified {@link StepFinishEvent} that carries both
+   * agent tool-loop fields and flow orchestration fields.
+   */
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**
@@ -427,25 +430,12 @@ interface AgentGenerateOverrides<
    * - `z.array(z.object({ ... }))` → auto-wrapped as `Output.array({ element })`
    */
   output?: OutputParam;
-
-  /**
-   * Per-call hook — fires after base `onStepFinish`.
-   *
-   * @param event - Event containing the step ID.
-   * @param event.stepId - The ID of the tool-loop step that completed.
-   */
-  onStepFinish?: (event: {
-    stepId: string;
-    toolCalls: readonly { toolName: string; argsTextLength: number }[];
-    toolResults: readonly { toolName: string; resultTextLength: number }[];
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
-  }) => void | Promise<void>;
 }
 
 /**
  * Input union — exactly one of `prompt`, `messages`, or `input`.
  *
- * Shared by both `GenerateParams` and `FlowGenerateParams`.
+ * Shared by both agents and flow agents.
  *
  * @typeParam TInput - The typed input type.
  * @private
@@ -488,7 +478,7 @@ export type GenerateParams<
   TInput = unknown,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
-> = BaseGenerateParams & AgentGenerateOverrides<TTools, TSubAgents> & InputUnion<TInput>;
+> = BaseGenerateParams<TInput> & AgentGenerateOverrides<TTools, TSubAgents> & InputUnion<TInput>;
 
 /**
  * Configuration for creating an agent.
@@ -662,17 +652,11 @@ export interface AgentConfig<
   onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
 
   /**
-   * Hook: fires after each tool-loop step completes.
+   * Hook: fires after each step completes.
    *
-   * @param event - Event containing the step ID.
-   * @param event.stepId - The ID of the completed tool-loop step.
+   * Receives a unified {@link StepFinishEvent}.
    */
-  onStepFinish?: (event: {
-    stepId: string;
-    toolCalls: readonly { toolName: string; argsTextLength: number }[];
-    toolResults: readonly { toolName: string; resultTextLength: number }[];
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**

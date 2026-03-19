@@ -1,5 +1,6 @@
 import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream } from "ai";
+import { isNil } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -10,10 +11,9 @@ import type {
   GenerateResult,
   Message,
   Resolver,
-  StreamPart,
   StreamResult,
   SubAgents,
-} from "@/core/agents/base/types.js";
+} from "@/core/agents/types.js";
 import {
   buildAITools,
   resolveValue,
@@ -25,6 +25,7 @@ import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
+import type { StepFinishEvent, StreamPart } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -98,14 +99,14 @@ export function agent<
    * @private
    */
   function extractInput(params: GenerateParams<TInput, TTools, TSubAgents>): TInput {
-    if ("input" in params) {
-      return params.input as TInput;
-    }
-    if ("prompt" in params) {
+    if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt as unknown as TInput;
     }
-    if ("messages" in params) {
+    if (Object.hasOwn(params, "messages") && !isNil(params.messages)) {
       return params.messages as unknown as TInput;
+    }
+    if (Object.hasOwn(params, "input") && !isNil(params.input)) {
+      return params.input as TInput;
     }
     throw new Error(
       "Missing input: provide `prompt`, `messages`, or `input` in the params object.",
@@ -171,14 +172,14 @@ export function agent<
   function resolveSignal(
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): AbortSignal | undefined {
-    const timeout = params.timeout;
-    if (params.signal && timeout !== undefined) {
-      return AbortSignal.any([params.signal, AbortSignal.timeout(timeout)]);
+    const { timeout, signal } = params;
+    if (signal && timeout !== undefined) {
+      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
     if (timeout !== undefined) {
       return AbortSignal.timeout(timeout);
     }
-    return params.signal;
+    return signal;
   }
 
   /**
@@ -245,7 +246,7 @@ export function agent<
         return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
       });
       const usage = extractUsage(step.usage);
-      const event = { stepId, toolCalls, toolResults, usage };
+      const event: StepFinishEvent = { stepId, toolCalls, toolResults, usage };
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),

@@ -7,10 +7,10 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
   InternalFlowAgentOptions,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
 import { createDefaultLogger } from "@/core/logger.js";
+import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { ExecutionContext } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 
@@ -92,11 +92,7 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Default hook: fires when any step finishes.
    */
-  onStepFinish?: (event: {
-    step: StepInfo;
-    result: unknown;
-    duration: number;
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**

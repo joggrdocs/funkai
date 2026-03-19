@@ -6,7 +6,7 @@ export { ok, err, isOk, isErr } from "@/utils/result.js";
 export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
-export type { Runnable, Model } from "@/core/types.js";
+export type { Runnable, Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 export type {
   TextStreamPart,
   AsyncIterableStream,
@@ -31,17 +31,14 @@ export type {
   GenerateParams,
   GenerateResult,
   StreamResult,
-  StreamPart,
-} from "@/core/agents/base/types.js";
+} from "@/core/agents/types.js";
 
 export type {
   FlowAgent,
   FlowAgentConfig,
-  FlowGenerateParams,
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 
 export type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";

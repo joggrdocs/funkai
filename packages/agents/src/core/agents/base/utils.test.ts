@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import type { Message } from "@/core/agents/base/types.js";
+import type { Message } from "@/core/agents/types.js";
 import {
   buildAITools,
   buildPrompt,
