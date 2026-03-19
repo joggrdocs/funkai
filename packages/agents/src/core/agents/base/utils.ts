@@ -1,7 +1,7 @@
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
-import { isFunction, isNil, isNotNil } from "es-toolkit";
-import { has } from "es-toolkit/compat";
+import { isFunction, isNil, isNotNil, isString } from "es-toolkit";
+
 import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
@@ -114,7 +114,7 @@ export async function resolveValue<TInput, T>(
   value: Resolver<TInput, T>,
   input: TInput,
 ): Promise<T> {
-  if (isFunction(value) && !has(value, "doGenerate")) {
+  if (isFunction(value) && !Object.hasOwn(value, "doGenerate")) {
     return (value as (params: { input: TInput }) => T | Promise<T>)({ input });
   }
   return value as T;
@@ -172,12 +172,12 @@ export async function buildPrompt<TInput>(
       // Config.prompt is guaranteed non-null by the match
       const promptFn = config.prompt as NonNullable<typeof config.prompt>;
       const built = await promptFn({ input });
-      return match(typeof built === "string")
+      return match(isString(built))
         .with(true, () => ({ prompt: built as string }))
         .otherwise(() => ({ messages: built as Message[] }));
     })
     .otherwise(() =>
-      match(typeof input === "string")
+      match(isString(input))
         .with(true, () => ({ prompt: input as string }))
         .otherwise(() => ({ messages: input as Message[] })),
     );

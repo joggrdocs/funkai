@@ -1,5 +1,6 @@
 /* oxlint-disable @typescript-eslint/no-explicit-any -- evolve() operates on type-erased configs; generics are preserved by the public overloads */
-import { isNil } from "es-toolkit";
+import { isNil, isNotNil } from "es-toolkit";
+
 
 import { agent } from "@/core/agents/base/agent.js";
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
@@ -238,5 +239,5 @@ function mergeRecordField<T extends Record<string, unknown>>(
 function isFlowAgentConfigWithOutput(
   config: FlowAgentConfig<any, any>,
 ): config is FlowAgentConfigWithOutput<any, any> {
-  return "output" in config && config.output !== undefined;
+  return Object.hasOwn(config, "output") && isNotNil(config.output);
 }

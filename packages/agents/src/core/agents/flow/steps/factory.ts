@@ -1,3 +1,6 @@
+import { isNil, isNotNil } from "es-toolkit";
+import { isObject } from "es-toolkit/compat";
+
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -134,7 +137,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     ctx.messages.push(createToolCallMessage(toolCallId, id, input));
 
     // Write tool-call event to stream if writer is available
-    if (writer !== undefined) {
+    if (isNotNil(writer)) {
       writer
         .write({
           type: "tool-call",
@@ -162,14 +165,8 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const duration = finishedAt - startedAt;
 
       const usage: TokenUsage | undefined = (() => {
-        if (
-          type === "agent" &&
-          value !== null &&
-          value !== undefined &&
-          typeof value === "object" &&
-          "usage" in value
-        ) {
-          return (value as { usage: TokenUsage }).usage;
+        if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
+          return (value as unknown as { usage: TokenUsage }).usage;
         }
         return undefined;
       })();
@@ -183,7 +180,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         children: childTrace,
         output: value,
       };
-      if (usage !== undefined) {
+      if (isNotNil(usage)) {
         traceRecord.usage = usage;
       }
       ctx.trace.push(traceRecord);
@@ -192,7 +189,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       ctx.messages.push(createToolResultMessage(toolCallId, id, value));
 
       // Write tool-result event to stream
-      if (writer !== undefined) {
+      if (isNotNil(writer)) {
         writer
           .write({
             type: "tool-result",
@@ -244,7 +241,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       ctx.messages.push(createToolResultMessage(toolCallId, id, { error: error.message }, true));
 
       // Write error tool-result event to stream
-      if (writer !== undefined) {
+      if (isNotNil(writer)) {
         writer
           .write({
             type: "tool-result",
@@ -293,7 +290,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
         // When stream: true and a writer is available, use agent.stream()
         // To pipe events through the parent flow's stream
-        if (config.stream && writer !== undefined) {
+        if (config.stream && isNotNil(writer)) {
           const streamResult = await config.agent.stream(agentParams);
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message);
@@ -351,12 +348,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       input: config.input,
       execute: async ({ $ }) => {
         const { concurrency } = config;
-        if (
-          concurrency !== null &&
-          concurrency !== undefined &&
-          concurrency !== Infinity &&
-          concurrency > 0
-        ) {
+        if (isNotNil(concurrency) && concurrency !== Infinity && concurrency > 0) {
           return poolMap(config.input, concurrency, ctx.signal, (item, index) =>
             config.execute({ item, index, $ }),
           );
@@ -505,8 +497,10 @@ function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>
   handler: F,
   invoke: (fn: NonNullable<F>) => void | Promise<void>,
 ): (() => void | Promise<void>) | undefined {
-  if (handler !== null && handler !== undefined) {
-    return () => invoke(handler);
+  if (isNotNil(handler)) {
+    // TypeScript can't narrow generic types through type guards;
+    // The isNotNil check above guarantees handler is NonNullable<F>
+    return () => invoke(handler as NonNullable<F>);
   }
   return undefined;
 }
@@ -521,15 +515,17 @@ function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
     fn: NonNullable<NonNullable<StepBuilderOptions["parentHooks"]>[K]>,
   ) => void | Promise<void>,
 ): (() => void | Promise<void>) | undefined {
-  if (hooks === null || hooks === undefined) {
+  if (isNil(hooks)) {
     return undefined;
   }
   // eslint-disable-next-line security/detect-object-injection -- Key is a controlled internal hook name, not user input
   const fn = hooks[key];
-  if (fn === null || fn === undefined) {
+  if (isNil(fn)) {
     return undefined;
   }
-  return () => invoke(fn);
+  // TypeScript can't narrow generic indexed types through type guards;
+  // The isNil check above guarantees fn is NonNullable
+  return () => invoke(fn as NonNullable<typeof fn>);
 }
 
 /**
@@ -540,7 +536,7 @@ function buildOnFinishHandler<T>(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result as T, duration: event.duration });
@@ -554,7 +550,7 @@ function buildOnFinishHandlerVoid(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, duration: event.duration });
@@ -568,7 +564,7 @@ function buildOnFinishHandlerRace(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result, duration: event.duration });

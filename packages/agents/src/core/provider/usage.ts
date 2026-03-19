@@ -1,4 +1,4 @@
-import { groupBy, sumBy } from "es-toolkit";
+import { groupBy, isNotNil, isString, sumBy } from "es-toolkit";
 
 import type { TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
 
@@ -75,12 +75,12 @@ export function usageByAgent(records: TokenUsageRecord[]): readonly AgentTokenUs
 
   const grouped = groupBy(records, (r) => {
     const agentId: string | undefined = (() => {
-      if (r.source !== null && r.source !== undefined) {
+      if (isNotNil(r.source)) {
         return r.source.agentId;
       }
       return undefined;
     })();
-    if (typeof agentId === "string") {
+    if (isString(agentId)) {
       return agentId;
     }
     return UNATTRIBUTED;

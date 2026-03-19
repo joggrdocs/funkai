@@ -1,5 +1,6 @@
 import type { AsyncIterableStream } from "ai";
-import { isNil } from "es-toolkit";
+import { isNil, isNotNil } from "es-toolkit";
+
 
 import { resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
@@ -59,7 +60,7 @@ function buildMergedStepFinishHook(
   configHook: StepFinishHook | undefined,
   overrideHook: StepFinishHook | undefined,
 ): StepFinishHook | undefined {
-  if (configHook === undefined && overrideHook === undefined) {
+  if (isNil(configHook) && isNil(overrideHook)) {
     return undefined;
   }
   return async (event) => {
@@ -187,7 +188,7 @@ export function flowAgent<TInput, TOutput = any>(
     output: unknown,
     messages: Message[],
   ): { ok: true; value: unknown } | { ok: false; message: string } {
-    if (config.output !== undefined) {
+    if (isNotNil(config.output)) {
       const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {
         return { ok: false, message: `Output validation failed: ${outputParsed.error.message}` };
@@ -259,10 +260,10 @@ export function flowAgent<TInput, TOutput = any>(
    */
   function resolveSignal(params: GenerateParams<TInput>): AbortSignal {
     const { timeout, signal } = params;
-    if (signal && timeout !== undefined) {
+    if (signal && isNotNil(timeout)) {
       return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
-    if (timeout !== undefined) {
+    if (isNotNil(timeout)) {
       return AbortSignal.timeout(timeout);
     }
     if (signal) {

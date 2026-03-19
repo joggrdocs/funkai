@@ -1,6 +1,7 @@
 import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream } from "ai";
-import { isNil } from "es-toolkit";
+import { isNil, isNotNil, isString } from "es-toolkit";
+
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -173,10 +174,10 @@ export function agent<
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): AbortSignal | undefined {
     const { timeout, signal } = params;
-    if (signal && timeout !== undefined) {
+    if (signal && isNotNil(timeout)) {
       return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
-    if (timeout !== undefined) {
+    if (isNotNil(timeout)) {
       return AbortSignal.timeout(timeout);
     }
     return signal;
@@ -566,7 +567,7 @@ export function agent<
 function safeSerializedLength(value: unknown): number {
   try {
     const json = JSON.stringify(value);
-    if (typeof json === "string") {
+    if (isString(json)) {
       return json.length;
     }
     return 0;
@@ -595,7 +596,7 @@ function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
  * @private
  */
 function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | undefined {
-  if (param !== undefined) {
+  if (isNotNil(param)) {
     return resolveOutput(param);
   }
   return undefined;
@@ -608,7 +609,7 @@ function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | und
  * @private
  */
 function extractProperty(obj: Record<string, unknown>, key: string): unknown {
-  if (key in obj) {
+  if (Object.hasOwn(obj, key)) {
     // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
     return obj[key];
   }
@@ -628,7 +629,7 @@ function extractUsage(
   outputTokens: number;
   totalTokens: number;
 } {
-  if (usage !== undefined) {
+  if (isNotNil(usage)) {
     const inputTokens = usage.inputTokens ?? 0;
     const outputTokens = usage.outputTokens ?? 0;
     return {
@@ -647,7 +648,7 @@ function extractUsage(
  * @private
  */
 function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
-  if (output !== undefined) {
+  if (isNotNil(output)) {
     return ifOutput;
   }
   return ifText;

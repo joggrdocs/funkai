@@ -1,3 +1,4 @@
+import { isNotNil } from "es-toolkit";
 import { match, P } from "ts-pattern";
 
 import type { TokenUsage } from "@/core/provider/types.js";
@@ -112,7 +113,7 @@ export function collectUsages(trace: readonly TraceEntry[]): TokenUsage[] {
     const usages: TokenUsage[] = match(entry.usage)
       .with(P.nonNullable, (u) => [u])
       .otherwise(() => []);
-    if (entry.children !== null && entry.children !== undefined && entry.children.length > 0) {
+    if (isNotNil(entry.children) && entry.children.length > 0) {
       return [...usages, ...collectUsages(entry.children)];
     }
     return usages;
