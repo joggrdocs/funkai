@@ -48,6 +48,32 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
   );
 }
 
+/** @private */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+/**
+ * Render a single partial tag via LiquidJS, wrapping errors with context.
+ *
+ * @private
+ */
+function renderPartial(engine: Liquid, tag: RenderTag): string {
+  const liquidTag = `{% render '${tag.partialName}' ${Object.entries(tag.params)
+    .map(([k, v]) => `${k}: '${v}'`)
+    .join(", ")} %}`;
+  try {
+    return engine.parseAndRenderSync(liquidTag);
+  } catch (error) {
+    throw new Error(`Failed to render partial '${tag.partialName}': ${errorMessage(error)}`, {
+      cause: error,
+    });
+  }
+}
+
 /**
  * Find all `{% render %}` tags in a template string.
  *
@@ -103,13 +129,8 @@ export function flattenPartials({ template, partialsDirs }: FlattenPartialsParam
   });
 
   const result = tags.reduce((acc, tag) => {
-    const rendered = engine.parseAndRenderSync(
-      `{% render '${tag.partialName}' ${Object.entries(tag.params)
-        .map(([k, v]) => `${k}: '${v}'`)
-        .join(", ")} %}`,
-    );
-
-    return acc.replace(tag.fullMatch, rendered);
+    const rendered = renderPartial(engine, tag);
+    return acc.replace(tag.fullMatch, () => rendered);
   }, template);
 
   return result;

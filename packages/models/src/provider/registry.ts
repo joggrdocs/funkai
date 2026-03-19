@@ -3,6 +3,14 @@ import { createProviderRegistry as baseCreateProviderRegistry } from "ai";
 import type { ModelId } from "@/catalog/index.js";
 import type { LanguageModel } from "@/provider/types.js";
 
+/** @private */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 /**
  * Extract the provider type accepted by the AI SDK's `createProviderRegistry`.
  *
@@ -86,8 +94,19 @@ export function createProviderRegistry(config: ProviderRegistryConfig): Provider
     if (!modelId.trim()) {
       throw new Error("Cannot resolve model: model ID is empty");
     }
+    if (!modelId.includes("/")) {
+      throw new Error(
+        `Invalid model ID "${modelId}": expected "provider/model" format (e.g. "openai/gpt-4.1")`,
+      );
+    }
     // Cast needed: AI SDK overloads expect `provider/model` template literal,
     // But our ModelId is a branded string union. The runtime validates the format.
-    return inner.languageModel(modelId as `${string}/${string}`) as LanguageModel;
+    try {
+      return inner.languageModel(modelId as `${string}/${string}`) as LanguageModel;
+    } catch (error) {
+      throw new Error(`Failed to resolve model "${modelId}": ${errorMessage(error)}`, {
+        cause: error,
+      });
+    }
   };
 }

@@ -2,6 +2,9 @@ import { Liquid } from "liquidjs";
 
 const DANGEROUS_NAMES = new Set(["constructor", "__proto__", "prototype"]);
 
+/** Module-level engine — no config needed for variable extraction. */
+const engine = new Liquid();
+
 /** @private */
 function extractRoot(variable: unknown): string {
   if (Array.isArray(variable)) {
@@ -27,7 +30,6 @@ function extractRoot(variable: unknown): string {
  * ```
  */
 export function extractVariables(template: string): readonly string[] {
-  const engine = new Liquid();
   const parsed = engine.parse(template);
   const variables = engine.variablesSync(parsed);
 
