@@ -55,11 +55,10 @@ function isPromptModule(value: unknown): value is PromptModule {
  */
 function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
   Object.freeze(obj);
-  Object.values(obj)
-    .filter(
-      (value): value is PromptNamespace =>
-        typeof value === "object" && value !== null && !Object.isFrozen(value) && !isPromptModule(value),
-    )
-    .forEach((value) => deepFreeze(value));
+  for (const value of Object.values(obj)) {
+    if (typeof value === "object" && value !== null && !Object.isFrozen(value) && !isPromptModule(value)) {
+      deepFreeze(value as PromptNamespace);
+    }
+  }
   return obj as PromptRegistry<T>;
 }

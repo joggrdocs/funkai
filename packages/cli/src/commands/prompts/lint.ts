@@ -48,12 +48,12 @@ export function handleLint({ args, logger, fail }: HandleLintParams): void {
 
   const diagnostics = results.flatMap((result) => result.diagnostics);
 
-  diagnostics.forEach((diag) => {
+  for (const diag of diagnostics) {
     match(diag.level)
       .with("error", () => logger.error(diag.message))
       .with("warn", () => logger.warn(diag.message))
       .exhaustive();
-  });
+  }
 
   const errorCount = diagnostics.filter((d) => d.level === "error").length;
   const warnCount = diagnostics.filter((d) => d.level !== "error").length;

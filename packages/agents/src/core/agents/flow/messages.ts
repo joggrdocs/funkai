@@ -74,7 +74,7 @@ export function createToolResultMessage(
         toolCallId,
         toolName,
         output: result ?? {},
-        ...(isError ? { isError: true as const } : {}),
+        ...(isError && { isError: true as const }),
       },
     ],
   } as Message;

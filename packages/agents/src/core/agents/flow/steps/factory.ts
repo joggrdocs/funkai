@@ -174,7 +174,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         finishedAt,
         children: childTrace,
         output: value,
-        ...(isNotNil(usage) ? { usage } : {}),
+        ...(isNotNil(usage) && { usage }),
       };
       ctx.trace.push(traceRecord);
 

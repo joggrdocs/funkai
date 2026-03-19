@@ -141,7 +141,7 @@ function parseGroup(raw: unknown, filePath: string): string | undefined {
  * @private
  */
 function parseVersion(raw: unknown): string | undefined {
-  if (raw != null) {
+  if (raw !== null && raw !== undefined) {
     return String(raw);
   }
   return undefined;

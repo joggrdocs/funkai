@@ -121,8 +121,12 @@ function fmtNum(n: number): string {
  * @private
  */
 function buildPricing(cost: ApiModel["cost"]): string {
-  const costInput = cost?.input ?? 0;
-  const costOutput = cost?.output ?? 0;
+  let costInput = 0;
+  let costOutput = 0;
+  if (cost !== undefined && cost !== null) {
+    costInput = cost.input;
+    costOutput = cost.output;
+  }
   const input = toPerToken(costInput);
   const output = toPerToken(costOutput);
   const parts: string[] = [`input: ${fmtNum(input)}`, `output: ${fmtNum(output)}`];
@@ -148,8 +152,12 @@ function buildPricing(cost: ApiModel["cost"]): string {
  * @private
  */
 function buildModalities(modalities: ApiModel["modalities"]): string {
-  const modalInput = modalities?.input ?? ["text"];
-  const modalOutput = modalities?.output ?? ["text"];
+  let modalInput: string[] = ["text"];
+  let modalOutput: string[] = ["text"];
+  if (modalities !== undefined && modalities !== null) {
+    modalInput = modalities.input;
+    modalOutput = modalities.output;
+  }
   const input = JSON.stringify(modalInput);
   const output = JSON.stringify(modalOutput);
   return `{ input: ${input}, output: ${output} }`;
@@ -313,7 +321,11 @@ ${lines.join("\n")}
       const { prefix } = providerEntry;
       const camel = lowerFirst(prefix);
       const [firstModel] = Object.values(apiModels);
-      const exampleId = escapeStr(firstModel?.id ?? "example-id");
+      let exampleRawId = "example-id";
+      if (firstModel !== undefined && firstModel !== null) {
+        exampleRawId = firstModel.id;
+      }
+      const exampleId = escapeStr(exampleRawId);
       const providerName = escapeStr(providerEntry.name);
       const art = article(providerEntry.name);
       const entryContent = `${BANNER}
