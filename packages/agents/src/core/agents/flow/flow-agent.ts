@@ -247,11 +247,12 @@ export function flowAgent<TInput, TOutput = any>(
    * @private
    */
   function resolveSignal(params: FlowGenerateParams<TInput>): AbortSignal {
-    if (params.signal && params.timeout) {
-      return AbortSignal.any([params.signal, AbortSignal.timeout(params.timeout)]);
+    const timeout = params.timeout;
+    if (params.signal && timeout !== undefined) {
+      return AbortSignal.any([params.signal, AbortSignal.timeout(timeout)]);
     }
-    if (params.timeout) {
-      return AbortSignal.timeout(params.timeout);
+    if (timeout !== undefined) {
+      return AbortSignal.timeout(timeout);
     }
     if (params.signal) {
       return params.signal;

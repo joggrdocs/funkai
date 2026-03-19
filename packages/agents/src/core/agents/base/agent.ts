@@ -98,13 +98,13 @@ export function agent<
    * @private
    */
   function extractInput(params: GenerateParams<TInput, TTools, TSubAgents>): TInput {
-    if (params.input !== undefined) {
-      return params.input;
+    if ("input" in params) {
+      return params.input as TInput;
     }
-    if (params.prompt !== undefined) {
+    if ("prompt" in params) {
       return params.prompt as unknown as TInput;
     }
-    if (params.messages !== undefined) {
+    if ("messages" in params) {
       return params.messages as unknown as TInput;
     }
     throw new Error(
@@ -171,11 +171,12 @@ export function agent<
   function resolveSignal(
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): AbortSignal | undefined {
-    if (params.signal && params.timeout) {
-      return AbortSignal.any([params.signal, AbortSignal.timeout(params.timeout)]);
+    const timeout = params.timeout;
+    if (params.signal && timeout !== undefined) {
+      return AbortSignal.any([params.signal, AbortSignal.timeout(timeout)]);
     }
-    if (params.timeout) {
-      return AbortSignal.timeout(params.timeout);
+    if (timeout !== undefined) {
+      return AbortSignal.timeout(timeout);
     }
     return params.signal;
   }
