@@ -6,13 +6,7 @@ import type { ZodType } from "zod";
  */
 export type CreateEngineOptions = Pick<
   LiquidOptions,
-  | "root"
-  | "partials"
-  | "extname"
-  | "cache"
-  | "strictFilters"
-  | "strictVariables"
-  | "ownPropertyOnly"
+  "root" | "partials" | "extname" | "cache" | "strictVariables"
 >;
 
 /**

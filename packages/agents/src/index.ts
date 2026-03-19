@@ -1,6 +1,7 @@
 export { tool } from "@/core/tool.js";
 export { agent } from "@/core/agents/base/agent.js";
 export { flowAgent } from "@/core/agents/flow/flow-agent.js";
+export { createFlowEngine } from "@/core/agents/flow/engine.js";
 export { evolve } from "@/core/agents/evolve.js";
 export { ok, err, isOk, isErr } from "@/utils/result.js";
 export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
@@ -41,6 +42,13 @@ export type {
   FlowAgentGenerateResult,
 } from "@/core/agents/flow/types.js";
 
+export type {
+  CustomStepFactory,
+  CustomStepDefinitions,
+  TypedCustomSteps,
+  FlowEngineConfig,
+  FlowFactory,
+} from "@/core/agents/flow/engine.js";
 export type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 export type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 export type { StepConfig } from "@/core/agents/flow/steps/step.js";

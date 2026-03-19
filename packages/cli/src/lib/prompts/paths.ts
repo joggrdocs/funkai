@@ -1,6 +1,8 @@
 import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 
+import { parse as parseYaml } from "yaml";
+
 import { FRONTMATTER_RE, NAME_RE } from "./frontmatter.js";
 
 const MAX_DEPTH = 5;
@@ -19,24 +21,25 @@ export interface DiscoveredPrompt {
 /**
  * Extract the `name` field from YAML frontmatter.
  *
- * This is a lightweight extraction that avoids pulling in a full YAML parser.
- * It looks for `name: <value>` in the frontmatter block.
+ * Uses a proper YAML parser to handle quoted values and edge cases.
  *
  * @private
  */
 function extractName(content: string): string | undefined {
-  const match = content.match(FRONTMATTER_RE);
-  if (!match) {
+  const fmMatch = content.match(FRONTMATTER_RE);
+  if (!fmMatch) {
     return undefined;
   }
 
-  const [, frontmatter] = match;
-  const nameLine = frontmatter.split("\n").find((line) => line.startsWith("name:"));
-  if (!nameLine) {
+  try {
+    const parsed = parseYaml(fmMatch[1]) as Record<string, unknown> | null;
+    if (parsed !== null && parsed !== undefined && typeof parsed.name === "string") {
+      return parsed.name;
+    }
+    return undefined;
+  } catch {
     return undefined;
   }
-
-  return nameLine.slice("name:".length).trim();
 }
 
 /**

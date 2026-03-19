@@ -12,9 +12,6 @@ import type { TokenUsage } from "@/core/provider/types.js";
  */
 export type OperationType = "step" | "agent" | "map" | "each" | "reduce" | "while" | "all" | "race";
 
-/** @deprecated Use `OperationType` instead. */
-export type TraceType = OperationType;
-
 /**
  * A single entry in the execution trace.
  *

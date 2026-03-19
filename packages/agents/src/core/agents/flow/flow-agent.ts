@@ -23,7 +23,7 @@ import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/co
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { StepFinishEvent, StreamPart } from "@/core/types.js";
+import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { FLOW_AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -38,6 +38,7 @@ import type { Result } from "@/utils/result.js";
  *
  * @private
  */
+type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
 type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
 /**
@@ -59,6 +60,25 @@ function buildMergedStepFinishHook(
   configHook: StepFinishHook | undefined,
   overrideHook: StepFinishHook | undefined,
 ): StepFinishHook | undefined {
+  if (isNil(configHook) && isNil(overrideHook)) {
+    return undefined;
+  }
+  return async (event) => {
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(overrideHook, event));
+  };
+}
+
+/**
+ * Build a merged `onStepStart` parent hook that fires both the config-level
+ * and per-call override hooks sequentially (config first, then override).
+ *
+ * @private
+ */
+function buildMergedStepStartHook(
+  log: Logger,
+  configHook: StepStartHook | undefined,
+  overrideHook: StepStartHook | undefined,
+): StepStartHook | undefined {
   if (isNil(configHook) && isNil(overrideHook)) {
     return undefined;
   }
@@ -304,6 +324,7 @@ export function flowAgent<TInput, TOutput = any>(
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
+    const mergedOnStepStart = buildMergedStepStartHook(log, config.onStepStart, params.onStepStart);
     const mergedOnStepFinish = buildMergedStepFinishHook(
       log,
       config.onStepFinish,
@@ -313,7 +334,7 @@ export function flowAgent<TInput, TOutput = any>(
     const base$ = createStepBuilder({
       ctx,
       parentHooks: {
-        onStepStart: config.onStepStart,
+        onStepStart: mergedOnStepStart,
         onStepFinish: mergedOnStepFinish,
       },
       writer,

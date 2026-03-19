@@ -18,11 +18,16 @@ describe(createEngine, () => {
   it("should merge custom options with defaults", () => {
     const eng = createEngine("/tmp/test-partials", {
       cache: false,
-      strictFilters: false,
     });
-    // Should not throw on unknown filter when strictFilters is disabled
-    const result = eng.parseAndRenderSync("{{ name | nonexistent }}", { name: "test" });
-    expect(result).toBe("test");
+    const result = eng.parseAndRenderSync("Hello {{ name }}", { name: "World" });
+    expect(result).toBe("Hello World");
+  });
+
+  it("should enforce strictFilters regardless of options", () => {
+    const eng = createEngine("/tmp/test-partials");
+    expect(() => {
+      eng.parseAndRenderSync("{{ name | bogus }}", { name: "test" });
+    }).toThrow();
   });
 });
 

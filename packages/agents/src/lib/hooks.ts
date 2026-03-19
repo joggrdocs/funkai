@@ -34,8 +34,10 @@ export function wrapHook<T>(
 /**
  * Run hook callbacks sequentially, logging errors at warn level.
  *
- * Unlike `attemptEachAsync`, this function surfaces errors via the
- * logger so hook failures are visible in diagnostic output.
+ * Hook errors are **intentionally swallowed** — hooks are observability
+ * callbacks and must not crash agent execution. Errors are logged at
+ * `warn` level so they appear in diagnostic output. If you need to
+ * guarantee hook execution, monitor your warn-level logs.
  *
  * @param log - Logger for warning about hook errors.
  * @param handlers - Callbacks to execute in order. `undefined` entries are skipped.
