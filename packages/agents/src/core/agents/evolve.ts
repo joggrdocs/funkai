@@ -184,11 +184,12 @@ function mergeAgentConfigs(
   base: AgentConfig<any, any, any, any>,
   overrides: Record<string, unknown>,
 ): AgentConfig<any, any, any, any> {
+  const { tools: overrideTools, agents: overrideAgents, ...restOverrides } = overrides;
   return {
     ...base,
-    ...overrides,
-    tools: mergeRecordField(base.tools, overrides.tools as Record<string, Tool> | undefined),
-    agents: mergeRecordField(base.agents, overrides.agents as SubAgents | undefined),
+    ...restOverrides,
+    tools: mergeRecordField(base.tools, overrideTools as Record<string, Tool> | undefined),
+    agents: mergeRecordField(base.agents, overrideAgents as SubAgents | undefined),
   };
 }
 
