@@ -322,6 +322,132 @@ describe("evolve() with FlowAgent", () => {
   });
 });
 
+describe("evolve() with Agent mapper function", () => {
+  it("receives the stored config and applies returned overrides", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, (config) => ({
+      name: `${config.name}-evolved`,
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.name).toBe("base-agent-evolved");
+  });
+
+  it("can override model via mapper", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, () => ({
+      model: mockModelAlt,
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.model).toBe(mockModelAlt);
+  });
+
+  it("preserves base config fields not in mapper return", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, () => ({
+      name: "mapper-only-name",
+    }));
+
+    const config = readAgentConfig(evolved);
+    expect(config?.system).toBe("You are a test agent.");
+    expect(config?.model).toBe(mockModel);
+    expect(config?.input).toBe(Input);
+    expect(config?.output).toBe(Output);
+  });
+
+  it("shallow merges tools from mapper return", () => {
+    const toolA = { execute: vi.fn() } as never;
+    const toolB = { execute: vi.fn() } as never;
+    const toolBReplacement = { execute: vi.fn() } as never;
+
+    const base = agent({
+      name: "tooled",
+      model: mockModel,
+      tools: { a: toolA, b: toolB },
+      logger: createMockLogger(),
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
+    const evolved = evolve(base as any, () => ({ tools: { b: toolBReplacement } }));
+    const config = readAgentConfig(evolved);
+    const tools = config?.tools as Record<string, unknown>;
+
+    expect(tools.a).toBe(toolA);
+    expect(tools.b).toBe(toolBReplacement);
+  });
+
+  it("does not mutate the base agent", () => {
+    const base = createTestAgent();
+    const baseCfg = readAgentConfig(base);
+
+    evolve(base, () => ({ name: "evolved", system: "Changed." }));
+
+    const baseCfgAfter = readAgentConfig(base);
+    expect(baseCfgAfter?.name).toBe("base-agent");
+    expect(baseCfgAfter?.system).toBe("You are a test agent.");
+    expect(baseCfgAfter).toEqual(baseCfg);
+  });
+
+  it("returns an agent with generate, stream, and fn methods", () => {
+    const base = createTestAgent();
+    const evolved = evolve(base, () => ({ name: "evolved" }));
+
+    expect(typeof evolved.generate).toBe("function");
+    expect(typeof evolved.stream).toBe("function");
+    expect(typeof evolved.fn).toBe("function");
+  });
+});
+
+describe("evolve() with FlowAgent mapper function", () => {
+  it("receives the stored flow config and applies returned overrides", () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(base, (config) => ({
+      name: `${config.name}-evolved`,
+    }));
+
+    const stored = readFlowConfig(evolved);
+    expect(stored?.config.name).toBe("base-flow-evolved");
+  });
+
+  it("preserves handler when using mapper form", async () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(base, () => ({ name: "mapper-flow" }));
+
+    const result = await evolved.generate({ input: { text: "hello" } });
+    expect(result.ok).toBeTruthy();
+    if (result.ok) {
+      expect(result.output).toEqual({ result: "HELLO" });
+    }
+  });
+
+  it("replaces handler when provided with mapper form", async () => {
+    const base = createTestFlowAgent();
+    const evolved = evolve(
+      base,
+      () => ({ name: "mapper-flow" }),
+      async ({ input }) => ({ result: `mapped:${input.text}` }),
+    );
+
+    const result = await evolved.generate({ input: { text: "test" } });
+    expect(result.ok).toBeTruthy();
+    if (result.ok) {
+      expect(result.output).toEqual({ result: "mapped:test" });
+    }
+  });
+
+  it("does not mutate the base flow agent", () => {
+    const base = createTestFlowAgent();
+    const baseCfg = readFlowConfig(base);
+
+    evolve(base, () => ({ name: "evolved-flow" }));
+
+    const baseCfgAfter = readFlowConfig(base);
+    expect(baseCfgAfter?.config.name).toBe("base-flow");
+    expect(baseCfgAfter).toEqual(baseCfg);
+  });
+});
+
 describe("evolve() error handling", () => {
   it("throws for a plain object that is not an agent", () => {
     const fake = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };

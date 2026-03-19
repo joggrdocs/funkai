@@ -1,5 +1,5 @@
 /* oxlint-disable @typescript-eslint/no-explicit-any -- evolve() operates on type-erased configs; generics are preserved by the public overloads */
-import { isNil, isNotNil } from "es-toolkit";
+import { isFunction, isNil, isNotNil } from "es-toolkit";
 
 import { agent } from "@/core/agents/base/agent.js";
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
@@ -41,7 +41,7 @@ interface StoredFlowAgentConfig<TInput, TOutput> {
  * @typeParam TTools - Record of tools.
  * @typeParam TSubAgents - Record of subagents.
  * @param base - The agent to evolve from.
- * @param overrides - Partial config overrides.
+ * @param overrides - Partial config overrides or mapper function.
  * @returns A new Agent with merged configuration.
  *
  * @example
@@ -56,11 +56,17 @@ interface StoredFlowAgentConfig<TInput, TOutput> {
  *   tools: { lint, format },
  * })
  *
+ * // Static overrides
  * const local = evolve(base, {
  *   name: 'reviewer-local',
  *   model: ({ input }) => localModel(),
  *   tools: { lint },
  * })
+ *
+ * // Mapper function — derive overrides from the current config
+ * const proxied = evolve(base, (config) => ({
+ *   model: proxy(config.model.modelId),
+ * }))
  * ```
  */
 export function evolve<
@@ -70,7 +76,11 @@ export function evolve<
   TSubAgents extends SubAgents,
 >(
   base: Agent<TInput, TOutput, TTools, TSubAgents>,
-  overrides: Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>,
+  overrides:
+    | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>
+    | ((
+        config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
+      ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>),
 ): Agent<TInput, TOutput, TTools, TSubAgents>;
 
 /**
@@ -83,7 +93,7 @@ export function evolve<
  * @typeParam TInput - Flow agent input type.
  * @typeParam TOutput - Flow agent output type.
  * @param base - The flow agent to evolve from.
- * @param overrides - Partial config overrides.
+ * @param overrides - Partial config overrides or mapper function.
  * @param handler - Optional replacement handler function.
  * @returns A new FlowAgent with merged configuration.
  *
@@ -98,22 +108,24 @@ export function evolve<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to accept both FlowAgent output variants
 export function evolve<TInput, TOutput = any>(
   base: FlowAgent<TInput, TOutput>,
-  overrides: Partial<FlowAgentConfig<TInput, TOutput>>,
+  overrides:
+    | Partial<FlowAgentConfig<TInput, TOutput>>
+    | ((config: FlowAgentConfig<TInput, TOutput>) => Partial<FlowAgentConfig<TInput, TOutput>>),
   handler?: FlowAgentHandler<TInput, TOutput>,
 ): FlowAgent<TInput, TOutput>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- implementation signature accepts both overloads
 export function evolve(
   base: unknown,
-  overrides: Record<string, unknown>,
+  overridesOrMapper: Record<string, any> | ((config: any) => Record<string, any>),
   handler?: unknown,
 ): unknown {
   if (isAgent(base)) {
-    return evolveAgent(base, overrides);
+    return evolveAgent(base, overridesOrMapper);
   }
 
   if (isFlowAgent(base)) {
-    return evolveFlowAgent(base, overrides, handler);
+    return evolveFlowAgent(base, overridesOrMapper, handler);
   }
 
   throw new Error(
@@ -132,13 +144,17 @@ export function evolve(
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal helper; generics are preserved by the public overloads
-function evolveAgent(base: unknown, overrides: Record<string, unknown>): any {
+function evolveAgent(
+  base: unknown,
+  overridesOrMapper: Record<string, any> | ((config: any) => Record<string, any>),
+): any {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal: stored config type is erased
   const baseConfig = getAgentConfig<AgentConfig<any, any, any, any>>(base);
   if (isNil(baseConfig)) {
     throw new Error("Cannot evolve: agent does not have stored configuration.");
   }
 
+  const overrides = resolveOverrides(overridesOrMapper, baseConfig);
   const merged = mergeAgentConfigs(baseConfig, overrides);
   return agent(merged);
 }
@@ -151,7 +167,7 @@ function evolveAgent(base: unknown, overrides: Record<string, unknown>): any {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal helper; generics are preserved by the public overloads
 function evolveFlowAgent(
   base: unknown,
-  overrides: Record<string, unknown>,
+  overridesOrMapper: Record<string, any> | ((config: any) => Record<string, any>),
   handler?: unknown,
 ): any {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal: stored config type is erased
@@ -160,6 +176,7 @@ function evolveFlowAgent(
     throw new Error("Cannot evolve: flow agent does not have stored configuration.");
   }
 
+  const overrides = resolveOverrides(overridesOrMapper, stored.config);
   const merged = mergeFlowAgentConfigs(stored.config, overrides);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- handler type is erased internally
   const resolvedHandler = (handler ?? stored.handler) as FlowAgentHandler<any, any>;
@@ -227,6 +244,21 @@ function mergeRecordField<T extends Record<string, unknown>>(
     return override;
   }
   return { ...base, ...override };
+}
+
+/**
+ * Resolve overrides from a static object or a mapper function.
+ *
+ * @private
+ */
+function resolveOverrides<T>(
+  overridesOrMapper: Record<string, any> | ((config: T) => Record<string, any>),
+  config: T,
+): Record<string, any> {
+  if (isFunction(overridesOrMapper)) {
+    return overridesOrMapper(config);
+  }
+  return overridesOrMapper;
 }
 
 /**
