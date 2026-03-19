@@ -1,5 +1,17 @@
 # @funkai/agents
 
+## 0.7.0
+
+### Minor Changes
+
+- 952b4b8: Add mapper function overload to `evolve()` for both `Agent` and `FlowAgent`. The mapper receives the stored config and returns partial overrides, enabling provider propagation patterns like rewiring model IDs to a different provider at deploy time.
+
+### Patch Changes
+
+- c4e81fd: Upgrade runtime dependencies to latest versions
+- Updated dependencies [c4e81fd]
+  - @funkai/models@0.3.1
+
 ## 0.6.0
 
 ### Minor Changes
