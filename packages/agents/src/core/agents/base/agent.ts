@@ -9,13 +9,15 @@ import type {
   AgentOverrides,
   GenerateResult,
   Message,
+  Resolver,
   StreamPart,
   StreamResult,
   SubAgents,
 } from "@/core/agents/base/types.js";
 import {
   buildAITools,
-  resolveSystem,
+  resolveValue,
+  resolveOptionalValue,
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
@@ -25,7 +27,7 @@ import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
-import { RUNNABLE_META } from "@/lib/runnable.js";
+import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
@@ -86,8 +88,6 @@ export function agent<
 >(
   config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
 ): Agent<TInput, TOutput, TTools, TSubAgents> {
-  const baseLogger = config.logger ?? createDefaultLogger();
-
   /**
    * Validate raw input against the config schema, if present.
    *
@@ -156,13 +156,16 @@ export function agent<
     overrides: AgentOverrides<TTools, TSubAgents> | undefined,
   ): Promise<PreparedGeneration> {
     const overrideModel = readOverride(overrides, "model");
-    const baseModel = overrideModel ?? config.model;
-    const model = await withModelMiddleware({ model: baseModel });
+    const resolvedModel = overrideModel ?? (await resolveValue(config.model, input));
+    const model = await withModelMiddleware({ model: resolvedModel });
 
     const overrideTools = readOverride(overrides, "tools");
+    const resolvedTools =
+      (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
+    const mergedTools = { ...resolvedTools, ...overrideTools } as Record<string, Tool>;
+    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? ({} as SubAgents);
     const overrideAgents = readOverride(overrides, "agents");
-    const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>;
-    const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents;
+    const mergedAgents = { ...resolvedAgents, ...overrideAgents } as SubAgents;
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
@@ -172,17 +175,20 @@ export function agent<
     );
 
     const overrideSystem = readOverride(overrides, "system");
-    const systemConfig = overrideSystem ?? config.system;
-    const system = resolveSystem(systemConfig, input);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AgentOverrides.system is Resolver-shaped; safe to resolve
+    const system =
+      (await resolveOptionalValue(overrideSystem as Resolver<TInput, string> | undefined, input)) ??
+      (await resolveOptionalValue(config.system, input));
 
-    const promptParams = buildPrompt(input, config);
+    const promptParams = await buildPrompt(input, config);
 
     const overrideOutput = readOverride(overrides, "output");
     const outputParam = overrideOutput ?? config.output;
     const output = resolveOptionalOutput(outputParam);
 
     const overrideMaxSteps = readOverride(overrides, "maxSteps");
-    const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20;
+    const resolvedMaxSteps = await resolveOptionalValue(config.maxSteps, input);
+    const maxSteps = overrideMaxSteps ?? resolvedMaxSteps ?? 20;
     const signal = readOverride(overrides, "signal");
 
     await fireHooks(
@@ -238,7 +244,11 @@ export function agent<
     }
 
     const overrideLogger = readOverride(overrides, "logger");
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
+    const resolvedLogger =
+      overrideLogger ??
+      (await resolveOptionalValue(config.logger, validated.input)) ??
+      createDefaultLogger();
+    const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
 
     try {
@@ -323,7 +333,11 @@ export function agent<
     }
 
     const overrideLogger = readOverride(overrides, "logger");
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
+    const resolvedLogger =
+      overrideLogger ??
+      (await resolveOptionalValue(config.logger, validated.input)) ??
+      createDefaultLogger();
+    const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
 
     try {
@@ -476,6 +490,9 @@ export function agent<
     name: config.name,
     inputSchema: config.input,
   } satisfies RunnableMeta;
+
+  // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+  (agent as unknown as Record<symbol, unknown>)[AGENT_CONFIG] = config;
 
   return agent;
 }

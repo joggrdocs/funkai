@@ -1,6 +1,7 @@
 export { tool } from "@/core/tool.js";
 export { agent } from "@/core/agents/base/agent.js";
 export { flowAgent } from "@/core/agents/flow/flow-agent.js";
+export { evolve } from "@/core/agents/evolve.js";
 export { ok, err, isOk, isErr } from "@/utils/result.js";
 export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
@@ -20,6 +21,7 @@ export type { Tool, ToolConfig } from "@/core/tool.js";
 export type { OutputSpec, OutputParam } from "@/core/agents/base/output.js";
 
 export type {
+  Resolver,
   ToolName,
   SubAgents,
   Message,

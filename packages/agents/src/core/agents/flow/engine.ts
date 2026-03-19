@@ -298,7 +298,14 @@ export function createFlowEngine<
     }) => Promise<TOutput | void>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
   ): FlowAgent<TInput, any> {
-    const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
+    // Logger may be a Resolver function; for engine-level hooks use static value or default
+    let engineLogger: Logger;
+    if (typeof flowConfig.logger === "function") {
+      engineLogger = createDefaultLogger();
+    } else {
+      engineLogger = (flowConfig.logger as Logger | undefined) ?? createDefaultLogger();
+    }
+    const hookLog = engineLogger.child({ source: "engine" });
 
     const { onStart: engineOnStart } = engineConfig;
     const { onStart: flowOnStart } = flowConfig;

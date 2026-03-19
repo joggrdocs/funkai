@@ -17,6 +17,33 @@ import type { Model } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
 
 /**
+ * A value that can be static or dynamically resolved from the agent's input.
+ *
+ * When `T` is a plain value, it's used directly. When it's a function
+ * matching `(params: { input: TInput }) => T | Promise<T>`, it's called
+ * at `.generate()` / `.stream()` time with the validated input.
+ *
+ * This enables environment-aware configuration — different models, tools,
+ * prompts, or loggers depending on runtime context.
+ *
+ * @typeParam TInput - The agent's input type.
+ * @typeParam T - The resolved value type.
+ *
+ * @example
+ * ```typescript
+ * // Static value
+ * model: openai('gpt-4.1')
+ *
+ * // Dynamic resolver
+ * model: ({ input }) => input.runtime === 'local' ? joggr() : openrouter('...')
+ *
+ * // Async resolver
+ * model: async ({ input }) => await fetchModelForPlan(input.plan)
+ * ```
+ */
+export type Resolver<TInput, T> = T | ((params: { input: TInput }) => T | Promise<T>);
+
+/**
  * Concrete stream event type re-exported from the Vercel AI SDK.
  *
  * This is `TextStreamPart<ToolSet>` — the discriminated union of all
@@ -429,11 +456,13 @@ export interface AgentConfig<
    * Model to use for generation.
    *
    * Pass an AI SDK `LanguageModel` instance — including middleware-wrapped
-   * models via `wrapLanguageModel()`.
+   * models via `wrapLanguageModel()`. Accepts a static value or a
+   * resolver function that receives the validated input.
    *
    * @see {@link Model}
+   * @see {@link Resolver}
    */
-  model: Model;
+  model: Resolver<TInput, Model>;
 
   /**
    * Zod schema for the agent's typed input.
@@ -451,28 +480,35 @@ export interface AgentConfig<
    *
    * Required when `input` is provided. Ignored when `input` is
    * omitted (the raw string/messages are used directly in simple mode).
+   * Async prompt functions are supported.
    *
    * @param params - Object containing the validated input.
    * @param params.input - The validated input value.
    * @returns The prompt string or message array to send to the model.
    */
-  prompt?: (params: { input: TInput }) => string | Message[];
+  prompt?: (params: { input: TInput }) => string | Message[] | Promise<string | Message[]>;
 
   /**
    * System prompt.
    *
-   * Can be a static string or a function that receives the validated
-   * input and returns the system prompt dynamically.
+   * Can be a static string or a resolver function that receives the
+   * validated input and returns the system prompt dynamically.
+   * Async resolvers are supported.
+   *
+   * @see {@link Resolver}
    */
-  system?: string | ((params: { input: TInput }) => string);
+  system?: Resolver<TInput, string>;
 
   /**
    * Tools available to this agent for function calling.
    *
    * Each tool is exposed to the model in the tool-loop. The model
    * can call these tools to gather information or perform actions.
+   * Accepts a static record or a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  tools?: TTools;
+  tools?: Resolver<TInput, TTools>;
 
   /**
    * Subagents — automatically wrapped as tools the agent can delegate to.
@@ -481,26 +517,24 @@ export interface AgentConfig<
    * invoke. Abort signals propagate automatically from parent to child.
    *
    * Keys must match `^[a-zA-Z_][a-zA-Z0-9_]*$` (camelCase or snake_case).
-   * Non-alphanumeric characters (except underscore) cause a compile
-   * error via {@link ToolName} and a runtime error from validation.
+   * Non-alphanumeric characters (except underscore) cause a runtime
+   * error from validation. Accepts a static record or a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  agents?: {
-    [K in keyof TSubAgents]: K extends string
-      ? ToolName<K> extends never
-        ? never
-        : TSubAgents[K]
-      : TSubAgents[K];
-  };
+  agents?: Resolver<TInput, TSubAgents>;
 
   /**
    * Maximum tool-loop iterations.
    *
    * Controls how many times the agent will call tools before stopping.
    * Set higher for complex multi-step tasks, lower for simple queries.
+   * Accepts a static number or a resolver function.
    *
    * @default 20
+   * @see {@link Resolver}
    */
-  maxSteps?: number;
+  maxSteps?: Resolver<TInput, number>;
 
   /**
    * Output type strategy.
@@ -523,9 +557,12 @@ export interface AgentConfig<
    *
    * When omitted, the SDK creates a default pino instance at `info`
    * level. The framework automatically creates scoped child loggers
-   * with contextual bindings (`agentId`).
+   * with contextual bindings (`agentId`). Accepts a static logger or
+   * a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  logger?: Logger;
+  logger?: Resolver<TInput, Logger>;
 
   /**
    * Hook: fires when the agent starts execution.

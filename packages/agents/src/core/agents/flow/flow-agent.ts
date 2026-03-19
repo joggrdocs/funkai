@@ -6,6 +6,7 @@ import type {
   StreamPart,
   StreamResult,
 } from "@/core/agents/base/types.js";
+import { resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,
   createAssistantMessage,
@@ -30,8 +31,7 @@ import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
-import { RUNNABLE_META } from "@/lib/runnable.js";
-import type { RunnableMeta } from "@/lib/runnable.js";
+import { FLOW_AGENT_CONFIG, RUNNABLE_META, type RunnableMeta } from "@/lib/runnable.js";
 import type { TraceEntry } from "@/lib/trace.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import { toError } from "@/utils/error.js";
@@ -73,20 +73,6 @@ function buildMergedStepFinishHook(
   return async (event) => {
     await fireHooks(log, wrapHook(configHook, event), wrapHook(overrideHook, event));
   };
-}
-
-/**
- * Resolve the logger for a single flow agent execution.
- *
- * @private
- */
-function resolveFlowAgentLogger(
-  base: Logger,
-  flowAgentId: string,
-  overrides?: FlowAgentOverrides,
-): Logger {
-  const override = overrides && overrides.logger;
-  return (override ?? base).child({ flowAgentId });
 }
 
 /**
@@ -196,8 +182,6 @@ export function flowAgent<TInput, TOutput = any>(
   _internal?: InternalFlowAgentOptions,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
 ): FlowAgent<TInput, any> {
-  const baseLogger = config.logger ?? createDefaultLogger();
-
   /**
    * Resolve the handler output into a final value, validating against
    * the output schema when present. Also pushes the assistant message.
@@ -276,7 +260,12 @@ export function flowAgent<TInput, TOutput = any>(
     const parsedInput = inputParsed.data as TInput;
 
     const startedAt = Date.now();
-    const log = resolveFlowAgentLogger(baseLogger, config.name, overrides);
+    const overrideLogger = overrides && overrides.logger;
+    const resolvedLogger =
+      overrideLogger ??
+      (await resolveOptionalValue(config.logger, parsedInput)) ??
+      createDefaultLogger();
+    const log = resolvedLogger.child({ flowAgentId: config.name });
 
     const signal = (overrides && overrides.signal) || new AbortController().signal;
     const trace: TraceEntry[] = [];
@@ -551,6 +540,8 @@ export function flowAgent<TInput, TOutput = any>(
       name: config.name,
       inputSchema: config.input,
     } satisfies RunnableMeta,
+    // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property; symbols cannot be user-controlled
+    [FLOW_AGENT_CONFIG]: { config, handler },
     // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   } as FlowAgent<TInput, any>; // oxlint-disable-line @typescript-eslint/no-explicit-any
 

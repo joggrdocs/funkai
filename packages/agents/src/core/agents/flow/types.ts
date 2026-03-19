@@ -1,6 +1,6 @@
 import type { ZodType } from "zod";
 
-import type { GenerateResult, StreamResult } from "@/core/agents/base/types.js";
+import type { GenerateResult, Resolver, StreamResult } from "@/core/agents/base/types.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type { Logger } from "@/core/logger.js";
 import type { Context } from "@/lib/context.js";
@@ -92,8 +92,11 @@ export interface FlowAgentConfigBase<TInput> {
    * When omitted, the SDK creates a default console-based instance.
    * The framework automatically creates scoped child loggers
    * with contextual bindings (`flowAgentId`, `stepId`).
+   * Accepts a static logger or a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  logger?: Logger;
+  logger?: Resolver<TInput, Logger>;
 
   /**
    * Hook: fires when the flow agent starts execution.

@@ -1,11 +1,12 @@
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
-import { isNil, isNotNil } from "es-toolkit";
+import { isFunction, isNil, isNotNil } from "es-toolkit";
+import { has } from "es-toolkit/compat";
 import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
-import type { Agent, Message } from "@/core/agents/base/types.js";
+import type { Agent, Message, Resolver } from "@/core/agents/base/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
@@ -94,19 +95,45 @@ export function buildAITools(
 }
 
 /**
- * Resolve the system prompt from config or override.
+ * Resolve a {@link Resolver} value — either return the static value
+ * or call the resolver function with the validated input.
+ *
+ * Discriminates between resolver functions and LanguageModel objects
+ * (which are also callable-shaped) by checking for the `doGenerate`
+ * method that all AI SDK models expose.
+ *
+ * @param value - A static value or resolver function.
+ * @param input - The validated agent input.
+ * @returns The resolved value.
  */
-export function resolveSystem<TInput>(
-  system: string | ((params: { input: TInput }) => string) | undefined,
+export async function resolveValue<TInput, T>(
+  value: Resolver<TInput, T>,
   input: TInput,
-): string | undefined {
-  if (isNil(system)) {
+): Promise<T> {
+  if (isFunction(value) && !has(value, "doGenerate")) {
+    return (value as (params: { input: TInput }) => T | Promise<T>)({ input });
+  }
+  return value as T;
+}
+
+/**
+ * Resolve an optional {@link Resolver} value.
+ *
+ * Returns `undefined` when the value is nil, otherwise delegates
+ * to {@link resolveValue}.
+ *
+ * @param value - A static value, resolver function, or undefined.
+ * @param input - The validated agent input.
+ * @returns The resolved value or `undefined`.
+ */
+export async function resolveOptionalValue<TInput, T>(
+  value: Resolver<TInput, T> | undefined,
+  input: TInput,
+): Promise<T | undefined> {
+  if (isNil(value)) {
     return undefined;
   }
-  if (typeof system === "function") {
-    return system({ input });
-  }
-  return system;
+  return resolveValue(value, input);
 }
 
 /**
@@ -114,14 +141,15 @@ export function resolveSystem<TInput>(
  *
  * Returns a discriminated object: either `{ prompt }` or `{ messages }`,
  * never both — matching the AI SDK's `Prompt` union type.
+ * Supports async prompt functions.
  */
-export function buildPrompt<TInput>(
+export async function buildPrompt<TInput>(
   input: TInput,
   config: {
     input?: ZodType<TInput>;
-    prompt?: (params: { input: TInput }) => string | Message[];
+    prompt?: (params: { input: TInput }) => string | Message[] | Promise<string | Message[]>;
   },
-): { prompt: string } | { messages: Message[] } {
+): Promise<{ prompt: string } | { messages: Message[] }> {
   const hasInput = Boolean(config.input);
   const hasPrompt = Boolean(config.prompt);
 
@@ -136,10 +164,10 @@ export function buildPrompt<TInput>(
         "Agent has `prompt` function but no `input` schema — both are required for typed mode",
       );
     })
-    .with({ hasInput: true, hasPrompt: true }, () => {
+    .with({ hasInput: true, hasPrompt: true }, async () => {
       // Config.prompt is guaranteed non-null by the match
       const promptFn = config.prompt as NonNullable<typeof config.prompt>;
-      const built = promptFn({ input });
+      const built = await promptFn({ input });
       return match(typeof built === "string")
         .with(true, () => ({ prompt: built as string }))
         .otherwise(() => ({ messages: built as Message[] }));
