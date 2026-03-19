@@ -4,9 +4,7 @@
     "target": "ES2024",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": [
-      "ES2024"
-    ],
+    "lib": ["ES2024"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -19,19 +17,10 @@
     "outDir": "./dist",
     "rootDir": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

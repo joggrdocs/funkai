@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import type { Message } from "@/core/agents/types.js";
 import {
   buildAITools,
   buildPrompt,
@@ -9,6 +8,7 @@ import {
   resolveOptionalValue,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { Message } from "@/core/agents/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
 describe(resolveValue, () => {

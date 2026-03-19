@@ -1,5 +1,3 @@
-/* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
-import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -15,6 +13,8 @@ import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
 import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
+/* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
+import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";

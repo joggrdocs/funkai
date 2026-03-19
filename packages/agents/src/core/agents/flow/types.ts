@@ -1,12 +1,12 @@
 import type { ZodType } from "zod";
 
+import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
   GenerateParams,
   GenerateResult,
   Resolver,
   StreamResult,
 } from "@/core/agents/types.js";
-import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type { Logger } from "@/core/logger.js";
 import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";

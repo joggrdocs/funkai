@@ -1,12 +1,6 @@
 import type { AsyncIterableStream } from "ai";
 import { isNil } from "es-toolkit";
 
-import type {
-  GenerateParams,
-  GenerateResult,
-  Message,
-  StreamResult,
-} from "@/core/agents/types.js";
 import { resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,
@@ -25,6 +19,7 @@ import type {
   FlowAgentHandler,
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
+import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/core/agents/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";

@@ -1,8 +1,8 @@
 import { match } from "ts-pattern";
 import { describe, expect, it, vi } from "vitest";
 
-import type { Agent, GenerateResult } from "@/core/agents/types.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
+import type { Agent, GenerateResult } from "@/core/agents/types.js";
 import type { StreamPart } from "@/core/types.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";

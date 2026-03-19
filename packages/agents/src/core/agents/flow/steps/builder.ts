@@ -1,4 +1,3 @@
-import type { GenerateResult } from "@/core/agents/types.js";
 import type { AgentStepConfig } from "@/core/agents/flow/steps/agent.js";
 import type { AllConfig } from "@/core/agents/flow/steps/all.js";
 import type { EachConfig } from "@/core/agents/flow/steps/each.js";
@@ -8,6 +7,7 @@ import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
 import type { StepResult } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
+import type { GenerateResult } from "@/core/agents/types.js";
 
 /**
  * The `$` object — composable step utilities.
