@@ -53,19 +53,21 @@ describe(parseFrontmatter, () => {
   });
 
   it("throws on missing frontmatter", () => {
-    expect(() => parseFrontmatter({ content: "No frontmatter", filePath: "test.prompt" })).toThrow("No frontmatter");
+    expect(() => parseFrontmatter({ content: "No frontmatter", filePath: "test.prompt" })).toThrow(
+      "No frontmatter",
+    );
   });
 
   it("throws on missing name", () => {
-    expect(() => parseFrontmatter({ content: "---\nversion: 1\n---\n", filePath: "test.prompt" })).toThrow(
-      'Missing or empty "name"',
-    );
+    expect(() =>
+      parseFrontmatter({ content: "---\nversion: 1\n---\n", filePath: "test.prompt" }),
+    ).toThrow('Missing or empty "name"');
   });
 
   it("throws on invalid name format", () => {
-    expect(() => parseFrontmatter({ content: "---\nname: My Prompt\n---\n", filePath: "test.prompt" })).toThrow(
-      "Invalid prompt name",
-    );
+    expect(() =>
+      parseFrontmatter({ content: "---\nname: My Prompt\n---\n", filePath: "test.prompt" }),
+    ).toThrow("Invalid prompt name");
   });
 
   it("returns undefined group when not specified", () => {

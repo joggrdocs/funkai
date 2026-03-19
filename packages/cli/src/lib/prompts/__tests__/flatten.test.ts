@@ -51,7 +51,9 @@ describe(flattenPartials, () => {
     it("throws when all params are variable references", () => {
       const template = "{% render 'identity', role: agentRole, desc: agentDesc %}";
 
-      expect(() => flattenPartials({ template, partialsDirs: [PARTIALS_DIR] })).toThrow("uses a variable reference");
+      expect(() => flattenPartials({ template, partialsDirs: [PARTIALS_DIR] })).toThrow(
+        "uses a variable reference",
+      );
     });
 
     it("handles extra whitespace around colons in params", () => {

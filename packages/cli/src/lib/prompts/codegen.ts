@@ -222,7 +222,11 @@ function serializeTree(node: TreeNode, indent: number): string[] {
   return Object.entries(node).flatMap(([key, value]) =>
     match(typeof value)
       .with("string", () => [`${pad}${key},`])
-      .otherwise(() => [`${pad}${key}: {`, ...serializeTree(value as TreeNode, indent + 1), `${pad}},`]),
+      .otherwise(() => [
+        `${pad}${key}: {`,
+        ...serializeTree(value as TreeNode, indent + 1),
+        `${pad}},`,
+      ]),
   );
 }
 

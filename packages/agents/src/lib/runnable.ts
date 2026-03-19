@@ -3,9 +3,9 @@ import { has, isObject } from "es-toolkit/compat";
 import type { ZodType } from "zod";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation for runtime type guard narrowing
-import type { Agent } from "@/core/agents/types.js";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation for runtime type guard narrowing
 import type { FlowAgent } from "@/core/agents/flow/types.js";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation for runtime type guard narrowing
+import type { Agent } from "@/core/agents/types.js";
 
 /**
  * Symbol key for internal runnable metadata.

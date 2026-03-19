@@ -165,23 +165,27 @@ function parseSchemaBlock(raw: unknown, filePath: string): readonly SchemaVariab
 
   const schema = raw as Record<string, unknown>;
 
-  return Object.entries(schema).map(([varName, value]): SchemaVariable =>
-    match(value)
-      .with(P.string, (v) => ({ name: varName, type: v, required: true }))
-      .with(
-        P.when((v): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v)),
-        (def) => {
-          const type = stringOrDefault(def.type, "string");
-          const required = def.required !== false;
-          const description = stringOrUndefined(def.description);
-          return { name: varName, type, required, description };
-        },
-      )
-      .otherwise(() => {
-        throw new Error(
-          `Invalid schema definition for "${varName}" in ${filePath}. ` +
-            "Expected a type string or an object with { type, required?, description? }.",
-        );
-      }),
+  return Object.entries(schema).map(
+    ([varName, value]): SchemaVariable =>
+      match(value)
+        .with(P.string, (v) => ({ name: varName, type: v, required: true }))
+        .with(
+          P.when(
+            (v): v is Record<string, unknown> =>
+              typeof v === "object" && v !== null && !Array.isArray(v),
+          ),
+          (def) => {
+            const type = stringOrDefault(def.type, "string");
+            const required = def.required !== false;
+            const description = stringOrUndefined(def.description);
+            return { name: varName, type, required, description };
+          },
+        )
+        .otherwise(() => {
+          throw new Error(
+            `Invalid schema definition for "${varName}" in ${filePath}. ` +
+              "Expected a type string or an object with { type, required?, description? }.",
+          );
+        }),
   );
 }

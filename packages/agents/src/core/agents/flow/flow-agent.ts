@@ -186,9 +186,7 @@ export function flowAgent<TInput, TOutput = any>(
   function resolveFlowOutput(
     output: unknown,
     messages: readonly Message[],
-  ):
-    | { ok: true; value: unknown; message: Message }
-    | { ok: false; message: string } {
+  ): { ok: true; value: unknown; message: Message } | { ok: false; message: string } {
     if (isNotNil(config.output)) {
       const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {

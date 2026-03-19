@@ -1,7 +1,7 @@
 import type { LiteralUnion } from "type-fest";
 
-import { MODELS as GENERATED_MODELS } from "@/catalog/providers/index.js";
 import type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing } from "./types.js";
+import { MODELS as GENERATED_MODELS } from "@/catalog/providers/index.js";
 
 export type { ModelCapabilities, ModelDefinition, ModelModalities, ModelPricing };
 
