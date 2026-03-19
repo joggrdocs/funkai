@@ -1,4 +1,4 @@
-import type { AgentOverrides, GenerateResult } from "@/core/agents/base/types.js";
+import type { GenerateParams, GenerateResult } from "@/core/agents/base/types.js";
 import type { Runnable } from "@/core/types.js";
 
 /**
@@ -37,10 +37,10 @@ export interface AgentStepConfig<TInput> {
   /**
    * Optional inline overrides for this agent call.
    *
-   * Accepts the same fields as `AgentOverrides` — model, output,
+   * Accepts the same fields as `GenerateParams` — model, output,
    * tools, hooks, etc.
    */
-  config?: AgentOverrides;
+  config?: Omit<GenerateParams, "input" | "prompt" | "messages">;
 
   /**
    * When `true`, call `agent.stream()` instead of `agent.generate()`

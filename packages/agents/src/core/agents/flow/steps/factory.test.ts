@@ -361,8 +361,7 @@ describe("agent()", () => {
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "hello",
-      expect.objectContaining({ signal: config.signal, logger: expect.any(Object) }),
+      expect.objectContaining({ input: "hello", signal: config.signal, logger: expect.any(Object) }),
     );
   });
 
@@ -375,8 +374,7 @@ describe("agent()", () => {
     await $.agent({ id: "ag-ctx-signal", agent, input: "test" });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ signal: controller.signal }),
+      expect.objectContaining({ input: "test", signal: controller.signal }),
     );
   });
 
@@ -395,8 +393,7 @@ describe("agent()", () => {
     });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      "test",
-      expect.objectContaining({ signal: userController.signal }),
+      expect.objectContaining({ input: "test", signal: userController.signal }),
     );
   });
 

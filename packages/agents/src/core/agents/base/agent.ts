@@ -6,7 +6,7 @@ import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import type {
   Agent,
   AgentConfig,
-  AgentOverrides,
+  GenerateParams,
   GenerateResult,
   Message,
   Resolver,
@@ -38,7 +38,7 @@ import type { Result } from "@/utils/result.js";
  * Agents run a tool loop (via the AI SDK's `generateText`) until a
  * stop condition is met. They support:
  * - **Typed input** via Zod schema + prompt template.
- * - **Simple mode** — pass a string or messages directly.
+ * - **Simple mode** — pass a string prompt or messages directly.
  * - **Tools** for function calling.
  * - **Subagents** auto-wrapped as delegatable tools.
  * - **Inline overrides** per call.
@@ -57,13 +57,13 @@ import type { Result } from "@/utils/result.js";
  * ```typescript
  * import { openai } from '@ai-sdk/openai'
  *
- * // Simple mode — pass a string directly
+ * // Simple mode — pass a prompt directly
  * const helper = agent({
  *   name: 'helper',
  *   model: openai('gpt-4.1'),
  *   system: 'You are a helpful assistant.',
  * })
- * await helper.generate('What is TypeScript?')
+ * await helper.generate({ prompt: 'What is TypeScript?' })
  *
  * // Typed mode — input schema + prompt template
  * const summarizer = agent({
@@ -72,7 +72,7 @@ import type { Result } from "@/utils/result.js";
  *   model: openai('gpt-4.1'),
  *   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
  * })
- * await summarizer.generate({ text: '...' })
+ * await summarizer.generate({ input: { text: '...' } })
  *
  * // Export as a plain function
  * export const summarize = summarizer.fn()
@@ -88,6 +88,30 @@ export function agent<
 >(
   config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
 ): Agent<TInput, TOutput, TTools, TSubAgents> {
+  /**
+   * Extract the raw input from unified params.
+   *
+   * Reads from `params.input` (typed mode), `params.prompt` (simple
+   * string), or `params.messages` (message array). At least one must
+   * be present.
+   *
+   * @private
+   */
+  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents>): TInput {
+    if (params.input !== undefined) {
+      return params.input;
+    }
+    if (params.prompt !== undefined) {
+      return params.prompt as unknown as TInput;
+    }
+    if (params.messages !== undefined) {
+      return params.messages as unknown as TInput;
+    }
+    throw new Error(
+      "Missing input: provide `prompt`, `messages`, or `input` in the params object.",
+    );
+  }
+
   /**
    * Validate raw input against the config schema, if present.
    *
@@ -140,6 +164,21 @@ export function agent<
   }
 
   /**
+   * Resolve the abort signal from params, combining `signal` and `timeout`.
+   *
+   * @private
+   */
+  function resolveSignal(params: GenerateParams<TInput, TTools, TSubAgents>): AbortSignal | undefined {
+    if (params.signal && params.timeout) {
+      return AbortSignal.any([params.signal, AbortSignal.timeout(params.timeout)]);
+    }
+    if (params.timeout) {
+      return AbortSignal.timeout(params.timeout);
+    }
+    return params.signal;
+  }
+
+  /**
    * Perform the shared setup for `generate()` and `stream()`.
    *
    * Resolves the model/tools/system/prompt/output, fires onStart hooks,
@@ -153,19 +192,16 @@ export function agent<
   async function prepareGeneration(
     input: TInput,
     log: Logger,
-    overrides: AgentOverrides<TTools, TSubAgents> | undefined,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<PreparedGeneration> {
-    const overrideModel = readOverride(overrides, "model");
-    const resolvedModel = overrideModel ?? (await resolveValue(config.model, input));
+    const resolvedModel = params.model ?? (await resolveValue(config.model, input));
     const model = await withModelMiddleware({ model: resolvedModel });
 
-    const overrideTools = readOverride(overrides, "tools");
     const resolvedTools =
       (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
-    const mergedTools = { ...resolvedTools, ...overrideTools } as Record<string, Tool>;
+    const mergedTools = { ...resolvedTools, ...params.tools } as Record<string, Tool>;
     const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? ({} as SubAgents);
-    const overrideAgents = readOverride(overrides, "agents");
-    const mergedAgents = { ...resolvedAgents, ...overrideAgents } as SubAgents;
+    const mergedAgents = { ...resolvedAgents, ...params.agents } as SubAgents;
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
@@ -174,27 +210,24 @@ export function agent<
       valueOrUndefined(hasAgents, mergedAgents),
     );
 
-    const overrideSystem = readOverride(overrides, "system");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AgentOverrides.system is Resolver-shaped; safe to resolve
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- params.system is Resolver-shaped; safe to resolve
     const system =
-      (await resolveOptionalValue(overrideSystem as Resolver<TInput, string> | undefined, input)) ??
+      (await resolveOptionalValue(params.system as Resolver<TInput, string> | undefined, input)) ??
       (await resolveOptionalValue(config.system, input));
 
     const promptParams = await buildPrompt(input, config);
 
-    const overrideOutput = readOverride(overrides, "output");
-    const outputParam = overrideOutput ?? config.output;
+    const outputParam = params.output ?? config.output;
     const output = resolveOptionalOutput(outputParam);
 
-    const overrideMaxSteps = readOverride(overrides, "maxSteps");
     const resolvedMaxSteps = await resolveOptionalValue(config.maxSteps, input);
-    const maxSteps = overrideMaxSteps ?? resolvedMaxSteps ?? 20;
-    const signal = readOverride(overrides, "signal");
+    const maxSteps = params.maxSteps ?? resolvedMaxSteps ?? 20;
+    const signal = resolveSignal(params);
 
     await fireHooks(
       log,
       wrapHook(config.onStart, { input }),
-      wrapHook(readOverride(overrides, "onStart"), { input }),
+      wrapHook(params.onStart, { input }),
     );
 
     const stepCounter = { value: 0 };
@@ -217,7 +250,7 @@ export function agent<
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),
-        wrapHook(readOverride(overrides, "onStepFinish"), event),
+        wrapHook(params.onStepFinish, event),
       );
     };
 
@@ -235,24 +268,23 @@ export function agent<
   }
 
   async function generate(
-    rawInput: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<GenerateResult<TOutput>>> {
+    const rawInput = extractInput(params);
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
     }
 
-    const overrideLogger = readOverride(overrides, "logger");
     const resolvedLogger =
-      overrideLogger ??
+      params.logger ??
       (await resolveOptionalValue(config.logger, validated.input)) ??
       createDefaultLogger();
     const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
 
     try {
-      const prepared = await prepareGeneration(validated.input, log, overrides);
+      const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
         model,
@@ -290,7 +322,7 @@ export function agent<
       await fireHooks(
         log,
         wrapHook(config.onFinish, { input, result: generateResult, duration }),
-        wrapHook(readOverride(overrides, "onFinish"), {
+        wrapHook(params.onFinish, {
           input,
           result: generateResult as GenerateResult,
           duration,
@@ -309,7 +341,7 @@ export function agent<
       await fireHooks(
         log,
         wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(readOverride(overrides, "onError"), { input: validated.input, error }),
+        wrapHook(params.onError, { input: validated.input, error }),
       );
 
       return {
@@ -324,24 +356,23 @@ export function agent<
   }
 
   async function stream(
-    rawInput: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<StreamResult<TOutput>>> {
+    const rawInput = extractInput(params);
     const validated = validateInput(rawInput);
     if (!validated.ok) {
       return { ok: false, error: validated.error };
     }
 
-    const overrideLogger = readOverride(overrides, "logger");
     const resolvedLogger =
-      overrideLogger ??
+      params.logger ??
       (await resolveOptionalValue(config.logger, validated.input)) ??
       createDefaultLogger();
     const log = resolvedLogger.child({ agentId: config.name });
     const startedAt = Date.now();
 
     try {
-      const prepared = await prepareGeneration(validated.input, log, overrides);
+      const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
         model,
@@ -402,7 +433,7 @@ export function agent<
         await fireHooks(
           log,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
-          wrapHook(readOverride(overrides, "onFinish"), {
+          wrapHook(params.onFinish, {
             input,
             result: generateResult as GenerateResult,
             duration,
@@ -429,7 +460,7 @@ export function agent<
         await fireHooks(
           log,
           wrapHook(config.onError, { input, error }),
-          wrapHook(readOverride(overrides, "onError"), { input, error }),
+          wrapHook(params.onError, { input, error }),
         );
       });
 
@@ -463,7 +494,7 @@ export function agent<
       await fireHooks(
         log,
         wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(readOverride(overrides, "onError"), { input: validated.input, error }),
+        wrapHook(params.onError, { input: validated.input, error }),
       );
 
       return {
@@ -500,27 +531,6 @@ export function agent<
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
-
-/**
- * Safely read a property from `overrides`, which may be undefined.
- * Replaces `overrides?.prop` optional chaining.
- *
- * @private
- */
-function readOverride<
-  TTools extends Record<string, Tool>,
-  TSubAgents extends SubAgents,
-  K extends keyof AgentOverrides<TTools, TSubAgents>,
->(
-  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
-  key: K,
-): AgentOverrides<TTools, TSubAgents>[K] | undefined {
-  if (overrides !== undefined) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return overrides[key];
-  }
-  return undefined;
-}
 
 /**
  * Safely compute the JSON-serialized length of a value.

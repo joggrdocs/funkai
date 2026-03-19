@@ -47,7 +47,7 @@ const smartWeatherAgent = evolve(weatherAgent, {
 // ---------------------------------------------------------------------------
 // Run both agents
 // ---------------------------------------------------------------------------
-const result = await weatherAgent.generate("What is the weather in San Francisco?");
+const result = await weatherAgent.generate({ prompt: "What is the weather in San Francisco?" });
 
 if (result.ok) {
   console.log("Output:", result.output);
@@ -57,9 +57,9 @@ if (result.ok) {
   console.error("Error:", result.error);
 }
 
-const detailedResult = await smartWeatherAgent.generate(
-  "Give me a detailed weather report for New York",
-);
+const detailedResult = await smartWeatherAgent.generate({
+  prompt: "Give me a detailed weather report for New York",
+});
 
 if (detailedResult.ok) {
   console.log("\nSmart Agent Output:", detailedResult.output);

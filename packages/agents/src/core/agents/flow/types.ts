@@ -206,11 +206,26 @@ export type FlowAgentConfig<TInput, TOutput = void> =
   | FlowAgentConfigWithoutOutput<TInput>;
 
 /**
- * Per-call overrides for flow agent generation.
+ * Unified parameters for flow agent `.generate()` and `.stream()`.
  *
- * Passed as the optional second parameter to `.generate()` or `.stream()`.
+ * Combines input and per-call overrides into a single object.
+ *
+ * @typeParam TInput - The flow agent's typed input type.
+ *
+ * @example
+ * ```typescript
+ * await myFlow.generate({ input: { targetDir: '.' }, signal })
+ * ```
  */
-export interface FlowAgentOverrides {
+export interface FlowGenerateParams<TInput = unknown> {
+  /**
+   * Typed input for the flow agent.
+   *
+   * Validated against the flow agent's Zod `input` schema
+   * before the handler is called.
+   */
+  input: TInput;
+
   /**
    * Abort signal for cancellation.
    *
@@ -218,6 +233,14 @@ export interface FlowAgentOverrides {
    * Propagated through the entire execution tree.
    */
   signal?: AbortSignal;
+
+  /**
+   * Timeout in milliseconds.
+   *
+   * When set, the call is automatically aborted after the specified
+   * duration.
+   */
+  timeout?: number;
 
   /**
    * Override the logger for this call.
@@ -311,13 +334,16 @@ export interface FlowAgent<TInput, TOutput> {
    * Validates input, executes the handler, validates output, and
    * returns the result with messages, trace, and timing.
    *
-   * @param input - Raw input (validated against the `input` Zod schema).
-   * @param config - Optional per-call overrides.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `FlowAgentGenerateResult`.
+   *
+   * @example
+   * ```typescript
+   * const result = await myFlow.generate({ input: { targetDir: '.' } })
+   * ```
    */
   generate(
-    input: TInput,
-    config?: FlowAgentOverrides,
+    params: FlowGenerateParams<TInput>,
   ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 
   /**
@@ -327,18 +353,16 @@ export interface FlowAgent<TInput, TOutput> {
    * of typed `StreamPart` events for each step. `output`, `messages`,
    * and `usage` are promises that resolve after the flow completes.
    *
-   * @param input - Raw input (validated against the `input` Zod schema).
-   * @param config - Optional per-call overrides.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`.
    */
-  stream(input: TInput, config?: FlowAgentOverrides): Promise<Result<StreamResult<TOutput>>>;
+  stream(params: FlowGenerateParams<TInput>): Promise<Result<StreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.
    */
   fn(): (
-    input: TInput,
-    config?: FlowAgentOverrides,
+    params: FlowGenerateParams<TInput>,
   ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 

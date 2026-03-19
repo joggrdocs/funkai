@@ -56,9 +56,9 @@ const geographyAgent = agent({
 
 console.log("=== Agent Streaming with Tool Calls ===\n");
 
-const streamResult = await geographyAgent.stream(
-  "What are the capitals of France and Japan? Answer in a single sentence.",
-);
+const streamResult = await geographyAgent.stream({
+  prompt: "What are the capitals of France and Japan? Answer in a single sentence.",
+});
 
 if (streamResult.ok) {
   // Consume typed stream events as they arrive
@@ -156,7 +156,7 @@ const researchFlow = flowAgent(
 );
 
 const flowResult = await researchFlow.stream({
-  topics: ["TypeScript", "Rust", "Go"],
+  input: { topics: ["TypeScript", "Rust", "Go"] },
 });
 
 if (flowResult.ok) {

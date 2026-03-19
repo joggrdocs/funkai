@@ -288,7 +288,8 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "agent",
       input: config.input,
       execute: async () => {
-        const agentConfig = {
+        const agentParams = {
+          input: config.input,
           signal: ctx.signal,
           ...config.config,
           logger: ctx.log.child({ stepId: config.id }),
@@ -297,7 +298,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         // When stream: true and a writer is available, use agent.stream()
         // To pipe events through the parent flow's stream
         if (config.stream && writer !== undefined) {
-          const streamResult = await config.agent.stream(config.input, agentConfig);
+          const streamResult = await config.agent.stream(agentParams);
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message);
           }
@@ -323,7 +324,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           };
         }
 
-        const result = await config.agent.generate(config.input, agentConfig);
+        const result = await config.agent.generate(agentParams);
         if (!result.ok) {
           throw result.error.cause ?? new Error(result.error.message);
         }

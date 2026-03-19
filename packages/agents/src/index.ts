@@ -27,7 +27,7 @@ export type {
   Message,
   Agent,
   AgentConfig,
-  AgentOverrides,
+  GenerateParams,
   GenerateResult,
   StreamResult,
   StreamPart,
@@ -36,7 +36,7 @@ export type {
 export type {
   FlowAgent,
   FlowAgentConfig,
-  FlowAgentOverrides,
+  FlowGenerateParams,
   FlowAgentHandler,
   FlowAgentParams,
   FlowAgentGenerateResult,

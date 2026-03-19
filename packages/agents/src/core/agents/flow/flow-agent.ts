@@ -22,7 +22,7 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentGenerateResult,
   FlowAgentHandler,
-  FlowAgentOverrides,
+  FlowGenerateParams,
   InternalFlowAgentOptions,
   StepInfo,
 } from "@/core/agents/flow/types.js";
@@ -57,7 +57,7 @@ type StepFinishHook = (event: {
  *
  * @param log - Logger for `fireHooks` error reporting.
  * @param configHook - The hook from `FlowAgentConfig`.
- * @param overrideHook - The hook from `FlowAgentOverrides`.
+ * @param overrideHook - The hook from `FlowGenerateParams`.
  * @returns A merged hook callback, or `undefined`.
  *
  * @private
@@ -240,14 +240,31 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
+  /**
+   * Resolve the abort signal from params, combining `signal` and `timeout`.
+   *
+   * @private
+   */
+  function resolveSignal(params: FlowGenerateParams<TInput>): AbortSignal {
+    if (params.signal && params.timeout) {
+      return AbortSignal.any([params.signal, AbortSignal.timeout(params.timeout)]);
+    }
+    if (params.timeout) {
+      return AbortSignal.timeout(params.timeout);
+    }
+    if (params.signal) {
+      return params.signal;
+    }
+    return new AbortController().signal;
+  }
+
   async function prepareFlowAgent(
-    input: TInput,
-    overrides: FlowAgentOverrides | undefined,
+    params: FlowGenerateParams<TInput>,
     writer?: WritableStreamDefaultWriter<StreamPart>,
   ): Promise<
     { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
   > {
-    const inputParsed = config.input.safeParse(input);
+    const inputParsed = config.input.safeParse(params.input);
     if (!inputParsed.success) {
       return {
         ok: false,
@@ -260,14 +277,13 @@ export function flowAgent<TInput, TOutput = any>(
     const parsedInput = inputParsed.data as TInput;
 
     const startedAt = Date.now();
-    const overrideLogger = overrides && overrides.logger;
     const resolvedLogger =
-      overrideLogger ??
+      params.logger ??
       (await resolveOptionalValue(config.logger, parsedInput)) ??
       createDefaultLogger();
     const log = resolvedLogger.child({ flowAgentId: config.name });
 
-    const signal = (overrides && overrides.signal) || new AbortController().signal;
+    const signal = resolveSignal(params);
     const trace: TraceEntry[] = [];
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
@@ -275,7 +291,7 @@ export function flowAgent<TInput, TOutput = any>(
     const mergedOnStepFinish = buildMergedStepFinishHook(
       log,
       config.onStepFinish,
-      overrides && overrides.onStepFinish,
+      params.onStepFinish,
     );
 
     const base$ = createStepBuilder({
@@ -295,7 +311,7 @@ export function flowAgent<TInput, TOutput = any>(
     await fireHooks(
       log,
       wrapHook(config.onStart, { input: parsedInput }),
-      wrapHook(overrides && overrides.onStart, { input: parsedInput }),
+      wrapHook(params.onStart, { input: parsedInput }),
     );
 
     return {
@@ -310,11 +326,10 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function generate(
-    input: TInput,
-    overrides?: FlowAgentOverrides,
+    params: FlowGenerateParams<TInput>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<FlowAgentGenerateResult<any>>> {
-    const prepared = await prepareFlowAgent(input, overrides);
+    const prepared = await prepareFlowAgent(params);
     if (!prepared.ok) {
       return { ok: false, error: prepared.error };
     }
@@ -367,7 +382,7 @@ export function flowAgent<TInput, TOutput = any>(
             | undefined,
           { input: parsedInput, result, duration },
         ),
-        wrapHook(overrides && overrides.onFinish, {
+        wrapHook(params.onFinish, {
           input: parsedInput,
           result: result as GenerateResult,
           duration,
@@ -386,7 +401,7 @@ export function flowAgent<TInput, TOutput = any>(
       await fireHooks(
         log,
         wrapHook(config.onError, { input: parsedInput, error }),
-        wrapHook(overrides && overrides.onError, { input: parsedInput, error }),
+        wrapHook(params.onError, { input: parsedInput, error }),
       );
 
       return {
@@ -401,14 +416,13 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function stream(
-    input: TInput,
-    overrides?: FlowAgentOverrides,
+    params: FlowGenerateParams<TInput>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<StreamResult<any>>> {
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
     const writer = writable.getWriter();
 
-    const prepared = await prepareFlowAgent(input, overrides, writer);
+    const prepared = await prepareFlowAgent(params, writer);
     if (!prepared.ok) {
       return { ok: false, error: prepared.error };
     }
@@ -456,7 +470,7 @@ export function flowAgent<TInput, TOutput = any>(
               | undefined,
             { input: parsedInput, result, duration },
           ),
-          wrapHook(overrides && overrides.onFinish, {
+          wrapHook(params.onFinish, {
             input: parsedInput,
             result: result as GenerateResult,
             duration,
@@ -498,7 +512,7 @@ export function flowAgent<TInput, TOutput = any>(
         await fireHooks(
           log,
           wrapHook(config.onError, { input: parsedInput, error }),
-          wrapHook(overrides && overrides.onError, { input: parsedInput, error }),
+          wrapHook(params.onError, { input: parsedInput, error }),
         );
 
         throw error;

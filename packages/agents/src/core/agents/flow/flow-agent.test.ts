@@ -51,7 +51,7 @@ describe("flowAgent creation", () => {
 describe("generate() success", () => {
   it("returns ok: true with computed output", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 5 });
+    const result = await fa.generate({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -62,7 +62,7 @@ describe("generate() success", () => {
 
   it("includes messages array with user and assistant messages", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 3 });
+    const result = await fa.generate({ input: { x: 3 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -75,7 +75,7 @@ describe("generate() success", () => {
 
   it("includes usage with zero-valued fields when no sub-agents run", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -93,7 +93,7 @@ describe("generate() success", () => {
 
   it("includes finishReason of stop", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -104,7 +104,7 @@ describe("generate() success", () => {
 
   it("includes trace array", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -115,7 +115,7 @@ describe("generate() success", () => {
 
   it("includes duration >= 0", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -147,7 +147,7 @@ describe("generate() with steps", () => {
       },
     );
 
-    const result = await fa.generate({ x: 7 });
+    const result = await fa.generate({ input: { x: 7 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -174,7 +174,7 @@ describe("generate() with steps", () => {
       },
     );
 
-    const result = await fa.generate({ x: 5 });
+    const result = await fa.generate({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -207,7 +207,7 @@ describe("generate() input validation", () => {
     const fa = createSimpleFlowAgent();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await fa.generate({ x: "not-a-number" });
+    const result = await fa.generate({ input: { x: "not-a-number" } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -221,7 +221,7 @@ describe("generate() input validation", () => {
     const fa = createSimpleFlowAgent();
 
     // @ts-expect-error - intentionally missing field
-    const result = await fa.generate({});
+    const result = await fa.generate({ input: {} });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -243,7 +243,7 @@ describe("generate() input validation", () => {
     );
 
     // @ts-expect-error - intentionally invalid input
-    await fa.generate({ x: "bad" });
+    await fa.generate({ input: { x: "bad" } });
 
     expect(handler).not.toHaveBeenCalled();
   });
@@ -261,7 +261,7 @@ describe("generate() output validation", () => {
       async () => ({ y: "not-a-number" }) as unknown as { y: number },
     );
 
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -278,7 +278,7 @@ describe("generate() error handling", () => {
       throw new Error("handler exploded");
     });
 
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -294,7 +294,7 @@ describe("generate() error handling", () => {
       throw new Error("string error");
     });
 
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -309,7 +309,7 @@ describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
     const onStart = vi.fn();
     const fa = createSimpleFlowAgent({ onStart });
-    await fa.generate({ x: 5 });
+    await fa.generate({ input: { x: 5 } });
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
@@ -322,7 +322,7 @@ describe("generate() hooks", () => {
   it("fires onFinish hook with input, result, and duration", async () => {
     const onFinish = vi.fn();
     const fa = createSimpleFlowAgent({ onFinish });
-    await fa.generate({ x: 3 });
+    await fa.generate({ input: { x: 3 } });
 
     expect(onFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onFinish.mock.calls;
@@ -342,7 +342,7 @@ describe("generate() hooks", () => {
     const fa = createSimpleFlowAgent({ onError }, async () => {
       throw new Error("boom");
     });
-    await fa.generate({ x: 1 });
+    await fa.generate({ input: { x: 1 } });
 
     expect(onError).toHaveBeenCalledTimes(1);
     const [firstCall] = onError.mock.calls;
@@ -359,7 +359,7 @@ describe("generate() hooks", () => {
     const overrideOnStart = vi.fn();
 
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
-    await fa.generate({ x: 1 }, { onStart: overrideOnStart });
+    await fa.generate({ input: { x: 1 }, onStart: overrideOnStart });
 
     expect(configOnStart).toHaveBeenCalledTimes(1);
     expect(overrideOnStart).toHaveBeenCalledTimes(1);
@@ -370,7 +370,7 @@ describe("generate() hooks", () => {
     const overrideOnFinish = vi.fn();
 
     const fa = createSimpleFlowAgent({ onFinish: configOnFinish });
-    await fa.generate({ x: 1 }, { onFinish: overrideOnFinish });
+    await fa.generate({ input: { x: 1 }, onFinish: overrideOnFinish });
 
     expect(configOnFinish).toHaveBeenCalledTimes(1);
     expect(overrideOnFinish).toHaveBeenCalledTimes(1);
@@ -383,7 +383,7 @@ describe("generate() hooks", () => {
     const fa = createSimpleFlowAgent({ onError: configOnError }, async () => {
       throw new Error("fail");
     });
-    await fa.generate({ x: 1 }, { onError: overrideOnError });
+    await fa.generate({ input: { x: 1 }, onError: overrideOnError });
 
     expect(configOnError).toHaveBeenCalledTimes(1);
     expect(overrideOnError).toHaveBeenCalledTimes(1);
@@ -410,7 +410,7 @@ describe("generate() hooks", () => {
       },
     );
 
-    await fa.generate({ x: 3 }, { onStepFinish: overrideOnStepFinish });
+    await fa.generate({ input: { x: 3 }, onStepFinish: overrideOnStepFinish });
 
     expect(configOnStepFinish).toHaveBeenCalledTimes(1);
     expect(overrideOnStepFinish).toHaveBeenCalledTimes(1);
@@ -455,7 +455,7 @@ describe("generate() hooks", () => {
       },
     );
 
-    await fa.generate({ x: 1 }, { onStepFinish: overrideOnStepFinish });
+    await fa.generate({ input: { x: 1 }, onStepFinish: overrideOnStepFinish });
 
     expect(order).toEqual(["config", "override"]);
   });
@@ -466,7 +466,7 @@ describe("generate() hooks", () => {
     const fa = createSimpleFlowAgent({ onFinish }, async () => {
       throw new Error("fail");
     });
-    await fa.generate({ x: 1 });
+    await fa.generate({ input: { x: 1 } });
 
     expect(onFinish).not.toHaveBeenCalled();
   });
@@ -476,7 +476,7 @@ describe("generate() hooks", () => {
     const fa = createSimpleFlowAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
-    await fa.generate({ x: "bad" });
+    await fa.generate({ input: { x: "bad" } });
 
     expect(onError).not.toHaveBeenCalled();
   });
@@ -490,7 +490,7 @@ describe("generate() hook resilience", () => {
       },
     });
 
-    const result = await fa.generate({ x: 5 });
+    const result = await fa.generate({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -506,7 +506,7 @@ describe("generate() hook resilience", () => {
       },
     });
 
-    const result = await fa.generate({ x: 5 });
+    const result = await fa.generate({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -527,7 +527,7 @@ describe("generate() hook resilience", () => {
       },
     );
 
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -542,7 +542,7 @@ describe("generate() overrides", () => {
   it("uses override signal when provided", async () => {
     const controller = new AbortController();
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 }, { signal: controller.signal });
+    const result = await fa.generate({ input: { x: 1 }, signal: controller.signal });
 
     expect(result.ok).toBeTruthy();
   });
@@ -550,7 +550,7 @@ describe("generate() overrides", () => {
   it("uses override logger when provided", async () => {
     const overrideLogger = createMockLogger();
     const fa = createSimpleFlowAgent();
-    await fa.generate({ x: 1 }, { logger: overrideLogger });
+    await fa.generate({ input: { x: 1 }, logger: overrideLogger });
 
     expect(overrideLogger.child).toHaveBeenCalledWith({ flowAgentId: "test-flow" });
   });
@@ -572,7 +572,7 @@ describe("generate() void output", () => {
       },
     );
 
-    const result = await fa.generate({ x: 5 });
+    const result = await fa.generate({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -585,7 +585,7 @@ describe("generate() void output", () => {
 describe("stream() success", () => {
   it("returns ok: true with fullStream, output, messages, usage, and finishReason", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 5 });
+    const result = await fa.stream({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -600,7 +600,7 @@ describe("stream() success", () => {
 
   it("output promise resolves to computed output", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 4 });
+    const result = await fa.stream({ input: { x: 4 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -622,7 +622,7 @@ describe("stream() success", () => {
 
   it("fullStream emits a finish event on success", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 2 });
+    const result = await fa.stream({ input: { x: 2 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -648,7 +648,7 @@ describe("stream() success", () => {
 
   it("messages promise resolves after stream completes", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -671,7 +671,7 @@ describe("stream() success", () => {
 
   it("usage promise resolves with zero-valued fields when no sub-agents", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -700,7 +700,7 @@ describe("stream() success", () => {
 
   it("finishReason promise resolves to stop", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -740,7 +740,7 @@ describe("stream() with steps", () => {
       },
     );
 
-    const result = await fa.stream({ x: 5 });
+    const result = await fa.stream({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -780,7 +780,7 @@ describe("stream() input validation", () => {
     const fa = createSimpleFlowAgent();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await fa.stream({ x: "not-a-number" });
+    const result = await fa.stream({ input: { x: "not-a-number" } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -797,7 +797,7 @@ describe("stream() error handling", () => {
       throw new Error("stream handler fail");
     });
 
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -826,7 +826,7 @@ describe("stream() error handling", () => {
       throw new Error("stream error test");
     });
 
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -870,7 +870,7 @@ describe("stream() output validation", () => {
       async () => ({ y: "not-a-number" }) as unknown as { y: number },
     );
 
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -899,7 +899,7 @@ describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
     const onStart = vi.fn();
     const fa = createSimpleFlowAgent({ onStart });
-    await fa.stream({ x: 5 });
+    await fa.stream({ input: { x: 5 } });
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
@@ -912,7 +912,7 @@ describe("stream() hooks", () => {
   it("fires onFinish hook after stream completes", async () => {
     const onFinish = vi.fn();
     const fa = createSimpleFlowAgent({ onFinish });
-    const result = await fa.stream({ x: 3 });
+    const result = await fa.stream({ input: { x: 3 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -939,7 +939,7 @@ describe("stream() hooks", () => {
     const overrideOnStart = vi.fn();
 
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
-    const result = await fa.stream({ x: 7 }, { onStart: overrideOnStart });
+    const result = await fa.stream({ input: { x: 7 }, onStart: overrideOnStart });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -976,7 +976,7 @@ describe("stream() hooks", () => {
     const fa = createSimpleFlowAgent({ onError }, async () => {
       throw new Error("stream boom");
     });
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1020,7 +1020,7 @@ describe("stream() void output", () => {
       },
     );
 
-    const result = await fa.stream({ x: 5 });
+    const result = await fa.stream({ input: { x: 5 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1046,7 +1046,7 @@ describe("fn()", () => {
     const fa = createSimpleFlowAgent();
     const fn = fa.fn();
 
-    const result = await fn({ x: 6 });
+    const result = await fn({ input: { x: 6 } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1060,7 +1060,7 @@ describe("fn()", () => {
     const fa = createSimpleFlowAgent();
     const fn = fa.fn();
 
-    await fn({ x: 1 }, { onStart });
+    await fn({ input: { x: 1 }, onStart });
 
     expect(onStart).toHaveBeenCalledTimes(1);
   });
@@ -1070,7 +1070,7 @@ describe("fn()", () => {
     const fn = fa.fn();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await fn({ x: "bad" });
+    const result = await fn({ input: { x: "bad" } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -1083,7 +1083,7 @@ describe("fn()", () => {
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ x: 1 }, undefined);
+    const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBeTruthy();
   });
@@ -1098,7 +1098,7 @@ describe("edge cases", () => {
       async ({ input }) => ({ y: input.x }),
     );
 
-    const result = await fa.generate({ x: 1 });
+    const result = await fa.generate({ input: { x: 1 } });
     expect(result.ok).toBeTruthy();
   });
 
@@ -1117,7 +1117,7 @@ describe("edge cases", () => {
       },
     );
 
-    await fa.generate({ x: 1 });
+    await fa.generate({ input: { x: 1 } });
 
     expect(receivedLog).toBeDefined();
   });
@@ -1136,7 +1136,7 @@ describe("stream() unhandled rejection safety", () => {
     process.on("unhandledRejection", handler);
 
     try {
-      const result = await fa.stream({ x: 1 });
+      const result = await fa.stream({ input: { x: 1 } });
 
       expect(result.ok).toBeTruthy();
       if (!result.ok) {
@@ -1174,7 +1174,7 @@ describe("stream() unhandled rejection safety", () => {
 describe("stream() response methods", () => {
   it("toTextStreamResponse returns a Response with correct content type", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 5 });
+    const result = await fa.stream({ input: { x: 5 } });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
@@ -1197,7 +1197,7 @@ describe("stream() response methods", () => {
 
   it("toTextStreamResponse accepts custom init", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
@@ -1214,7 +1214,7 @@ describe("stream() response methods", () => {
 
   it("toUIMessageStreamResponse returns a readable Response", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 5 });
+    const result = await fa.stream({ input: { x: 5 } });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
@@ -1242,7 +1242,7 @@ describe("stream() response methods", () => {
 
   it("toUIMessageStreamResponse accepts custom init", async () => {
     const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ x: 1 });
+    const result = await fa.stream({ input: { x: 1 } });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;

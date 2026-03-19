@@ -78,7 +78,7 @@ const pipeline = flowAgent(
 );
 
 const result = await pipeline.generate({
-  topic: "functional programming patterns in TypeScript",
+  input: { topic: "functional programming patterns in TypeScript" },
 });
 
 if (result.ok) {

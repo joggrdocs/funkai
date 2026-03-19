@@ -266,7 +266,7 @@ export interface StreamResult<TOutput = string> {
    * @example
    * ```typescript
    * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream('Hello');
+   *   const result = await myAgent.stream({ prompt: 'Hello' });
    *   if (!result.ok) return c.text('Error', 500);
    *   return result.toTextStreamResponse();
    * });
@@ -290,7 +290,7 @@ export interface StreamResult<TOutput = string> {
    * @example
    * ```typescript
    * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream('Hello');
+   *   const result = await myAgent.stream({ prompt: 'Hello' });
    *   if (!result.ok) return c.text('Error', 500);
    *   return result.toUIMessageStreamResponse();
    * });
@@ -302,19 +302,72 @@ export interface StreamResult<TOutput = string> {
 }
 
 /**
- * Per-call overrides for agent generation.
+ * Unified parameters for `.generate()` and `.stream()`.
  *
- * Passed as the optional second parameter to `.generate()` or `.stream()`.
+ * Combines input and per-call overrides into a single object
+ * (mirrors the Vercel AI SDK pattern). Input is specified via one
+ * of three mutually exclusive fields: `prompt`, `messages`, or `input`.
+ *
  * Override fields replace the base config for that call only. Per-call
  * hooks **merge** with base hooks — base fires first, then call-level.
  *
+ * @typeParam TInput - The agent's typed input type.
  * @typeParam TTools - The agent's tool record type.
  * @typeParam TSubAgents - The agent's subagent record type.
+ *
+ * @example
+ * ```typescript
+ * // Simple mode — string prompt
+ * await myAgent.generate({ prompt: 'Hello' })
+ *
+ * // Simple mode — message array
+ * await myAgent.generate({ messages: [{ role: 'user', content: 'Hi' }] })
+ *
+ * // Typed mode — structured input
+ * await myAgent.generate({ input: { topic: 'TypeScript' } })
+ *
+ * // With overrides
+ * await myAgent.generate({ prompt: 'Hello', model: openai('gpt-4.1'), signal })
+ * ```
  */
-export interface AgentOverrides<
+export interface GenerateParams<
+  TInput = unknown,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
 > {
+  // ---------------------------------------------------------------------------
+  // Input (at least one required — mutually exclusive)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * String prompt to send to the model.
+   *
+   * Use for simple mode agents without an `input` schema.
+   * Mutually exclusive with `messages` and `input`.
+   */
+  prompt?: string;
+
+  /**
+   * Message array to send to the model.
+   *
+   * Use for multi-turn conversations or when passing structured
+   * message history. Mutually exclusive with `prompt` and `input`.
+   */
+  messages?: Message[];
+
+  /**
+   * Typed input for agents with an `input` schema.
+   *
+   * Validated against the agent's Zod schema before the `prompt`
+   * function transforms it. Mutually exclusive with `prompt` and
+   * `messages`.
+   */
+  input?: TInput;
+
+  // ---------------------------------------------------------------------------
+  // Overrides
+  // ---------------------------------------------------------------------------
+
   /**
    * Override the logger for this call.
    *
@@ -330,6 +383,15 @@ export interface AgentOverrides<
    * When fired, the agent should stop generation and clean up.
    */
   signal?: AbortSignal;
+
+  /**
+   * Timeout in milliseconds.
+   *
+   * When set, the call is automatically aborted after the specified
+   * duration. Internally creates an `AbortSignal` that fires after
+   * the timeout.
+   */
+  timeout?: number;
 
   /**
    * Override the model for this call.
@@ -379,11 +441,15 @@ export interface AgentOverrides<
    */
   output?: OutputParam;
 
+  // ---------------------------------------------------------------------------
+  // Hooks
+  // ---------------------------------------------------------------------------
+
   /**
    * Per-call hook — fires after base `onStart`.
    *
    * @param event - Event containing the input.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
+   * @param event.input - The resolved input value.
    */
   onStart?: (event: { input: unknown }) => void | Promise<void>;
 
@@ -391,7 +457,7 @@ export interface AgentOverrides<
    * Per-call hook — fires after base `onFinish`.
    *
    * @param event - Event containing the input, result, and duration.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
+   * @param event.input - The resolved input value.
    * @param event.result - The generation result.
    * @param event.duration - Wall-clock time in milliseconds.
    */
@@ -405,7 +471,7 @@ export interface AgentOverrides<
    * Per-call hook — fires after base `onError`.
    *
    * @param event - Event containing the input and error.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
+   * @param event.input - The resolved input value.
    * @param event.error - The error that occurred.
    */
   onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
@@ -634,16 +700,21 @@ export interface Agent<
    * or `maxSteps` is reached. Returns a `Result` wrapping the
    * generation result.
    *
-   * @param input - Typed input (when `input` schema is configured)
-   *   or `string | Message[]` in simple mode.
-   * @param config - Optional per-call overrides for model, tools,
-   *   output, hooks, etc.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `GenerateResult`. On success,
    *   `result.ok` is `true` and generation fields are flat on the object.
+   *
+   * @example
+   * ```typescript
+   * // Simple mode
+   * const result = await myAgent.generate({ prompt: 'Hello' })
+   *
+   * // Typed mode
+   * const result = await myAgent.generate({ input: { topic: 'AI' } })
+   * ```
    */
   generate(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<GenerateResult<TOutput>>>;
 
   /**
@@ -653,16 +724,13 @@ export interface Agent<
    * of typed `StreamPart` events. `output` and `messages` are
    * promises that resolve after the stream completes.
    *
-   * @param input - Typed input (when `input` schema is configured)
-   *   or `string | Message[]` in simple mode.
-   * @param config - Optional per-call overrides.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`. On success,
    *   consume `result.fullStream` for typed events; await
    *   `result.output` / `result.messages` after the stream ends.
    */
   stream(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<Result<StreamResult<TOutput>>>;
 
   /**
@@ -676,11 +744,10 @@ export interface Agent<
    * @example
    * ```typescript
    * export const analyzeFile = fileAnalyzer.fn()
-   * // Usage: const result = await analyzeFile({ filePath: '...' })
+   * // Usage: const result = await analyzeFile({ input: { filePath: '...' } })
    * ```
    */
   fn(): (
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents>,
   ) => Promise<Result<GenerateResult<TOutput>>>;
 }
