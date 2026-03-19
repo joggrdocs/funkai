@@ -1,6 +1,11 @@
 import type { ZodType } from "zod";
 
-import type { GenerateResult, Resolver, StreamResult } from "@/core/agents/base/types.js";
+import type {
+  BaseGenerateParams,
+  GenerateResult,
+  Resolver,
+  StreamResult,
+} from "@/core/agents/base/types.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type { Logger } from "@/core/logger.js";
 import type { Context } from "@/lib/context.js";
@@ -208,75 +213,39 @@ export type FlowAgentConfig<TInput, TOutput = void> =
 /**
  * Unified parameters for flow agent `.generate()` and `.stream()`.
  *
- * Combines input and per-call overrides into a single object.
+ * Shares the same input union (`prompt`, `messages`, `input`) and
+ * common fields (`signal`, `timeout`, `logger`, hooks) as `GenerateParams`.
+ * Flow agents add their own `onStepFinish` hook with flow-specific shape.
  *
  * @typeParam TInput - The flow agent's typed input type.
  *
  * @example
  * ```typescript
+ * // Typed input
  * await myFlow.generate({ input: { targetDir: '.' }, signal })
+ *
+ * // String prompt
+ * await myFlow.generate({ prompt: 'Summarize this repo' })
+ *
+ * // Message array
+ * await myFlow.generate({ messages: [{ role: 'user', content: 'Hi' }] })
  * ```
  */
-export interface FlowGenerateParams<TInput = unknown> {
-  /**
-   * Typed input for the flow agent.
-   *
-   * Validated against the flow agent's Zod `input` schema
-   * before the handler is called.
-   */
-  input: TInput;
-
-  /**
-   * Abort signal for cancellation.
-   *
-   * When fired, all in-flight operations should clean up and exit.
-   * Propagated through the entire execution tree.
-   */
-  signal?: AbortSignal;
-
-  /**
-   * Timeout in milliseconds.
-   *
-   * When set, the call is automatically aborted after the specified
-   * duration.
-   */
-  timeout?: number;
-
-  /**
-   * Override the logger for this call.
-   *
-   * When provided, replaces the logger configured at creation time.
-   */
-  logger?: Logger;
-
-  /**
-   * Per-call hook — fires after base `onStart`.
-   */
-  onStart?: (event: { input: unknown }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onFinish`.
-   */
-  onFinish?: (event: {
-    input: unknown;
-    result: GenerateResult;
-    duration: number;
-  }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onError`.
-   */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onStepFinish`.
-   */
-  onStepFinish?: (event: {
-    step: StepInfo;
-    result: unknown;
-    duration: number;
-  }) => void | Promise<void>;
-}
+export type FlowGenerateParams<TInput = unknown> = BaseGenerateParams &
+  (
+    | { prompt: string; messages?: undefined; input?: undefined }
+    | { messages: readonly unknown[]; prompt?: undefined; input?: undefined }
+    | { input: TInput; prompt?: undefined; messages?: undefined }
+  ) & {
+    /**
+     * Per-call hook — fires after base `onStepFinish`.
+     */
+    onStepFinish?: (event: {
+      step: StepInfo;
+      result: unknown;
+      duration: number;
+    }) => void | Promise<void>;
+  };
 
 /**
  * Parameters passed to the flow agent handler function.

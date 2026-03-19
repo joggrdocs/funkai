@@ -27,6 +27,7 @@ export type {
   Message,
   Agent,
   AgentConfig,
+  BaseGenerateParams,
   GenerateParams,
   GenerateResult,
   StreamResult,

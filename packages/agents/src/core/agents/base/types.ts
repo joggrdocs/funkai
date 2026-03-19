@@ -302,20 +302,15 @@ export interface StreamResult<TOutput = string> {
 }
 
 /**
- * Shared overrides and hooks for `.generate()` and `.stream()` calls.
+ * Shared fields for all `.generate()` / `.stream()` param types.
  *
- * Override fields replace the base config for that call only. Per-call
- * hooks **merge** with base hooks — base fires first, then call-level.
+ * Contains the common fields shared between `GenerateParams` (agents)
+ * and `FlowGenerateParams` (flow agents): logger, signal, timeout,
+ * and the start/finish/error hooks.
  *
- * @typeParam TTools - The agent's tool record type.
- * @typeParam TSubAgents - The agent's subagent record type.
- *
- * @private — use `GenerateParams` instead.
+ * @private — use `GenerateParams` or `FlowGenerateParams` instead.
  */
-interface GenerateParamsBase<
-  TTools extends Record<string, Tool> = Record<string, Tool>,
-  TSubAgents extends SubAgents = Record<string, never>,
-> {
+export interface BaseGenerateParams {
   /**
    * Override the logger for this call.
    *
@@ -341,6 +336,50 @@ interface GenerateParamsBase<
    */
   timeout?: number;
 
+  /**
+   * Per-call hook — fires after base `onStart`.
+   *
+   * @param event - Event containing the input.
+   * @param event.input - The resolved input value.
+   */
+  onStart?: (event: { input: unknown }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onFinish`.
+   *
+   * @param event - Event containing the input, result, and duration.
+   * @param event.input - The resolved input value.
+   * @param event.result - The generation result.
+   * @param event.duration - Wall-clock time in milliseconds.
+   */
+  onFinish?: (event: {
+    input: unknown;
+    result: GenerateResult;
+    duration: number;
+  }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onError`.
+   *
+   * @param event - Event containing the input and error.
+   * @param event.input - The resolved input value.
+   * @param event.error - The error that occurred.
+   */
+  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
+}
+
+/**
+ * Agent-specific overrides for `.generate()` and `.stream()` calls.
+ *
+ * @typeParam TTools - The agent's tool record type.
+ * @typeParam TSubAgents - The agent's subagent record type.
+ *
+ * @private — use `GenerateParams` instead.
+ */
+interface AgentGenerateOverrides<
+  TTools extends Record<string, Tool> = Record<string, Tool>,
+  TSubAgents extends SubAgents = Record<string, never>,
+> {
   /**
    * Override the model for this call.
    *
@@ -390,37 +429,6 @@ interface GenerateParamsBase<
   output?: OutputParam;
 
   /**
-   * Per-call hook — fires after base `onStart`.
-   *
-   * @param event - Event containing the input.
-   * @param event.input - The resolved input value.
-   */
-  onStart?: (event: { input: unknown }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onFinish`.
-   *
-   * @param event - Event containing the input, result, and duration.
-   * @param event.input - The resolved input value.
-   * @param event.result - The generation result.
-   * @param event.duration - Wall-clock time in milliseconds.
-   */
-  onFinish?: (event: {
-    input: unknown;
-    result: GenerateResult;
-    duration: number;
-  }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onError`.
-   *
-   * @param event - Event containing the input and error.
-   * @param event.input - The resolved input value.
-   * @param event.error - The error that occurred.
-   */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
-
-  /**
    * Per-call hook — fires after base `onStepFinish`.
    *
    * @param event - Event containing the step ID.
@@ -435,7 +443,20 @@ interface GenerateParamsBase<
 }
 
 /**
- * Unified parameters for `.generate()` and `.stream()`.
+ * Input union — exactly one of `prompt`, `messages`, or `input`.
+ *
+ * Shared by both `GenerateParams` and `FlowGenerateParams`.
+ *
+ * @typeParam TInput - The typed input type.
+ * @private
+ */
+type InputUnion<TInput> =
+  | { prompt: string; messages?: undefined; input?: undefined }
+  | { messages: Message[]; prompt?: undefined; input?: undefined }
+  | { input: TInput; prompt?: undefined; messages?: undefined };
+
+/**
+ * Unified parameters for agent `.generate()` and `.stream()`.
  *
  * Combines input and per-call overrides into a single object
  * (mirrors the Vercel AI SDK pattern). Input is specified via exactly
@@ -467,25 +488,7 @@ export type GenerateParams<
   TInput = unknown,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
-> =
-  | (GenerateParamsBase<TTools, TSubAgents> & {
-      /** String prompt to send to the model. */
-      prompt: string;
-      messages?: undefined;
-      input?: undefined;
-    })
-  | (GenerateParamsBase<TTools, TSubAgents> & {
-      /** Message array to send to the model. */
-      messages: Message[];
-      prompt?: undefined;
-      input?: undefined;
-    })
-  | (GenerateParamsBase<TTools, TSubAgents> & {
-      /** Typed input for agents with an `input` schema. */
-      input: TInput;
-      prompt?: undefined;
-      messages?: undefined;
-    });
+> = BaseGenerateParams & AgentGenerateOverrides<TTools, TSubAgents> & InputUnion<TInput>;
 
 /**
  * Configuration for creating an agent.

@@ -242,6 +242,26 @@ export function flowAgent<TInput, TOutput = any>(
    * @private
    */
   /**
+   * Extract the raw input from the params union.
+   *
+   * @private
+   */
+  function extractInput(params: FlowGenerateParams<TInput>): unknown {
+    if ("input" in params) {
+      return params.input;
+    }
+    if ("prompt" in params) {
+      return params.prompt;
+    }
+    if ("messages" in params) {
+      return params.messages;
+    }
+    throw new Error(
+      "Missing input: provide `prompt`, `messages`, or `input` in the params object.",
+    );
+  }
+
+  /**
    * Resolve the abort signal from params, combining `signal` and `timeout`.
    *
    * @private
@@ -266,7 +286,8 @@ export function flowAgent<TInput, TOutput = any>(
   ): Promise<
     { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
   > {
-    const inputParsed = config.input.safeParse(params.input);
+    const rawInput = extractInput(params);
+    const inputParsed = config.input.safeParse(rawInput);
     if (!inputParsed.success) {
       return {
         ok: false,
