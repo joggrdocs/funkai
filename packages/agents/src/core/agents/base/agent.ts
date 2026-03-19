@@ -412,6 +412,9 @@ export function agent<
 
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 
+      // Capture log for async closures — guaranteed set at this point
+      const streamLog = log as Logger;
+
       const done = (async () => {
         const writer = writable.getWriter();
         try {
@@ -443,7 +446,7 @@ export function agent<
           finishReason: finalFinishReason,
         };
         await fireHooks(
-          log!,
+          streamLog,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
           wrapHook(params.onFinish, {
             input,
@@ -452,7 +455,7 @@ export function agent<
           }),
         );
 
-        log!.debug("agent.stream finish", { name: config.name, duration });
+        streamLog.debug("agent.stream finish", { name: config.name, duration });
 
         return {
           output: finalOutput,
@@ -467,10 +470,14 @@ export function agent<
         const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
-        log!.error("agent.stream error", { name: config.name, error: error.message, duration });
+        streamLog.error("agent.stream error", {
+          name: config.name,
+          error: error.message,
+          duration,
+        });
 
         await fireHooks(
-          log!,
+          streamLog,
           wrapHook(config.onError, { input, error }),
           wrapHook(params.onError, { input, error }),
         );
