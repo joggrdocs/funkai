@@ -1,5 +1,54 @@
 # @funkai/cli
 
+## 0.2.0
+
+### Minor Changes
+
+- 5d9fbeb: Enforce TypeScript and FP standards across all packages.
+
+  **@funkai/agents**
+
+  - `isAgent()` and `isFlowAgent()` now return proper type predicates (`value is Agent` / `value is FlowAgent`) instead of `boolean`
+  - Added `@example` tags to exported `toJsonSchema`, `isZodObject`, `isZodArray`
+
+  **@funkai/cli**
+
+  - **Breaking:** `handleGenerate`, `handleLint`, `flattenPartials`, `parseFrontmatter` now accept a single params object instead of positional arguments
+  - New exported interfaces: `HandleGenerateParams`, `HandleLintParams`, `FlattenPartialsParams`, `ParseFrontmatterParams`
+  - `extractVariables` and `discoverPrompts` return `readonly` arrays
+  - `parseSchemaBlock` returns `readonly SchemaVariable[]`
+
+### Patch Changes
+
+- b1e1d01: Fix bug and correctness issues across all packages.
+
+  **@funkai/agents**
+
+  - Export `createFlowEngine` and related types (`FlowEngineConfig`, `FlowFactory`, `CustomStepFactory`, `CustomStepDefinitions`, `TypedCustomSteps`)
+  - Guard `resolvedInput` before passing to `onError` hooks (was `undefined` cast as `TInput`)
+  - Fix `onStepStart` hook asymmetry: per-call override now merged with config hook
+  - Remove deprecated unused `TraceType` alias
+
+  **@funkai/prompts**
+
+  - **Breaking:** `strictFilters` and `ownPropertyOnly` removed from `CreateEngineOptions` (now enforced as non-overridable safety defaults)
+
+  **@funkai/models**
+
+  - Add `provider/model` format validation for model IDs
+  - Wrap `languageModel()` errors with model ID context
+
+  **@funkai/cli**
+
+  - Fix `$`-substitution bug in `flattenPartials` (`String.replace` function-form)
+  - Add error context for partial render failures
+  - `readJsonFile` now throws on malformed JSON instead of silently returning `{}`
+  - Replace naive YAML line parsing with proper `yaml` parser
+  - Extract `Liquid` engine to module-level singleton in `extractVariables`
+
+- Updated dependencies [b1e1d01]
+  - @funkai/prompts@0.3.0
+
 ## 0.1.4
 
 ### Patch Changes
