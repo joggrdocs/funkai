@@ -68,7 +68,7 @@ function formatGroupValue(group: string | undefined): string {
 }
 
 /** @private */
-function parseGroupSegments(group: string | undefined): string[] {
+function parseGroupSegments(group: string | undefined): readonly string[] {
   if (group) {
     return group.split("/").map(toCamelCase);
   }

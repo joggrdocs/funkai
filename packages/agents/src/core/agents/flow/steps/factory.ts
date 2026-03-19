@@ -488,7 +488,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
  *
  * @private
  */
-function extractStepUsage(type: string, value: unknown): TokenUsage | undefined {
+function extractStepUsage(type: OperationType, value: unknown): TokenUsage | undefined {
   if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
     return (value as unknown as { usage: TokenUsage }).usage;
   }

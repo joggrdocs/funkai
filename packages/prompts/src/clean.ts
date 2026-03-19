@@ -10,6 +10,11 @@ const FRONTMATTER_RE = /^---\r?\n[\s\S]*?\r?\n---\r?\n?/;
  *
  * @param text - Raw `.prompt` file content including frontmatter.
  * @returns The cleaned template string, ready for rendering.
+ * @example
+ * ```ts
+ * const template = clean("---\nname: greeting\n---\nHello {{ name }}!");
+ * // "Hello {{ name }}!"
+ * ```
  */
 export function clean(text: string): string {
   return pipeline(text);

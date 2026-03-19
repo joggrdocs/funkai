@@ -53,6 +53,12 @@ export interface RunnableMeta {
  *
  * @param value - The value to check.
  * @returns `true` if the value is an `Agent`.
+ * @example
+ * ```ts
+ * if (isAgent(value)) {
+ *   // value is narrowed to Agent
+ * }
+ * ```
  *
  * @internal
  */
@@ -66,6 +72,12 @@ export function isAgent(value: unknown): value is Agent<any, any, any, any> {
  *
  * @param value - The value to check.
  * @returns `true` if the value is a `FlowAgent`.
+ * @example
+ * ```ts
+ * if (isFlowAgent(value)) {
+ *   // value is narrowed to FlowAgent
+ * }
+ * ```
  *
  * @internal
  */

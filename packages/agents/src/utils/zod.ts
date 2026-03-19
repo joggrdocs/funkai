@@ -8,6 +8,10 @@ type JSONSchema = z.core.JSONSchema.JSONSchema;
  *
  * @param schema - The Zod schema to convert.
  * @returns The equivalent JSON Schema representation.
+ * @example
+ * ```ts
+ * const jsonSchema = toJsonSchema(z.object({ name: z.string() }));
+ * ```
  */
 export function toJsonSchema(schema: ZodType): JSONSchema {
   return z.toJSONSchema(schema);
@@ -21,6 +25,11 @@ export function toJsonSchema(schema: ZodType): JSONSchema {
  *
  * @param schema - The Zod schema to check.
  * @returns `true` if the schema resolves to an object type.
+ * @example
+ * ```ts
+ * isZodObject(z.object({ name: z.string() })); // true
+ * isZodObject(z.string()); // false
+ * ```
  */
 export function isZodObject(schema: ZodType): boolean {
   return toJsonSchema(schema).type === "object";
@@ -34,6 +43,11 @@ export function isZodObject(schema: ZodType): boolean {
  *
  * @param schema - The Zod schema to check.
  * @returns `true` if the schema resolves to an array type.
+ * @example
+ * ```ts
+ * isZodArray(z.array(z.string())); // true
+ * isZodArray(z.string()); // false
+ * ```
  */
 export function isZodArray(schema: ZodType): boolean {
   return toJsonSchema(schema).type === "array";

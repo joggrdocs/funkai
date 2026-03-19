@@ -17,7 +17,14 @@ function extractRoot(variable: unknown): string {
  * and extract all referenced variable names. Only returns the root
  * variable name (e.g. `user` from `{{ user.name }}`).
  *
+ * @param template - The Liquid template string to parse.
+ * @returns Sorted, deduplicated array of top-level variable names.
  * @throws {Error} If a variable name is dangerous (e.g. `__proto__`)
+ * @example
+ * ```ts
+ * extractVariables("Hello {{ user.name }}, you have {{ count }} items");
+ * // ["count", "user"]
+ * ```
  */
 export function extractVariables(template: string): readonly string[] {
   const engine = new Liquid();

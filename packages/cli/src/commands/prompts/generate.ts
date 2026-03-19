@@ -64,7 +64,11 @@ export function handleGenerate({ args, logger, fail }: HandleGenerateParams): vo
   for (const diag of lintResults.flatMap((result) => result.diagnostics)) {
     match(diag.level)
       .with("error", () => logger.error(diag.message))
-      .with("warn", () => logger.warn(diag.message))
+      .with("warn", () => {
+        if (!silent) {
+          logger.warn(diag.message);
+        }
+      })
       .exhaustive();
   }
 

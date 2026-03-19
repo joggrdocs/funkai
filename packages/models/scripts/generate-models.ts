@@ -124,8 +124,8 @@ function buildPricing(cost: ApiModel["cost"]): string {
   let costInput = 0;
   let costOutput = 0;
   if (cost !== undefined && cost !== null) {
-    costInput = cost.input;
-    costOutput = cost.output;
+    costInput = cost.input ?? 0;
+    costOutput = cost.output ?? 0;
   }
   const input = toPerToken(costInput);
   const output = toPerToken(costOutput);
@@ -155,8 +155,8 @@ function buildModalities(modalities: ApiModel["modalities"]): string {
   let modalInput: string[] = ["text"];
   let modalOutput: string[] = ["text"];
   if (modalities !== undefined && modalities !== null) {
-    modalInput = modalities.input;
-    modalOutput = modalities.output;
+    modalInput = modalities.input ?? ["text"];
+    modalOutput = modalities.output ?? ["text"];
   }
   const input = JSON.stringify(modalInput);
   const output = JSON.stringify(modalOutput);

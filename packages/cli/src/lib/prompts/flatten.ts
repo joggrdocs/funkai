@@ -84,6 +84,11 @@ export interface FlattenPartialsParams {
  *
  * @param params - Template content and partial directories.
  * @returns Flattened template with all render tags resolved.
+ * @example
+ * ```ts
+ * flattenPartials({ template: "{% render 'header' %}\nBody", partialsDirs: ["./partials"] });
+ * // "Welcome!\nBody"
+ * ```
  */
 export function flattenPartials({ template, partialsDirs }: FlattenPartialsParams): string {
   const tags = parseRenderTags(template);
