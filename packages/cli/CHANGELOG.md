@@ -1,5 +1,11 @@
 # @funkai/cli
 
+## 0.1.4
+
+### Patch Changes
+
+- c4e81fd: Upgrade runtime dependencies to latest versions
+
 ## 0.1.3
 
 ### Patch Changes
