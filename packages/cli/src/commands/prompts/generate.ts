@@ -7,7 +7,6 @@ import { match } from "ts-pattern";
 import { z } from "zod";
 
 import { getConfig } from "@/config.js";
-
 import { generatePromptModule, generateRegistry } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline } from "@/lib/prompts/pipeline.js";
@@ -56,7 +55,12 @@ function resolveGenerateArgs(
   args: HandleGenerateParams["args"],
   config: FunkaiConfig["prompts"],
   fail: (msg: string) => never,
-): { readonly out: string; readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean } {
+): {
+  readonly out: string;
+  readonly roots: readonly string[];
+  readonly partials?: string;
+  readonly silent: boolean;
+} {
   const configOut = config && config.out;
   const configRoots = config && config.roots;
   const configPartials = config && config.partials;

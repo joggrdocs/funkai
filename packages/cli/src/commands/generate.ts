@@ -1,8 +1,7 @@
 import { command } from "@kidd-cli/core";
 
-import { getConfig } from "@/config.js";
-
 import { generateArgs, handleGenerate } from "./prompts/generate.js";
+import { getConfig } from "@/config.js";
 
 export default command({
   description: "Run all code generation across the funkai SDK",

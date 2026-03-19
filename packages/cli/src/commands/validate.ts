@@ -1,8 +1,7 @@
 import { command } from "@kidd-cli/core";
 
-import { getConfig } from "@/config.js";
-
 import { handleLint, lintArgs } from "./prompts/lint.js";
+import { getConfig } from "@/config.js";
 
 export default command({
   description: "Run all validations across the funkai SDK",

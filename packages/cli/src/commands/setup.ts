@@ -23,7 +23,11 @@ export default command({
     const domains = await ctx.prompts.multiselect({
       message: "Which domains do you want to set up?",
       options: [
-        { value: "prompts" as const, label: "Prompts", hint: "LiquidJS templating, codegen, IDE integration" },
+        {
+          value: "prompts" as const,
+          label: "Prompts",
+          hint: "LiquidJS templating, codegen, IDE integration",
+        },
         { value: "agents" as const, label: "Agents", hint: "Agent scaffolding and configuration" },
       ],
       initialValues: ["prompts" as const],
@@ -106,7 +110,11 @@ function buildConfigTemplate({ hasPrompts, hasAgents, roots, out }: ConfigTempla
 }
 
 /** @private */
-function buildCustomTemplate(roots: readonly string[], out: string, includeAgents: boolean): string {
+function buildCustomTemplate(
+  roots: readonly string[],
+  out: string,
+  includeAgents: boolean,
+): string {
   const rootsStr = roots.map((r) => `"${r}"`).join(", ");
   const agentsBlock = match(includeAgents)
     .with(true, () => "\n  agents: {},\n")

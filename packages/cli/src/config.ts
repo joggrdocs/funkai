@@ -1,7 +1,6 @@
 import type { FunkaiConfig } from "@funkai/config";
-import type { ConfigType, Context } from "@kidd-cli/core";
-
 import { configSchema } from "@funkai/config";
+import type { ConfigType, Context } from "@kidd-cli/core";
 
 export { configSchema };
 

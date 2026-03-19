@@ -18,7 +18,10 @@ export default command({
   description: "Create a new .prompt file",
   options: z.object({
     name: z.string().describe("Prompt name (kebab-case)"),
-    out: z.string().optional().describe("Output directory (defaults to first root in config or cwd)"),
+    out: z
+      .string()
+      .optional()
+      .describe("Output directory (defaults to first root in config or cwd)"),
     partial: z.boolean().default(false).describe("Create as a partial in .prompts/partials/"),
   }),
   handler(ctx) {
