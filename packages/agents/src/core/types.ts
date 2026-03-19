@@ -42,22 +42,11 @@ export type Model = LanguageModel;
  * Both `Agent` and `FlowAgent` satisfy this interface. Any API that
  * accepts a `Runnable` works with either.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any -- Runnable params accept implementation-specific options that cannot be narrowed at the interface level */
 export interface Runnable<TInput = unknown, TOutput = unknown> {
-  generate(params: {
-    input?: TInput;
-    prompt?: string;
-    [key: string]: any;
-  }): Promise<Result<{ output: TOutput }>>;
+  generate(params: { input?: TInput; prompt?: string }): Promise<Result<{ output: TOutput }>>;
   stream(params: {
     input?: TInput;
     prompt?: string;
-    [key: string]: any;
   }): Promise<Result<{ output: Promise<TOutput>; fullStream: AsyncIterableStream<StreamPart> }>>;
-  fn(): (params: {
-    input?: TInput;
-    prompt?: string;
-    [key: string]: any;
-  }) => Promise<Result<{ output: TOutput }>>;
+  fn(): (params: { input?: TInput; prompt?: string }) => Promise<Result<{ output: TOutput }>>;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
