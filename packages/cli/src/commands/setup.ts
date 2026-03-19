@@ -107,7 +107,12 @@ function buildConfigTemplate({ hasPrompts, hasAgents, roots, out }: ConfigTempla
 /** @private */
 function buildCustomTemplate(roots: readonly string[], out: string, includeAgents: boolean): string {
   const rootsStr = roots.map((r) => `"${r}"`).join(", ");
-  const agentsBlock = includeAgents ? "\n  agents: {},\n" : "\n";
+  let agentsBlock: string;
+  if (includeAgents) {
+    agentsBlock = "\n  agents: {},\n";
+  } else {
+    agentsBlock = "\n";
+  }
 
   return `import { defineConfig } from "@funkai/config";
 

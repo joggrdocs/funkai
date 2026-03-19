@@ -24,13 +24,25 @@ export default command({
   handler(ctx) {
     const { name, out, partial } = ctx.args;
     const config = getConfig(ctx);
-    const configRoots = config.prompts?.roots;
-    const firstRoot = configRoots && configRoots.length > 0 ? configRoots[0] : undefined;
+    const promptsConfig = config.prompts;
+    const firstRoot = match(promptsConfig)
+      .with({ roots: P.array(P.string).select() }, (roots) => {
+        if (roots.length > 0) {
+          return roots[0];
+        }
+        return undefined;
+      })
+      .otherwise(() => undefined);
 
     const dir = match({ partial, out })
       .with({ partial: true }, () => resolve(".prompts/partials"))
       .with({ out: P.string }, ({ out: outDir }) => resolve(outDir))
-      .otherwise(() => (firstRoot ? resolve(firstRoot) : process.cwd()));
+      .otherwise(() => {
+        if (firstRoot) {
+          return resolve(firstRoot);
+        }
+        return process.cwd();
+      });
     const filePath = resolve(dir, `${name}.prompt`);
 
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: user-provided CLI argument for prompt file creation

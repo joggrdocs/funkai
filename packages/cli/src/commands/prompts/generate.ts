@@ -57,9 +57,9 @@ function resolveGenerateArgs(
   config: FunkaiConfig["prompts"],
   fail: (msg: string) => never,
 ): { readonly out: string; readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean } {
-  const out = args.out ?? config?.out;
-  const roots = args.roots ?? config?.roots;
-  const partials = args.partials ?? config?.partials;
+  const out = args.out ?? (config ? config.out : undefined);
+  const roots = args.roots ?? (config ? config.roots : undefined);
+  const partials = args.partials ?? (config ? config.partials : undefined);
 
   if (!out) {
     fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");

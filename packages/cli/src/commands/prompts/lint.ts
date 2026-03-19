@@ -49,8 +49,8 @@ function resolveLintArgs(
   config: FunkaiConfig["prompts"],
   fail: (msg: string) => never,
 ): { readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean } {
-  const roots = args.roots ?? config?.roots;
-  const partials = args.partials ?? config?.partials;
+  const roots = args.roots ?? (config ? config.roots : undefined);
+  const partials = args.partials ?? (config ? config.partials : undefined);
 
   if (!roots || roots.length === 0) {
     fail("Missing --roots flag. Provide it via CLI or set prompts.roots in funkai.config.ts.");

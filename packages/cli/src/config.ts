@@ -13,6 +13,12 @@ export { configSchema };
  *
  * @param ctx - The CLI context.
  * @returns The typed funkai configuration.
+ *
+ * @example
+ * ```ts
+ * const config = getConfig(ctx);
+ * const promptsConfig = config.prompts;
+ * ```
  */
 export function getConfig(ctx: Pick<Context, "config">): Readonly<FunkaiConfig> {
   return ctx.config as unknown as Readonly<FunkaiConfig>;
