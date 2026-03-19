@@ -2,6 +2,14 @@ import { Liquid } from "liquidjs";
 
 const DANGEROUS_NAMES = new Set(["constructor", "__proto__", "prototype"]);
 
+/** @private */
+function extractRoot(variable: unknown): string {
+  if (Array.isArray(variable)) {
+    return String(variable[0]);
+  }
+  return String(variable);
+}
+
 /**
  * Extract top-level variable names from a Liquid template string.
  *
@@ -9,22 +17,23 @@ const DANGEROUS_NAMES = new Set(["constructor", "__proto__", "prototype"]);
  * and extract all referenced variable names. Only returns the root
  * variable name (e.g. `user` from `{{ user.name }}`).
  *
+ * @param template - The Liquid template string to parse.
+ * @returns Sorted, deduplicated array of top-level variable names.
  * @throws {Error} If a variable name is dangerous (e.g. `__proto__`)
+ * @example
+ * ```ts
+ * extractVariables("Hello {{ user.name }}, you have {{ count }} items");
+ * // ["count", "user"]
+ * ```
  */
-export function extractVariables(template: string): string[] {
+export function extractVariables(template: string): readonly string[] {
   const engine = new Liquid();
   const parsed = engine.parse(template);
   const variables = engine.variablesSync(parsed);
 
   const roots = new Set(
     variables.map((variable) => {
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const root: string = (() => {
-        if (Array.isArray(variable)) {
-          return String(variable[0]);
-        }
-        return String(variable);
-      })();
+      const root = extractRoot(variable);
 
       if (DANGEROUS_NAMES.has(root)) {
         throw new Error(`Dangerous variable name "${root}" is not allowed in prompt templates`);

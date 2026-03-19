@@ -30,6 +30,8 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
  * Partials are flattened at codegen time by the CLI, so this engine
  * only needs to handle `{{ var }}` expressions and basic Liquid
  * control flow (`{% if %}`, `{% for %}`). No filesystem access required.
+ *
+ * @type {Liquid}
  */
 export const liquidEngine = new Liquid({
   strictFilters: true,

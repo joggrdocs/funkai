@@ -21,6 +21,10 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  * Parent tools are automatically forwarded to sub-agents so they
  * can access the same capabilities (e.g. sandbox filesystem tools)
  * without explicit injection at each call site.
+ *
+ * @param tools - Record of named tools to include.
+ * @param agents - Record of named sub-agents to wrap as tools.
+ * @returns The merged tool set, or `undefined` when empty.
  */
 export function buildAITools(
   tools?: Record<string, Tool>,
@@ -35,64 +39,7 @@ export function buildAITools(
     return undefined;
   }
 
-  // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-  const agentTools: Record<string, unknown> = (() => {
-    if (agents) {
-      return Object.fromEntries(
-        Object.entries(agents).map(([name, runnable]) => {
-          // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
-          const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
-            | RunnableMeta
-            | undefined;
-          const toolName = resolveToolName(meta, name);
-          validateToolName(name);
-          const agentToolName = `agent_${name}`;
-          if (isNotNil(tools) && Object.hasOwn(tools, agentToolName)) {
-            throw new Error(
-              `Tool name collision: "${agentToolName}" already exists in tools. ` +
-                `Rename sub-agent key "${name}" or the existing tool.`,
-            );
-          }
-
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
-          const agentTool: ReturnType<typeof tool<any, any>> = (() => {
-            // eslint-disable-next-line unicorn/prefer-ternary -- Cannot use ternary: no-ternary rule disallows ternary expressions
-            if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
-              return tool({
-                description: `Delegate to ${toolName}`,
-                inputSchema: meta.inputSchema,
-                execute: async (input, { abortSignal }) => {
-                  const r = await runnable.generate({ input, signal: abortSignal, tools });
-                  if (!r.ok) {
-                    throw new Error(r.error.message);
-                  }
-                  return r.output;
-                },
-              });
-            }
-            return tool({
-              description: `Delegate to ${toolName}`,
-              inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
-              execute: async (input: { prompt: string }, { abortSignal }) => {
-                const r = await runnable.generate({
-                  prompt: input.prompt,
-                  signal: abortSignal,
-                  tools,
-                });
-                if (!r.ok) {
-                  throw new Error(r.error.message);
-                }
-                return r.output;
-              },
-            });
-          })();
-
-          return [agentToolName, agentTool];
-        }),
-      );
-    }
-    return {};
-  })();
+  const agentTools: Record<string, unknown> = buildAgentTools(agents, tools);
 
   return { ...tools, ...agentTools };
 }
@@ -145,6 +92,10 @@ export async function resolveOptionalValue<TInput, T>(
  * Returns a discriminated object: either `{ prompt }` or `{ messages }`,
  * never both — matching the AI SDK's `Prompt` union type.
  * Supports async prompt functions.
+ *
+ * @param input - The agent input value.
+ * @param config - Agent config containing optional input schema and prompt function.
+ * @returns Either `{ prompt }` or `{ messages }` for the AI SDK.
  */
 export async function buildPrompt<TInput>(
   input: TInput,
@@ -291,4 +242,90 @@ function resolveToolName(meta: RunnableMeta | undefined, fallback: string): stri
     return meta.name;
   }
   return fallback;
+}
+
+/**
+ * Build a record of AI SDK tools from sub-agent runnables.
+ *
+ * @private
+ */
+function buildAgentTools(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
+  agents: Record<string, Agent<any, any, any, any>> | undefined,
+  tools: Record<string, Tool> | undefined,
+): Record<string, unknown> {
+  if (!agents) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(agents).map(([name, runnable]) => {
+      // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+      const meta = (runnable as unknown as Record<symbol, unknown>)[RUNNABLE_META] as
+        | RunnableMeta
+        | undefined;
+      const toolName = resolveToolName(meta, name);
+      validateToolName(name);
+      const agentToolName = `agent_${name}`;
+      if (isNotNil(tools) && Object.hasOwn(tools, agentToolName)) {
+        throw new Error(
+          `Tool name collision: "${agentToolName}" already exists in tools. ` +
+            `Rename sub-agent key "${name}" or the existing tool.`,
+        );
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
+      const agentTool: ReturnType<typeof tool<any, any>> = buildAgentTool(
+        runnable,
+        meta,
+        toolName,
+        tools,
+      );
+
+      return [agentToolName, agentTool];
+    }),
+  );
+}
+
+/**
+ * Create an AI SDK tool wrapping a single sub-agent runnable.
+ *
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
+function buildAgentTool(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
+  runnable: Agent<any, any, any, any>,
+  meta: RunnableMeta | undefined,
+  toolName: string,
+  tools: Record<string, Tool> | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
+): ReturnType<typeof tool<any, any>> {
+  if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
+    return tool({
+      description: `Delegate to ${toolName}`,
+      inputSchema: meta.inputSchema,
+      execute: async (input, { abortSignal }) => {
+        const r = await runnable.generate({ input, signal: abortSignal, tools });
+        if (!r.ok) {
+          throw new Error(r.error.message);
+        }
+        return r.output;
+      },
+    });
+  }
+  return tool({
+    description: `Delegate to ${toolName}`,
+    inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
+    execute: async (input: { prompt: string }, { abortSignal }) => {
+      const r = await runnable.generate({
+        prompt: input.prompt,
+        signal: abortSignal,
+        tools,
+      });
+      if (!r.ok) {
+        throw new Error(r.error.message);
+      }
+      return r.output;
+    },
+  });
 }

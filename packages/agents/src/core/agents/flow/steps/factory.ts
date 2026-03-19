@@ -164,12 +164,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const finishedAt = Date.now();
       const duration = finishedAt - startedAt;
 
-      const usage: TokenUsage | undefined = (() => {
-        if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
-          return (value as unknown as { usage: TokenUsage }).usage;
-        }
-        return undefined;
-      })();
+      const usage: TokenUsage | undefined = extractStepUsage(type, value);
 
       const traceRecord: TraceEntry = {
         id,
@@ -179,10 +174,8 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         finishedAt,
         children: childTrace,
         output: value,
+        ...(isNotNil(usage) && { usage }),
       };
-      if (isNotNil(usage)) {
-        traceRecord.usage = usage;
-      }
       ctx.trace.push(traceRecord);
 
       // Push synthetic tool-result message
@@ -491,6 +484,20 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 // ---------------------------------------------------------------------------
 
 /**
+ * Extract token usage from an agent step result, if present.
+ *
+ * @private
+ */
+function extractStepUsage(type: OperationType, value: unknown): TokenUsage | undefined {
+  if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
+    return (value as unknown as { usage: TokenUsage }).usage;
+  }
+  return undefined;
+}
+
+/**
+ * Wrap a hook handler into a nullary callback for `fireHooks`.
+ *
  * @private
  */
 function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>) | undefined>(
@@ -506,6 +513,8 @@ function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>
 }
 
 /**
+ * Wrap a parent-level step hook into a nullary callback for `fireHooks`.
+ *
  * @private
  */
 function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
@@ -529,6 +538,8 @@ function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
 }
 
 /**
+ * Build a typed onFinish handler that forwards the step result.
+ *
  * @private
  */
 function buildOnFinishHandler<T>(
@@ -543,6 +554,8 @@ function buildOnFinishHandler<T>(
 }
 
 /**
+ * Build an onFinish handler for void steps that omits the result.
+ *
  * @private
  */
 function buildOnFinishHandlerVoid(
@@ -557,6 +570,8 @@ function buildOnFinishHandlerVoid(
 }
 
 /**
+ * Build an onFinish handler for race steps that passes through the raw result.
+ *
  * @private
  */
 function buildOnFinishHandlerRace(
@@ -571,6 +586,8 @@ function buildOnFinishHandlerRace(
 }
 
 /**
+ * Sequentially reduce items with abort support using tail-recursive iteration.
+ *
  * @private
  */
 async function reduceSequential<T, R>(
@@ -594,6 +611,8 @@ async function reduceSequential<T, R>(
 }
 
 /**
+ * Sequentially execute a callback while a condition holds, with abort support.
+ *
  * @private
  */
 async function whileSequential<T>(

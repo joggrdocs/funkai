@@ -74,12 +74,7 @@ export function usageByAgent(records: TokenUsageRecord[]): readonly AgentTokenUs
   const UNATTRIBUTED = "__unattributed__";
 
   const grouped = groupBy(records, (r) => {
-    const agentId: string | undefined = (() => {
-      if (isNotNil(r.source)) {
-        return r.source.agentId;
-      }
-      return undefined;
-    })();
+    const agentId = extractAgentId(r.source);
     if (isString(agentId)) {
       return agentId;
     }
@@ -87,13 +82,7 @@ export function usageByAgent(records: TokenUsageRecord[]): readonly AgentTokenUs
   });
 
   return Object.entries(grouped).map(([key, group]) => {
-    // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-    const source: AgentSource | UnattributedSource = (() => {
-      if (key === UNATTRIBUTED) {
-        return { type: "unattributed" } as const;
-      }
-      return { type: "agent", agentId: key } as const;
-    })();
+    const source: AgentSource | UnattributedSource = resolveSource(key, UNATTRIBUTED);
     // oxlint-disable-next-line unicorn/prefer-object-spread -- no-map-spread rule requires Object.assign
     return Object.assign({ source }, aggregateTokens(group));
   });
@@ -144,4 +133,28 @@ function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
     cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens ?? 0),
     reasoningTokens: sumBy(usages, (u) => u.reasoningTokens ?? 0),
   };
+}
+
+/**
+ * Extract the agent ID from a usage record source, if present.
+ *
+ * @private
+ */
+function extractAgentId(source: TokenUsageRecord["source"]): string | undefined {
+  if (isNotNil(source)) {
+    return source.agentId;
+  }
+  return undefined;
+}
+
+/**
+ * Resolve a grouping key into a typed agent or unattributed source.
+ *
+ * @private
+ */
+function resolveSource(key: string, unattributedKey: string): AgentSource | UnattributedSource {
+  if (key === unattributedKey) {
+    return { type: "unattributed" } as const;
+  }
+  return { type: "agent", agentId: key } as const;
 }

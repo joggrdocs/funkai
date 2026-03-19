@@ -2,12 +2,14 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { command } from "@kidd-cli/core";
+import { match } from "ts-pattern";
 import { z } from "zod";
 
 import { generatePromptModule, generateRegistry } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline } from "@/lib/prompts/pipeline.js";
 
+/** Zod schema for the `prompts generate` CLI arguments. */
 export const generateArgs = z.object({
   out: z.string().describe("Output directory for generated files"),
   roots: z.array(z.string()).describe("Root directories to scan for .prompt files"),
@@ -15,31 +17,35 @@ export const generateArgs = z.object({
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
 
+/** Inferred type of the `prompts generate` CLI arguments. */
 export type GenerateArgs = z.infer<typeof generateArgs>;
 
 /**
- * Shared handler for prompts code generation.
- *
- * @param args - Parsed CLI arguments.
- * @param logger - Logger instance from the command context.
- * @param fail - Failure callback from the command context.
+ * Parameters for the shared generate handler.
  */
-export function handleGenerate(
-  args: {
+export interface HandleGenerateParams {
+  readonly args: {
     readonly out: string;
     readonly roots: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
-  },
-  logger: {
+  };
+  readonly logger: {
     info: (msg: string) => void;
     step: (msg: string) => void;
     error: (msg: string) => void;
     warn: (msg: string) => void;
     success: (msg: string) => void;
-  },
-  fail: (msg: string) => never,
-): void {
+  };
+  readonly fail: (msg: string) => never;
+}
+
+/**
+ * Shared handler for prompts code generation.
+ *
+ * @param params - Handler context with args, logger, and fail callback.
+ */
+export function handleGenerate({ args, logger, fail }: HandleGenerateParams): void {
   const { out, roots, partials, silent } = args;
 
   const { discovered, lintResults, prompts } = runGeneratePipeline({ roots, out, partials });
@@ -50,25 +56,20 @@ export function handleGenerate(
 
   if (!silent) {
     for (const prompt of prompts) {
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const varList: string = (() => {
-        if (prompt.schema.length > 0) {
-          return ` (${prompt.schema.map((v) => v.name).join(", ")})`;
-        }
-        return "";
-      })();
+      const varList = formatVarList(prompt.schema);
       logger.step(`${prompt.name}${varList}`);
     }
   }
 
-  for (const result of lintResults) {
-    for (const diag of result.diagnostics) {
-      if (diag.level === "error") {
-        logger.error(diag.message);
-      } else {
-        logger.warn(diag.message);
-      }
-    }
+  for (const diag of lintResults.flatMap((result) => result.diagnostics)) {
+    match(diag.level)
+      .with("error", () => logger.error(diag.message))
+      .with("warn", () => {
+        if (!silent) {
+          logger.warn(diag.message);
+        }
+      })
+      .exhaustive();
   }
 
   if (hasLintErrors(lintResults)) {
@@ -94,10 +95,18 @@ export function handleGenerate(
   }
 }
 
+/** @private */
+function formatVarList(schema: readonly { readonly name: string }[]): string {
+  if (schema.length > 0) {
+    return ` (${schema.map((v) => v.name).join(", ")})`;
+  }
+  return "";
+}
+
 export default command({
   description: "Generate TypeScript modules from .prompt files",
   options: generateArgs,
   handler(ctx) {
-    handleGenerate(ctx.args, ctx.logger, ctx.fail);
+    handleGenerate({ args: ctx.args, logger: ctx.logger, fail: ctx.fail });
   },
 });

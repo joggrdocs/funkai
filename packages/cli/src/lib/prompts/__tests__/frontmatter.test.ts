@@ -5,20 +5,20 @@ import { parseFrontmatter } from "@/lib/prompts/frontmatter.js";
 describe(parseFrontmatter, () => {
   it("parses name from frontmatter", () => {
     const content = "---\nname: my-prompt\n---\nHello";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.name).toBe("my-prompt");
   });
 
   it("parses group and version", () => {
     const content = "---\nname: test\ngroup: agents/test\nversion: 2\n---\nBody";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.group).toBe("agents/test");
     expect(result.version).toBe("2");
   });
 
   it("parses schema with shorthand type strings", () => {
     const content = "---\nname: test\nschema:\n  scope: string\n  target: string\n---\n";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.schema).toEqual([
       { name: "scope", type: "string", required: true },
       { name: "target", type: "string", required: true },
@@ -39,7 +39,7 @@ describe(parseFrontmatter, () => {
       "---",
       "",
     ].join("\n");
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.schema).toEqual([
       { name: "scope", type: "string", required: true, description: "The scope" },
       { name: "target", type: "string", required: false },
@@ -48,42 +48,44 @@ describe(parseFrontmatter, () => {
 
   it("returns empty schema when no schema field", () => {
     const content = "---\nname: test\n---\nBody";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.schema).toEqual([]);
   });
 
   it("throws on missing frontmatter", () => {
-    expect(() => parseFrontmatter("No frontmatter", "test.prompt")).toThrow("No frontmatter");
+    expect(() => parseFrontmatter({ content: "No frontmatter", filePath: "test.prompt" })).toThrow(
+      "No frontmatter",
+    );
   });
 
   it("throws on missing name", () => {
-    expect(() => parseFrontmatter("---\nversion: 1\n---\n", "test.prompt")).toThrow(
-      'Missing or empty "name"',
-    );
+    expect(() =>
+      parseFrontmatter({ content: "---\nversion: 1\n---\n", filePath: "test.prompt" }),
+    ).toThrow('Missing or empty "name"');
   });
 
   it("throws on invalid name format", () => {
-    expect(() => parseFrontmatter("---\nname: My Prompt\n---\n", "test.prompt")).toThrow(
-      "Invalid prompt name",
-    );
+    expect(() =>
+      parseFrontmatter({ content: "---\nname: My Prompt\n---\n", filePath: "test.prompt" }),
+    ).toThrow("Invalid prompt name");
   });
 
   it("returns undefined group when not specified", () => {
     const content = "---\nname: test\n---\nBody";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.group).toBeUndefined();
   });
 
   it("should throw on invalid group segment", () => {
     const content = "---\nname: test\ngroup: agents/INVALID\n---\nBody";
-    expect(() => parseFrontmatter(content, "test.prompt")).toThrow(
+    expect(() => parseFrontmatter({ content, filePath: "test.prompt" })).toThrow(
       'Invalid group segment "INVALID"',
     );
   });
 
   it("should accept valid multi-segment group", () => {
     const content = "---\nname: test\ngroup: agents/specialized\n---\nBody";
-    const result = parseFrontmatter(content, "test.prompt");
+    const result = parseFrontmatter({ content, filePath: "test.prompt" });
     expect(result.group).toBe("agents/specialized");
   });
 });

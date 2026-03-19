@@ -349,6 +349,9 @@ importers:
       '@kidd-cli/core':
         specifier: ^0.10.0
         version: 0.10.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
+      es-toolkit:
+        specifier: 'catalog:'
+        version: 1.45.1
       liquidjs:
         specifier: ^10.25.0
         version: 10.25.0
