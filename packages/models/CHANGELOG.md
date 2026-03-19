@@ -1,5 +1,11 @@
 # @funkai/models
 
+## 0.3.1
+
+### Patch Changes
+
+- c4e81fd: Upgrade runtime dependencies to latest versions
+
 ## 0.3.0
 
 ### Minor Changes

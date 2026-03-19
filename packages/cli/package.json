@@ -1,6 +1,6 @@
 {
   "name": "@funkai/cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": false,
   "description": "CLI for the funkai AI SDK framework",
   "keywords": [
