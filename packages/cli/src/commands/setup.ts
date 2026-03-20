@@ -44,16 +44,16 @@ export default command({
     });
 
     if (shouldCreateConfig) {
-      let roots = ["src/prompts"];
+      let includes = ["src/prompts/**"];
       let out = ".prompts/client";
 
       if (hasPrompts) {
-        const rootsInput = await ctx.prompts.text({
-          message: "Prompt root directories (comma-separated)",
-          defaultValue: "src/prompts",
-          placeholder: "src/prompts",
+        const includesInput = await ctx.prompts.text({
+          message: "Prompt include patterns (comma-separated)",
+          defaultValue: "src/prompts/**",
+          placeholder: "src/prompts/**",
         });
-        roots = rootsInput.split(",").map((r) => r.trim());
+        includes = includesInput.split(",").map((r) => r.trim());
 
         out = await ctx.prompts.text({
           message: "Output directory for generated prompt modules",
@@ -62,7 +62,7 @@ export default command({
         });
       }
 
-      const template = buildConfigTemplate({ hasPrompts, hasAgents, roots, out });
+      const template = buildConfigTemplate({ hasPrompts, hasAgents, includes, out });
       const configPath = resolve("funkai.config.ts");
       // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing config file to project root
       writeFileSync(configPath, template, "utf8");
@@ -94,28 +94,33 @@ export default command({
 interface ConfigTemplateOptions {
   readonly hasPrompts: boolean;
   readonly hasAgents: boolean;
-  readonly roots: readonly string[];
+  readonly includes: readonly string[];
   readonly out: string;
 }
 
 /** @private */
-function buildConfigTemplate({ hasPrompts, hasAgents, roots, out }: ConfigTemplateOptions): string {
+function buildConfigTemplate({
+  hasPrompts,
+  hasAgents,
+  includes,
+  out,
+}: ConfigTemplateOptions): string {
   if (hasPrompts && hasAgents) {
-    return buildCustomTemplate(roots, out, true);
+    return buildCustomTemplate(includes, out, true);
   }
   if (hasPrompts) {
-    return buildCustomTemplate(roots, out, false);
+    return buildCustomTemplate(includes, out, false);
   }
   return CONFIG_TEMPLATE_AGENTS_ONLY;
 }
 
 /** @private */
 function buildCustomTemplate(
-  roots: readonly string[],
+  includes: readonly string[],
   out: string,
   includeAgents: boolean,
 ): string {
-  const rootsStr = roots.map((r) => `"${r}"`).join(", ");
+  const includesStr = includes.map((r) => `"${r}"`).join(", ");
   const agentsBlock = match(includeAgents)
     .with(true, () => "\n  agents: {},\n")
     .with(false, () => "\n")
@@ -125,7 +130,7 @@ function buildCustomTemplate(
 
 export default defineConfig({
   prompts: {
-    roots: [${rootsStr}],
+    includes: [${includesStr}],
     out: "${out}",
   },${agentsBlock}});
 `;

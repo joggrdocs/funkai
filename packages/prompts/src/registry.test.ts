@@ -1,31 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
+import { createPrompt } from "@/prompt.js";
 import { createPromptRegistry } from "@/registry.js";
 
-const mockPrompt = {
-  name: "test-prompt" as const,
-  group: "agents" as const,
+const mockPrompt = createPrompt({
+  name: "test-prompt",
+  group: "agents",
+  template: "Hello {{ name }}",
   schema: z.object({ name: z.string() }),
-  render(variables: { name: string }) {
-    return `Hello ${variables.name}`;
-  },
-  validate(variables: unknown) {
-    return z.object({ name: z.string() }).parse(variables);
-  },
-};
+});
 
-const emptyPrompt = {
-  name: "empty" as const,
-  group: undefined,
+const emptyPrompt = createPrompt({
+  name: "empty",
+  template: "static",
   schema: z.object({}),
-  render() {
-    return "static";
-  },
-  validate(variables: unknown) {
-    return z.object({}).parse(variables);
-  },
-};
+});
 
 describe(createPromptRegistry, () => {
   it("should provide dot-access to a registered prompt", () => {

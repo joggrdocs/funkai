@@ -4,11 +4,32 @@ import { z } from "zod";
 // Prompts config
 // ---------------------------------------------------------------------------
 
+/**
+ * Zod schema for a prompt group definition.
+ *
+ * Groups assign prompts to namespaces based on file path patterns.
+ * Prompts matched by `includes` (and not `excludes`) get the group
+ * assigned — unless frontmatter already defines a `group`.
+ */
+export const promptGroupSchema = z.object({
+  name: z.string().describe("Group path (e.g. 'agents/core')"),
+  includes: z.array(z.string()).describe("Glob patterns to match prompt file paths"),
+  excludes: z.array(z.string()).optional().describe("Glob patterns to exclude from this group"),
+});
+
+/** Inferred type for a prompt group definition. */
+export type PromptGroup = z.infer<typeof promptGroupSchema>;
+
 /** Zod schema for prompts configuration. */
 export const promptsConfigSchema = z.object({
-  roots: z.array(z.string()).describe("Root directories to scan for .prompt files"),
-  out: z.string().describe("Output directory for generated prompt modules"),
+  includes: z
+    .array(z.string())
+    .optional()
+    .describe("Glob patterns to scan for .prompt files (defaults to recursive scan from './')"),
+  excludes: z.array(z.string()).optional().describe("Glob patterns to exclude from discovery"),
+  out: z.string().optional().describe("Output directory for generated prompt modules"),
   partials: z.string().optional().describe("Custom partials directory"),
+  groups: z.array(promptGroupSchema).optional().describe("Pattern-based group assignments"),
 });
 
 /** Inferred type for prompts configuration. */
@@ -38,7 +59,7 @@ export const configSchema = z.object({
 export type FunkaiConfig = z.infer<typeof configSchema>;
 
 // ---------------------------------------------------------------------------
-// defineConfig
+// DefineConfig
 // ---------------------------------------------------------------------------
 
 /**
@@ -56,8 +77,15 @@ export type FunkaiConfig = z.infer<typeof configSchema>;
  *
  * export default defineConfig({
  *   prompts: {
- *     roots: ["src/prompts"],
+ *     includes: ["src/prompts/**"],
+ *     excludes: ["**\/*.partial.prompt"],
  *     out: ".prompts/client",
+ *     groups: [
+ *       {
+ *         name: "agents/core",
+ *         includes: ["src/prompts/agents/core/**"],
+ *       },
+ *     ],
  *   },
  * });
  * ```

@@ -1,6 +1,7 @@
 import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
-import { basename, extname, join, resolve } from "node:path";
+import { basename, extname, join, relative, resolve } from "node:path";
 
+import picomatch from "picomatch";
 import { parse as parseYaml } from "yaml";
 
 import { FRONTMATTER_RE, NAME_RE } from "./frontmatter.js";
@@ -12,6 +13,16 @@ const PROMPT_EXT = ".prompt";
 export interface DiscoveredPrompt {
   readonly name: string;
   readonly filePath: string;
+}
+
+/**
+ * Options for prompt discovery.
+ */
+export interface DiscoverPromptsOptions {
+  /** Glob patterns to scan for `.prompt` files (defaults to `['./**']`). */
+  readonly includes: readonly string[];
+  /** Glob patterns to exclude from discovery. */
+  readonly excludes?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -56,6 +67,34 @@ function deriveNameFromPath(filePath: string): string {
     return basename(resolve(filePath, ".."));
   }
   return stem;
+}
+
+/**
+ * Extract the static base directory from a glob pattern.
+ *
+ * Returns the longest directory prefix before any glob characters
+ * (`*`, `?`, `{`, `[`). Falls back to `'.'` if the pattern starts
+ * with a glob character.
+ *
+ * @private
+ */
+function extractBaseDir(pattern: string): string {
+  const globChars = new Set(["*", "?", "{", "["]);
+  const parts = pattern.split("/");
+  const staticParts: string[] = [];
+
+  for (const part of parts) {
+    if ([...part].some((ch) => globChars.has(ch))) {
+      break;
+    }
+    staticParts.push(part);
+  }
+
+  if (staticParts.length === 0) {
+    return ".";
+  }
+
+  return staticParts.join("/");
 }
 
 /**
@@ -110,23 +149,36 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
 }
 
 /**
- * Discover all `.prompt` files from the given root directories.
+ * Discover all `.prompt` files matching the given include/exclude patterns.
  *
- * @param roots - Directories to scan recursively.
- * @returns Sorted, deduplicated list of discovered prompts.
- * @throws If duplicate prompt names are found across roots.
+ * Extracts base directories from the include patterns, scans them
+ * recursively, then filters results through picomatch.
+ *
+ * Name uniqueness is **not** enforced here — prompts with the same name
+ * are allowed as long as they belong to different groups. Uniqueness
+ * is validated downstream in the pipeline after frontmatter parsing,
+ * where group information is available.
+ *
+ * @param options - Include and exclude glob patterns.
+ * @returns Sorted list of discovered prompts.
  */
-export function discoverPrompts(roots: readonly string[]): readonly DiscoveredPrompt[] {
-  const all = roots.flatMap((root) => scanDirectory(resolve(root), 0));
+export function discoverPrompts(options: DiscoverPromptsOptions): readonly DiscoveredPrompt[] {
+  const { includes, excludes = [] } = options;
 
-  const byName = Map.groupBy(all, (prompt) => prompt.name);
+  const baseDirs = [...new Set(includes.map((pattern) => resolve(extractBaseDir(pattern))))];
+  const all = baseDirs.flatMap((dir) => scanDirectory(dir, 0));
 
-  const duplicate = [...byName.entries()].find(([, prompts]) => prompts.length > 1);
-  if (duplicate) {
-    const [name, prompts] = duplicate;
-    const paths = prompts.map((p) => p.filePath).join("\n  ");
-    throw new Error(`Duplicate prompt name "${name}" found in:\n  ${paths}`);
-  }
+  const isIncluded = picomatch(includes as string[]);
+  const isExcluded = picomatch(excludes as string[]);
 
-  return all.toSorted((a, b) => a.name.localeCompare(b.name));
+  const filtered = all.filter((prompt) => {
+    const matchPath = relative(process.cwd(), prompt.filePath).replaceAll("\\", "/");
+    return isIncluded(matchPath) && !isExcluded(matchPath);
+  });
+
+  const deduped = [
+    ...new Map(filtered.map((prompt) => [prompt.filePath, prompt] as const)).values(),
+  ];
+
+  return deduped.toSorted((a, b) => a.name.localeCompare(b.name));
 }

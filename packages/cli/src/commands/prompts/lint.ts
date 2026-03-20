@@ -9,7 +9,7 @@ import { runLintPipeline } from "@/lib/prompts/pipeline.js";
 
 /** Zod schema for the `prompts lint` CLI arguments. */
 export const lintArgs = z.object({
-  roots: z.array(z.string()).optional().describe("Root directories to scan for .prompt files"),
+  includes: z.array(z.string()).optional().describe("Glob patterns to scan for .prompt files"),
   partials: z.string().optional().describe("Custom partials directory"),
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
@@ -22,7 +22,7 @@ export type LintArgs = z.infer<typeof lintArgs>;
  */
 export interface HandleLintParams {
   readonly args: {
-    readonly roots?: readonly string[];
+    readonly includes?: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
   };
@@ -46,18 +46,18 @@ export interface HandleLintParams {
 function resolveLintArgs(
   args: HandleLintParams["args"],
   config: FunkaiConfig["prompts"],
-  fail: (msg: string) => never,
-): { readonly roots: readonly string[]; readonly partials?: string; readonly silent: boolean } {
-  const configRoots = config && config.roots;
-  const configPartials = config && config.partials;
-  const roots = args.roots ?? configRoots;
-  const partials = args.partials ?? configPartials;
+  _fail: (msg: string) => never,
+): {
+  readonly includes: readonly string[];
+  readonly excludes: readonly string[];
+  readonly partials?: string;
+  readonly silent: boolean;
+} {
+  const includes = args.includes ?? (config && config.includes) ?? ["./**"];
+  const excludes = (config && config.excludes) ?? [];
+  const partials = args.partials ?? (config && config.partials);
 
-  if (!roots || roots.length === 0) {
-    fail("Missing --roots flag. Provide it via CLI or set prompts.roots in funkai.config.ts.");
-  }
-
-  return { roots, partials, silent: args.silent };
+  return { includes, excludes, partials, silent: args.silent };
 }
 
 /**
@@ -66,9 +66,9 @@ function resolveLintArgs(
  * @param params - Handler context with args, config, logger, and fail callback.
  */
 export function handleLint({ args, config, logger, fail }: HandleLintParams): void {
-  const { roots, partials, silent } = resolveLintArgs(args, config, fail);
+  const { includes, excludes, partials, silent } = resolveLintArgs(args, config, fail);
 
-  const { discovered, results } = runLintPipeline({ roots, partials });
+  const { discovered, results } = runLintPipeline({ includes, excludes, partials });
 
   if (!silent) {
     logger.info(`Linting ${discovered} prompt(s)...`);

@@ -7,14 +7,14 @@ import { match } from "ts-pattern";
 import { z } from "zod";
 
 import { getConfig } from "@/config.js";
-import { generatePromptModule, generateRegistry } from "@/lib/prompts/codegen.js";
+import { generatePromptModule, generateRegistry, toFileSlug } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline } from "@/lib/prompts/pipeline.js";
 
 /** Zod schema for the `prompts generate` CLI arguments. */
 export const generateArgs = z.object({
   out: z.string().optional().describe("Output directory for generated files"),
-  roots: z.array(z.string()).optional().describe("Root directories to scan for .prompt files"),
+  includes: z.array(z.string()).optional().describe("Glob patterns to scan for .prompt files"),
   partials: z.string().optional().describe("Custom partials directory"),
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
@@ -28,7 +28,7 @@ export type GenerateArgs = z.infer<typeof generateArgs>;
 export interface HandleGenerateParams {
   readonly args: {
     readonly out?: string;
-    readonly roots?: readonly string[];
+    readonly includes?: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
   };
@@ -57,25 +57,21 @@ function resolveGenerateArgs(
   fail: (msg: string) => never,
 ): {
   readonly out: string;
-  readonly roots: readonly string[];
+  readonly includes: readonly string[];
+  readonly excludes: readonly string[];
   readonly partials?: string;
   readonly silent: boolean;
 } {
-  const configOut = config && config.out;
-  const configRoots = config && config.roots;
-  const configPartials = config && config.partials;
-  const out = args.out ?? configOut;
-  const roots = args.roots ?? configRoots;
-  const partials = args.partials ?? configPartials;
+  const out = args.out ?? (config && config.out);
+  const includes = args.includes ?? (config && config.includes) ?? ["./**"];
+  const excludes = (config && config.excludes) ?? [];
+  const partials = args.partials ?? (config && config.partials);
 
   if (!out) {
     fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");
   }
-  if (!roots || roots.length === 0) {
-    fail("Missing --roots flag. Provide it via CLI or set prompts.roots in funkai.config.ts.");
-  }
 
-  return { out, roots, partials, silent: args.silent };
+  return { out, includes, excludes, partials, silent: args.silent };
 }
 
 /**
@@ -84,9 +80,15 @@ function resolveGenerateArgs(
  * @param params - Handler context with args, config, logger, and fail callback.
  */
 export function handleGenerate({ args, config, logger, fail }: HandleGenerateParams): void {
-  const { out, roots, partials, silent } = resolveGenerateArgs(args, config, fail);
+  const { out, includes, excludes, partials, silent } = resolveGenerateArgs(args, config, fail);
 
-  const { discovered, lintResults, prompts } = runGeneratePipeline({ roots, out, partials });
+  const { discovered, lintResults, prompts } = runGeneratePipeline({
+    includes,
+    excludes,
+    out,
+    partials,
+    groups: config && config.groups,
+  });
 
   if (!silent) {
     logger.info(`Found ${discovered} prompt(s)`);
@@ -120,8 +122,9 @@ export function handleGenerate({ args, config, logger, fail }: HandleGeneratePar
 
   for (const prompt of prompts) {
     const content = generatePromptModule(prompt);
+    const fileSlug = toFileSlug(prompt.name, prompt.group);
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated module to output directory
-    writeFileSync(resolve(outDir, `${prompt.name}.ts`), content, "utf8");
+    writeFileSync(resolve(outDir, `${fileSlug}.ts`), content, "utf8");
   }
 
   const registryContent = generateRegistry(prompts);
