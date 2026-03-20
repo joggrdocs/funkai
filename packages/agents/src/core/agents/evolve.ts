@@ -9,9 +9,10 @@ import type {
   FlowAgentConfigWithOutput,
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
+  FlowAgentOverrides,
   FlowSubAgents,
 } from "@/core/agents/flow/types.js";
-import type { Agent, AgentConfig, Resolver, SubAgents } from "@/core/agents/types.js";
+import type { Agent, AgentConfig, AgentOverrides, Resolver, SubAgents } from "@/core/agents/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
 import { getAgentConfig, getFlowAgentConfig, isAgent, isFlowAgent } from "@/lib/runnable.js";
@@ -83,11 +84,7 @@ export function evolve<
   TModel extends Resolver<TInput, Model>,
 >(
   base: Agent<TInput, TOutput, TTools, TSubAgents, TModel>,
-  overrides:
-    | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>
-    | ((
-        config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
-      ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>),
+  overrides: AgentOverrides<TInput, TOutput, TTools, TSubAgents, TModel>,
 ): Agent<TInput, TOutput, TTools, TSubAgents, TModel>;
 
 /**
@@ -115,9 +112,7 @@ export function evolve<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to accept both FlowAgent output variants
 export function evolve<TInput, TOutput = any>(
   base: FlowAgent<TInput, TOutput>,
-  overrides:
-    | Partial<FlowAgentConfig<TInput, TOutput>>
-    | ((config: FlowAgentConfig<TInput, TOutput>) => Partial<FlowAgentConfig<TInput, TOutput>>),
+  overrides: FlowAgentOverrides<TInput, TOutput>,
   handler?: FlowAgentHandler<TInput, TOutput>,
 ): FlowAgent<TInput, TOutput>;
 

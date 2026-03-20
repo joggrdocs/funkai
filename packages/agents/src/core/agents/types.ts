@@ -661,6 +661,45 @@ export interface AgentConfig<
 }
 
 /**
+ * Overrides for evolving an agent via `evolve()`.
+ *
+ * Accepts a partial config object or a mapper function that receives the
+ * current config and returns partial overrides. Scalars replace the base;
+ * record fields (tools, agents) are shallow-merged.
+ *
+ * @typeParam TInput - Agent input type.
+ * @typeParam TOutput - Agent output type.
+ * @typeParam TTools - Record of tools.
+ * @typeParam TSubAgents - Record of subagents.
+ * @typeParam TModel - Model resolver type.
+ *
+ * @example
+ * ```typescript
+ * // Static overrides
+ * const overrides: AgentOverrides<string, string, Tools, SubAgents, Model> = {
+ *   name: 'reviewer-local',
+ *   model: openai('gpt-4.1-mini'),
+ * }
+ *
+ * // Mapper function
+ * const overrides: AgentOverrides<string, string, Tools, SubAgents, Model> = (config) => ({
+ *   name: `${config.name}-local`,
+ * })
+ * ```
+ */
+export type AgentOverrides<
+  TInput,
+  TOutput,
+  TTools extends Record<string, Tool>,
+  TSubAgents extends SubAgents,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
+> =
+  | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>
+  | ((
+      config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
+    ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>);
+
+/**
  * A created agent — exposes `.generate()`, `.stream()`, and `.fn()`.
  *
  * Under the hood, agents run a tool loop (like `generateText` with tools)
