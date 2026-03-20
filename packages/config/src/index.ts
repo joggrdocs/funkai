@@ -22,7 +22,10 @@ export type PromptGroup = z.infer<typeof promptGroupSchema>;
 
 /** Zod schema for prompts configuration. */
 export const promptsConfigSchema = z.object({
-  includes: z.array(z.string()).optional().describe("Glob patterns to scan for .prompt files (defaults to recursive scan from './')"),
+  includes: z
+    .array(z.string())
+    .optional()
+    .describe("Glob patterns to scan for .prompt files (defaults to recursive scan from './')"),
   excludes: z.array(z.string()).optional().describe("Glob patterns to exclude from discovery"),
   out: z.string().optional().describe("Output directory for generated prompt modules"),
   partials: z.string().optional().describe("Custom partials directory"),

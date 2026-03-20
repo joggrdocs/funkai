@@ -99,7 +99,12 @@ interface ConfigTemplateOptions {
 }
 
 /** @private */
-function buildConfigTemplate({ hasPrompts, hasAgents, includes, out }: ConfigTemplateOptions): string {
+function buildConfigTemplate({
+  hasPrompts,
+  hasAgents,
+  includes,
+  out,
+}: ConfigTemplateOptions): string {
   if (hasPrompts && hasAgents) {
     return buildCustomTemplate(includes, out, true);
   }
