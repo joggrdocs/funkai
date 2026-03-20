@@ -7,7 +7,7 @@
     "start": "tsx src/index.ts",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "prompts:generate": "funkai prompts generate --out .prompts/client --roots src/agents"
+    "prompts:generate": "funkai prompts generate --out .prompts/client --includes src/agents/**"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.0",
