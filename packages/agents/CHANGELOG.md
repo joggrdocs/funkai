@@ -1,5 +1,11 @@
 # @funkai/agents
 
+## 0.10.0
+
+### Minor Changes
+
+- 9679551: Add `AgentOverrides` and `FlowAgentOverrides` dedicated types for `evolve()` overrides, exported from `@funkai/agents`
+
 ## 0.9.0
 
 ### Minor Changes
