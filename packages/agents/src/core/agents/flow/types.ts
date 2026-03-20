@@ -283,6 +283,33 @@ export type FlowAgentHandler<TInput, TOutput> = (
 ) => Promise<TOutput>;
 
 /**
+ * Overrides for evolving a flow agent via `evolve()`.
+ *
+ * Accepts a partial config object or a mapper function that receives the
+ * current config and returns partial overrides. Scalars replace the base;
+ * record fields (agents) are shallow-merged.
+ *
+ * @typeParam TInput - Flow agent input type.
+ * @typeParam TOutput - Flow agent output type.
+ *
+ * @example
+ * ```typescript
+ * // Static overrides
+ * const overrides: FlowAgentOverrides<Input, Output> = {
+ *   logger: pinoLogger,
+ * }
+ *
+ * // Mapper function
+ * const overrides: FlowAgentOverrides<Input, Output> = (config) => ({
+ *   name: `${config.name}-local`,
+ * })
+ * ```
+ */
+export type FlowAgentOverrides<TInput, TOutput = void> =
+  | Partial<FlowAgentConfig<TInput, TOutput>>
+  | ((config: FlowAgentConfig<TInput, TOutput>) => Partial<FlowAgentConfig<TInput, TOutput>>);
+
+/**
  * A created flow agent — exposes `.generate()`, `.stream()`, and `.fn()`.
  *
  * Flow agents are imperative handlers that use `$` for tracked operations.
