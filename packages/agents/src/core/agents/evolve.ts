@@ -11,8 +11,9 @@ import type {
   FlowAgentHandler,
   FlowSubAgents,
 } from "@/core/agents/flow/types.js";
-import type { Agent, AgentConfig, SubAgents } from "@/core/agents/types.js";
+import type { Agent, AgentConfig, Resolver, SubAgents } from "@/core/agents/types.js";
 import type { Tool } from "@/core/tool.js";
+import type { Model } from "@/core/types.js";
 import { getAgentConfig, getFlowAgentConfig, isAgent, isFlowAgent } from "@/lib/runnable.js";
 
 /**
@@ -79,14 +80,15 @@ export function evolve<
   TOutput,
   TTools extends Record<string, Tool>,
   TSubAgents extends SubAgents,
+  TModel extends Resolver<TInput, Model>,
 >(
-  base: Agent<TInput, TOutput, TTools, TSubAgents>,
+  base: Agent<TInput, TOutput, TTools, TSubAgents, TModel>,
   overrides:
     | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>
     | ((
-        config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
+        config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
       ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>),
-): Agent<TInput, TOutput, TTools, TSubAgents>;
+): Agent<TInput, TOutput, TTools, TSubAgents, TModel>;
 
 /**
  * Create a new flow agent from an existing one with config overrides.
@@ -154,7 +156,7 @@ function evolveAgent(
   overridesOrMapper: Record<string, any> | ((config: any) => Record<string, any>),
 ): any {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal: stored config type is erased
-  const baseConfig = getAgentConfig<AgentConfig<any, any, any, any>>(base);
+  const baseConfig = getAgentConfig<AgentConfig<any, any, any, any, any>>(base);
   if (isNil(baseConfig)) {
     throw new Error("Cannot evolve: agent does not have stored configuration.");
   }
@@ -203,9 +205,9 @@ function evolveFlowAgent(
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal merge operates on erased types
 function mergeAgentConfigs(
-  base: AgentConfig<any, any, any, any>,
+  base: AgentConfig<any, any, any, any, any>,
   overrides: Record<string, unknown>,
-): AgentConfig<any, any, any, any> {
+): AgentConfig<any, any, any, any, any> {
   const { tools: overrideTools, agents: overrideAgents, ...restOverrides } = overrides;
   return {
     ...base,

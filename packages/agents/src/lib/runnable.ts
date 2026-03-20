@@ -63,7 +63,7 @@ export interface RunnableMeta {
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Widest instantiation; concrete generics are unknown at runtime
-export function isAgent(value: unknown): value is Agent<any, any, any, any> {
+export function isAgent(value: unknown): value is Agent<any, any, any, any, any> {
   return isObject(value) && has(value, AGENT_CONFIG);
 }
 
