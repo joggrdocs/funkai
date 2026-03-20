@@ -286,6 +286,17 @@ function serializeTree(node: TreeNode, indent: number): readonly string[] {
  *
  * Prompts are organized into a nested object structure based on their
  * `group` field, with each `/`-separated segment becoming a nesting level.
+ *
+ * @param prompts - Sorted parsed prompts to include in the registry.
+ * @returns The generated TypeScript source for the registry index module.
+ *
+ * @example
+ * ```ts
+ * const source = generateRegistry([
+ *   { name: 'system', group: 'core/agent', schema: [], template: '...', sourcePath: 'prompts/system.prompt' },
+ * ])
+ * writeFileSync('index.ts', source)
+ * ```
  */
 export function generateRegistry(prompts: readonly ParsedPrompt[]): string {
   const sorted = [...prompts].toSorted((a, b) => {
