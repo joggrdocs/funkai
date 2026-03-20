@@ -1,5 +1,5 @@
 import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
-import { basename, extname, join, resolve } from "node:path";
+import { basename, extname, join, relative, resolve } from "node:path";
 
 import picomatch from "picomatch";
 import { parse as parseYaml } from "yaml";
@@ -172,9 +172,13 @@ export function discoverPrompts(options: DiscoverPromptsOptions): readonly Disco
   const isExcluded = excludes.length > 0 ? picomatch(excludes as string[]) : () => false;
 
   const filtered = all.filter((prompt) => {
-    const relativePath = prompt.filePath;
-    return isIncluded(relativePath) && !isExcluded(relativePath);
+    const matchPath = relative(process.cwd(), prompt.filePath).replaceAll("\\", "/");
+    return isIncluded(matchPath) && !isExcluded(matchPath);
   });
 
-  return filtered.toSorted((a, b) => a.name.localeCompare(b.name));
+  const deduped = [
+    ...new Map(filtered.map((prompt) => [prompt.filePath, prompt] as const)).values(),
+  ];
+
+  return deduped.toSorted((a, b) => a.name.localeCompare(b.name));
 }

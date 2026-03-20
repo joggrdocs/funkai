@@ -9,7 +9,7 @@ import type { PromptConfig, PromptModule } from "./types.js";
  * output and runtime on-the-fly prompt construction.
  *
  * @param config - Prompt configuration with name, template, schema, and optional group.
- * @returns A frozen {@link PromptModule} with `render` and `validate` methods.
+ * @returns A {@link PromptModule} with `render` and `validate` methods.
  *
  * @example
  * ```ts

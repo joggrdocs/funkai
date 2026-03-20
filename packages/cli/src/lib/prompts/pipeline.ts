@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 
 import type { PromptGroup } from "@funkai/config";
 import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
@@ -49,11 +49,13 @@ function resolveGroupFromConfig(
   filePath: string,
   groups: readonly PromptGroup[],
 ): string | undefined {
+  const matchPath = relative(process.cwd(), filePath).replaceAll("\\", "/");
+
   for (const group of groups) {
     const isIncluded = picomatch(group.includes as string[]);
     const isExcluded = group.excludes ? picomatch(group.excludes as string[]) : () => false;
 
-    if (isIncluded(filePath) && !isExcluded(filePath)) {
+    if (isIncluded(matchPath) && !isExcluded(matchPath)) {
       return group.name;
     }
   }

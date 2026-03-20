@@ -1,4 +1,4 @@
-import type { PromptModule, PromptNamespace } from "./types.js";
+import type { PromptModule } from "./types.js";
 
 /**
  * Create a prompt group namespace from a record of prompt modules.

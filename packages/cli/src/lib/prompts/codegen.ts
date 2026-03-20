@@ -100,7 +100,10 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
 
 /** @private */
 function formatHeader(sourcePath?: string): string {
-  const sourceLine = sourcePath ? `//  Source:      ${sourcePath}\n` : "";
+  let sourceLine = "";
+  if (sourcePath) {
+    sourceLine = `//  Source:      ${sourcePath}\n`;
+  }
   return [
     "// ─── AUTO-GENERATED ────────────────────────────────────────",
     `${sourceLine}//  Regenerate:  funkai prompts generate`,
@@ -113,6 +116,10 @@ function formatHeader(sourcePath?: string): string {
  *
  * Ungrouped prompts use the name alone. Grouped prompts
  * join group segments and name with hyphens.
+ *
+ * @param name - The prompt name (kebab-case).
+ * @param group - Optional group path (e.g., 'core/agent').
+ * @returns The file slug string.
  *
  * @example
  * ```ts
@@ -130,6 +137,10 @@ export function toFileSlug(name: string, group?: string): string {
 /**
  * Derive a unique import name (camelCase) from group + name.
  *
+ * @param name - The prompt name (kebab-case).
+ * @param group - Optional group path (e.g., 'core/agent').
+ * @returns The camelCase import identifier.
+ *
  * @example
  * ```ts
  * toImportName('system', 'core/agent')     // => 'coreAgentSystem'
@@ -145,6 +156,9 @@ export function toImportName(name: string, group?: string): string {
  *
  * The module uses `createPrompt` from `@funkai/prompts` to
  * encapsulate the Zod schema, inlined template, and render logic.
+ *
+ * @param prompt - The parsed prompt configuration.
+ * @returns The generated TypeScript module source code.
  */
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
