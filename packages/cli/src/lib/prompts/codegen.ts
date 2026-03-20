@@ -68,6 +68,14 @@ function formatGroupValue(group: string | undefined): string {
 }
 
 /** @private */
+function formatGroupJsdoc(group: string | undefined): readonly string[] {
+  if (group) {
+    return [" *", ` * @group ${group}`];
+  }
+  return [];
+}
+
+/** @private */
 function parseGroupSegments(group: string | undefined): readonly string[] {
   if (group) {
     return group.split("/").map(toCamelCase);
@@ -98,34 +106,79 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
   return `z.object({\n${fields}\n})`;
 }
 
-const HEADER = [
-  "/*",
-  "|==========================================================================",
-  "| AUTO-GENERATED — DO NOT EDIT",
-  "|==========================================================================",
-  "|",
-  "| Run `funkai prompts generate` to regenerate.",
-  "|",
-  "*/",
-].join("\n");
+/** @private */
+function formatHeader(sourcePath?: string): string {
+  let sourceLine = "";
+  if (sourcePath) {
+    sourceLine = `//  Source:      ${sourcePath}\n`;
+  }
+  return [
+    "// ─── AUTO-GENERATED ────────────────────────────────────────",
+    `${sourceLine}//  Regenerate:  funkai prompts generate`,
+    "// ───────────────────────────────────────────────────────────",
+  ].join("\n");
+}
+
+/**
+ * Derive a unique file slug from group + name.
+ *
+ * Ungrouped prompts use the name alone. Grouped prompts
+ * join group segments and name with hyphens.
+ *
+ * @param name - The prompt name (kebab-case).
+ * @param group - Optional group path (e.g., 'core/agent').
+ * @returns The file slug string.
+ *
+ * @example
+ * ```ts
+ * toFileSlug('system', 'core/agent')      // => 'core-agent-system'
+ * toFileSlug('greeting', undefined)        // => 'greeting'
+ * ```
+ */
+export function toFileSlug(name: string, group?: string): string {
+  if (group) {
+    return `${group.replaceAll("/", "-")}-${name}`;
+  }
+  return name;
+}
+
+/**
+ * Derive a unique import name (camelCase) from group + name.
+ *
+ * @param name - The prompt name (kebab-case).
+ * @param group - Optional group path (e.g., 'core/agent').
+ * @returns The camelCase import identifier.
+ *
+ * @example
+ * ```ts
+ * toImportName('system', 'core/agent')     // => 'coreAgentSystem'
+ * toImportName('greeting', undefined)       // => 'greeting'
+ * ```
+ */
+export function toImportName(name: string, group?: string): string {
+  return toCamelCase(toFileSlug(name, group));
+}
 
 /**
  * Generate a per-prompt TypeScript module with a default export.
  *
- * The module contains the Zod schema, inlined template, and
- * `render` / `validate` functions.
+ * The module uses `createPrompt` from `@funkai/prompts` to
+ * encapsulate the Zod schema, inlined template, and render logic.
+ *
+ * @param prompt - The parsed prompt configuration.
+ * @returns The generated TypeScript module source code.
  */
 export function generatePromptModule(prompt: ParsedPrompt): string {
   const escaped = escapeTemplateLiteral(prompt.template);
   const schemaExpr = generateSchemaExpression(prompt.schema);
   const groupValue = formatGroupValue(prompt.group);
+  const header = formatHeader(prompt.sourcePath);
 
   const lines: readonly string[] = [
-    HEADER,
-    `// Source: ${prompt.sourcePath}`,
+    header,
     "",
     "import { z } from 'zod'",
-    "import { liquidEngine } from '@funkai/prompts/runtime'",
+    "import { createPrompt } from '@funkai/prompts'",
     "",
     `const schema = ${schemaExpr}`,
     "",
@@ -133,28 +186,16 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
     "",
     `const template = \`${escaped}\``,
     "",
-    "export default {",
-    `  name: '${prompt.name}' as const,`,
+    "/**",
+    ` * **${prompt.name}** prompt module.`,
+    ...formatGroupJsdoc(prompt.group),
+    " */",
+    "export default createPrompt<Variables>({",
+    `  name: '${prompt.name}',`,
     `  group: ${groupValue},`,
+    "  template,",
     "  schema,",
-    ...match(prompt.schema.length)
-      .with(0, () => [
-        "  render(variables?: undefined): string {",
-        "    return liquidEngine.parseAndRenderSync(template, {})",
-        "  },",
-        "  validate(variables?: undefined): Variables {",
-        "    return schema.parse(variables ?? {})",
-        "  },",
-      ])
-      .otherwise(() => [
-        "  render(variables: Variables): string {",
-        "    return liquidEngine.parseAndRenderSync(template, schema.parse(variables))",
-        "  },",
-        "  validate(variables: unknown): Variables {",
-        "    return schema.parse(variables)",
-        "  },",
-      ]),
-    "}",
+    "})",
     "",
   ];
 
@@ -172,6 +213,9 @@ interface TreeNode {
 /**
  * Build a nested tree from sorted prompts, grouped by their `group` field.
  *
+ * Leaf values are the unique import name derived from group+name,
+ * so prompts with the same name in different groups do not collide.
+ *
  * @param prompts - Sorted parsed prompts.
  * @returns A tree where leaves are import names and branches are group namespaces.
  * @throws If a prompt name collides with a group namespace at the same level.
@@ -180,7 +224,8 @@ interface TreeNode {
  */
 function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
   return prompts.reduce<Record<string, unknown>>((root, prompt) => {
-    const importName = toCamelCase(prompt.name);
+    const leafKey = toCamelCase(prompt.name);
+    const importName = toImportName(prompt.name, prompt.group);
     const segments = parseGroupSegments(prompt.group);
 
     const target = segments.reduce<Record<string, unknown>>((current, segment) => {
@@ -196,13 +241,13 @@ function buildTree(prompts: readonly ParsedPrompt[]): TreeNode {
       return current[segment] as Record<string, unknown>;
     }, root);
 
-    if (typeof target[importName] === "object" && target[importName] !== null) {
+    if (typeof target[leafKey] === "object" && target[leafKey] !== null) {
       throw new Error(
-        `Collision: prompt "${importName}" conflicts with existing group namespace "${importName}" at the same level.`,
+        `Collision: prompt "${leafKey}" conflicts with existing group namespace "${leafKey}" at the same level.`,
       );
     }
 
-    target[importName] = importName;
+    target[leafKey] = importName;
     return root;
   }, {}) as TreeNode;
 }
@@ -221,7 +266,12 @@ function serializeTree(node: TreeNode, indent: number): readonly string[] {
 
   return Object.entries(node).flatMap(([key, value]) =>
     match(typeof value)
-      .with("string", () => [`${pad}${key},`])
+      .with("string", () => {
+        if (key === value) {
+          return [`${pad}${key},`];
+        }
+        return [`${pad}${key}: ${value as string},`];
+      })
       .otherwise(() => [
         `${pad}${key}: {`,
         ...serializeTree(value as TreeNode, indent + 1),
@@ -236,19 +286,39 @@ function serializeTree(node: TreeNode, indent: number): readonly string[] {
  *
  * Prompts are organized into a nested object structure based on their
  * `group` field, with each `/`-separated segment becoming a nesting level.
+ *
+ * @param prompts - Sorted parsed prompts to include in the registry.
+ * @returns The generated TypeScript source for the registry index module.
+ *
+ * @example
+ * ```ts
+ * const source = generateRegistry([
+ *   { name: 'system', group: 'core/agent', schema: [], template: '...', sourcePath: 'prompts/system.prompt' },
+ * ])
+ * writeFileSync('index.ts', source)
+ * ```
  */
 export function generateRegistry(prompts: readonly ParsedPrompt[]): string {
-  const sorted = [...prompts].toSorted((a, b) => a.name.localeCompare(b.name));
+  const sorted = [...prompts].toSorted((a, b) => {
+    const slugA = toFileSlug(a.name, a.group);
+    const slugB = toFileSlug(b.name, b.group);
+    return slugA.localeCompare(slugB);
+  });
 
   const imports = sorted
-    .map((p) => `import ${toCamelCase(p.name)} from './${p.name}.js'`)
+    .map((p) => {
+      const importName = toImportName(p.name, p.group);
+      const fileSlug = toFileSlug(p.name, p.group);
+      return `import ${importName} from './${fileSlug}.js'`;
+    })
     .join("\n");
 
   const tree = buildTree(sorted);
   const treeLines = serializeTree(tree, 1);
+  const header = formatHeader();
 
   const lines: readonly string[] = [
-    HEADER,
+    header,
     "",
     "import { createPromptRegistry } from '@funkai/prompts'",
     imports,
