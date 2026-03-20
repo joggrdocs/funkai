@@ -12,7 +12,13 @@ import type {
   FlowAgentOverrides,
   FlowSubAgents,
 } from "@/core/agents/flow/types.js";
-import type { Agent, AgentConfig, AgentOverrides, Resolver, SubAgents } from "@/core/agents/types.js";
+import type {
+  Agent,
+  AgentConfig,
+  AgentOverrides,
+  Resolver,
+  SubAgents,
+} from "@/core/agents/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model } from "@/core/types.js";
 import { getAgentConfig, getFlowAgentConfig, isAgent, isFlowAgent } from "@/lib/runnable.js";
