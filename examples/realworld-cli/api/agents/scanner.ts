@@ -8,6 +8,12 @@ import { prompts } from "~prompts";
  *
  * @param tools - The filesystem tools scoped to the target directory.
  * @returns An agent configured to scan for test files.
+ *
+ * @example
+ * ```ts
+ * const scanner = createScannerAgent(fsTools)
+ * const result = await scanner.generate({ prompt: "Find test files" })
+ * ```
  */
 export const createScannerAgent = (tools: { readonly ls: Tool; readonly grep: Tool }): Agent =>
   agent({

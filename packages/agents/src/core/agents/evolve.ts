@@ -84,10 +84,10 @@ export function evolve<
 >(
   base: Agent<TInput, TOutput, TTools, TSubAgents, TModel>,
   overrides:
-    | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>
+    | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>
     | ((
         config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
-      ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents>>),
+      ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>),
 ): Agent<TInput, TOutput, TTools, TSubAgents, TModel>;
 
 /**
