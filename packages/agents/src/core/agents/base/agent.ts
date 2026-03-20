@@ -540,6 +540,7 @@ export function agent<
 
   // eslint-disable-next-line no-shadow -- Local variable is the return value constructed inside its own factory function
   const agent: Agent<TInput, TOutput, TTools, TSubAgents, TModel> = {
+    model: config.model,
     generate,
     stream,
     fn: () => generate,

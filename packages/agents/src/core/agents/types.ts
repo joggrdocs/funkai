@@ -680,6 +680,14 @@ export interface Agent<
   TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 > {
   /**
+   * The model (or resolver) used by this agent.
+   *
+   * Exposes the value passed via `AgentConfig.model` so that
+   * `evolve()` can infer and preserve the concrete model type.
+   */
+  readonly model: TModel;
+
+  /**
    * Run the agent to completion.
    *
    * Executes the tool loop until the model produces a final response
