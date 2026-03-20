@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { agent, evolve } from "@funkai/agents";
-import type { Tool } from "@funkai/agents";
+import type { Agent, Tool } from "@funkai/agents";
 import { prompts } from "~prompts";
 
 /**
@@ -32,7 +32,7 @@ export const createAnalyzerAgent = (
     readonly ls: Tool;
   },
   testFilePath: string,
-) =>
+): Agent =>
   evolve(baseAnalyzer, {
     system: prompts.agents.analyzer.render({
       testFilePath,
