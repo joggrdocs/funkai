@@ -42,7 +42,7 @@ export type { StepInfo } from "@/core/types.js";
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FlowSubAgents = Record<string, Agent<any, any, any, any> | FlowAgent<any, any>>;
+export type FlowSubAgents = Record<string, Agent<any, any, any, any, any> | FlowAgent<any, any>>;
 
 /**
  * Result of a completed flow agent generation.

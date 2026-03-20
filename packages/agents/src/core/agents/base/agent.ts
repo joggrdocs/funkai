@@ -25,7 +25,7 @@ import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { StepFinishEvent, StreamPart } from "@/core/types.js";
+import type { Model, StepFinishEvent, StreamPart } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -86,9 +86,10 @@ export function agent<
   TTools extends Record<string, Tool> = {},
   // oxlint-disable-next-line typescript-eslint/ban-types
   TSubAgents extends SubAgents = {},
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 >(
-  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
-): Agent<TInput, TOutput, TTools, TSubAgents> {
+  config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
+): Agent<TInput, TOutput, TTools, TSubAgents, TModel> {
   /**
    * Extract the raw input from unified params.
    *
@@ -538,7 +539,8 @@ export function agent<
   }
 
   // eslint-disable-next-line no-shadow -- Local variable is the return value constructed inside its own factory function
-  const agent: Agent<TInput, TOutput, TTools, TSubAgents> = {
+  const agent: Agent<TInput, TOutput, TTools, TSubAgents, TModel> = {
+    model: config.model,
     generate,
     stream,
     fn: () => generate,

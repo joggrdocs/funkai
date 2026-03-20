@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { agent, evolve } from "@funkai/agents";
-import type { Tool } from "@funkai/agents";
+import type { Agent, Tool } from "@funkai/agents";
 import { prompts } from "~prompts";
 
 /**
@@ -24,6 +24,12 @@ const baseAnalyzer = agent({
  * @param tools - The filesystem tools scoped to the target directory.
  * @param testFilePath - The path to the test file being analyzed.
  * @returns An agent configured to analyze test quality.
+ *
+ * @example
+ * ```ts
+ * const analyzer = createAnalyzerAgent(fsTools, "src/foo.test.ts")
+ * const result = await analyzer.generate({ prompt: "Review this test file" })
+ * ```
  */
 export const createAnalyzerAgent = (
   tools: {
@@ -32,7 +38,7 @@ export const createAnalyzerAgent = (
     readonly ls: Tool;
   },
   testFilePath: string,
-) =>
+): Agent =>
   evolve(baseAnalyzer, {
     system: prompts.agents.analyzer.render({
       testFilePath,

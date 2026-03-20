@@ -29,7 +29,7 @@ import type { RunnableMeta } from "@/lib/runnable.js";
 export function buildAITools(
   tools?: Record<string, Tool>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
-  agents?: Record<string, Agent<any, any, any, any>>,
+  agents?: Record<string, Agent<any, any, any, any, any>>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): Record<string, any> | undefined {
   const hasTools = isNotNil(tools) && Object.keys(tools).length > 0;
@@ -251,7 +251,7 @@ function resolveToolName(meta: RunnableMeta | undefined, fallback: string): stri
  */
 function buildAgentTools(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
-  agents: Record<string, Agent<any, any, any, any>> | undefined,
+  agents: Record<string, Agent<any, any, any, any, any>> | undefined,
   tools: Record<string, Tool> | undefined,
 ): Record<string, unknown> {
   if (!agents) {
@@ -294,7 +294,7 @@ function buildAgentTools(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 function buildAgentTool(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
-  runnable: Agent<any, any, any, any>,
+  runnable: Agent<any, any, any, any, any>,
   meta: RunnableMeta | undefined,
   toolName: string,
   tools: Record<string, Tool> | undefined,

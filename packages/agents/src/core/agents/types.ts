@@ -117,7 +117,7 @@ export type ToolName<S extends string> = S extends ""
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SubAgents = Record<string, Agent<any, any, any, any>>;
+export type SubAgents = Record<string, Agent<any, any, any, any, any>>;
 
 /**
  * Chat message type.
@@ -500,6 +500,7 @@ export interface AgentConfig<
   TOutput,
   TTools extends Record<string, Tool>,
   TSubAgents extends SubAgents,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 > {
   /**
    * Unique agent name.
@@ -518,7 +519,7 @@ export interface AgentConfig<
    * @see {@link Model}
    * @see {@link Resolver}
    */
-  model: Resolver<TInput, Model>;
+  model: TModel;
 
   /**
    * Zod schema for the agent's typed input.
@@ -676,7 +677,16 @@ export interface Agent<
   TOutput = string,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 > {
+  /**
+   * The model (or resolver) used by this agent.
+   *
+   * Exposes the value passed via `AgentConfig.model` so that
+   * `evolve()` can infer and preserve the concrete model type.
+   */
+  readonly model: TModel;
+
   /**
    * Run the agent to completion.
    *
