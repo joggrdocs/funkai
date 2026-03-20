@@ -169,7 +169,7 @@ export function discoverPrompts(options: DiscoverPromptsOptions): readonly Disco
   const all = baseDirs.flatMap((dir) => scanDirectory(dir, 0));
 
   const isIncluded = picomatch(includes as string[]);
-  const isExcluded = excludes.length > 0 ? picomatch(excludes as string[]) : () => false;
+  const isExcluded = picomatch(excludes as string[]);
 
   const filtered = all.filter((prompt) => {
     const matchPath = relative(process.cwd(), prompt.filePath).replaceAll("\\", "/");

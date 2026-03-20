@@ -32,10 +32,13 @@ export default command({
       .with({ includes: P.array(P.string).select() }, (includes) => {
         if (includes.length > 0) {
           // Extract the static base directory from the first include pattern
-          const pattern = includes[0];
+          const [pattern] = includes;
           const parts = pattern.split("/");
           const staticParts = parts.filter((p) => !p.includes("*") && !p.includes("?"));
-          return staticParts.length > 0 ? staticParts.join("/") : undefined;
+          if (staticParts.length > 0) {
+            return staticParts.join("/");
+          }
+          return undefined;
         }
         return undefined;
       })

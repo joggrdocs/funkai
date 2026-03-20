@@ -53,7 +53,7 @@ function resolveGroupFromConfig(
 
   for (const group of groups) {
     const isIncluded = picomatch(group.includes as string[]);
-    const isExcluded = group.excludes ? picomatch(group.excludes as string[]) : () => false;
+    const isExcluded = picomatch((group.excludes ?? []) as string[]);
 
     if (isIncluded(matchPath) && !isExcluded(matchPath)) {
       return group.name;
@@ -101,9 +101,13 @@ export interface LintPipelineResult {
  * @returns Lint results for all discovered prompts.
  */
 export function runLintPipeline(options: LintPipelineOptions): LintPipelineResult {
+  let excludes: string[] | undefined;
+  if (options.excludes) {
+    excludes = [...options.excludes];
+  }
   const discovered = discoverPrompts({
     includes: [...options.includes],
-    excludes: options.excludes ? [...options.excludes] : undefined,
+    excludes,
   });
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   const partialsDirs = resolvePartialsDirs(customPartialsDir);
@@ -149,9 +153,13 @@ export interface GeneratePipelineResult {
  * @returns Parsed prompts ready for code generation, along with lint results.
  */
 export function runGeneratePipeline(options: GeneratePipelineOptions): GeneratePipelineResult {
+  let excludes: string[] | undefined;
+  if (options.excludes) {
+    excludes = [...options.excludes];
+  }
   const discovered = discoverPrompts({
     includes: [...options.includes],
-    excludes: options.excludes ? [...options.excludes] : undefined,
+    excludes,
   });
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   const partialsDirs = resolvePartialsDirs(customPartialsDir);

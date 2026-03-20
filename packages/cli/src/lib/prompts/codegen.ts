@@ -68,6 +68,14 @@ function formatGroupValue(group: string | undefined): string {
 }
 
 /** @private */
+function formatGroupJsdoc(group: string | undefined): readonly string[] {
+  if (group) {
+    return [" *", ` * @group ${group}`];
+  }
+  return [];
+}
+
+/** @private */
 function parseGroupSegments(group: string | undefined): readonly string[] {
   if (group) {
     return group.split("/").map(toCamelCase);
@@ -180,7 +188,7 @@ export function generatePromptModule(prompt: ParsedPrompt): string {
     "",
     "/**",
     ` * **${prompt.name}** prompt module.`,
-    ...(prompt.group ? [" *", ` * @group ${prompt.group}`] : []),
+    ...formatGroupJsdoc(prompt.group),
     " */",
     "export default createPrompt<Variables>({",
     `  name: '${prompt.name}',`,

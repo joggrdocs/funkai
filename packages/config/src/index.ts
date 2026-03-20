@@ -56,7 +56,7 @@ export const configSchema = z.object({
 export type FunkaiConfig = z.infer<typeof configSchema>;
 
 // ---------------------------------------------------------------------------
-// defineConfig
+// DefineConfig
 // ---------------------------------------------------------------------------
 
 /**
