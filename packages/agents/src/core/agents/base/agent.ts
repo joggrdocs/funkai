@@ -100,7 +100,7 @@ export function agent<
    *
    * @private
    */
-  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents>): TInput {
+  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents, TOutput>): TInput {
     if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt as unknown as TInput;
     }
@@ -172,7 +172,7 @@ export function agent<
    * @private
    */
   function resolveSignal(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): AbortSignal | undefined {
     const { timeout, signal } = params;
     if (signal && isNotNil(timeout)) {
@@ -198,7 +198,7 @@ export function agent<
   async function prepareGeneration(
     input: TInput,
     log: Logger,
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<PreparedGeneration> {
     const resolvedModel = params.model ?? (await resolveValue(config.model, input));
     const model = await withModelMiddleware({ model: resolvedModel });
@@ -284,7 +284,7 @@ export function agent<
   }
 
   async function generate(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>> {
     const startedAt = Date.now();
     let resolvedInput: TInput | undefined;
@@ -344,7 +344,7 @@ export function agent<
         wrapHook(config.onFinish, { input, result: generateResult, duration }),
         wrapHook(params.onFinish, {
           input,
-          result: generateResult as GenerateResult,
+          result: generateResult,
           duration,
         }),
       );
@@ -383,7 +383,7 @@ export function agent<
   }
 
   async function stream(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>> {
     const startedAt = Date.now();
     let resolvedInput: TInput | undefined;
@@ -469,7 +469,7 @@ export function agent<
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
           wrapHook(params.onFinish, {
             input,
-            result: generateResult as GenerateResult,
+            result: generateResult,
             duration,
           }),
         );
