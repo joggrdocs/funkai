@@ -479,7 +479,9 @@ export type GenerateParams<
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
   TOutput = string,
-> = BaseGenerateParams<TInput, TOutput> & AgentGenerateOverrides<TTools, TSubAgents> & InputUnion<TInput>;
+> = BaseGenerateParams<TInput, TOutput> &
+  AgentGenerateOverrides<TTools, TSubAgents> &
+  InputUnion<TInput>;
 
 /**
  * Configuration for creating an agent.

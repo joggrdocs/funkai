@@ -694,4 +694,3 @@ function buildMergedHook<E>(
     await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
   };
 }
-

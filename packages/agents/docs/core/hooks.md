@@ -84,21 +84,21 @@ When a parent agent has sub-agents (via the `agents` config), those sub-agents a
 
 ### What gets forwarded (safe — fixed event types)
 
-| Hook           | Event type       | Why safe                                      |
-| -------------- | ---------------- | --------------------------------------------- |
-| `onStepStart`  | `StepInfo`       | Fixed type, same shape for every agent        |
-| `onStepFinish` | `StepFinishEvent`| Fixed type, same shape for every agent        |
-| `logger`       | `Logger`         | No event type, just a logger instance         |
+| Hook           | Event type        | Why safe                               |
+| -------------- | ----------------- | -------------------------------------- |
+| `onStepStart`  | `StepInfo`        | Fixed type, same shape for every agent |
+| `onStepFinish` | `StepFinishEvent` | Fixed type, same shape for every agent |
+| `logger`       | `Logger`          | No event type, just a logger instance  |
 
 These hooks are passed directly into `child.generate()` as per-call hooks. The parent's `onStepFinish` is merged (config + per-call) before forwarding, so both the config-level and call-level hooks fire for sub-agent steps.
 
 ### What stays at the parent (not forwarded — generic event types)
 
-| Hook       | Event type                                        | Why not forwarded                                    |
-| ---------- | ------------------------------------------------- | ---------------------------------------------------- |
-| `onStart`  | `{ input: TInput }`                               | `TInput` differs between parent and child            |
-| `onFinish` | `{ input: TInput, result: GenerateResult<TOutput>, duration }` | Both `TInput` and `TOutput` differ  |
-| `onError`  | `{ input: TInput, error: Error }`                 | `TInput` differs between parent and child            |
+| Hook       | Event type                                                     | Why not forwarded                         |
+| ---------- | -------------------------------------------------------------- | ----------------------------------------- |
+| `onStart`  | `{ input: TInput }`                                            | `TInput` differs between parent and child |
+| `onFinish` | `{ input: TInput, result: GenerateResult<TOutput>, duration }` | Both `TInput` and `TOutput` differ        |
+| `onError`  | `{ input: TInput, error: Error }`                              | `TInput` differs between parent and child |
 
 These hooks are parameterized by the agent's generic types (`TInput`, `TOutput`). A parent typed `Agent<{ userId: string }>` would have `onStart: (e: { input: { userId: string } }) => void`, but a sub-agent might expect `{ query: string }`. Forwarding the parent's hook to the child would cause the hook to receive the wrong event shape at runtime — the compiler cannot catch this because the type boundary is erased when hooks cross agent boundaries.
 

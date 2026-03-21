@@ -1,3 +1,4 @@
+import { simulateReadableStream } from "ai";
 /**
  * Integration tests for lifecycle event propagation.
  *
@@ -9,7 +10,6 @@
  * in production, with mock models standing in for real LLMs.
  */
 import { MockLanguageModelV3, mockValues } from "ai/test";
-import { simulateReadableStream } from "ai";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { z } from "zod";
 
@@ -220,12 +220,7 @@ describe("Agent lifecycle (integration)", () => {
       },
     });
 
-    expect(order).toEqual([
-      "config:onStart",
-      "call:onStart",
-      "config:onFinish",
-      "call:onFinish",
-    ]);
+    expect(order).toEqual(["config:onStart", "call:onStart", "config:onFinish", "call:onFinish"]);
   });
 });
 

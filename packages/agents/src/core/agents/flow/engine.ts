@@ -235,11 +235,7 @@ type AnyHook = ((event: any) => void | Promise<void>) | undefined;
  *
  * @private
  */
-function buildMergedHook(
-  log: Logger,
-  engineHook: AnyHook,
-  flowHook: AnyHook,
-): AnyHook {
+function buildMergedHook(log: Logger, engineHook: AnyHook, flowHook: AnyHook): AnyHook {
   if (!engineHook && !flowHook) {
     return undefined;
   }

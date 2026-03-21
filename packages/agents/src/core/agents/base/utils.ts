@@ -414,9 +414,7 @@ function buildAgentTool(
  *
  * @private
  */
-function buildParentParams(
-  ctx: ParentAgentContext | undefined,
-): Record<string, unknown> {
+function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, unknown> {
   if (isNil(ctx)) {
     return {};
   }
