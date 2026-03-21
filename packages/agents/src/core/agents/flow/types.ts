@@ -9,6 +9,7 @@ import type {
   StreamResult,
 } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
+import type { Tool } from "@/core/tool.js";
 import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import type { TraceEntry } from "@/lib/trace.js";
@@ -334,7 +335,9 @@ export interface FlowAgent<TInput, TOutput> {
    * const result = await myFlow.generate({ input: { targetDir: '.' } })
    * ```
    */
-  generate(params: GenerateParams<TInput>): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  generate(
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
+  ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 
   /**
    * Run the flow agent with streaming step progress.
@@ -346,12 +349,16 @@ export interface FlowAgent<TInput, TOutput> {
    * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`.
    */
-  stream(params: GenerateParams<TInput>): Promise<Result<StreamResult<TOutput>>>;
+  stream(
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
+  ): Promise<Result<StreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.
    */
-  fn(): (params: GenerateParams<TInput>) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  fn(): (
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
+  ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 
 /**

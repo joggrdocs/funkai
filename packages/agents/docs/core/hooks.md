@@ -78,6 +78,65 @@ base.onStepFinish -> overrides.onStepFinish
 
 The `stepId` for agent tool-loop steps is counter-based: `agentName:0`, `agentName:1`, etc.
 
+## Sub-Agent Hook Forwarding
+
+When a parent agent has sub-agents (via the `agents` config), those sub-agents are wrapped as tools. The parent forwards a subset of its hooks to each sub-agent so internal activity is observable.
+
+### What gets forwarded (safe — fixed event types)
+
+| Hook           | Event type        | Why safe                               |
+| -------------- | ----------------- | -------------------------------------- |
+| `onStepStart`  | `StepInfo`        | Fixed type, same shape for every agent |
+| `onStepFinish` | `StepFinishEvent` | Fixed type, same shape for every agent |
+| `logger`       | `Logger`          | No event type, just a logger instance  |
+
+These hooks are passed directly into `child.generate()` as per-call hooks. The parent's `onStepFinish` is merged (config + per-call) before forwarding, so both the config-level and call-level hooks fire for sub-agent steps.
+
+### What stays at the parent (not forwarded — generic event types)
+
+| Hook       | Event type                                                     | Why not forwarded                         |
+| ---------- | -------------------------------------------------------------- | ----------------------------------------- |
+| `onStart`  | `{ input: TInput }`                                            | `TInput` differs between parent and child |
+| `onFinish` | `{ input: TInput, result: GenerateResult<TOutput>, duration }` | Both `TInput` and `TOutput` differ        |
+| `onError`  | `{ input: TInput, error: Error }`                              | `TInput` differs between parent and child |
+
+These hooks are parameterized by the agent's generic types (`TInput`, `TOutput`). A parent typed `Agent<{ userId: string }>` would have `onStart: (e: { input: { userId: string } }) => void`, but a sub-agent might expect `{ query: string }`. Forwarding the parent's hook to the child would cause the hook to receive the wrong event shape at runtime — the compiler cannot catch this because the type boundary is erased when hooks cross agent boundaries.
+
+Sub-agent lifecycle activity is still observable at the parent level through `onStepFinish`, which fires for each tool-loop step including sub-agent tool calls and their results.
+
+### Lifecycle diagram
+
+```
+Parent.generate({ input, onStepFinish })
+  │
+  ├── Parent fires own onStart({ input })         ← parent's TInput, type-safe
+  │
+  ├── generateText() runs tool loop
+  │     │
+  │     ├── Step 0: LLM calls sub-agent tool
+  │     │     │
+  │     │     │  Passed into child.generate():
+  │     │     │    logger       → parent's logger
+  │     │     │    onStepStart  → parent's onStepStart (StepInfo — fixed type)
+  │     │     │    onStepFinish → parent's merged onStepFinish (StepFinishEvent — fixed type)
+  │     │     │
+  │     │     │  NOT passed:
+  │     │     │    onStart, onFinish, onError (generic types — would break type safety)
+  │     │     │
+  │     │     ├── Child fires own onStart({ input })  ← child's TInput, type-safe
+  │     │     ├── Child runs tool loop
+  │     │     │     ├── Child step 0 → parent's onStepFinish fires (StepFinishEvent)
+  │     │     │     └── Child step 1 → parent's onStepFinish fires (StepFinishEvent)
+  │     │     ├── Child fires own onFinish(...)        ← child's types, type-safe
+  │     │     └── Returns result to parent
+  │     │
+  │     └── Parent's onStepFinish fires for step 0 (includes sub-agent tool result)
+  │
+  ├── Parent fires own onFinish({ input, result })  ← parent's TInput/TOutput, type-safe
+  │
+  └── Returns Result to caller
+```
+
 ## Error Handling
 
 All hooks are executed via `attemptEachAsync`, which:

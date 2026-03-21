@@ -201,35 +201,50 @@ function createHookCaller<TEvent>(
 }
 
 /**
- * Build a merged hook that runs engine and flow agent hooks sequentially.
+ * Internal-only hook type used by `buildMergedHook` to accept any
+ * lifecycle hook regardless of its specific event signature.
  *
- * The `(event: never)` constraint is the widest function type under
- * strict mode — any single-argument function is assignable via
- * contravariance (`never extends T` for all `T`).
+ * ## Why `any` is necessary here
+ *
+ * Functions are **contravariant** in their parameter types. A hook
+ * typed `(event: { input: TInput }) => void` is NOT assignable to
+ * `(event: unknown) => void` — the subtype relationship is reversed
+ * for function parameters. This means no strict type (including
+ * `unknown` or `never`) can serve as a universal hook acceptor.
+ *
+ * `any` is the only TypeScript type that bypasses contravariance,
+ * allowing all hook signatures to unify in a single merge function.
+ *
+ * Type safety is enforced at the public API boundary:
+ * - `FlowEngineConfig` defines engine hooks with `unknown` event fields
+ * - `FlowAgentConfig` defines flow hooks with `TInput`/`TOutput` event fields
+ * - Both produce the correct runtime event shapes — the merge function
+ *   just combines two callbacks, it never inspects or constructs events.
  *
  * @private
  */
-function buildMergedHook<THook extends (event: never) => void | Promise<void>>(
-  log: Logger,
-  engineHook: THook | undefined,
-  flowHook: THook | undefined,
-): THook | undefined {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see JSDoc above: contravariance requires `any`
+type AnyHook = ((event: any) => void | Promise<void>) | undefined;
+
+/**
+ * Build a merged hook that runs engine and flow agent hooks sequentially.
+ *
+ * Accepts `AnyHook` (event: unknown) directly — no generic type parameter
+ * or unsafe casts needed. Call sites widen narrower hook types to `AnyHook`
+ * explicitly.
+ *
+ * @private
+ */
+function buildMergedHook(log: Logger, engineHook: AnyHook, flowHook: AnyHook): AnyHook {
   if (!engineHook && !flowHook) {
     return undefined;
   }
 
-  const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(
-      engineHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
-    const flowFn = createHookCaller(
-      flowHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
+  return async (event: unknown): Promise<void> => {
+    const engineFn = createHookCaller(engineHook, event);
+    const flowFn = createHookCaller(flowHook, event);
     await fireHooks(log, engineFn, flowFn);
   };
-  return merged as unknown as THook;
 }
 
 /**
