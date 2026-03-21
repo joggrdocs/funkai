@@ -221,7 +221,7 @@ export function agent<
     const parentCtx: ParentAgentContext = {
       log,
       onStepStart: params.onStepStart,
-      onStepFinish: buildMergedHook(config.onStepFinish, params.onStepFinish),
+      onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
     };
 
     const aiTools = buildAITools(
@@ -683,6 +683,7 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
  * @private
  */
 function buildMergedHook<E>(
+  log: Logger,
   configHook: ((event: E) => void | Promise<void>) | undefined,
   callHook: ((event: E) => void | Promise<void>) | undefined,
 ): ((event: E) => void | Promise<void>) | undefined {
@@ -690,12 +691,7 @@ function buildMergedHook<E>(
     return undefined;
   }
   return async (event: E) => {
-    if (isNotNil(configHook)) {
-      await configHook(event);
-    }
-    if (isNotNil(callHook)) {
-      await callHook(event);
-    }
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
   };
 }
 
