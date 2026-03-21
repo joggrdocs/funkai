@@ -11,6 +11,7 @@ import {
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { ParentAgentContext } from "@/core/agents/base/utils.js";
 import type {
   Agent,
   AgentConfig,
@@ -210,9 +211,23 @@ export function agent<
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
+    // Only fixed-type hooks (onStepStart, onStepFinish) are forwarded to
+    // sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
+    // forwarded because their event types are parameterized by TInput/TOutput
+    // — a sub-agent has different generics, so the parent's typed hook
+    // would receive the wrong event shape at runtime. Sub-agent activity
+    // is still observable via onStepFinish at the parent's tool-loop level.
+    // See packages/agents/docs/core/hooks.md for the full lifecycle.
+    const parentCtx: ParentAgentContext = {
+      log,
+      onStepStart: params.onStepStart,
+      onStepFinish: buildMergedHook(config.onStepFinish, params.onStepFinish),
+    };
+
     const aiTools = buildAITools(
       valueOrUndefined(hasTools, mergedTools),
       valueOrUndefined(hasAgents, mergedAgents),
+      parentCtx,
     );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- params.system is Resolver-shaped; safe to resolve
@@ -658,3 +673,29 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
   }
   return ifText;
 }
+
+/**
+ * Build a merged hook that fires config-level and per-call hooks sequentially.
+ *
+ * Returns `undefined` when both are absent so `buildParentParams` skips
+ * the field entirely and sub-agent defaults are preserved.
+ *
+ * @private
+ */
+function buildMergedHook<E>(
+  configHook: ((event: E) => void | Promise<void>) | undefined,
+  callHook: ((event: E) => void | Promise<void>) | undefined,
+): ((event: E) => void | Promise<void>) | undefined {
+  if (isNil(configHook) && isNil(callHook)) {
+    return undefined;
+  }
+  return async (event: E) => {
+    if (isNotNil(configHook)) {
+      await configHook(event);
+    }
+    if (isNotNil(callHook)) {
+      await callHook(event);
+    }
+  };
+}
+

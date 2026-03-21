@@ -1,15 +1,74 @@
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
-import { isFunction, isNil, isNotNil, isString } from "es-toolkit";
+import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
 import { match, P } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
 import type { Agent, Message, Resolver } from "@/core/agents/types.js";
+import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
+import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
+
+/**
+ * Context forwarded from a parent agent to sub-agents wrapped as tools.
+ *
+ * Includes the parent's logger and **fixed-type** lifecycle hooks so that
+ * sub-agent internal step activity is visible to the parent.
+ *
+ * ## Why only step hooks are forwarded
+ *
+ * `onStepStart` and `onStepFinish` use fixed event types (`StepInfo`,
+ * `StepFinishEvent`) that are the same for every agent — safe to pass
+ * from parent to child with no type mismatch.
+ *
+ * `onStart`, `onFinish`, and `onError` are **not** forwarded because their
+ * event types are generic over `TInput`/`TOutput`. A parent agent typed
+ * `Agent<{ userId: string }, ...>` would have `onStart: (e: { input: { userId: string } }) => void`,
+ * but the sub-agent's input is a completely different type (e.g.
+ * `{ query: string }`). Forwarding the parent's hook to the child would
+ * cause the hook to receive the wrong event shape at runtime — a silent
+ * type-safety violation that the compiler cannot catch.
+ *
+ * Sub-agent activity is still observable at the parent level through
+ * `onStepFinish`, which fires for each tool-loop step including sub-agent
+ * tool calls.
+ *
+ * ## Lifecycle (what gets passed down vs. what stays at the parent)
+ *
+ * ```
+ * Passed into child.generate() — fixed types, safe:
+ *   log          → child creates .child({ agentId }) from it
+ *   onStepStart  → StepInfo (same shape for all agents)
+ *   onStepFinish → StepFinishEvent (same shape for all agents)
+ *
+ * NOT passed down — generic types, would break type safety:
+ *   onStart      → { input: TInput } (differs per agent)
+ *   onFinish     → { input: TInput, result: GenerateResult<TOutput> } (differs per agent)
+ *   onError      → { input: TInput, error: Error } (differs per agent)
+ * ```
+ */
+export interface ParentAgentContext {
+  /** Parent logger — sub-agent creates `.child({ agentId })` from it. */
+  log?: Logger;
+
+  /**
+   * Fires when a sub-agent step starts.
+   *
+   * Uses `StepInfo` — a fixed (non-generic) type, safe to forward.
+   */
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+
+  /**
+   * Fires when a sub-agent step finishes.
+   *
+   * Uses `StepFinishEvent` — a fixed (non-generic) type, safe to forward.
+   */
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+}
 
 /**
  * Merge `Tool` records and wrap subagent `Runnable` objects into AI SDK
@@ -24,12 +83,15 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  *
  * @param tools - Record of named tools to include.
  * @param agents - Record of named sub-agents to wrap as tools.
+ * @param parentCtx - Parent context forwarded to sub-agent generate calls
+ *   (logger, lifecycle hooks).
  * @returns The merged tool set, or `undefined` when empty.
  */
 export function buildAITools(
   tools?: Record<string, Tool>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
   agents?: Record<string, Agent<any, any, any, any, any>>,
+  parentCtx?: ParentAgentContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): Record<string, any> | undefined {
   const hasTools = isNotNil(tools) && Object.keys(tools).length > 0;
@@ -39,7 +101,7 @@ export function buildAITools(
     return undefined;
   }
 
-  const agentTools: Record<string, unknown> = buildAgentTools(agents, tools);
+  const agentTools: Record<string, unknown> = buildAgentTools(agents, tools, parentCtx);
 
   return { ...tools, ...agentTools };
 }
@@ -253,6 +315,7 @@ function buildAgentTools(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Agent generic params are contravariant; `unknown` breaks assignability
   agents: Record<string, Agent<any, any, any, any, any>> | undefined,
   tools: Record<string, Tool> | undefined,
+  parentCtx: ParentAgentContext | undefined,
 ): Record<string, unknown> {
   if (!agents) {
     return {};
@@ -279,6 +342,7 @@ function buildAgentTools(
         meta,
         toolName,
         tools,
+        parentCtx,
       );
 
       return [agentToolName, agentTool];
@@ -298,14 +362,22 @@ function buildAgentTool(
   meta: RunnableMeta | undefined,
   toolName: string,
   tools: Record<string, Tool> | undefined,
+  parentCtx: ParentAgentContext | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): ReturnType<typeof tool<any, any>> {
+  const parentParams = buildParentParams(parentCtx);
+
   if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
     return tool({
       description: `Delegate to ${toolName}`,
       inputSchema: meta.inputSchema,
       execute: async (input, { abortSignal }) => {
-        const r = await runnable.generate({ input, signal: abortSignal, tools });
+        const r = await runnable.generate({
+          input,
+          signal: abortSignal,
+          tools,
+          ...parentParams,
+        });
         if (!r.ok) {
           throw new Error(r.error.message);
         }
@@ -321,6 +393,7 @@ function buildAgentTool(
         prompt: input.prompt,
         signal: abortSignal,
         tools,
+        ...parentParams,
       });
       if (!r.ok) {
         throw new Error(r.error.message);
@@ -328,4 +401,31 @@ function buildAgentTool(
       return r.output;
     },
   });
+}
+
+/**
+ * Build the per-call params to forward from parent context to sub-agent.
+ *
+ * Only forwards the parent logger and **fixed-type** step hooks.
+ * Generic hooks (`onStart`, `onFinish`, `onError`) are intentionally
+ * excluded — see {@link ParentAgentContext} for the rationale.
+ *
+ * Omits `undefined` values so they don't override sub-agent defaults.
+ *
+ * @private
+ */
+function buildParentParams(
+  ctx: ParentAgentContext | undefined,
+): Record<string, unknown> {
+  if (isNil(ctx)) {
+    return {};
+  }
+  return omitBy(
+    {
+      logger: ctx.log,
+      onStepStart: ctx.onStepStart,
+      onStepFinish: ctx.onStepFinish,
+    },
+    isNil,
+  );
 }
