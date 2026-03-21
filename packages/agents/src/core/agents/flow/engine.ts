@@ -201,35 +201,41 @@ function createHookCaller<TEvent>(
 }
 
 /**
- * Build a merged hook that runs engine and flow agent hooks sequentially.
+ * A hook that accepts an unknown event — the concrete type used by
+ * `buildMergedHook` so that no generic casts are needed internally.
  *
- * The `(event: never)` constraint is the widest function type under
- * strict mode — any single-argument function is assignable via
- * contravariance (`never extends T` for all `T`).
+ * Engine hooks already accept `unknown` event fields. Flow-level hooks
+ * accept narrower `TInput`-typed events but are contravariant-safe
+ * because the engine constructs events with the correct runtime shape.
+ * The widening cast happens at the call site, not inside the merge function.
  *
  * @private
  */
-function buildMergedHook<THook extends (event: never) => void | Promise<void>>(
+type AnyHook = ((event: unknown) => void | Promise<void>) | undefined;
+
+/**
+ * Build a merged hook that runs engine and flow agent hooks sequentially.
+ *
+ * Accepts `AnyHook` (event: unknown) directly — no generic type parameter
+ * or unsafe casts needed. Call sites widen narrower hook types to `AnyHook`
+ * explicitly.
+ *
+ * @private
+ */
+function buildMergedHook(
   log: Logger,
-  engineHook: THook | undefined,
-  flowHook: THook | undefined,
-): THook | undefined {
+  engineHook: AnyHook,
+  flowHook: AnyHook,
+): AnyHook {
   if (!engineHook && !flowHook) {
     return undefined;
   }
 
-  const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(
-      engineHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
-    const flowFn = createHookCaller(
-      flowHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
+  return async (event: unknown): Promise<void> => {
+    const engineFn = createHookCaller(engineHook, event);
+    const flowFn = createHookCaller(flowHook, event);
     await fireHooks(log, engineFn, flowFn);
   };
-  return merged as unknown as THook;
 }
 
 /**
@@ -334,9 +340,12 @@ export function createFlowEngine<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to merge both config variants
     const mergedConfig = {
       ...flowConfig,
-      onStart: buildMergedHook(hookLog, engineOnStart, flowOnStart),
-      onFinish: buildMergedHook(hookLog, engineOnFinish, flowOnFinish),
-      onError: buildMergedHook(hookLog, engineOnError, flowOnError),
+      // Cast flow hooks to AnyHook at the call boundary — safe because the engine
+      // constructs event objects with the correct runtime shape and flow hooks are
+      // contravariant-safe (TInput narrows to unknown).
+      onStart: buildMergedHook(hookLog, engineOnStart, flowOnStart as AnyHook),
+      onFinish: buildMergedHook(hookLog, engineOnFinish, flowOnFinish as AnyHook),
+      onError: buildMergedHook(hookLog, engineOnError, flowOnError as AnyHook),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, flowOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, flowOnStepFinish),
       // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to merge both config variants
