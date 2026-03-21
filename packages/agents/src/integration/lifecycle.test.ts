@@ -1215,7 +1215,7 @@ describe("Value forwarding (integration)", () => {
     expect(receivedSignal).toBe(flowSignal);
   });
 
-  it("config.signal override on $.agent() takes precedence over ctx.signal", async () => {
+  it("framework ctx.signal takes precedence over config.signal override on $.agent()", async () => {
     let receivedSignal: AbortSignal | undefined;
 
     const spyAgent = agent({
@@ -1253,8 +1253,8 @@ describe("Value forwarding (integration)", () => {
 
     await fa.generate({ input: { text: "test" }, signal: flowSignal });
 
-    // config.signal takes precedence over ctx.signal (by design)
-    expect(receivedSignal).toBe(overrideSignal);
+    // framework ctx.signal takes precedence over user-provided config.signal
+    expect(receivedSignal).toBe(flowSignal);
   });
 
   it("config.config model override is forwarded to $.agent() sub-agent", async () => {
