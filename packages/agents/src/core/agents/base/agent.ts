@@ -212,11 +212,11 @@ export function agent<
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
     // Only fixed-type hooks (onStepStart, onStepFinish) are forwarded to
-    // sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
-    // forwarded because their event types are parameterized by TInput/TOutput
+    // Sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
+    // Forwarded because their event types are parameterized by TInput/TOutput
     // — a sub-agent has different generics, so the parent's typed hook
-    // would receive the wrong event shape at runtime. Sub-agent activity
-    // is still observable via onStepFinish at the parent's tool-loop level.
+    // Would receive the wrong event shape at runtime. Sub-agent activity
+    // Is still observable via onStepFinish at the parent's tool-loop level.
     // See packages/agents/docs/core/hooks.md for the full lifecycle.
     const parentCtx: ParentAgentContext = {
       log,

@@ -27,7 +27,7 @@ vi.mock(
   () =>
     ({
       withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape
     }) as any,
 );
 
@@ -44,14 +44,13 @@ const MOCK_FINISH = { unified: "stop" as const, raw: undefined };
 
 function createMockModel(text = "mock response") {
   return new MockLanguageModelV3({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, but MockLanguageModelV3 expects PromiseLike
     doGenerate: mockValues({
       content: [{ type: "text" as const, text }],
       finishReason: MOCK_FINISH,
       usage: MOCK_USAGE,
       warnings: [],
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, but MockLanguageModelV3 expects PromiseLike
     }) as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, but MockLanguageModelV3 expects PromiseLike
     doStream: mockValues({
       stream: simulateReadableStream({
         chunks: [
@@ -67,6 +66,7 @@ function createMockModel(text = "mock response") {
         ],
         chunkDelayInMs: 0,
       }),
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, but MockLanguageModelV3 expects PromiseLike
     }) as any,
   });
 }
@@ -152,11 +152,13 @@ describe("Agent lifecycle (integration)", () => {
     const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     for await (const _part of result.fullStream) {
-      /* consume */
+      /* Consume */
     }
 
     // Wait for finish hook to settle
@@ -285,8 +287,8 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ input, $ }) => {
-        await $.step({
+      async ({ input, $: $outer }) => {
+        await $outer.step({
           id: "outer",
           execute: async ({ $ }) => {
             await $.step({ id: "inner", execute: async () => input.x + 1 });
@@ -320,8 +322,8 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ input, $ }) => {
-        await $.map({
+      async ({ input, $: $outer }) => {
+        await $outer.map({
           id: "batch",
           input: [1, 2],
           execute: async ({ item, $ }) => {
@@ -329,7 +331,10 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
               id: `process-${item}`,
               execute: async () => item * input.x,
             });
-            return r.ok ? r.value : 0;
+            if (r.ok) {
+              return r.value;
+            }
+            return 0;
           },
         });
         return { y: input.x };
@@ -362,8 +367,8 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ input, $ }) => {
-        await $.each({
+      async ({ input, $: $outer }) => {
+        await $outer.each({
           id: "iterate",
           input: [1, 2],
           execute: async ({ item, $ }) => {
@@ -409,14 +414,19 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
           initial: 0,
           execute: async ({ item, accumulator }) => accumulator + item * input.x,
         });
-        return { y: r.ok ? r.value : 0 };
+        if (r.ok) {
+          return { y: r.value };
+        }
+        return { y: 0 };
       },
     );
 
     const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: 6 });
 
     const stepIds = tracker.events.map((e) => `${e.type}:${e.detail}`);
@@ -443,14 +453,19 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
             throw new Error("step boom");
           },
         });
-        return { y: r.ok ? 0 : -1 };
+        if (r.ok) {
+          return { y: 0 };
+        }
+        return { y: -1 };
       },
     );
 
     const result = await fa.generate({ input: { x: 1 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     expect(result.output).toEqual({ y: -1 });
 
     expect(tracker.events).toEqual([
@@ -503,14 +518,19 @@ describe("FlowAgent with $.agent() (integration)", () => {
           input: `Write about ${input.topic}`,
         });
 
-        return { summary: r.ok ? String(r.value.output) : "failed" };
+        if (r.ok) {
+          return { summary: String(r.value.output) };
+        }
+        return { summary: "failed" };
       },
     );
 
     const result = await fa.generate({ input: { topic: "TypeScript" } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     expect(result.output.summary).toBe("written content");
 
     expect(tracker.events).toEqual([
@@ -552,13 +572,20 @@ describe("FlowAgent with $.agent() (integration)", () => {
           input: input.topic,
         });
 
+        let researchInput = "";
+        if (research.ok) {
+          researchInput = String(research.value.output);
+        }
         const article = await $.agent({
           id: "write",
           agent: writer,
-          input: research.ok ? String(research.value.output) : "",
+          input: researchInput,
         });
 
-        return { summary: article.ok ? String(article.value.output) : "failed" };
+        if (article.ok) {
+          return { summary: String(article.value.output) };
+        }
+        return { summary: "failed" };
       },
     );
 
@@ -591,8 +618,8 @@ describe("FlowAgent with $.agent() (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ $, input }) => {
-        await $.map({
+      async ({ $: $outer, input }) => {
+        await $outer.map({
           id: "batch",
           input: ["a", "b"],
           execute: async ({ item, $ }) => {
@@ -601,7 +628,10 @@ describe("FlowAgent with $.agent() (integration)", () => {
               agent: processor,
               input: item,
             });
-            return r.ok ? String(r.value.output) : "";
+            if (r.ok) {
+              return String(r.value.output);
+            }
+            return "";
           },
         });
 
@@ -657,18 +687,23 @@ describe("FlowAgent agents dependency lifecycle (integration)", () => {
       async ({ input, $, agents }) => {
         const r = await $.agent({
           id: "run-core",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- FlowSubAgents union includes FlowAgent; narrow to Agent for $.agent()
+          // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- FlowSubAgents union includes FlowAgent; narrow to Agent for $.agent()
           agent: agents.core as any,
           input: input.text,
         });
-        return { result: r.ok ? String(r.value.output) : "failed" };
+        if (r.ok) {
+          return { result: String(r.value.output) };
+        }
+        return { result: "failed" };
       },
     );
 
     const result = await fa.generate({ input: { text: "hello" } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     expect(result.output.result).toBe("core output");
 
     expect(tracker.events).toEqual([
@@ -708,13 +743,13 @@ describe("Deep nesting lifecycle (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ input, $ }) => {
+      async ({ input, $: $flow }) => {
         // Level 1: $.step()
-        const r = await $.step({
+        const r = await $flow.step({
           id: "outer",
-          execute: async ({ $ }) => {
+          execute: async ({ $: $step }) => {
             // Level 2: $.map() inside $.step()
-            const mapResult = await $.map({
+            const mapResult = await $step.map({
               id: "batch",
               input: input.items,
               execute: async ({ item, $ }) => {
@@ -724,21 +759,32 @@ describe("Deep nesting lifecycle (integration)", () => {
                   agent: processor,
                   input: item,
                 });
-                return agentResult.ok ? String(agentResult.value.output) : "";
+                if (agentResult.ok) {
+                  return String(agentResult.value.output);
+                }
+                return "";
               },
             });
-            return mapResult.ok ? mapResult.value : [];
+            if (mapResult.ok) {
+              return mapResult.value;
+            }
+            return [];
           },
         });
 
-        return { results: r.ok ? r.value : [] };
+        if (r.ok) {
+          return { results: r.value };
+        }
+        return { results: [] };
       },
     );
 
     const result = await fa.generate({ input: { items: ["x", "y"] } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     expect(result.output.results).toEqual(["result", "result"]);
 
     // Verify ALL nesting levels fired hooks
@@ -812,7 +858,9 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     const result = await fa.stream({ input: { x: 4 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     // Drain the stream
     const parts: StreamPart[] = [];
@@ -848,8 +896,8 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
         onStepStart: tracker.onStepStart,
         onStepFinish: tracker.onStepFinish,
       },
-      async ({ input, $ }) => {
-        await $.step({
+      async ({ input, $: $outer }) => {
+        await $outer.step({
           id: "outer",
           execute: async ({ $ }) => {
             await $.step({ id: "inner", execute: async () => input.x + 1 });
@@ -863,10 +911,12 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     const result = await fa.stream({ input: { x: 3 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     for await (const _part of result.fullStream) {
-      /* drain */
+      /* Drain */
     }
     await result.output;
 
@@ -909,10 +959,12 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     const result = await fa.stream({ input: { x: 7 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     for await (const _part of result.fullStream) {
-      /* drain */
+      /* Drain */
     }
     await result.output;
 
@@ -950,7 +1002,9 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     const parts: StreamPart[] = [];
     for await (const part of result.fullStream) {
@@ -985,7 +1039,9 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     const result = await fa.stream({ input: { x: 1 } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
 
     // Suppress derived promise rejections
     result.messages.catch(() => {});
@@ -993,7 +1049,7 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
     result.finishReason.catch(() => {});
 
     for await (const _part of result.fullStream) {
-      /* drain */
+      /* Drain */
     }
 
     await result.output.catch(() => {});
@@ -1156,8 +1212,8 @@ describe("Value forwarding (integration)", () => {
         output: Output,
         logger: createTrackingLogger(),
       },
-      async ({ $, input }) => {
-        await $.step({
+      async ({ $: $outer, input }) => {
+        await $outer.step({
           id: "outer",
           execute: async ({ $ }) => {
             await $.step({ id: "inner", execute: async () => "done" });
@@ -1253,7 +1309,7 @@ describe("Value forwarding (integration)", () => {
 
     await fa.generate({ input: { text: "test" }, signal: flowSignal });
 
-    // framework ctx.signal takes precedence over user-provided config.signal
+    // Framework ctx.signal takes precedence over user-provided config.signal
     expect(receivedSignal).toBe(flowSignal);
   });
 
@@ -1281,14 +1337,19 @@ describe("Value forwarding (integration)", () => {
           input: input.text,
           config: { model: overrideModel },
         });
-        return { result: r.ok ? String(r.value.output) : "failed" };
+        if (r.ok) {
+          return { result: String(r.value.output) };
+        }
+        return { result: "failed" };
       },
     );
 
     const result = await fa.generate({ input: { text: "hello" } });
 
     expect(result.ok).toBe(true);
-    if (!result.ok) return;
+    if (!result.ok) {
+      return;
+    }
     // The override model returns "override output"
     expect(result.output.result).toBe("override output");
   });
@@ -1343,7 +1404,7 @@ describe("Value forwarding (integration)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildAgentTool logger forwarding — agent subagents (not flow)
+// BuildAgentTool logger forwarding — agent subagents (not flow)
 // ---------------------------------------------------------------------------
 
 describe("Agent subagent logger forwarding (integration)", () => {
@@ -1374,7 +1435,7 @@ describe("Agent subagent logger forwarding (integration)", () => {
 
     // Mock model that makes a tool call on the first step, then stops
     const toolCallModel = new MockLanguageModelV3({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
       doGenerate: mockValues(
         {
           content: [
@@ -1395,6 +1456,7 @@ describe("Agent subagent logger forwarding (integration)", () => {
           usage: MOCK_USAGE,
           warnings: [],
         },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
       ) as any,
     });
 
@@ -1439,7 +1501,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
     });
 
     const toolCallModel = new MockLanguageModelV3({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
       doGenerate: mockValues(
         {
           content: [
@@ -1460,6 +1522,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
           usage: MOCK_USAGE,
           warnings: [],
         },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
       ) as any,
     });
 
@@ -1508,7 +1571,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
     });
 
     const toolCallModel = new MockLanguageModelV3({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
       doGenerate: mockValues(
         {
           content: [
@@ -1529,6 +1592,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
           usage: MOCK_USAGE,
           warnings: [],
         },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
       ) as any,
     });
 
@@ -1547,11 +1611,11 @@ describe("Agent subagent hook forwarding (integration)", () => {
       },
     });
 
-    // onStart fires ONLY for the parent's own generate() call.
+    // OnStart fires ONLY for the parent's own generate() call.
     // Generic hooks (onStart, onFinish, onError) are NOT forwarded to
-    // sub-agents because their event types are parameterized by
+    // Sub-agents because their event types are parameterized by
     // TInput/TOutput — forwarding would cause the parent's typed hook
-    // to receive the sub-agent's differently-shaped event at runtime.
+    // To receive the sub-agent's differently-shaped event at runtime.
     expect(startEvents).toHaveLength(1);
     expect(startEvents[0]).toBe("go");
   });
@@ -1573,7 +1637,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
     });
 
     const toolCallModel = new MockLanguageModelV3({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
       doGenerate: mockValues({
         content: [
           {
@@ -1586,6 +1650,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
         finishReason: MOCK_FINISH,
         usage: MOCK_USAGE,
         warnings: [],
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
       }) as any,
     });
 
@@ -1605,9 +1670,9 @@ describe("Agent subagent hook forwarding (integration)", () => {
     });
 
     // Generic hooks (onError) are NOT forwarded to sub-agents to
-    // preserve type safety. The sub-agent's tool execute() throws,
-    // but the AI SDK treats tool errors as tool results — the parent
-    // never enters its own catch block for this, so onError does not fire.
+    // Preserve type safety. The sub-agent's tool execute() throws,
+    // But the AI SDK treats tool errors as tool results — the parent
+    // Never enters its own catch block for this, so onError does not fire.
     expect(errorEvents).toHaveLength(0);
   });
 });
@@ -1633,8 +1698,8 @@ describe("Step index uniqueness (integration)", () => {
           indices.push(step.index);
         },
       },
-      async ({ input, $ }) => {
-        await $.step({
+      async ({ input, $: $outer }) => {
+        await $outer.step({
           id: "a",
           execute: async ({ $ }) => {
             await $.step({ id: "b", execute: async () => 1 });
@@ -1642,7 +1707,7 @@ describe("Step index uniqueness (integration)", () => {
             return 0;
           },
         });
-        await $.step({ id: "d", execute: async () => 3 });
+        await $outer.step({ id: "d", execute: async () => 3 });
         return { count: input.n };
       },
     );
