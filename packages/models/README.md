@@ -88,8 +88,8 @@ Provider-specific subpath exports give access to filtered model lists and typed 
 
 ## References
 
-- [Overview](docs/overview.md)
-- [Model Catalog](docs/catalog/overview.md)
-- [Provider Resolution](docs/provider/overview.md)
-- [Cost Calculation](docs/cost/overview.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- [Overview](/reference/models)
+- [Model Catalog](/reference/models/catalog/overview)
+- [Provider Resolution](/reference/models/provider/overview)
+- [Cost Calculation](/reference/models/cost)
+- [Troubleshooting](/reference/models/troubleshooting)

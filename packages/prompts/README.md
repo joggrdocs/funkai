@@ -94,8 +94,8 @@ Use `{% render 'name', key: 'value' %}` to include shared partials. Partials res
 
 ## Documentation
 
-For comprehensive documentation, see [docs/overview.md](docs/overview.md).
+For comprehensive documentation, see the [Reference](/reference/prompts).
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)

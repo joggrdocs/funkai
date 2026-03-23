@@ -121,8 +121,8 @@ if (result.ok) {
 
 ## Documentation
 
-For comprehensive documentation, see [docs/overview.md](docs/overview.md).
+For comprehensive documentation, see the [Reference](/reference/agents).
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)
