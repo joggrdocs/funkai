@@ -1,5 +1,11 @@
 # @funkai/agents
 
+## 0.11.0
+
+### Minor Changes
+
+- 94076c2: Add `middleware` and `toolInputExamples` fields to AgentConfig. Enable `addToolInputExamplesMiddleware` by default so `inputExamples` on tools are surfaced to the model. Set `toolInputExamples: false` to disable.
+
 ## 0.10.1
 
 ### Patch Changes
