@@ -116,320 +116,242 @@ export default defineConfig({
       hidden: true,
     },
 
-    // ── Packages (README only) ──
+    // ── Agents ──
     {
       title: "Agents",
-      path: "/agents",
       icon: "mdi:robot-outline",
-      include: "packages/agents/README.md",
-    },
-    {
-      title: "Models",
-      path: "/models",
-      icon: "mdi:currency-usd",
-      include: "packages/models/README.md",
-    },
-    {
-      title: "Prompts",
-      path: "/prompts",
-      icon: "mdi:message-text-outline",
-      include: "packages/prompts/README.md",
-    },
-    {
-      title: "CLI",
-      path: "/cli",
-      icon: "mdi:console",
-      include: "packages/cli/README.md",
-    },
-
-    // ── Reference ──
-    {
-      title: "Reference",
-      icon: "mdi:book-open-page-variant-outline",
       items: [
         {
-          title: "Agents",
-          path: "/reference/agents",
-          items: [
-            {
-              title: "Overview",
-              path: "/reference/agents",
-              include: "packages/agents/docs/overview.md",
-            },
-            {
-              title: "Core",
-              path: "/reference/agents/core",
-              items: [
-                {
-                  title: "Overview",
-                  path: "/reference/agents/core/overview",
-                  include: "packages/agents/docs/core/overview.md",
-                },
-                {
-                  title: "Agent",
-                  path: "/reference/agents/core/agent",
-                  include: "packages/agents/docs/core/agent.md",
-                },
-                {
-                  title: "Flow Agent",
-                  path: "/reference/agents/core/flow-agent",
-                  include: "packages/agents/docs/core/flow-agent.md",
-                },
-                {
-                  title: "Step",
-                  path: "/reference/agents/core/step",
-                  include: "packages/agents/docs/core/step.md",
-                },
-                {
-                  title: "Tools",
-                  path: "/reference/agents/core/tools",
-                  include: "packages/agents/docs/core/tools.md",
-                },
-                {
-                  title: "Hooks",
-                  path: "/reference/agents/core/hooks",
-                  include: "packages/agents/docs/core/hooks.md",
-                },
-                {
-                  title: "Context",
-                  path: "/reference/agents/core/context",
-                  include: "packages/agents/docs/core/context.md",
-                },
-                {
-                  title: "Middleware",
-                  path: "/reference/agents/core/middleware",
-                  include: "packages/agents/docs/core/middleware.md",
-                },
-                {
-                  title: "Tracing",
-                  path: "/reference/agents/core/tracing",
-                  include: "packages/agents/docs/core/tracing.md",
-                },
-                {
-                  title: "Types",
-                  path: "/reference/agents/core/types",
-                  include: "packages/agents/docs/core/types.md",
-                },
-              ],
-            },
-            {
-              title: "Advanced",
-              path: "/reference/agents/advanced",
-              items: [
-                {
-                  title: "Custom Steps",
-                  path: "/reference/agents/advanced/custom-steps",
-                  include: "packages/agents/docs/advanced/custom-steps.md",
-                },
-                {
-                  title: "Streaming",
-                  path: "/reference/agents/advanced/streaming",
-                  include: "packages/agents/docs/advanced/streaming.md",
-                },
-              ],
-            },
-            {
-              title: "Output Strategies",
-              path: "/reference/agents/output-strategies",
-              include: "packages/agents/docs/reference/output-strategies.md",
-            },
-            {
-              title: "Provider",
-              path: "/reference/agents/provider",
-              items: [
-                {
-                  title: "Overview",
-                  path: "/reference/agents/provider/overview",
-                  include: "packages/agents/docs/provider/overview.md",
-                },
-                {
-                  title: "Models",
-                  path: "/reference/agents/provider/models",
-                  include: "packages/agents/docs/provider/models.md",
-                },
-                {
-                  title: "Token Usage",
-                  path: "/reference/agents/provider/usage",
-                  include: "packages/agents/docs/provider/usage.md",
-                },
-              ],
-            },
-            {
-              title: "Troubleshooting",
-              path: "/reference/agents/troubleshooting",
-              include: "packages/agents/docs/troubleshooting.md",
-            },
-          ],
+          title: "Overview",
+          path: "/agents",
+          include: "packages/agents/README.md",
+        },
+        {
+          title: "Core Concepts",
+          path: "/agents/core/overview",
+          include: "packages/agents/docs/core/overview.md",
+        },
+        {
+          title: "Agent",
+          path: "/agents/core/agent",
+          include: "packages/agents/docs/core/agent.md",
+        },
+        {
+          title: "Flow Agent",
+          path: "/agents/core/flow-agent",
+          include: "packages/agents/docs/core/flow-agent.md",
+        },
+        {
+          title: "Step Builder ($)",
+          path: "/agents/core/step",
+          include: "packages/agents/docs/core/step.md",
+        },
+        {
+          title: "Tools",
+          path: "/agents/core/tools",
+          include: "packages/agents/docs/core/tools.md",
+        },
+        {
+          title: "Hooks",
+          path: "/agents/core/hooks",
+          include: "packages/agents/docs/core/hooks.md",
+        },
+        {
+          title: "Streaming",
+          path: "/agents/advanced/streaming",
+          include: "packages/agents/docs/advanced/streaming.md",
+        },
+        {
+          title: "Tracing",
+          path: "/agents/core/tracing",
+          include: "packages/agents/docs/core/tracing.md",
+        },
+        {
+          title: "Context",
+          path: "/agents/core/context",
+          include: "packages/agents/docs/core/context.md",
+        },
+        {
+          title: "Middleware",
+          path: "/agents/core/middleware",
+          include: "packages/agents/docs/core/middleware.md",
+        },
+        {
+          title: "Custom Steps",
+          path: "/agents/advanced/custom-steps",
+          include: "packages/agents/docs/advanced/custom-steps.md",
+        },
+        {
+          title: "Output Strategies",
+          path: "/agents/reference/output-strategies",
+          include: "packages/agents/docs/reference/output-strategies.md",
+        },
+        {
+          title: "Types",
+          path: "/agents/core/types",
+          include: "packages/agents/docs/core/types.md",
+        },
+        {
+          title: "Provider",
+          path: "/agents/provider/overview",
+          include: "packages/agents/docs/provider/overview.md",
         },
         {
           title: "Models",
-          path: "/reference/models",
-          items: [
-            {
-              title: "Overview",
-              path: "/reference/models",
-              include: "packages/models/docs/overview.md",
-            },
-            {
-              title: "Catalog",
-              path: "/reference/models/catalog",
-              items: [
-                {
-                  title: "Overview",
-                  path: "/reference/models/catalog/overview",
-                  include: "packages/models/docs/catalog/overview.md",
-                },
-                {
-                  title: "Filtering",
-                  path: "/reference/models/catalog/filtering",
-                  include: "packages/models/docs/catalog/filtering.md",
-                },
-                {
-                  title: "Providers",
-                  path: "/reference/models/catalog/providers",
-                  include: "packages/models/docs/catalog/providers.md",
-                },
-              ],
-            },
-            {
-              title: "Provider",
-              path: "/reference/models/provider",
-              items: [
-                {
-                  title: "Overview",
-                  path: "/reference/models/provider/overview",
-                  include: "packages/models/docs/provider/overview.md",
-                },
-                {
-                  title: "Configuration",
-                  path: "/reference/models/provider/configuration",
-                  include: "packages/models/docs/provider/configuration.md",
-                },
-                {
-                  title: "OpenRouter",
-                  path: "/reference/models/provider/openrouter",
-                  include: "packages/models/docs/provider/openrouter.md",
-                },
-              ],
-            },
-            {
-              title: "Cost",
-              path: "/reference/models/cost",
-              include: "packages/models/docs/cost/overview.md",
-            },
-            {
-              title: "Troubleshooting",
-              path: "/reference/models/troubleshooting",
-              include: "packages/models/docs/troubleshooting.md",
-            },
-          ],
+          path: "/agents/provider/models",
+          include: "packages/agents/docs/provider/models.md",
         },
         {
-          title: "Prompts",
-          path: "/reference/prompts",
-          items: [
-            {
-              title: "Overview",
-              path: "/reference/prompts",
-              include: "packages/prompts/docs/overview.md",
-            },
-            {
-              title: "File Format",
-              path: "/reference/prompts/file-format",
-              items: [
-                {
-                  title: "Overview",
-                  path: "/reference/prompts/file-format/overview",
-                  include: "packages/prompts/docs/file-format/overview.md",
-                },
-                {
-                  title: "Frontmatter",
-                  path: "/reference/prompts/file-format/frontmatter",
-                  include: "packages/prompts/docs/file-format/frontmatter.md",
-                },
-                {
-                  title: "Partials",
-                  path: "/reference/prompts/file-format/partials",
-                  include: "packages/prompts/docs/file-format/partials.md",
-                },
-              ],
-            },
-            {
-              title: "Code Generation",
-              path: "/reference/prompts/codegen",
-              include: "packages/prompts/docs/codegen/overview.md",
-            },
-            {
-              title: "Library",
-              path: "/reference/prompts/library",
-              include: "packages/prompts/docs/library/overview.md",
-            },
-            {
-              title: "Troubleshooting",
-              path: "/reference/prompts/troubleshooting",
-              include: "packages/prompts/docs/troubleshooting.md",
-            },
-          ],
+          title: "Token Usage",
+          path: "/agents/provider/usage",
+          include: "packages/agents/docs/provider/usage.md",
         },
         {
-          title: "CLI",
-          path: "/reference/cli",
-          items: [
-            {
-              title: "Overview",
-              path: "/reference/cli",
-              include: "packages/prompts/docs/cli/overview.md",
-            },
-            {
-              title: "Commands",
-              path: "/reference/cli/commands",
-              include: "packages/prompts/docs/cli/commands.md",
-            },
-          ],
+          title: { from: "heading" },
+          path: "/agents/guides",
+          include: "packages/agents/docs/guides/*.md",
+          sort: "alpha",
+        },
+        {
+          title: "Troubleshooting",
+          path: "/agents/troubleshooting",
+          include: "packages/agents/docs/troubleshooting.md",
         },
       ],
     },
 
-    // ── Guides ──
+    // ── Models ──
     {
-      title: "Guides",
-      icon: "mdi:map-outline",
+      title: "Models",
+      icon: "mdi:currency-usd",
       items: [
         {
-          title: "Agents",
-          path: "/guides/agents",
-          items: [
-            {
-              title: { from: "heading" },
-              path: "/guides/agents",
-              include: "packages/agents/docs/guides/*.md",
-              sort: "alpha",
-            },
-          ],
+          title: "Overview",
+          path: "/models",
+          include: "packages/models/README.md",
         },
         {
-          title: "Models",
-          path: "/guides/models",
-          items: [
-            {
-              title: { from: "heading" },
-              path: "/guides/models",
-              include: "packages/models/docs/guides/*.md",
-              sort: "alpha",
-            },
-          ],
+          title: "Catalog",
+          path: "/models/catalog/overview",
+          include: "packages/models/docs/catalog/overview.md",
         },
         {
-          title: "Prompts",
-          path: "/guides/prompts",
-          items: [
-            {
-              title: { from: "heading" },
-              path: "/guides/prompts",
-              include: "packages/prompts/docs/guides/*.md",
-              sort: "alpha",
-            },
-          ],
+          title: "Filtering",
+          path: "/models/catalog/filtering",
+          include: "packages/models/docs/catalog/filtering.md",
+        },
+        {
+          title: "Providers",
+          path: "/models/catalog/providers",
+          include: "packages/models/docs/catalog/providers.md",
+        },
+        {
+          title: "Provider Resolution",
+          path: "/models/provider/overview",
+          include: "packages/models/docs/provider/overview.md",
+        },
+        {
+          title: "Configuration",
+          path: "/models/provider/configuration",
+          include: "packages/models/docs/provider/configuration.md",
+        },
+        {
+          title: "OpenRouter",
+          path: "/models/provider/openrouter",
+          include: "packages/models/docs/provider/openrouter.md",
+        },
+        {
+          title: "Cost Tracking",
+          path: "/models/cost",
+          include: "packages/models/docs/cost/overview.md",
+        },
+        {
+          title: { from: "heading" },
+          path: "/models/guides",
+          include: "packages/models/docs/guides/*.md",
+          sort: "alpha",
+        },
+        {
+          title: "Troubleshooting",
+          path: "/models/troubleshooting",
+          include: "packages/models/docs/troubleshooting.md",
+        },
+      ],
+    },
+
+    // ── Prompts ──
+    {
+      title: "Prompts",
+      icon: "mdi:message-text-outline",
+      items: [
+        {
+          title: "Overview",
+          path: "/prompts",
+          include: "packages/prompts/README.md",
+        },
+        {
+          title: "SDK Overview",
+          path: "/prompts/overview",
+          include: "packages/prompts/docs/overview.md",
+        },
+        {
+          title: "File Format",
+          path: "/prompts/file-format/overview",
+          include: "packages/prompts/docs/file-format/overview.md",
+        },
+        {
+          title: "Frontmatter",
+          path: "/prompts/file-format/frontmatter",
+          include: "packages/prompts/docs/file-format/frontmatter.md",
+        },
+        {
+          title: "Partials",
+          path: "/prompts/file-format/partials",
+          include: "packages/prompts/docs/file-format/partials.md",
+        },
+        {
+          title: "Code Generation",
+          path: "/prompts/codegen",
+          include: "packages/prompts/docs/codegen/overview.md",
+        },
+        {
+          title: "Library",
+          path: "/prompts/library",
+          include: "packages/prompts/docs/library/overview.md",
+        },
+        {
+          title: { from: "heading" },
+          path: "/prompts/guides",
+          include: "packages/prompts/docs/guides/*.md",
+          sort: "alpha",
+        },
+        {
+          title: "Troubleshooting",
+          path: "/prompts/troubleshooting",
+          include: "packages/prompts/docs/troubleshooting.md",
+        },
+      ],
+    },
+
+    // ── CLI ──
+    {
+      title: "CLI",
+      icon: "mdi:console",
+      items: [
+        {
+          title: "Overview",
+          path: "/cli",
+          include: "packages/cli/README.md",
+        },
+        {
+          title: "CLI Guide",
+          path: "/cli/overview",
+          include: "packages/prompts/docs/cli/overview.md",
+        },
+        {
+          title: "Commands",
+          path: "/cli/commands",
+          include: "packages/prompts/docs/cli/commands.md",
         },
       ],
     },
