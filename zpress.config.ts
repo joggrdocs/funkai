@@ -8,6 +8,18 @@ export default defineConfig({
   theme: {
     name: "arcade",
   },
+  actions: [
+    {
+      theme: "brand",
+      text: "Quick Start",
+      link: "/quick-start",
+    },
+    {
+      theme: "alt",
+      text: "Introduction",
+      link: "/introduction",
+    },
+  ],
   features: [
     {
       title: "Agents",
@@ -35,6 +47,42 @@ export default defineConfig({
       description: "Generate, lint, and scaffold prompt files from the terminal",
       icon: "mdi:console",
       link: "/cli",
+    },
+  ],
+  workspaces: [
+    {
+      title: "Packages",
+      description: "The funkai ecosystem",
+      icon: "mdi:package-variant-closed",
+      items: [
+        {
+          title: "@funkai/agents",
+          description:
+            "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
+          icon: "mdi:robot-outline",
+          path: "/agents",
+        },
+        {
+          title: "@funkai/models",
+          description:
+            "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+          icon: "mdi:currency-usd",
+          path: "/models",
+        },
+        {
+          title: "@funkai/prompts",
+          description:
+            "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
+          icon: "mdi:message-text-outline",
+          path: "/prompts",
+        },
+        {
+          title: "@funkai/cli",
+          description: "Generate, lint, and scaffold prompt files from the terminal",
+          icon: "mdi:console",
+          path: "/cli",
+        },
+      ],
     },
   ],
   sections: [
