@@ -29,25 +29,11 @@ export default defineConfig({
       link: "/agents",
     },
     {
-      title: "Result, Never Throw",
+      title: "One API, Zero Workflows",
       description:
-        "Every public method returns Result<T>. Pattern-match on ok instead of wrapping everything in try/catch. Errors are values, not surprises.",
-      icon: "mdi:shield-check-outline",
-      link: "/agents/create-agent",
-    },
-    {
-      title: "$ Step Builder",
-      description:
-        "8 tracked operations — step, agent, map, each, reduce, while, all, race — with full execution traces. Compose them freely; nest them infinitely.",
-      icon: "mdi:source-branch",
-      link: "/agents/step-builder",
-    },
-    {
-      title: "300+ Model Catalog",
-      description:
-        "Auto-generated from models.dev. Filter by capability, resolve any provider by string ID, and calculate exact token costs in USD.",
-      icon: "mdi:database-search-outline",
-      link: "/models",
+        "agent() for single-turn, flowAgent() for multi-step — same programming model, same hooks, same tools. No workflow DSL to learn, no orchestrator to configure. Just functions that compose.",
+      icon: "mdi:puzzle-outline",
+      link: "/agents/create-flow-agent",
     },
     {
       title: "Type-Safe Prompts",
@@ -55,13 +41,6 @@ export default defineConfig({
         "Write .prompt files with YAML frontmatter and LiquidJS templates. Build-time codegen produces fully typed TypeScript modules with Zod validation.",
       icon: "mdi:file-code-outline",
       link: "/prompts",
-    },
-    {
-      title: "Closures Are State",
-      description:
-        "No state machines, no context objects, no reducers. Flow agent state is just let variables in your handler. Read it, write it, close over it.",
-      icon: "mdi:lock-outline",
-      link: "/agents/create-flow-agent",
     },
   ],
   workspaces: [
