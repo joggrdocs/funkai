@@ -110,12 +110,21 @@ const pipeline = flowAgent(
     const analysis = await $.agent({ id: "analyze", agent: analyzer, input: input.text });
 
     // Untraced -- plain function call, not in trace
-    const cleaned = cleanText(analysis.ok ? analysis.value.output : input.text);
+    let analysisText;
+    if (analysis.ok) {
+      analysisText = analysis.value.output;
+    } else {
+      analysisText = input.text;
+    }
+    const cleaned = cleanText(analysisText);
 
     // Traced again
     const final = await $.step({ id: "format", execute: () => formatOutput(cleaned) });
 
-    return { result: final.ok ? final.value : cleaned };
+    if (final.ok) {
+      return { result: final.value };
+    }
+    return { result: cleaned };
   },
 );
 ```

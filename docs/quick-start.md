@@ -9,7 +9,7 @@ pnpm add @funkai/agents @ai-sdk/openai
 Set your API key:
 
 ```bash
-export OPENROUTER_API_KEY=sk-or-...
+export OPENAI_API_KEY=sk-...
 ```
 
 ## 1. Create a simple agent
@@ -111,7 +111,10 @@ const pipeline = flowAgent(
       input: { draft: draft.value.output },
     });
 
-    return { final: reviewed.ok ? reviewed.value.output : draft.value.output };
+    if (reviewed.ok) {
+      return { final: reviewed.value.output };
+    }
+    return { final: draft.value.output };
   },
 );
 

@@ -52,11 +52,17 @@ const pipeline = flowAgent(
       input: input.topics,
       execute: async ({ item, $ }) => {
         const result = await $.agent({ id: "write", agent: writer, input: item });
-        return result.ok ? result.value.output : "";
+        if (result.ok) {
+          return result.value.output;
+        }
+        return "";
       },
       concurrency: 3,
     });
-    return { docs: docs.ok ? docs.value : [] };
+    if (docs.ok) {
+      return { docs: docs.value };
+    }
+    return { docs: [] };
   },
 );
 
