@@ -1,8 +1,7 @@
 import type { AsyncIterableStream, ModelMessage, UIMessage, UIMessageStreamOptions } from "ai";
+import type { LanguageModelMiddleware } from "ai";
 import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
-
-import type { LanguageModelMiddleware } from "ai";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
