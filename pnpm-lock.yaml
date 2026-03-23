@@ -45,8 +45,8 @@ importers:
         specifier: 'catalog:'
         version: 4.1.0(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
       '@zpress/kit':
-        specifier: ^0.2.11
-        version: 0.2.11(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
+        specifier: ^0.2.12
+        version: 0.2.12(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
       eslint-plugin-functional:
         specifier: ^9.0.4
         version: 9.0.4(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)
@@ -2425,21 +2425,21 @@ packages:
   '@vitest/utils@4.1.0':
     resolution: {integrity: sha512-XfPXT6a8TZY3dcGY8EdwsBulFCIw+BeeX0RZn2x/BtiY/75YGh8FeWGG8QISN/WhaqSrE2OrlDgtF8q5uhOTmw==}
 
-  '@zpress/cli@0.5.2':
-    resolution: {integrity: sha512-9X32LKrMDwiaCen2kCrEFKJUli5opSAYm1oOI3YfugPV1pAc/CvW54GMLsVPf2rDFYeS6sgH4pqf4XmHbXRh7A==}
+  '@zpress/cli@0.5.3':
+    resolution: {integrity: sha512-8xefK2xdoc1bDzeyoX6NRal6d2ssO49Ro+trkU8TKJDLQmIsE7Me14jnI0tlMB7xdt1x3ZPwAC4xT6vm1vw6dA==}
     engines: {node: '>=24.0.0'}
     hasBin: true
 
-  '@zpress/config@0.4.0':
-    resolution: {integrity: sha512-xRKKTvOkwKBUJkFBxV2QVVoKzscW3a80YgUlQ+M9NjW1iOjnabhDHCyrQCoiEWeKb8u07rZaQAnuCENgnKY8uQ==}
+  '@zpress/config@0.5.0':
+    resolution: {integrity: sha512-xjXGbBPJKiO1jlC4DxvVhGM4PVLkWLGEaSwE2h1Xf2D2NwRU6XUN30fYpV5MUN1hfiYZIArTM6GeFO8VBEzOkw==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/core@0.7.5':
-    resolution: {integrity: sha512-q19Atmgv1CUCEGePY9dbcl2oMMAMM8blel6y1Lc4Nj6XSBAIm3lX9ux3cIak3WMFdHUVpELdoZszwsaLBlH3Zg==}
+  '@zpress/core@0.8.0':
+    resolution: {integrity: sha512-Eujll4afNbs/UolhFsb7TxkU/QqT89XKAcDfNUVPs5v6ViaKGjyD7XfOyltRNxq018+jssrEBbV0Ng1wx/Tqjw==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/kit@0.2.11':
-    resolution: {integrity: sha512-rEp14M/PByCdusxSDFMqE8138KrsRA6VF8iw+Z09i7tnULn+sIw7mmdjkL2Wb29eFOg07UJfcc9HUA4OLCx8CQ==}
+  '@zpress/kit@0.2.12':
+    resolution: {integrity: sha512-0Pq0gFTjM43Ty8BXVtfN2oMnYkQUb2+CiBTbqWlDRr5fp50aSpJs9+2ZvBxMGRTXOmkkbXPN8nTg7zjw4QgnAg==}
     engines: {node: '>=24.0.0'}
     hasBin: true
     peerDependencies:
@@ -2447,16 +2447,16 @@ packages:
       react: ^19.2.4
       react-dom: ^19.2.4
 
-  '@zpress/templates@0.1.1':
-    resolution: {integrity: sha512-pC7HJMxJih7gvqkcpyQhKsXSYHXlhCDBddL1lfBLJQSSzRyjS+qIgP4gYVj1DZQtS/bi6U0pF45wZLbTXXxdEQ==}
+  '@zpress/templates@0.1.2':
+    resolution: {integrity: sha512-EUYjuBpGvYPDS6L3t5ncFgAT9Bi6ZfDblQ83YdlXUk7Ri4nCI93cVuJSfzicK6jwzw5HNw5bfG2uTq7za5YFwA==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/theme@0.3.1':
-    resolution: {integrity: sha512-RMb9iAEUHgoWC0ODGx4AqXm6RcBH5Vd3fNVsNQmJNZQqtJjQO6cualq3qQrBO3OJYktdZMSjeH9gMMBmZacHOA==}
+  '@zpress/theme@0.3.2':
+    resolution: {integrity: sha512-YLQkQtvNdVz0+uojvCFIKQy+E/CXlG1KY0bcAqxIsIJOBjzA+3p1Ee7oge9CUrjtN/sRMSPNqsNGPdkSQ8Hi8w==}
     engines: {node: '>=24.0.0'}
 
-  '@zpress/ui@0.8.6':
-    resolution: {integrity: sha512-aYmdel9kY+QGrJpUccV7H27S7ytc5ZeanCfNZ47UMppzGG9S/qyDJn73A3h6tmTxh27k3j/lnbDhRjk/IDk6PQ==}
+  '@zpress/ui@0.8.7':
+    resolution: {integrity: sha512-KqSo+LzuSck2Od8UHEvFbuVb/aHcNDGaAKtMkBAaD1o6JUccpleTvKqvZ+WO7urypKsUCV7Qd2gTAsQhI0CwoQ==}
     engines: {node: '>=24.0.0'}
     peerDependencies:
       '@rspress/core': ^2.0.6
@@ -7096,13 +7096,13 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@zpress/cli@0.5.2(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))':
+  '@zpress/cli@0.5.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))':
     dependencies:
       '@kidd-cli/core': 0.10.0(chokidar@5.0.0)(jiti@2.6.1)(magicast@0.5.2)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
       '@rspress/core': 2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/core': 0.7.5(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
-      '@zpress/templates': 0.1.1
-      '@zpress/ui': 0.8.6(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/core': 0.8.0(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
+      '@zpress/templates': 0.1.2
+      '@zpress/ui': 0.8.7(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       es-toolkit: 1.45.1
       get-port: 7.2.0
       ts-pattern: 5.9.0
@@ -7127,9 +7127,9 @@ snapshots:
       - vitest
       - webpack-hot-middleware
 
-  '@zpress/config@0.4.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
+  '@zpress/config@0.5.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)':
     dependencies:
-      '@zpress/theme': 0.3.1
+      '@zpress/theme': 0.3.2
       c12: 4.0.0-beta.4(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
       es-toolkit: 1.45.1
       ts-pattern: 5.9.0
@@ -7142,12 +7142,12 @@ snapshots:
       - jiti
       - magicast
 
-  '@zpress/core@0.7.5(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)':
+  '@zpress/core@0.8.0(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)':
     dependencies:
       '@apidevtools/swagger-parser': 12.1.0(openapi-types@12.1.3)
       '@clack/prompts': 1.1.0
-      '@zpress/config': 0.4.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/theme': 0.3.1
+      '@zpress/config': 0.5.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/theme': 0.3.2
       es-toolkit: 1.45.1
       fast-glob: 3.3.3
       gray-matter: 4.0.3
@@ -7162,12 +7162,12 @@ snapshots:
       - magicast
       - openapi-types
 
-  '@zpress/kit@0.2.11(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))':
+  '@zpress/kit@0.2.12(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))':
     dependencies:
       '@rspress/core': 2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/cli': 0.5.2(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
-      '@zpress/core': 0.7.5(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
-      '@zpress/ui': 0.8.6(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@zpress/cli': 0.5.3(@types/mdast@4.0.4)(@types/react@19.2.14)(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(micromark-util-types@2.0.2)(micromark@4.0.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(vitest@4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
+      '@zpress/core': 0.8.0(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
+      '@zpress/ui': 0.8.7(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
     transitivePeerDependencies:
@@ -7188,17 +7188,17 @@ snapshots:
       - vitest
       - webpack-hot-middleware
 
-  '@zpress/templates@0.1.1':
+  '@zpress/templates@0.1.2':
     dependencies:
       es-toolkit: 1.45.1
 
-  '@zpress/theme@0.3.1':
+  '@zpress/theme@0.3.2':
     dependencies:
       ts-pattern: 5.9.0
       type-fest: 5.5.0
       zod: 4.3.6
 
-  '@zpress/ui@0.8.6(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@zpress/ui@0.8.7(@rspress/core@2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2))(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)(openapi-types@12.1.3)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@iconify-json/catppuccin': 1.2.17
       '@iconify-json/devicon': 1.2.61
@@ -7211,9 +7211,9 @@ snapshots:
       '@iconify-json/vscode-icons': 1.2.45
       '@iconify/react': 6.0.2(react@19.2.4)
       '@rspress/core': 2.0.6(@types/mdast@4.0.4)(@types/react@19.2.14)(micromark-util-types@2.0.2)(micromark@4.0.2)
-      '@zpress/config': 0.4.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
-      '@zpress/core': 0.7.5(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
-      '@zpress/theme': 0.3.1
+      '@zpress/config': 0.5.0(chokidar@5.0.0)(dotenv@17.3.1)(jiti@2.6.1)(magicast@0.5.2)
+      '@zpress/core': 0.8.0(chokidar@5.0.0)(dotenv@17.3.1)(magicast@0.5.2)(openapi-types@12.1.3)
+      '@zpress/theme': 0.3.2
       katex: 0.16.40
       mermaid: 10.9.5
       openapi-sampler: 1.7.2

@@ -43,13 +43,8 @@ export default defineConfig({
       link: "/prompts",
     },
   ],
-  workspaces: [
-    {
-      title: "Packages",
-      description: "The funkai ecosystem",
-      icon: "mdi:package-variant-closed",
-      items: [
-        {
+  packages: [
+{
           title: "@funkai/agents",
           description: "Agent orchestration SDK",
           icon: "mdi:robot-outline",
@@ -73,8 +68,6 @@ export default defineConfig({
           icon: "mdi:console",
           path: "/packages/cli",
         },
-      ],
-    },
   ],
   sections: [
     // ── Getting Started ──
