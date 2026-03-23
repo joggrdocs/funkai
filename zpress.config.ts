@@ -22,31 +22,46 @@ export default defineConfig({
   ],
   features: [
     {
-      title: "Agents",
+      title: "Functions All the Way Down",
       description:
-        "Build AI agents and multi-step flows with typed I/O, tools, and Result-based error handling",
-      icon: "mdi:robot-outline",
+        "agent(), tool(), flowAgent() are plain functions returning composable objects. No classes, no decorators, no inheritance — just functions you can read top to bottom.",
+      icon: "mdi:lambda",
       link: "/agents",
     },
     {
-      title: "Models",
+      title: "Result, Never Throw",
       description:
-        "Browse 300+ models, filter by capability, resolve providers, and calculate token costs",
-      icon: "mdi:currency-usd",
+        "Every public method returns Result<T>. Pattern-match on ok instead of wrapping everything in try/catch. Errors are values, not surprises.",
+      icon: "mdi:shield-check-outline",
+      link: "/agents/create-agent",
+    },
+    {
+      title: "$ Step Builder",
+      description:
+        "8 tracked operations — step, agent, map, each, reduce, while, all, race — with full execution traces. Compose them freely; nest them infinitely.",
+      icon: "mdi:source-branch",
+      link: "/agents/step-builder",
+    },
+    {
+      title: "300+ Model Catalog",
+      description:
+        "Auto-generated from models.dev. Filter by capability, resolve any provider by string ID, and calculate exact token costs in USD.",
+      icon: "mdi:database-search-outline",
       link: "/models",
     },
     {
-      title: "Prompts",
+      title: "Type-Safe Prompts",
       description:
-        "Author type-safe prompt templates with LiquidJS, YAML frontmatter, and build-time codegen",
-      icon: "mdi:message-text-outline",
+        "Write .prompt files with YAML frontmatter and LiquidJS templates. Build-time codegen produces fully typed TypeScript modules with Zod validation.",
+      icon: "mdi:file-code-outline",
       link: "/prompts",
     },
     {
-      title: "CLI",
-      description: "Generate, lint, and scaffold prompt files from the command line",
-      icon: "mdi:console",
-      link: "/cli",
+      title: "Closures Are State",
+      description:
+        "No state machines, no context objects, no reducers. Flow agent state is just let variables in your handler. Read it, write it, close over it.",
+      icon: "mdi:lock-outline",
+      link: "/agents/create-flow-agent",
     },
   ],
   workspaces: [
@@ -257,17 +272,9 @@ export default defineConfig({
           path: "/prompts/troubleshooting",
           include: "packages/prompts/docs/troubleshooting.md",
         },
-      ],
-    },
-
-    // ── CLI (1 page) ──
-    {
-      title: "CLI",
-      icon: "mdi:console",
-      items: [
         {
-          title: "Commands",
-          path: "/cli",
+          title: "CLI Commands",
+          path: "/prompts/cli",
           include: "packages/prompts/docs/cli.md",
         },
       ],
