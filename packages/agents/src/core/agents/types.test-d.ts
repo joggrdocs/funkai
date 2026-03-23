@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import { resolveOutput } from "@/core/agents/base/output.js";
-import type { AgentConfig, AgentOverrides, ToolName } from "@/core/agents/base/types.js";
+import type { AgentConfig, GenerateParams, ToolName } from "@/core/agents/types.js";
 
 describe("outputParam accepts all Output factories", () => {
   it("accepts Output.text()", () => {
@@ -51,8 +51,8 @@ describe("outputParam is assignable to config fields", () => {
     >();
   });
 
-  it("is assignable to AgentOverrides.output", () => {
-    expectTypeOf<OutputParam>().toExtend<AgentOverrides["output"]>();
+  it("is assignable to GenerateParams.output", () => {
+    expectTypeOf<OutputParam>().toExtend<GenerateParams["output"]>();
   });
 });
 

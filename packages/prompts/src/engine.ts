@@ -18,9 +18,10 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
     partials: [partialsDir],
     extname: ".prompt",
     cache: true,
+    ...options,
+    // Safety defaults — applied after spread so callers cannot disable them
     strictFilters: true,
     ownPropertyOnly: true,
-    ...options,
   });
 }
 
@@ -30,6 +31,8 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
  * Partials are flattened at codegen time by the CLI, so this engine
  * only needs to handle `{{ var }}` expressions and basic Liquid
  * control flow (`{% if %}`, `{% for %}`). No filesystem access required.
+ *
+ * @type {Liquid}
  */
 export const liquidEngine = new Liquid({
   strictFilters: true,

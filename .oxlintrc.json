@@ -74,7 +74,7 @@
     "import/first": "off",
     "import/prefer-default-export": "off",
     "import/exports-last": "off",
-    "import/max-dependencies": ["warn", { "max": 15 }],
+    "import/max-dependencies": ["warn", { "max": 30 }],
     "import/group-exports": "off",
     "promise/avoid-new": "off",
     "promise/prefer-await-to-callbacks": "off",

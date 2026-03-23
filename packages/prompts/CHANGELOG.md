@@ -1,5 +1,52 @@
 # @funkai/prompts
 
+## 0.4.0
+
+### Minor Changes
+
+- c8569db: feat(prompts): add createPrompt, createPromptGroup, and config-based group assignment
+
+  - Add `createPrompt<T>(config)` factory for building prompt modules at runtime and codegen
+  - Add `createPromptGroup(name, prompts)` for grouping prompt modules into namespaces
+  - Add `PromptConfig<T>` type for prompt module configuration
+  - Codegen now uses `createPrompt()` instead of raw object literals
+  - Scope name uniqueness to group+name instead of global name
+  - Derive file slugs and import names from group+name to avoid collisions
+  - Replace `roots` config field with `includes`/`excludes` glob patterns
+  - Add `groups` config field for pattern-based group assignment via picomatch
+  - Frontmatter `group` takes precedence over config-defined groups
+  - Updated banner format for generated files
+
+## 0.3.0
+
+### Minor Changes
+
+- b1e1d01: Fix bug and correctness issues across all packages.
+
+  **@funkai/agents**
+
+  - Export `createFlowEngine` and related types (`FlowEngineConfig`, `FlowFactory`, `CustomStepFactory`, `CustomStepDefinitions`, `TypedCustomSteps`)
+  - Guard `resolvedInput` before passing to `onError` hooks (was `undefined` cast as `TInput`)
+  - Fix `onStepStart` hook asymmetry: per-call override now merged with config hook
+  - Remove deprecated unused `TraceType` alias
+
+  **@funkai/prompts**
+
+  - **Breaking:** `strictFilters` and `ownPropertyOnly` removed from `CreateEngineOptions` (now enforced as non-overridable safety defaults)
+
+  **@funkai/models**
+
+  - Add `provider/model` format validation for model IDs
+  - Wrap `languageModel()` errors with model ID context
+
+  **@funkai/cli**
+
+  - Fix `$`-substitution bug in `flattenPartials` (`String.replace` function-form)
+  - Add error context for partial render failures
+  - `readJsonFile` now throws on malformed JSON instead of silently returning `{}`
+  - Replace naive YAML line parsing with proper `yaml` parser
+  - Extract `Liquid` engine to module-level singleton in `extractVariables`
+
 ## 0.2.0
 
 ### Minor Changes

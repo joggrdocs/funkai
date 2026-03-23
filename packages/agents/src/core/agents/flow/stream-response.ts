@@ -1,7 +1,8 @@
 import type { UIMessage, UIMessageStreamOptions } from "ai";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
+import { isNotNil } from "es-toolkit";
 
-import type { StreamPart } from "@/core/agents/base/types.js";
+import type { StreamPart } from "@/core/types.js";
 
 /**
  * Response conversion methods built from a `StreamPart` readable stream.
@@ -59,12 +60,7 @@ export function buildStreamResponseMethods(
         }),
       );
 
-      const initHeaders: ResponseInit["headers"] = (() => {
-        if (init !== undefined) {
-          return init.headers;
-        }
-        return undefined;
-      })();
+      const initHeaders: ResponseInit["headers"] = extractInitHeaders(init);
       const headers = new Headers(initHeaders);
       if (!headers.has("Content-Type")) {
         headers.set("Content-Type", "text/plain; charset=utf-8");
@@ -90,4 +86,20 @@ export function buildStreamResponseMethods(
       return createUIMessageStreamResponse({ stream, ...options });
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract headers from an optional `ResponseInit`, returning `undefined` when absent.
+ *
+ * @private
+ */
+function extractInitHeaders(init: ResponseInit | undefined): ResponseInit["headers"] {
+  if (isNotNil(init)) {
+    return init.headers;
+  }
+  return undefined;
 }

@@ -1,48 +1,94 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type { FunkaiConfig } from "@funkai/config";
 import { command } from "@kidd-cli/core";
+import { match } from "ts-pattern";
 import { z } from "zod";
 
-import { generatePromptModule, generateRegistry } from "@/lib/prompts/codegen.js";
+import { getConfig } from "@/config.js";
+import { generatePromptModule, generateRegistry, toFileSlug } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline } from "@/lib/prompts/pipeline.js";
 
+/** Zod schema for the `prompts generate` CLI arguments. */
 export const generateArgs = z.object({
-  out: z.string().describe("Output directory for generated files"),
-  roots: z.array(z.string()).describe("Root directories to scan for .prompt files"),
+  out: z.string().optional().describe("Output directory for generated files"),
+  includes: z.array(z.string()).optional().describe("Glob patterns to scan for .prompt files"),
   partials: z.string().optional().describe("Custom partials directory"),
   silent: z.boolean().default(false).describe("Suppress output except errors"),
 });
 
+/** Inferred type of the `prompts generate` CLI arguments. */
 export type GenerateArgs = z.infer<typeof generateArgs>;
 
 /**
- * Shared handler for prompts code generation.
- *
- * @param args - Parsed CLI arguments.
- * @param logger - Logger instance from the command context.
- * @param fail - Failure callback from the command context.
+ * Parameters for the shared generate handler.
  */
-export function handleGenerate(
-  args: {
-    readonly out: string;
-    readonly roots: readonly string[];
+export interface HandleGenerateParams {
+  readonly args: {
+    readonly out?: string;
+    readonly includes?: readonly string[];
     readonly partials?: string;
     readonly silent: boolean;
-  },
-  logger: {
+  };
+  readonly config?: FunkaiConfig["prompts"];
+  readonly logger: {
     info: (msg: string) => void;
     step: (msg: string) => void;
     error: (msg: string) => void;
     warn: (msg: string) => void;
     success: (msg: string) => void;
-  },
-  fail: (msg: string) => never,
-): void {
-  const { out, roots, partials, silent } = args;
+  };
+  readonly fail: (msg: string) => never;
+}
 
-  const { discovered, lintResults, prompts } = runGeneratePipeline({ roots, out, partials });
+/**
+ * Resolve generate args by merging CLI flags with config defaults.
+ *
+ * @param args - CLI arguments (take precedence).
+ * @param config - Prompts config from funkai.config.ts (fallback).
+ * @param fail - Error handler for missing required values.
+ * @returns Resolved args with required fields guaranteed.
+ */
+function resolveGenerateArgs(
+  args: HandleGenerateParams["args"],
+  config: FunkaiConfig["prompts"],
+  fail: (msg: string) => never,
+): {
+  readonly out: string;
+  readonly includes: readonly string[];
+  readonly excludes: readonly string[];
+  readonly partials?: string;
+  readonly silent: boolean;
+} {
+  const out = args.out ?? (config && config.out);
+  const includes = args.includes ?? (config && config.includes) ?? ["./**"];
+  const excludes = (config && config.excludes) ?? [];
+  const partials = args.partials ?? (config && config.partials);
+
+  if (!out) {
+    fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");
+  }
+
+  return { out, includes, excludes, partials, silent: args.silent };
+}
+
+/**
+ * Shared handler for prompts code generation.
+ *
+ * @param params - Handler context with args, config, logger, and fail callback.
+ */
+export function handleGenerate({ args, config, logger, fail }: HandleGenerateParams): void {
+  const { out, includes, excludes, partials, silent } = resolveGenerateArgs(args, config, fail);
+
+  const { discovered, lintResults, prompts } = runGeneratePipeline({
+    includes,
+    excludes,
+    out,
+    partials,
+    groups: config && config.groups,
+  });
 
   if (!silent) {
     logger.info(`Found ${discovered} prompt(s)`);
@@ -50,25 +96,20 @@ export function handleGenerate(
 
   if (!silent) {
     for (const prompt of prompts) {
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const varList: string = (() => {
-        if (prompt.schema.length > 0) {
-          return ` (${prompt.schema.map((v) => v.name).join(", ")})`;
-        }
-        return "";
-      })();
+      const varList = formatVarList(prompt.schema);
       logger.step(`${prompt.name}${varList}`);
     }
   }
 
-  for (const result of lintResults) {
-    for (const diag of result.diagnostics) {
-      if (diag.level === "error") {
-        logger.error(diag.message);
-      } else {
-        logger.warn(diag.message);
-      }
-    }
+  for (const diag of lintResults.flatMap((result) => result.diagnostics)) {
+    match(diag.level)
+      .with("error", () => logger.error(diag.message))
+      .with("warn", () => {
+        if (!silent) {
+          logger.warn(diag.message);
+        }
+      })
+      .exhaustive();
   }
 
   if (hasLintErrors(lintResults)) {
@@ -81,8 +122,9 @@ export function handleGenerate(
 
   for (const prompt of prompts) {
     const content = generatePromptModule(prompt);
+    const fileSlug = toFileSlug(prompt.name, prompt.group);
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated module to output directory
-    writeFileSync(resolve(outDir, `${prompt.name}.ts`), content, "utf8");
+    writeFileSync(resolve(outDir, `${fileSlug}.ts`), content, "utf8");
   }
 
   const registryContent = generateRegistry(prompts);
@@ -94,10 +136,24 @@ export function handleGenerate(
   }
 }
 
+/** @private */
+function formatVarList(schema: readonly { readonly name: string }[]): string {
+  if (schema.length > 0) {
+    return ` (${schema.map((v) => v.name).join(", ")})`;
+  }
+  return "";
+}
+
 export default command({
   description: "Generate TypeScript modules from .prompt files",
   options: generateArgs,
   handler(ctx) {
-    handleGenerate(ctx.args, ctx.logger, ctx.fail);
+    const config = getConfig(ctx);
+    handleGenerate({
+      args: ctx.args,
+      config: config.prompts,
+      logger: ctx.logger,
+      fail: ctx.fail,
+    });
   },
 });

@@ -10,11 +10,25 @@ interface RenderTag {
   params: Record<string, string>;
 }
 
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/** @private */
+function parseParamsOrEmpty(raw: string, partialName: string): Record<string, string> {
+  if (raw.length > 0) {
+    return parseParams(raw, partialName);
+  }
+  return {};
+}
+
 /**
  * Parse literal string parameters from a render tag's param string.
  *
  * Only supports literal string values (e.g. `role: 'Bot'`).
  * Throws if a parameter value is a variable reference.
+ *
+ * @private
  */
 function parseParams(raw: string, partialName: string): Record<string, string> {
   const literalMatches = [...raw.matchAll(LITERAL_PARAM_RE)];
@@ -34,21 +48,54 @@ function parseParams(raw: string, partialName: string): Record<string, string> {
   );
 }
 
+/** @private */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+/**
+ * Render a single partial tag via LiquidJS, wrapping errors with context.
+ *
+ * @private
+ */
+function renderPartial(engine: Liquid, tag: RenderTag): string {
+  const liquidTag = `{% render '${tag.partialName}' ${Object.entries(tag.params)
+    .map(([k, v]) => `${k}: '${v}'`)
+    .join(", ")} %}`;
+  try {
+    return engine.parseAndRenderSync(liquidTag);
+  } catch (error) {
+    throw new Error(`Failed to render partial '${tag.partialName}': ${errorMessage(error)}`, {
+      cause: error,
+    });
+  }
+}
+
 /**
  * Find all `{% render %}` tags in a template string.
+ *
+ * @private
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
     const rawParams: string = (m[2] ?? "").trim();
-    const params: Record<string, string> = (() => {
-      if (rawParams.length > 0) {
-        return parseParams(rawParams, m[1]);
-      }
-      return {};
-    })();
+    const params = parseParamsOrEmpty(rawParams, m[1]);
 
     return { fullMatch: m[0], partialName: m[1], params };
   });
+}
+
+/**
+ * Parameters for flattening partial render tags.
+ */
+export interface FlattenPartialsParams {
+  /** Template string (frontmatter already stripped). */
+  readonly template: string;
+  /** Directories to search for partial `.prompt` files. */
+  readonly partialsDirs: readonly string[];
 }
 
 /**
@@ -61,11 +108,15 @@ function parseRenderTags(template: string): RenderTag[] {
  * All other Liquid expressions (`{{ var }}`, `{% if %}`, `{% for %}`)
  * are preserved for runtime rendering.
  *
- * @param template - Template string (frontmatter already stripped).
- * @param partialsDirs - Directories to search for partial `.prompt` files.
+ * @param params - Template content and partial directories.
  * @returns Flattened template with all render tags resolved.
+ * @example
+ * ```ts
+ * flattenPartials({ template: "{% render 'header' %}\nBody", partialsDirs: ["./partials"] });
+ * // "Welcome!\nBody"
+ * ```
  */
-export function flattenPartials(template: string, partialsDirs: readonly string[]): string {
+export function flattenPartials({ template, partialsDirs }: FlattenPartialsParams): string {
   const tags = parseRenderTags(template);
   if (tags.length === 0) {
     return template;
@@ -78,13 +129,8 @@ export function flattenPartials(template: string, partialsDirs: readonly string[
   });
 
   const result = tags.reduce((acc, tag) => {
-    const rendered = engine.parseAndRenderSync(
-      `{% render '${tag.partialName}' ${Object.entries(tag.params)
-        .map(([k, v]) => `${k}: '${v}'`)
-        .join(", ")} %}`,
-    );
-
-    return acc.replace(tag.fullMatch, rendered);
+    const rendered = renderPartial(engine, tag);
+    return acc.replace(tag.fullMatch, () => rendered);
   }, template);
 
   return result;

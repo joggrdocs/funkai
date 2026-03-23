@@ -1,3 +1,4 @@
+import { openai } from "@ai-sdk/openai";
 import { agent, flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
@@ -10,13 +11,13 @@ import { z } from "zod";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: "Summarize the given text in one sentence.",
 });
 
 const translator = agent({
   name: "translator",
-  model: "openai/gpt-4o-mini",
+  model: openai("gpt-4o-mini"),
   system: "Translate the given text to Spanish.",
 });
 
@@ -32,7 +33,9 @@ const summarizeAndTranslate = flowAgent(
       console.log(`  → step started: ${step.id} (${step.type})`);
     },
     onStepFinish: ({ step, duration }) => {
-      console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      if (step) {
+        console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
+      }
     },
   },
   async ({ input, $ }) => {
@@ -68,7 +71,9 @@ const summarizeAndTranslate = flowAgent(
 );
 
 const result = await summarizeAndTranslate.generate({
-  text: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.",
+  input: {
+    text: "TypeScript is a typed superset of JavaScript that compiles to plain JavaScript. It adds optional static typing and class-based object-oriented programming to the language.",
+  },
 });
 
 if (result.ok) {

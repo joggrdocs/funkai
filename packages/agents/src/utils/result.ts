@@ -114,7 +114,7 @@ export function err(
  *
  * @example
  * ```typescript
- * const result = await agent.generate('hello')
+ * const result = await agent.generate({ prompt: 'hello' })
  * if (isOk(result)) {
  *   console.log(result.output)
  * }
@@ -132,7 +132,7 @@ export function isOk<T>(result: Result<T>): result is T & { ok: true } {
  *
  * @example
  * ```typescript
- * const result = await agent.generate('hello')
+ * const result = await agent.generate({ prompt: 'hello' })
  * if (isErr(result)) {
  *   console.error(result.error.code, result.error.message)
  * }

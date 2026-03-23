@@ -1,8 +1,8 @@
 import { simulateReadableStream } from "ai";
 import { describe, expect, it } from "vitest";
 
-import type { StreamPart } from "@/core/agents/base/types.js";
 import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
+import type { StreamPart } from "@/core/types.js";
 
 // ---------------------------------------------------------------------------
 // Helpers

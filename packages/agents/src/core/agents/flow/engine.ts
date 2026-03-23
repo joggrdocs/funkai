@@ -1,3 +1,6 @@
+import { isFunction, isPlainObject } from "es-toolkit";
+import { match } from "ts-pattern";
+
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
@@ -7,10 +10,10 @@ import type {
   FlowAgentConfigWithoutOutput,
   FlowAgentHandler,
   InternalFlowAgentOptions,
-  StepInfo,
 } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
 import { createDefaultLogger } from "@/core/logger.js";
+import type { StepFinishEvent, StepInfo } from "@/core/types.js";
 import type { ExecutionContext } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 
@@ -92,11 +95,7 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Default hook: fires when any step finishes.
    */
-  onStepFinish?: (event: {
-    step: StepInfo;
-    result: unknown;
-    duration: number;
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
 
 /**
@@ -172,10 +171,24 @@ export interface FlowFactory<TCustomSteps extends CustomStepDefinitions> {
 }
 
 /**
+ * Extract a step ID from config if it has an `id` field, otherwise use the step name.
+ *
+ * @private
+ */
+function resolveStepId(config: unknown, name: string): string {
+  if (isPlainObject(config) && Object.hasOwn(config, "id")) {
+    return (config as { id: string }).id;
+  }
+  return name;
+}
+
+/**
  * Wrap a hook callback so it can be passed to `fireHooks`.
  *
  * Generic over `TEvent` so the hook is called with the correct
  * event type without resorting to `any`.
+ *
+ * @private
  */
 function createHookCaller<TEvent>(
   hook: ((event: TEvent) => void | Promise<void>) | undefined,
@@ -188,33 +201,50 @@ function createHookCaller<TEvent>(
 }
 
 /**
+ * Internal-only hook type used by `buildMergedHook` to accept any
+ * lifecycle hook regardless of its specific event signature.
+ *
+ * ## Why `any` is necessary here
+ *
+ * Functions are **contravariant** in their parameter types. A hook
+ * typed `(event: { input: TInput }) => void` is NOT assignable to
+ * `(event: unknown) => void` — the subtype relationship is reversed
+ * for function parameters. This means no strict type (including
+ * `unknown` or `never`) can serve as a universal hook acceptor.
+ *
+ * `any` is the only TypeScript type that bypasses contravariance,
+ * allowing all hook signatures to unify in a single merge function.
+ *
+ * Type safety is enforced at the public API boundary:
+ * - `FlowEngineConfig` defines engine hooks with `unknown` event fields
+ * - `FlowAgentConfig` defines flow hooks with `TInput`/`TOutput` event fields
+ * - Both produce the correct runtime event shapes — the merge function
+ *   just combines two callbacks, it never inspects or constructs events.
+ *
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see JSDoc above: contravariance requires `any`
+type AnyHook = ((event: any) => void | Promise<void>) | undefined;
+
+/**
  * Build a merged hook that runs engine and flow agent hooks sequentially.
  *
- * The `(event: never)` constraint is the widest function type under
- * strict mode — any single-argument function is assignable via
- * contravariance (`never extends T` for all `T`).
+ * Accepts `AnyHook` (event: unknown) directly — no generic type parameter
+ * or unsafe casts needed. Call sites widen narrower hook types to `AnyHook`
+ * explicitly.
+ *
+ * @private
  */
-function buildMergedHook<THook extends (event: never) => void | Promise<void>>(
-  log: Logger,
-  engineHook: THook | undefined,
-  flowHook: THook | undefined,
-): THook | undefined {
+function buildMergedHook(log: Logger, engineHook: AnyHook, flowHook: AnyHook): AnyHook {
   if (!engineHook && !flowHook) {
     return undefined;
   }
 
-  const merged = async (event: unknown): Promise<void> => {
-    const engineFn = createHookCaller(
-      engineHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
-    const flowFn = createHookCaller(
-      flowHook as ((event: unknown) => void | Promise<void>) | undefined,
-      event,
-    );
+  return async (event: unknown): Promise<void> => {
+    const engineFn = createHookCaller(engineHook, event);
+    const flowFn = createHookCaller(flowHook, event);
     await fireHooks(log, engineFn, flowFn);
   };
-  return merged as unknown as THook;
 }
 
 /**
@@ -282,10 +312,11 @@ export function createFlowEngine<
   TCustomSteps extends CustomStepDefinitions = Record<string, never>,
 >(engineConfig: FlowEngineConfig<TCustomSteps>): FlowFactory<TCustomSteps> {
   // Validate custom step names at engine creation time
-  for (const name of Object.keys(engineConfig.$ ?? {})) {
-    if (RESERVED_STEP_NAMES.has(name)) {
-      throw new Error(`Custom step "${name}" conflicts with a built-in StepBuilder method`);
-    }
+  const conflicting = Object.keys(engineConfig.$ ?? {}).find((name) =>
+    RESERVED_STEP_NAMES.has(name),
+  );
+  if (conflicting) {
+    throw new Error(`Custom step "${conflicting}" conflicts with a built-in StepBuilder method`);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- implementation signature must accept both overloads
@@ -298,7 +329,11 @@ export function createFlowEngine<
     }) => Promise<TOutput | void>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
   ): FlowAgent<TInput, any> {
-    const hookLog = (flowConfig.logger ?? createDefaultLogger()).child({ source: "engine" });
+    // Logger may be a Resolver function; for engine-level hooks use static value or default
+    const engineLogger = match(isFunction(flowConfig.logger))
+      .with(true, () => createDefaultLogger())
+      .otherwise(() => (flowConfig.logger as Logger | undefined) ?? createDefaultLogger());
+    const hookLog = engineLogger.child({ source: "engine" });
 
     const { onStart: engineOnStart } = engineConfig;
     const { onStart: flowOnStart } = flowConfig;
@@ -344,33 +379,23 @@ export function createFlowEngine<
       wrappedHandler,
       {
         augment$: ($, ctx) => {
-          const customSteps: Record<string, (config: unknown) => Promise<unknown>> = {};
-
-          for (const [name, factory] of Object.entries(engineConfig.$ ?? {})) {
-            // eslint-disable-next-line security/detect-object-injection -- Key from Object.entries iteration, not user input
-            customSteps[name] = async (config: unknown) => {
-              const stepId = (() => {
-                if (
-                  config !== null &&
-                  config !== undefined &&
-                  typeof config === "object" &&
-                  "id" in config
-                ) {
-                  return (config as { id: string }).id;
+          const customSteps = Object.fromEntries(
+            Object.entries(engineConfig.$ ?? {}).map(([name, factory]) => [
+              name,
+              async (config: unknown) => {
+                const stepId = resolveStepId(config, name);
+                const result = await $.step({
+                  id: stepId,
+                  execute: async () =>
+                    factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
+                });
+                if (!result.ok) {
+                  throw result.error;
                 }
-                return name;
-              })();
-              const result = await $.step({
-                id: stepId,
-                execute: async () =>
-                  factory({ ctx: { signal: ctx.signal, log: ctx.log }, config: config as never }),
-              });
-              if (!result.ok) {
-                throw result.error;
-              }
-              return result.value;
-            };
-          }
+                return result.value;
+              },
+            ]),
+          );
           return { ...$, ...customSteps } as StepBuilder;
         },
       },

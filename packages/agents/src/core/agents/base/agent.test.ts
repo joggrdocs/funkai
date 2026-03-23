@@ -37,8 +37,6 @@ vi.mock(
     }) as any,
 );
 
-const mockResolver = vi.fn(() => ({ modelId: "mock-model" }) as never);
-
 const MOCK_TOTAL_USAGE = {
   inputTokens: 100,
   outputTokens: 50,
@@ -171,7 +169,7 @@ describe("agent creation", () => {
 describe("generate() success", () => {
   it("returns ok: true with text output for simple agent", async () => {
     const a = createSimpleAgent();
-    const result = await a.generate("hello");
+    const result = await a.generate({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -192,7 +190,7 @@ describe("generate() success", () => {
 
   it("returns ok: true with text output for typed agent", async () => {
     const a = createTypedAgent();
-    const result = await a.generate({ topic: "TypeScript" });
+    const result = await a.generate({ input: { topic: "TypeScript" } });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -203,7 +201,7 @@ describe("generate() success", () => {
 
   it("passes system prompt to generateText", async () => {
     const a = createSimpleAgent({ system: "Custom system prompt" });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(mockGenerateText).toHaveBeenCalledTimes(1);
     const [callArgs] = mockGenerateText.mock.calls;
@@ -215,7 +213,7 @@ describe("generate() success", () => {
 
   it("passes string prompt for simple mode", async () => {
     const a = createSimpleAgent();
-    await a.generate("hello world");
+    await a.generate({ prompt: "hello world" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -226,7 +224,7 @@ describe("generate() success", () => {
 
   it("passes rendered prompt for typed mode", async () => {
     const a = createTypedAgent();
-    await a.generate({ topic: "Rust" });
+    await a.generate({ input: { topic: "Rust" } });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -238,7 +236,7 @@ describe("generate() success", () => {
   it("passes messages array for message-based input", async () => {
     const a = createSimpleAgent();
     const messages = [{ role: "user" as const, content: "hello" }];
-    await a.generate(messages as never);
+    await a.generate({ prompt: messages } as never);
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -249,21 +247,21 @@ describe("generate() success", () => {
 
   it("uses default maxSteps of 20 when not specified", async () => {
     const a = createSimpleAgent();
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(mockStepCountIs).toHaveBeenCalledWith(20);
   });
 
   it("uses custom maxSteps from config", async () => {
     const a = createSimpleAgent({ maxSteps: 10 });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(mockStepCountIs).toHaveBeenCalledWith(10);
   });
 
   it("uses maxSteps from overrides over config", async () => {
     const a = createSimpleAgent({ maxSteps: 10 });
-    await a.generate("test", { maxSteps: 5 });
+    await a.generate({ prompt: "test", maxSteps: 5 });
 
     expect(mockStepCountIs).toHaveBeenCalledWith(5);
   });
@@ -274,7 +272,7 @@ describe("generate() input validation", () => {
     const a = createTypedAgent();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await a.generate({ topic: 123 });
+    const result = await a.generate({ input: { topic: 123 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -288,7 +286,7 @@ describe("generate() input validation", () => {
     const a = createTypedAgent();
 
     // @ts-expect-error - intentionally missing field
-    const result = await a.generate({});
+    const result = await a.generate({ input: {} });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -301,14 +299,14 @@ describe("generate() input validation", () => {
     const a = createTypedAgent();
 
     // @ts-expect-error - intentionally invalid input
-    await a.generate({ topic: 123 });
+    await a.generate({ input: { topic: 123 } });
 
     expect(mockGenerateText).not.toHaveBeenCalled();
   });
 
   it("skips validation for simple agents without input schema", async () => {
     const a = createSimpleAgent();
-    const result = await a.generate("anything");
+    const result = await a.generate({ prompt: "anything" });
 
     expect(result.ok).toBeTruthy();
   });
@@ -319,7 +317,7 @@ describe("generate() output resolution", () => {
     mockGenerateText.mockResolvedValue(createMockGenerateResult({ text: "text output" }));
 
     const a = createSimpleAgent();
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -336,7 +334,7 @@ describe("generate() output resolution", () => {
     const a = createSimpleAgent({
       output: { parseCompleteOutput: vi.fn() } as never,
     });
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -349,7 +347,7 @@ describe("generate() output resolution", () => {
 describe("generate() system prompt", () => {
   it("passes static string system prompt", async () => {
     const a = createSimpleAgent({ system: "Static system" });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -362,7 +360,7 @@ describe("generate() system prompt", () => {
     const a = createSimpleAgent({
       system: ({ input }: { input: unknown }) => `System for: ${input}`,
     });
-    await a.generate("my-input");
+    await a.generate({ prompt: "my-input" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -373,7 +371,7 @@ describe("generate() system prompt", () => {
 
   it("passes undefined system when not configured", async () => {
     const a = createSimpleAgent({ system: undefined });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -384,7 +382,7 @@ describe("generate() system prompt", () => {
 
   it("uses override system prompt over config", async () => {
     const a = createSimpleAgent({ system: "original" });
-    await a.generate("test", { system: "overridden" });
+    await a.generate({ prompt: "test", system: "overridden" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -398,7 +396,7 @@ describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
     const onStart = vi.fn();
     const a = createSimpleAgent({ onStart });
-    await a.generate("hello");
+    await a.generate({ prompt: "hello" });
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
@@ -411,7 +409,7 @@ describe("generate() hooks", () => {
   it("fires onFinish hook with input, result (including usage), and duration", async () => {
     const onFinish = vi.fn();
     const a = createSimpleAgent({ onFinish });
-    await a.generate("hello");
+    await a.generate({ prompt: "hello" });
 
     expect(onFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onFinish.mock.calls;
@@ -449,7 +447,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onStepFinish).toHaveBeenCalledTimes(2);
     const [firstCall] = onStepFinish.mock.calls;
@@ -482,7 +480,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
@@ -510,7 +508,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
@@ -538,7 +536,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
@@ -572,7 +570,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onStepFinish).toHaveBeenCalledTimes(1);
     const [firstCall] = onStepFinish.mock.calls;
@@ -588,7 +586,7 @@ describe("generate() hooks", () => {
     const overrideOnStart = vi.fn();
 
     const a = createSimpleAgent({ onStart: configOnStart });
-    await a.generate("test", { onStart: overrideOnStart });
+    await a.generate({ prompt: "test", onStart: overrideOnStart });
 
     expect(configOnStart).toHaveBeenCalledTimes(1);
     expect(overrideOnStart).toHaveBeenCalledTimes(1);
@@ -599,7 +597,7 @@ describe("generate() hooks", () => {
     const overrideOnFinish = vi.fn();
 
     const a = createSimpleAgent({ onFinish: configOnFinish });
-    await a.generate("test", { onFinish: overrideOnFinish });
+    await a.generate({ prompt: "test", onFinish: overrideOnFinish });
 
     expect(configOnFinish).toHaveBeenCalledTimes(1);
     expect(overrideOnFinish).toHaveBeenCalledTimes(1);
@@ -623,7 +621,7 @@ describe("generate() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish: configOnStepFinish });
-    await a.generate("test", { onStepFinish: overrideOnStepFinish });
+    await a.generate({ prompt: "test", onStepFinish: overrideOnStepFinish });
 
     expect(configOnStepFinish).toHaveBeenCalledTimes(1);
     expect(overrideOnStepFinish).toHaveBeenCalledTimes(1);
@@ -635,7 +633,7 @@ describe("generate() error handling", () => {
     mockGenerateText.mockRejectedValue(new Error("model exploded"));
 
     const a = createSimpleAgent();
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -650,7 +648,7 @@ describe("generate() error handling", () => {
     mockGenerateText.mockRejectedValue("string error");
 
     const a = createSimpleAgent();
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -666,7 +664,7 @@ describe("generate() error handling", () => {
     const onError = vi.fn();
 
     const a = createSimpleAgent({ onError });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onError).toHaveBeenCalledTimes(1);
     const [firstCall] = onError.mock.calls;
@@ -684,7 +682,7 @@ describe("generate() error handling", () => {
     const overrideOnError = vi.fn();
 
     const a = createSimpleAgent({ onError: configOnError });
-    await a.generate("test", { onError: overrideOnError });
+    await a.generate({ prompt: "test", onError: overrideOnError });
 
     expect(configOnError).toHaveBeenCalledTimes(1);
     expect(overrideOnError).toHaveBeenCalledTimes(1);
@@ -695,7 +693,7 @@ describe("generate() error handling", () => {
     const onFinish = vi.fn();
 
     const a = createSimpleAgent({ onFinish });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     expect(onFinish).not.toHaveBeenCalled();
   });
@@ -705,7 +703,7 @@ describe("generate() error handling", () => {
     const a = createTypedAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
-    await a.generate({ topic: 123 });
+    await a.generate({ input: { topic: 123 } });
 
     expect(onError).not.toHaveBeenCalled();
   });
@@ -719,7 +717,7 @@ describe("generate() hook resilience", () => {
       },
     });
 
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -735,7 +733,7 @@ describe("generate() hook resilience", () => {
       },
     });
 
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -753,7 +751,7 @@ describe("generate() hook resilience", () => {
       },
     });
 
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -768,7 +766,7 @@ describe("generate() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "override-model" } as never;
     const a = createSimpleAgent();
-    await a.generate("test", { model: overrideModel });
+    await a.generate({ prompt: "test", model: overrideModel });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -779,7 +777,7 @@ describe("generate() overrides", () => {
 
   it("uses override system prompt when provided", async () => {
     const a = createSimpleAgent({ system: "original" });
-    await a.generate("test", { system: "override system" });
+    await a.generate({ prompt: "test", system: "override system" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -791,7 +789,7 @@ describe("generate() overrides", () => {
   it("passes abort signal from overrides", async () => {
     const controller = new AbortController();
     const a = createSimpleAgent();
-    await a.generate("test", { signal: controller.signal });
+    await a.generate({ prompt: "test", signal: controller.signal });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -803,7 +801,7 @@ describe("generate() overrides", () => {
   it("uses override logger when provided", async () => {
     const overrideLogger = createMockLogger();
     const a = createSimpleAgent();
-    await a.generate("test", { logger: overrideLogger });
+    await a.generate({ prompt: "test", logger: overrideLogger });
 
     expect(overrideLogger.child).toHaveBeenCalledWith({ agentId: "test-agent" });
   });
@@ -812,7 +810,7 @@ describe("generate() overrides", () => {
 describe("stream() success", () => {
   it("returns ok: true with fullStream, output, messages, usage, and finishReason", async () => {
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -829,7 +827,7 @@ describe("stream() success", () => {
     mockStreamText.mockReturnValue(createMockStreamResult({ chunks: ["chunk1", "chunk2"] }));
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -857,7 +855,7 @@ describe("stream() success", () => {
     mockStreamText.mockReturnValue(createMockStreamResult({ text: "full text" }));
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -885,7 +883,7 @@ describe("stream() success", () => {
     );
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -908,7 +906,7 @@ describe("stream() success", () => {
 
   it("usage and finishReason promises resolve after stream completes", async () => {
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -945,7 +943,7 @@ describe("stream() input validation", () => {
     const a = createTypedAgent();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await a.stream({ topic: 123 });
+    const result = await a.stream({ input: { topic: 123 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -959,7 +957,7 @@ describe("stream() input validation", () => {
     const a = createTypedAgent();
 
     // @ts-expect-error - intentionally invalid input
-    await a.stream({ topic: 123 });
+    await a.stream({ input: { topic: 123 } });
 
     expect(mockStreamText).not.toHaveBeenCalled();
   });
@@ -969,7 +967,7 @@ describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
     const onStart = vi.fn();
     const a = createSimpleAgent({ onStart });
-    await a.stream("hello");
+    await a.stream({ prompt: "hello" });
 
     expect(onStart).toHaveBeenCalledTimes(1);
     const [firstCall] = onStart.mock.calls;
@@ -982,7 +980,7 @@ describe("stream() hooks", () => {
   it("fires onFinish hook after stream completes", async () => {
     const onFinish = vi.fn();
     const a = createSimpleAgent({ onFinish });
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1031,7 +1029,7 @@ describe("stream() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1074,7 +1072,7 @@ describe("stream() hooks", () => {
     );
 
     const a = createSimpleAgent({ onStepFinish });
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1114,7 +1112,7 @@ describe("stream() error handling", () => {
     });
 
     const a = createSimpleAgent();
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -1132,7 +1130,7 @@ describe("stream() error handling", () => {
 
     const onError = vi.fn();
     const a = createSimpleAgent({ onError });
-    await a.stream("test");
+    await a.stream({ prompt: "test" });
 
     expect(onError).toHaveBeenCalledTimes(1);
     const [firstCall] = onError.mock.calls;
@@ -1149,7 +1147,7 @@ describe("stream() error handling", () => {
     });
 
     const a = createSimpleAgent();
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -1164,7 +1162,7 @@ describe("stream() error handling", () => {
     const a = createTypedAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
-    await a.stream({ topic: 123 });
+    await a.stream({ input: { topic: 123 } });
 
     expect(onError).not.toHaveBeenCalled();
   });
@@ -1176,7 +1174,7 @@ describe("stream() error handling", () => {
 
     const onFinish = vi.fn();
     const a = createSimpleAgent({ onFinish });
-    await a.stream("test");
+    await a.stream({ prompt: "test" });
 
     expect(onFinish).not.toHaveBeenCalled();
   });
@@ -1186,7 +1184,7 @@ describe("stream() overrides", () => {
   it("uses override model when provided", async () => {
     const overrideModel = { modelId: "stream-override" } as never;
     const a = createSimpleAgent();
-    await a.stream("test", { model: overrideModel });
+    await a.stream({ prompt: "test", model: overrideModel });
 
     const [callArgs] = mockStreamText.mock.calls;
     if (!callArgs) {
@@ -1198,7 +1196,7 @@ describe("stream() overrides", () => {
   it("passes abort signal from overrides", async () => {
     const controller = new AbortController();
     const a = createSimpleAgent();
-    await a.stream("test", { signal: controller.signal });
+    await a.stream({ prompt: "test", signal: controller.signal });
 
     const [callArgs] = mockStreamText.mock.calls;
     if (!callArgs) {
@@ -1213,7 +1211,7 @@ describe("fn()", () => {
     const a = createSimpleAgent();
     const fn = a.fn();
 
-    const result = await fn("hello");
+    const result = await fn({ prompt: "hello" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1226,8 +1224,8 @@ describe("fn()", () => {
     const a = createSimpleAgent();
     const fn = a.fn();
 
-    const resultGenerate = await a.generate("test");
-    const resultFn = await fn("test");
+    const resultGenerate = await a.generate({ prompt: "test" });
+    const resultFn = await fn({ prompt: "test" });
 
     expect(resultGenerate.ok).toBeTruthy();
     expect(resultFn.ok).toBeTruthy();
@@ -1242,7 +1240,7 @@ describe("fn()", () => {
     const a = createSimpleAgent();
     const fn = a.fn();
 
-    await fn("test", { onStart });
+    await fn({ prompt: "test", onStart });
 
     expect(onStart).toHaveBeenCalledTimes(1);
   });
@@ -1252,7 +1250,7 @@ describe("fn()", () => {
     const fn = a.fn();
 
     // @ts-expect-error - intentionally invalid input
-    const result = await fn({ topic: 123 });
+    const result = await fn({ input: { topic: 123 } });
 
     expect(result.ok).toBeFalsy();
     if (result.ok) {
@@ -1271,7 +1269,7 @@ describe("tool integration", () => {
     };
 
     const a = createSimpleAgent({ tools: { myTool: mockTool as never } });
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -1282,7 +1280,7 @@ describe("tool integration", () => {
 
   it("passes no tools to generateText when no tools are configured", async () => {
     const a = createSimpleAgent();
-    await a.generate("test");
+    await a.generate({ prompt: "test" });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -1300,7 +1298,7 @@ describe("tool integration", () => {
     };
 
     const a = createSimpleAgent({ tools: { configTool: configTool as never } });
-    await a.generate("test", { tools: { overrideTool: overrideTool as never } });
+    await a.generate({ prompt: "test", tools: { overrideTool: overrideTool as never } });
 
     const [callArgs] = mockGenerateText.mock.calls;
     if (!callArgs) {
@@ -1313,46 +1311,16 @@ describe("tool integration", () => {
 describe("edge cases", () => {
   it("handles undefined overrides gracefully", async () => {
     const a = createSimpleAgent();
-    const result = await a.generate("test", undefined);
+    const result = await a.generate({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
   });
 
   it("handles empty string input for simple agent", async () => {
     const a = createSimpleAgent();
-    const result = await a.generate("");
+    const result = await a.generate({ prompt: "" });
 
     expect(result.ok).toBeTruthy();
-  });
-
-  it("model string ID is resolved via configured registry", async () => {
-    const a = agent({
-      name: "string-model-agent",
-      model: "openai/gpt-4.1",
-      registry: mockResolver,
-      system: "test",
-      logger: createMockLogger(),
-    });
-
-    await a.generate("test");
-
-    expect(mockResolver).toHaveBeenCalledWith("openai/gpt-4.1");
-  });
-
-  it("throws when string model ID is used without a registry", async () => {
-    const a = agent({
-      name: "no-registry-agent",
-      model: "openai/gpt-4.1",
-      system: "test",
-      logger: createMockLogger(),
-    });
-
-    const result = await a.generate("test");
-
-    expect(result.ok).toBeFalsy();
-    if (!result.ok) {
-      expect(result.error.message).toContain("no registry configured");
-    }
   });
 
   it("uses default logger when none provided", async () => {
@@ -1363,7 +1331,7 @@ describe("edge cases", () => {
     });
 
     // Should not throw when no logger is provided
-    const result = await a.generate("test");
+    const result = await a.generate({ prompt: "test" });
     expect(result.ok).toBeTruthy();
   });
 });
@@ -1401,7 +1369,7 @@ describe("stream() async error during consumption", () => {
     mockStreamText.mockReturnValue(createErrorStreamResult(streamError));
 
     const a = createSimpleAgent();
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1446,7 +1414,7 @@ describe("stream() async error during consumption", () => {
     const onError = vi.fn();
     const onFinish = vi.fn();
     const a = createSimpleAgent({ onError, onFinish });
-    const result = await a.stream("test");
+    const result = await a.stream({ prompt: "test" });
 
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
@@ -1520,7 +1488,7 @@ describe("stream() unhandled rejection safety", () => {
 
     try {
       const a = createSimpleAgent();
-      const result = await a.stream("test");
+      const result = await a.stream({ prompt: "test" });
 
       expect(result.ok).toBeTruthy();
       if (!result.ok) {
@@ -1570,7 +1538,7 @@ describe("stream() response methods", () => {
     });
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
@@ -1591,7 +1559,7 @@ describe("stream() response methods", () => {
     });
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;
@@ -1611,7 +1579,7 @@ describe("stream() response methods", () => {
     });
 
     const a = createSimpleAgent();
-    const result = await a.stream("hello");
+    const result = await a.stream({ prompt: "hello" });
     expect(result.ok).toBeTruthy();
     if (!result.ok) {
       return;

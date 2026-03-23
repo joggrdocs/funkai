@@ -1,3 +1,5 @@
+import { isString } from "es-toolkit";
+
 /**
  * Pino-compatible leveled logger with child logger support.
  *
@@ -164,7 +166,7 @@ function writeLog(
   first: string | Record<string, unknown>,
   second?: string | Record<string, unknown>,
 ): void {
-  if (typeof first === "string") {
+  if (isString(first)) {
     const meta = second as Record<string, unknown> | undefined;
     // eslint-disable-next-line security/detect-object-injection -- Log level is a controlled string from the logger, not user input
     console[level]({ ...bindings, ...meta }, first);

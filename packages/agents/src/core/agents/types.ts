@@ -1,12 +1,4 @@
-import type { ProviderRegistry } from "@funkai/models";
-import type {
-  AsyncIterableStream,
-  ModelMessage,
-  TextStreamPart,
-  ToolSet,
-  UIMessage,
-  UIMessageStreamOptions,
-} from "ai";
+import type { AsyncIterableStream, ModelMessage, UIMessage, UIMessageStreamOptions } from "ai";
 import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
@@ -14,17 +6,37 @@ import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { Model } from "@/core/types.js";
+import type { Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
 
+export type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+
 /**
- * Concrete stream event type re-exported from the Vercel AI SDK.
+ * A value that can be static or dynamically resolved from the agent's input.
  *
- * This is `TextStreamPart<ToolSet>` — the discriminated union of all
- * possible stream events (`text-delta`, `tool-call`, `tool-result`,
- * `finish`, `error`, etc.). Use `part.type` to discriminate.
+ * When `T` is a plain value, it's used directly. When it's a function
+ * matching `(params: { input: TInput }) => T | Promise<T>`, it's called
+ * at `.generate()` / `.stream()` time with the validated input.
+ *
+ * This enables environment-aware configuration — different models, tools,
+ * prompts, or loggers depending on runtime context.
+ *
+ * @typeParam TInput - The agent's input type.
+ * @typeParam T - The resolved value type.
+ *
+ * @example
+ * ```typescript
+ * // Static value
+ * model: openai('gpt-4.1')
+ *
+ * // Dynamic resolver
+ * model: ({ input }) => input.runtime === 'local' ? joggr() : openrouter('...')
+ *
+ * // Async resolver
+ * model: async ({ input }) => await fetchModelForPlan(input.plan)
+ * ```
  */
-export type StreamPart = TextStreamPart<ToolSet>;
+export type Resolver<TInput, T> = T | ((params: { input: TInput }) => T | Promise<T>);
 
 /**
  * Compile-time guard that validates a string is a provider-safe tool name.
@@ -82,28 +94,30 @@ export type ToolName<S extends string> = S extends ""
  * import { agent } from '@funkai/agents'
  * import type { SubAgents } from '@funkai/agents'
  *
+ * import { openai } from '@ai-sdk/openai'
+ *
  * const researcher = agent({
  *   name: 'researcher',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'You research topics and return factual summaries.',
  * })
  *
  * const summarizer = agent({
  *   name: 'summarizer',
- *   model: 'openai/gpt-4.1-mini',
+ *   model: openai('gpt-4.1-mini'),
  *   system: 'You condense text into concise bullet points.',
  * })
  *
  * const orchestrator = agent({
  *   name: 'orchestrator',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'Coordinate research and summarization.',
  *   agents: { researcher, summarizer } satisfies SubAgents,
  * })
  * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type SubAgents = Record<string, Agent<any, any, any, any>>;
+export type SubAgents = Record<string, Agent<any, any, any, any, any>>;
 
 /**
  * Chat message type.
@@ -238,7 +252,7 @@ export interface StreamResult<TOutput = string> {
    * @example
    * ```typescript
    * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream('Hello');
+   *   const result = await myAgent.stream({ prompt: 'Hello' });
    *   if (!result.ok) return c.text('Error', 500);
    *   return result.toTextStreamResponse();
    * });
@@ -262,7 +276,7 @@ export interface StreamResult<TOutput = string> {
    * @example
    * ```typescript
    * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream('Hello');
+   *   const result = await myAgent.stream({ prompt: 'Hello' });
    *   if (!result.ok) return c.text('Error', 500);
    *   return result.toUIMessageStreamResponse();
    * });
@@ -274,19 +288,16 @@ export interface StreamResult<TOutput = string> {
 }
 
 /**
- * Per-call overrides for agent generation.
+ * Shared fields for all `.generate()` / `.stream()` param types.
  *
- * Passed as the optional second parameter to `.generate()` or `.stream()`.
- * Override fields replace the base config for that call only. Per-call
- * hooks **merge** with base hooks — base fires first, then call-level.
+ * Contains the common fields shared by agents and flow agents:
+ * logger, signal, timeout, and lifecycle hooks.
  *
- * @typeParam TTools - The agent's tool record type.
- * @typeParam TSubAgents - The agent's subagent record type.
+ * @typeParam TInput - The agent's input type.
+ *
+ * @private — use `GenerateParams` instead.
  */
-export interface AgentOverrides<
-  TTools extends Record<string, Tool> = Record<string, Tool>,
-  TSubAgents extends SubAgents = Record<string, never>,
-> {
+export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
   /**
    * Override the logger for this call.
    *
@@ -304,9 +315,78 @@ export interface AgentOverrides<
   signal?: AbortSignal;
 
   /**
+   * Timeout in milliseconds.
+   *
+   * When set, the call is automatically aborted after the specified
+   * duration. Internally creates an `AbortSignal` that fires after
+   * the timeout.
+   */
+  timeout?: number;
+
+  /**
+   * Per-call hook — fires after base `onStart`.
+   *
+   * @param event - Event containing the input.
+   * @param event.input - The resolved input value.
+   */
+  onStart?: (event: { input: TInput }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onFinish`.
+   *
+   * @param event - Event containing the input, result, and duration.
+   * @param event.input - The resolved input value.
+   * @param event.result - The generation result.
+   * @param event.duration - Wall-clock time in milliseconds.
+   */
+  onFinish?: (event: {
+    input: TInput;
+    result: GenerateResult<TOutput>;
+    duration: number;
+  }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onError`.
+   *
+   * @param event - Event containing the input and error.
+   * @param event.input - The resolved input value.
+   * @param event.error - The error that occurred.
+   */
+  onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires when a step starts.
+   *
+   * Used by flow agents to receive step-start notifications.
+   * Agents accept but ignore this field for type compatibility.
+   */
+  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+
+  /**
+   * Per-call hook — fires after base `onStepFinish`.
+   *
+   * Receives a unified {@link StepFinishEvent} that carries both
+   * agent tool-loop fields and flow orchestration fields.
+   */
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+}
+
+/**
+ * Agent-specific overrides for `.generate()` and `.stream()` calls.
+ *
+ * @typeParam TTools - The agent's tool record type.
+ * @typeParam TSubAgents - The agent's subagent record type.
+ *
+ * @private — use `GenerateParams` instead.
+ */
+interface AgentGenerateOverrides<
+  TTools extends Record<string, Tool> = Record<string, Tool>,
+  TSubAgents extends SubAgents = Record<string, never>,
+> {
+  /**
    * Override the model for this call.
    *
-   * Accepts a string model ID or an AI SDK `LanguageModel` instance.
+   * Pass an AI SDK `LanguageModel` instance.
    */
   model?: Model;
 
@@ -350,51 +430,58 @@ export interface AgentOverrides<
    * - `z.array(z.object({ ... }))` → auto-wrapped as `Output.array({ element })`
    */
   output?: OutputParam;
-
-  /**
-   * Per-call hook — fires after base `onStart`.
-   *
-   * @param event - Event containing the input.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
-   */
-  onStart?: (event: { input: unknown }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onFinish`.
-   *
-   * @param event - Event containing the input, result, and duration.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
-   * @param event.result - The generation result.
-   * @param event.duration - Wall-clock time in milliseconds.
-   */
-  onFinish?: (event: {
-    input: unknown;
-    result: GenerateResult;
-    duration: number;
-  }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onError`.
-   *
-   * @param event - Event containing the input and error.
-   * @param event.input - The input passed to `.generate()` or `.stream()`.
-   * @param event.error - The error that occurred.
-   */
-  onError?: (event: { input: unknown; error: Error }) => void | Promise<void>;
-
-  /**
-   * Per-call hook — fires after base `onStepFinish`.
-   *
-   * @param event - Event containing the step ID.
-   * @param event.stepId - The ID of the tool-loop step that completed.
-   */
-  onStepFinish?: (event: {
-    stepId: string;
-    toolCalls: readonly { toolName: string; argsTextLength: number }[];
-    toolResults: readonly { toolName: string; resultTextLength: number }[];
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
-  }) => void | Promise<void>;
 }
+
+/**
+ * Input union — exactly one of `prompt`, `messages`, or `input`.
+ *
+ * Shared by both agents and flow agents.
+ *
+ * @typeParam TInput - The typed input type.
+ * @private
+ */
+type InputUnion<TInput> =
+  | { prompt: string; messages?: undefined; input?: undefined }
+  | { messages: Message[]; prompt?: undefined; input?: undefined }
+  | { input: TInput; prompt?: undefined; messages?: undefined };
+
+/**
+ * Unified parameters for agent `.generate()` and `.stream()`.
+ *
+ * Combines input and per-call overrides into a single object
+ * (mirrors the Vercel AI SDK pattern). Input is specified via exactly
+ * one of three fields: `prompt`, `messages`, or `input`.
+ *
+ * Override fields replace the base config for that call only. Per-call
+ * hooks **merge** with base hooks — base fires first, then call-level.
+ *
+ * @typeParam TInput - The agent's typed input type.
+ * @typeParam TTools - The agent's tool record type.
+ * @typeParam TSubAgents - The agent's subagent record type.
+ *
+ * @example
+ * ```typescript
+ * // Simple mode — string prompt
+ * await myAgent.generate({ prompt: 'Hello' })
+ *
+ * // Simple mode — message array
+ * await myAgent.generate({ messages: [{ role: 'user', content: 'Hi' }] })
+ *
+ * // Typed mode — structured input
+ * await myAgent.generate({ input: { topic: 'TypeScript' } })
+ *
+ * // With overrides
+ * await myAgent.generate({ prompt: 'Hello', model: openai('gpt-4.1'), signal })
+ * ```
+ */
+export type GenerateParams<
+  TInput = unknown,
+  TTools extends Record<string, Tool> = Record<string, Tool>,
+  TSubAgents extends SubAgents = Record<string, never>,
+  TOutput = string,
+> = BaseGenerateParams<TInput, TOutput> &
+  AgentGenerateOverrides<TTools, TSubAgents> &
+  InputUnion<TInput>;
 
 /**
  * Configuration for creating an agent.
@@ -416,6 +503,7 @@ export interface AgentConfig<
   TOutput,
   TTools extends Record<string, Tool>,
   TSubAgents extends SubAgents,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 > {
   /**
    * Unique agent name.
@@ -427,43 +515,14 @@ export interface AgentConfig<
   /**
    * Model to use for generation.
    *
-   * Accepts a string model ID (resolved via `registry`) or an
-   * AI SDK `LanguageModel` instance — including middleware-wrapped models.
-   *
-   * When passing a string, a `registry` must also be configured.
+   * Pass an AI SDK `LanguageModel` instance — including middleware-wrapped
+   * models via `wrapLanguageModel()`. Accepts a static value or a
+   * resolver function that receives the validated input.
    *
    * @see {@link Model}
+   * @see {@link Resolver}
    */
-  model: Model;
-
-  /**
-   * Provider registry for resolving string model IDs.
-   *
-   * Required when `model` is a string. Created via `createProviderRegistry()`
-   * from `@funkai/models`.
-   *
-   * @example
-   * ```typescript
-   * import { createProviderRegistry } from '@funkai/models'
-   * import { createOpenAI } from '@ai-sdk/openai'
-   * import { anthropic } from '@ai-sdk/anthropic'
-   *
-   * const registry = createProviderRegistry({
-   *   providers: {
-   *     openai: createOpenAI({ apiKey: '...' }),
-   *     anthropic,
-   *   },
-   * })
-   *
-   * const myAgent = agent({
-   *   name: 'my-agent',
-   *   model: 'openai/gpt-4.1',
-   *   registry,
-   *   system: 'You are helpful.',
-   * })
-   * ```
-   */
-  registry?: ProviderRegistry;
+  model: TModel;
 
   /**
    * Zod schema for the agent's typed input.
@@ -481,28 +540,35 @@ export interface AgentConfig<
    *
    * Required when `input` is provided. Ignored when `input` is
    * omitted (the raw string/messages are used directly in simple mode).
+   * Async prompt functions are supported.
    *
    * @param params - Object containing the validated input.
    * @param params.input - The validated input value.
    * @returns The prompt string or message array to send to the model.
    */
-  prompt?: (params: { input: TInput }) => string | Message[];
+  prompt?: (params: { input: TInput }) => string | Message[] | Promise<string | Message[]>;
 
   /**
    * System prompt.
    *
-   * Can be a static string or a function that receives the validated
-   * input and returns the system prompt dynamically.
+   * Can be a static string or a resolver function that receives the
+   * validated input and returns the system prompt dynamically.
+   * Async resolvers are supported.
+   *
+   * @see {@link Resolver}
    */
-  system?: string | ((params: { input: TInput }) => string);
+  system?: Resolver<TInput, string>;
 
   /**
    * Tools available to this agent for function calling.
    *
    * Each tool is exposed to the model in the tool-loop. The model
    * can call these tools to gather information or perform actions.
+   * Accepts a static record or a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  tools?: TTools;
+  tools?: Resolver<TInput, TTools>;
 
   /**
    * Subagents — automatically wrapped as tools the agent can delegate to.
@@ -511,26 +577,24 @@ export interface AgentConfig<
    * invoke. Abort signals propagate automatically from parent to child.
    *
    * Keys must match `^[a-zA-Z_][a-zA-Z0-9_]*$` (camelCase or snake_case).
-   * Non-alphanumeric characters (except underscore) cause a compile
-   * error via {@link ToolName} and a runtime error from validation.
+   * Non-alphanumeric characters (except underscore) cause a runtime
+   * error from validation. Accepts a static record or a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  agents?: {
-    [K in keyof TSubAgents]: K extends string
-      ? ToolName<K> extends never
-        ? never
-        : TSubAgents[K]
-      : TSubAgents[K];
-  };
+  agents?: Resolver<TInput, TSubAgents>;
 
   /**
    * Maximum tool-loop iterations.
    *
    * Controls how many times the agent will call tools before stopping.
    * Set higher for complex multi-step tasks, lower for simple queries.
+   * Accepts a static number or a resolver function.
    *
    * @default 20
+   * @see {@link Resolver}
    */
-  maxSteps?: number;
+  maxSteps?: Resolver<TInput, number>;
 
   /**
    * Output type strategy.
@@ -553,9 +617,12 @@ export interface AgentConfig<
    *
    * When omitted, the SDK creates a default pino instance at `info`
    * level. The framework automatically creates scoped child loggers
-   * with contextual bindings (`agentId`).
+   * with contextual bindings (`agentId`). Accepts a static logger or
+   * a resolver function.
+   *
+   * @see {@link Resolver}
    */
-  logger?: Logger;
+  logger?: Resolver<TInput, Logger>;
 
   /**
    * Hook: fires when the agent starts execution.
@@ -589,18 +656,51 @@ export interface AgentConfig<
   onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
 
   /**
-   * Hook: fires after each tool-loop step completes.
+   * Hook: fires after each step completes.
    *
-   * @param event - Event containing the step ID.
-   * @param event.stepId - The ID of the completed tool-loop step.
+   * Receives a unified {@link StepFinishEvent}.
    */
-  onStepFinish?: (event: {
-    stepId: string;
-    toolCalls: readonly { toolName: string; argsTextLength: number }[];
-    toolResults: readonly { toolName: string; resultTextLength: number }[];
-    usage: { inputTokens: number; outputTokens: number; totalTokens: number };
-  }) => void | Promise<void>;
+  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
 }
+
+/**
+ * Overrides for evolving an agent via `evolve()`.
+ *
+ * Accepts a partial config object or a mapper function that receives the
+ * current config and returns partial overrides. Scalars replace the base;
+ * record fields (tools, agents) are shallow-merged.
+ *
+ * @typeParam TInput - Agent input type.
+ * @typeParam TOutput - Agent output type.
+ * @typeParam TTools - Record of tools.
+ * @typeParam TSubAgents - Record of subagents.
+ * @typeParam TModel - Model resolver type.
+ *
+ * @example
+ * ```typescript
+ * // Static overrides
+ * const overrides: AgentOverrides<string, string, Tools, SubAgents, Model> = {
+ *   name: 'reviewer-local',
+ *   model: openai('gpt-4.1-mini'),
+ * }
+ *
+ * // Mapper function
+ * const overrides: AgentOverrides<string, string, Tools, SubAgents, Model> = (config) => ({
+ *   name: `${config.name}-local`,
+ * })
+ * ```
+ */
+export type AgentOverrides<
+  TInput,
+  TOutput,
+  TTools extends Record<string, Tool>,
+  TSubAgents extends SubAgents,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
+> =
+  | Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>
+  | ((
+      config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
+    ) => Partial<AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>>);
 
 /**
  * A created agent — exposes `.generate()`, `.stream()`, and `.fn()`.
@@ -619,7 +719,16 @@ export interface Agent<
   TOutput = string,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 > {
+  /**
+   * The model (or resolver) used by this agent.
+   *
+   * Exposes the value passed via `AgentConfig.model` so that
+   * `evolve()` can infer and preserve the concrete model type.
+   */
+  readonly model: TModel;
+
   /**
    * Run the agent to completion.
    *
@@ -627,16 +736,21 @@ export interface Agent<
    * or `maxSteps` is reached. Returns a `Result` wrapping the
    * generation result.
    *
-   * @param input - Typed input (when `input` schema is configured)
-   *   or `string | Message[]` in simple mode.
-   * @param config - Optional per-call overrides for model, tools,
-   *   output, hooks, etc.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `GenerateResult`. On success,
    *   `result.ok` is `true` and generation fields are flat on the object.
+   *
+   * @example
+   * ```typescript
+   * // Simple mode
+   * const result = await myAgent.generate({ prompt: 'Hello' })
+   *
+   * // Typed mode
+   * const result = await myAgent.generate({ input: { topic: 'AI' } })
+   * ```
    */
   generate(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>>;
 
   /**
@@ -646,16 +760,13 @@ export interface Agent<
    * of typed `StreamPart` events. `output` and `messages` are
    * promises that resolve after the stream completes.
    *
-   * @param input - Typed input (when `input` schema is configured)
-   *   or `string | Message[]` in simple mode.
-   * @param config - Optional per-call overrides.
+   * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`. On success,
    *   consume `result.fullStream` for typed events; await
    *   `result.output` / `result.messages` after the stream ends.
    */
   stream(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>>;
 
   /**
@@ -669,11 +780,10 @@ export interface Agent<
    * @example
    * ```typescript
    * export const analyzeFile = fileAnalyzer.fn()
-   * // Usage: const result = await analyzeFile({ filePath: '...' })
+   * // Usage: const result = await analyzeFile({ input: { filePath: '...' } })
    * ```
    */
   fn(): (
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ) => Promise<Result<GenerateResult<TOutput>>>;
 }

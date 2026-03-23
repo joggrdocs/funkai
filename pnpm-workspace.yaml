@@ -4,7 +4,7 @@ packages:
 
 catalog:
   typescript: "^5.9.3"
-  tsdown: "^0.21.3"
+  tsdown: "^0.21.4"
   tsx: "^4.21.0"
   zod: "^4.3.6"
   "@types/node": "^25.5.0"

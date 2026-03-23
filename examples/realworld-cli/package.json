@@ -10,9 +10,10 @@
     "cli": "node dist/cli/index.mjs",
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
-    "prompts:generate": "funkai prompts generate --out .prompts/client --roots api/agents"
+    "prompts:generate": "funkai prompts generate --out .prompts/client --includes \"api/agents/**\""
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.0",
     "@clack/prompts": "^1.1.0",
     "@funkai/agents": "workspace:*",
     "@funkai/prompts": "workspace:*",

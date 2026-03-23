@@ -1,5 +1,6 @@
+import { openai } from "@ai-sdk/openai";
 import { agent } from "@funkai/agents";
-import type { Tool } from "@funkai/agents";
+import type { Agent, Tool } from "@funkai/agents";
 import { prompts } from "~prompts";
 
 /**
@@ -7,11 +8,17 @@ import { prompts } from "~prompts";
  *
  * @param tools - The filesystem tools scoped to the target directory.
  * @returns An agent configured to scan for test files.
+ *
+ * @example
+ * ```ts
+ * const scanner = createScannerAgent(fsTools)
+ * const result = await scanner.generate({ prompt: "Find test files" })
+ * ```
  */
-export const createScannerAgent = (tools: { readonly ls: Tool; readonly grep: Tool }) =>
+export const createScannerAgent = (tools: { readonly ls: Tool; readonly grep: Tool }): Agent =>
   agent({
     name: "scanner",
-    model: "openai/gpt-4.1",
+    model: openai("gpt-4.1"),
     system: prompts.agents.scanner.render({
       fileExtensions: ".test.ts, .spec.ts, .test.js, .spec.js",
     }),

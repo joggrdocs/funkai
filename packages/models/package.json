@@ -1,6 +1,6 @@
 {
   "name": "@funkai/models",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "private": false,
   "description": "Model catalog, provider resolution, and cost calculations for the funkai AI SDK",
   "keywords": [
@@ -124,7 +124,7 @@
   },
   "dependencies": {
     "ai": "^6.0.116",
-    "type-fest": "^5.4.4"
+    "type-fest": "^5.5.0"
   },
   "devDependencies": {
     "@types/node": "catalog:",

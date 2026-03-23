@@ -1,4 +1,6 @@
-import type { Message } from "@/core/agents/base/types.js";
+import { isString } from "es-toolkit";
+
+import type { Message } from "@/core/agents/types.js";
 import { safeStringify } from "@/utils/error.js";
 
 /**
@@ -64,10 +66,6 @@ export function createToolResultMessage(
   isError?: boolean,
 ): Message {
   // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
-  const errorField: { isError?: true } = {};
-  if (isError) {
-    errorField.isError = true;
-  }
   return {
     role: "tool",
     content: [
@@ -76,7 +74,7 @@ export function createToolResultMessage(
         toolCallId,
         toolName,
         output: result ?? {},
-        ...errorField,
+        ...(isError && { isError: true as const }),
       },
     ],
   } as Message;
@@ -144,7 +142,7 @@ export function collectTextFromMessages(messages: readonly Message[]): string {
  * @private
  */
 function serializeMessageContent(value: unknown): string {
-  if (typeof value === "string") {
+  if (isString(value)) {
     return value;
   }
   return safeStringify(value ?? null);

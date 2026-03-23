@@ -1,31 +1,35 @@
 import { generateText, streamText, stepCountIs } from "ai";
-import type { AsyncIterableStream, LanguageModel } from "ai";
+import type { AsyncIterableStream } from "ai";
+import { isNil, isNotNil, isString } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
-import type {
-  Agent,
-  AgentConfig,
-  AgentOverrides,
-  GenerateResult,
-  Message,
-  StreamPart,
-  StreamResult,
-  SubAgents,
-} from "@/core/agents/base/types.js";
 import {
-  resolveModel,
   buildAITools,
-  resolveSystem,
+  resolveValue,
+  resolveOptionalValue,
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { ParentAgentContext } from "@/core/agents/base/utils.js";
+import type {
+  Agent,
+  AgentConfig,
+  GenerateParams,
+  GenerateResult,
+  Message,
+  Resolver,
+  StreamResult,
+  SubAgents,
+} from "@/core/agents/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
+import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
+import type { Model, StepFinishEvent, StreamPart } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
-import { RUNNABLE_META } from "@/lib/runnable.js";
+import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
 import type { Result } from "@/utils/result.js";
@@ -36,7 +40,7 @@ import type { Result } from "@/utils/result.js";
  * Agents run a tool loop (via the AI SDK's `generateText`) until a
  * stop condition is met. They support:
  * - **Typed input** via Zod schema + prompt template.
- * - **Simple mode** — pass a string or messages directly.
+ * - **Simple mode** — pass a string prompt or messages directly.
  * - **Tools** for function calling.
  * - **Subagents** auto-wrapped as delegatable tools.
  * - **Inline overrides** per call.
@@ -53,22 +57,24 @@ import type { Result } from "@/utils/result.js";
  *
  * @example
  * ```typescript
- * // Simple mode — pass a string directly
+ * import { openai } from '@ai-sdk/openai'
+ *
+ * // Simple mode — pass a prompt directly
  * const helper = agent({
  *   name: 'helper',
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   system: 'You are a helpful assistant.',
  * })
- * await helper.generate('What is TypeScript?')
+ * await helper.generate({ prompt: 'What is TypeScript?' })
  *
  * // Typed mode — input schema + prompt template
  * const summarizer = agent({
  *   name: 'summarizer',
  *   input: z.object({ text: z.string() }),
- *   model: 'openai/gpt-4.1',
+ *   model: openai('gpt-4.1'),
  *   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
  * })
- * await summarizer.generate({ text: '...' })
+ * await summarizer.generate({ input: { text: '...' } })
  *
  * // Export as a plain function
  * export const summarize = summarizer.fn()
@@ -81,10 +87,33 @@ export function agent<
   TTools extends Record<string, Tool> = {},
   // oxlint-disable-next-line typescript-eslint/ban-types
   TSubAgents extends SubAgents = {},
+  TModel extends Resolver<TInput, Model> = Resolver<TInput, Model>,
 >(
-  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
-): Agent<TInput, TOutput, TTools, TSubAgents> {
-  const baseLogger = config.logger ?? createDefaultLogger();
+  config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
+): Agent<TInput, TOutput, TTools, TSubAgents, TModel> {
+  /**
+   * Extract the raw input from unified params.
+   *
+   * Reads from `params.input` (typed mode), `params.prompt` (simple
+   * string), or `params.messages` (message array). At least one must
+   * be present.
+   *
+   * @private
+   */
+  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents, TOutput>): TInput {
+    if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
+      return params.prompt as unknown as TInput;
+    }
+    if (Object.hasOwn(params, "messages") && !isNil(params.messages)) {
+      return params.messages as unknown as TInput;
+    }
+    if (Object.hasOwn(params, "input") && !isNil(params.input)) {
+      return params.input as TInput;
+    }
+    throw new Error(
+      "Missing input: provide `prompt`, `messages`, or `input` in the params object.",
+    );
+  }
 
   /**
    * Validate raw input against the config schema, if present.
@@ -138,6 +167,24 @@ export function agent<
   }
 
   /**
+   * Resolve the abort signal from params, combining `signal` and `timeout`.
+   *
+   * @private
+   */
+  function resolveSignal(
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
+  ): AbortSignal | undefined {
+    const { timeout, signal } = params;
+    if (signal && isNotNil(timeout)) {
+      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
+    }
+    if (isNotNil(timeout)) {
+      return AbortSignal.timeout(timeout);
+    }
+    return signal;
+  }
+
+  /**
    * Perform the shared setup for `generate()` and `stream()`.
    *
    * Resolves the model/tools/system/prompt/output, fires onStart hooks,
@@ -151,44 +198,53 @@ export function agent<
   async function prepareGeneration(
     input: TInput,
     log: Logger,
-    overrides: AgentOverrides<TTools, TSubAgents> | undefined,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<PreparedGeneration> {
-    const overrideModel = readOverride(overrides, "model");
-    const modelRef = overrideModel ?? config.model;
-    const baseModel = resolveModel(modelRef, config.registry);
-    const model = await withModelMiddleware({ model: baseModel });
+    const resolvedModel = params.model ?? (await resolveValue(config.model, input));
+    const model = await withModelMiddleware({ model: resolvedModel });
 
-    const overrideTools = readOverride(overrides, "tools");
-    const overrideAgents = readOverride(overrides, "agents");
-    const mergedTools = { ...config.tools, ...overrideTools } as Record<string, Tool>;
-    const mergedAgents = { ...config.agents, ...overrideAgents } as SubAgents;
+    const resolvedTools =
+      (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
+    const mergedTools = { ...resolvedTools, ...params.tools } as Record<string, Tool>;
+    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? ({} as SubAgents);
+    const mergedAgents = { ...resolvedAgents, ...params.agents } as SubAgents;
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
+
+    // Only fixed-type hooks (onStepStart, onStepFinish) are forwarded to
+    // Sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
+    // Forwarded because their event types are parameterized by TInput/TOutput
+    // — a sub-agent has different generics, so the parent's typed hook
+    // Would receive the wrong event shape at runtime. Sub-agent activity
+    // Is still observable via onStepFinish at the parent's tool-loop level.
+    // See packages/agents/docs/core/hooks.md for the full lifecycle.
+    const parentCtx: ParentAgentContext = {
+      log,
+      onStepStart: params.onStepStart,
+      onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
+    };
 
     const aiTools = buildAITools(
       valueOrUndefined(hasTools, mergedTools),
       valueOrUndefined(hasAgents, mergedAgents),
+      parentCtx,
     );
 
-    const overrideSystem = readOverride(overrides, "system");
-    const systemConfig = overrideSystem ?? config.system;
-    const system = resolveSystem(systemConfig, input);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- params.system is Resolver-shaped; safe to resolve
+    const system =
+      (await resolveOptionalValue(params.system as Resolver<TInput, string> | undefined, input)) ??
+      (await resolveOptionalValue(config.system, input));
 
-    const promptParams = buildPrompt(input, config);
+    const promptParams = await buildPrompt(input, config);
 
-    const overrideOutput = readOverride(overrides, "output");
-    const outputParam = overrideOutput ?? config.output;
+    const outputParam = params.output ?? config.output;
     const output = resolveOptionalOutput(outputParam);
 
-    const overrideMaxSteps = readOverride(overrides, "maxSteps");
-    const maxSteps = overrideMaxSteps ?? config.maxSteps ?? 20;
-    const signal = readOverride(overrides, "signal");
+    const resolvedMaxSteps = await resolveOptionalValue(config.maxSteps, input);
+    const maxSteps = params.maxSteps ?? resolvedMaxSteps ?? 20;
+    const signal = resolveSignal(params);
 
-    await fireHooks(
-      log,
-      wrapHook(config.onStart, { input }),
-      wrapHook(readOverride(overrides, "onStart"), { input }),
-    );
+    await fireHooks(log, wrapHook(config.onStart, { input }), wrapHook(params.onStart, { input }));
 
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: {
@@ -206,11 +262,11 @@ export function agent<
         return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
       });
       const usage = extractUsage(step.usage);
-      const event = { stepId, toolCalls, toolResults, usage };
+      const event: StepFinishEvent = { stepId, toolCalls, toolResults, usage };
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),
-        wrapHook(readOverride(overrides, "onStepFinish"), event),
+        wrapHook(params.onStepFinish, event),
       );
     };
 
@@ -228,20 +284,27 @@ export function agent<
   }
 
   async function generate(
-    rawInput: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>> {
-    const validated = validateInput(rawInput);
-    if (!validated.ok) {
-      return { ok: false, error: validated.error };
-    }
-
-    const overrideLogger = readOverride(overrides, "logger");
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
     const startedAt = Date.now();
+    let resolvedInput: TInput | undefined;
+    let log: Logger | undefined;
 
     try {
-      const prepared = await prepareGeneration(validated.input, log, overrides);
+      const rawInput = extractInput(params);
+      const validated = validateInput(rawInput);
+      if (!validated.ok) {
+        return { ok: false, error: validated.error };
+      }
+
+      resolvedInput = validated.input;
+
+      const resolvedLogger =
+        params.logger ??
+        (await resolveOptionalValue(config.logger, validated.input)) ??
+        createDefaultLogger();
+      log = resolvedLogger.child({ agentId: config.name });
+      const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
         model,
@@ -279,9 +342,9 @@ export function agent<
       await fireHooks(
         log,
         wrapHook(config.onFinish, { input, result: generateResult, duration }),
-        wrapHook(readOverride(overrides, "onFinish"), {
+        wrapHook(params.onFinish, {
           input,
-          result: generateResult as GenerateResult,
+          result: generateResult,
           duration,
         }),
       );
@@ -292,14 +355,21 @@ export function agent<
     } catch (caughtError) {
       const error = toError(caughtError);
       const duration = Date.now() - startedAt;
+      const errorLog = log ?? createDefaultLogger().child({ agentId: config.name });
 
-      log.error("agent.generate error", { name: config.name, error: error.message, duration });
+      errorLog.error("agent.generate error", {
+        name: config.name,
+        error: error.message,
+        duration,
+      });
 
-      await fireHooks(
-        log,
-        wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(readOverride(overrides, "onError"), { input: validated.input, error }),
-      );
+      if (isNotNil(resolvedInput)) {
+        await fireHooks(
+          errorLog,
+          wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+          wrapHook(params.onError, { input: resolvedInput as TInput, error }),
+        );
+      }
 
       return {
         ok: false,
@@ -313,20 +383,27 @@ export function agent<
   }
 
   async function stream(
-    rawInput: TInput,
-    overrides?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>> {
-    const validated = validateInput(rawInput);
-    if (!validated.ok) {
-      return { ok: false, error: validated.error };
-    }
-
-    const overrideLogger = readOverride(overrides, "logger");
-    const log = (overrideLogger ?? baseLogger).child({ agentId: config.name });
     const startedAt = Date.now();
+    let resolvedInput: TInput | undefined;
+    let log: Logger | undefined;
 
     try {
-      const prepared = await prepareGeneration(validated.input, log, overrides);
+      const rawInput = extractInput(params);
+      const validated = validateInput(rawInput);
+      if (!validated.ok) {
+        return { ok: false, error: validated.error };
+      }
+
+      resolvedInput = validated.input;
+
+      const resolvedLogger =
+        params.logger ??
+        (await resolveOptionalValue(config.logger, validated.input)) ??
+        createDefaultLogger();
+      log = resolvedLogger.child({ agentId: config.name });
+      const prepared = await prepareGeneration(validated.input, log, params);
       const {
         input,
         model,
@@ -353,6 +430,9 @@ export function agent<
       });
 
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
+
+      // Capture log for async closures — guaranteed set at this point
+      const streamLog = log as Logger;
 
       const done = (async () => {
         const writer = writable.getWriter();
@@ -385,16 +465,16 @@ export function agent<
           finishReason: finalFinishReason,
         };
         await fireHooks(
-          log,
+          streamLog,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
-          wrapHook(readOverride(overrides, "onFinish"), {
+          wrapHook(params.onFinish, {
             input,
-            result: generateResult as GenerateResult,
+            result: generateResult,
             duration,
           }),
         );
 
-        log.debug("agent.stream finish", { name: config.name, duration });
+        streamLog.debug("agent.stream finish", { name: config.name, duration });
 
         return {
           output: finalOutput,
@@ -409,12 +489,16 @@ export function agent<
         const error = toError(caughtError);
         const duration = Date.now() - startedAt;
 
-        log.error("agent.stream error", { name: config.name, error: error.message, duration });
+        streamLog.error("agent.stream error", {
+          name: config.name,
+          error: error.message,
+          duration,
+        });
 
         await fireHooks(
-          log,
+          streamLog,
           wrapHook(config.onError, { input, error }),
-          wrapHook(readOverride(overrides, "onError"), { input, error }),
+          wrapHook(params.onError, { input, error }),
         );
       });
 
@@ -442,14 +526,21 @@ export function agent<
     } catch (caughtError) {
       const error = toError(caughtError);
       const duration = Date.now() - startedAt;
+      const errorLog = log ?? createDefaultLogger().child({ agentId: config.name });
 
-      log.error("agent.stream error", { name: config.name, error: error.message, duration });
+      errorLog.error("agent.stream error", {
+        name: config.name,
+        error: error.message,
+        duration,
+      });
 
-      await fireHooks(
-        log,
-        wrapHook(config.onError, { input: validated.input, error }),
-        wrapHook(readOverride(overrides, "onError"), { input: validated.input, error }),
-      );
+      if (isNotNil(resolvedInput)) {
+        await fireHooks(
+          errorLog,
+          wrapHook(config.onError, { input: resolvedInput as TInput, error }),
+          wrapHook(params.onError, { input: resolvedInput as TInput, error }),
+        );
+      }
 
       return {
         ok: false,
@@ -463,7 +554,8 @@ export function agent<
   }
 
   // eslint-disable-next-line no-shadow -- Local variable is the return value constructed inside its own factory function
-  const agent: Agent<TInput, TOutput, TTools, TSubAgents> = {
+  const agent: Agent<TInput, TOutput, TTools, TSubAgents, TModel> = {
+    model: config.model,
     generate,
     stream,
     fn: () => generate,
@@ -476,33 +568,15 @@ export function agent<
     inputSchema: config.input,
   } satisfies RunnableMeta;
 
+  // eslint-disable-next-line security/detect-object-injection -- Symbol-keyed property access; symbols cannot be user-controlled
+  (agent as unknown as Record<symbol, unknown>)[AGENT_CONFIG] = config;
+
   return agent;
 }
 
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
-
-/**
- * Safely read a property from `overrides`, which may be undefined.
- * Replaces `overrides?.prop` optional chaining.
- *
- * @private
- */
-function readOverride<
-  TTools extends Record<string, Tool>,
-  TSubAgents extends SubAgents,
-  K extends keyof AgentOverrides<TTools, TSubAgents>,
->(
-  overrides: AgentOverrides<TTools, TSubAgents> | undefined,
-  key: K,
-): AgentOverrides<TTools, TSubAgents>[K] | undefined {
-  if (overrides !== undefined) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return overrides[key];
-  }
-  return undefined;
-}
 
 /**
  * Safely compute the JSON-serialized length of a value.
@@ -513,7 +587,7 @@ function readOverride<
 function safeSerializedLength(value: unknown): number {
   try {
     const json = JSON.stringify(value);
-    if (typeof json === "string") {
+    if (isString(json)) {
       return json.length;
     }
     return 0;
@@ -542,7 +616,7 @@ function valueOrUndefined<T>(predicate: boolean, value: T): T | undefined {
  * @private
  */
 function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | undefined {
-  if (param !== undefined) {
+  if (isNotNil(param)) {
     return resolveOutput(param);
   }
   return undefined;
@@ -555,7 +629,7 @@ function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | und
  * @private
  */
 function extractProperty(obj: Record<string, unknown>, key: string): unknown {
-  if (key in obj) {
+  if (Object.hasOwn(obj, key)) {
     // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
     return obj[key];
   }
@@ -575,7 +649,7 @@ function extractUsage(
   outputTokens: number;
   totalTokens: number;
 } {
-  if (usage !== undefined) {
+  if (isNotNil(usage)) {
     const inputTokens = usage.inputTokens ?? 0;
     const outputTokens = usage.outputTokens ?? 0;
     return {
@@ -594,8 +668,29 @@ function extractUsage(
  * @private
  */
 function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
-  if (output !== undefined) {
+  if (isNotNil(output)) {
     return ifOutput;
   }
   return ifText;
+}
+
+/**
+ * Build a merged hook that fires config-level and per-call hooks sequentially.
+ *
+ * Returns `undefined` when both are absent so `buildParentParams` skips
+ * the field entirely and sub-agent defaults are preserved.
+ *
+ * @private
+ */
+function buildMergedHook<E>(
+  log: Logger,
+  configHook: ((event: E) => void | Promise<void>) | undefined,
+  callHook: ((event: E) => void | Promise<void>) | undefined,
+): ((event: E) => void | Promise<void>) | undefined {
+  if (isNil(configHook) && isNil(callHook)) {
+    return undefined;
+  }
+  return async (event: E) => {
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
+  };
 }

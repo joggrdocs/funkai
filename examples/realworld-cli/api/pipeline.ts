@@ -46,7 +46,9 @@ export const createPipeline = (
         emit({ type: "step:start", stepId: step.id, stepType: step.type });
       },
       onStepFinish: ({ step, duration }) => {
-        emit({ type: "step:finish", stepId: step.id, duration });
+        if (step && duration !== undefined) {
+          emit({ type: "step:finish", stepId: step.id, duration });
+        }
       },
     },
     async ({ input, $ }) => {

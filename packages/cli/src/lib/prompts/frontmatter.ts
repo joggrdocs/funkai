@@ -1,6 +1,10 @@
+import { match, P } from "ts-pattern";
 import { parse as parseYaml } from "yaml";
 
+/** Regex matching YAML frontmatter fenced by `---` delimiters. */
 export const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+
+/** Regex validating prompt names (lowercase alphanumeric with hyphens). */
 export const NAME_RE = /^[a-z0-9-]+$/;
 
 /**
@@ -42,17 +46,31 @@ export interface ParsedFrontmatter {
 }
 
 /**
+ * Parameters for parsing frontmatter from a `.prompt` file.
+ */
+export interface ParseFrontmatterParams {
+  /** Raw file content (including frontmatter fences). */
+  readonly content: string;
+  /** File path for error messages. */
+  readonly filePath: string;
+}
+
+/**
  * Parse YAML frontmatter from a `.prompt` file's raw content.
  *
  * Extracts `name`, `group`, `version`, and `schema` fields.
  * The `schema` field maps variable names to their type definitions.
  *
- * @param content - Raw file content (including frontmatter fences).
- * @param filePath - File path for error messages.
+ * @param params - Content and file path to parse.
  * @returns Parsed frontmatter with schema variables.
  * @throws If frontmatter is missing, malformed, or has an invalid name.
+ * @example
+ * ```ts
+ * const fm = parseFrontmatter({ content: "---\nname: greeting\n---\nHello!", filePath: "greeting.prompt" });
+ * // { name: "greeting", group: undefined, version: undefined, schema: [] }
+ * ```
  */
-export function parseFrontmatter(content: string, filePath: string): ParsedFrontmatter {
+export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams): ParsedFrontmatter {
   const fmMatch = content.match(FRONTMATTER_RE);
   if (!fmMatch) {
     throw new Error(`No frontmatter found in ${filePath}`);
@@ -76,29 +94,62 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
     );
   }
 
-  const group: string | undefined = (() => {
-    if (typeof parsed.group === "string") {
-      const g = parsed.group as string;
-      const invalidSegment = g.split("/").find((segment) => !NAME_RE.test(segment));
-      if (invalidSegment !== undefined) {
-        throw new Error(
-          `Invalid group segment "${invalidSegment}" in ${filePath}. Group segments must be lowercase alphanumeric with hyphens only.`,
-        );
-      }
-      return g;
-    }
-    return undefined;
-  })();
-  const version: string | undefined = (() => {
-    if (parsed.version !== null && parsed.version !== undefined) {
-      return String(parsed.version);
-    }
-    return undefined;
-  })();
+  const group = parseGroup(parsed.group, filePath);
+  const version = parseVersion(parsed.version);
 
   const schema = parseSchemaBlock(parsed.schema, filePath);
 
   return { name, group, version, schema };
+}
+
+// ---------------------------------------------------------------------------
+// Private
+// ---------------------------------------------------------------------------
+
+/** @private */
+function stringOrDefault(value: unknown, fallback: string): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  return fallback;
+}
+
+/** @private */
+function stringOrUndefined(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+  return undefined;
+}
+
+/**
+ * Validate and extract the `group` field from parsed frontmatter.
+ *
+ * @private
+ */
+function parseGroup(raw: unknown, filePath: string): string | undefined {
+  if (typeof raw !== "string") {
+    return undefined;
+  }
+  const invalidSegment = raw.split("/").find((segment) => !NAME_RE.test(segment));
+  if (invalidSegment !== undefined) {
+    throw new Error(
+      `Invalid group segment "${invalidSegment}" in ${filePath}. Group segments must be lowercase alphanumeric with hyphens only.`,
+    );
+  }
+  return raw;
+}
+
+/**
+ * Extract the `version` field from parsed frontmatter.
+ *
+ * @private
+ */
+function parseVersion(raw: unknown): string | undefined {
+  if (raw !== null && raw !== undefined) {
+    return String(raw);
+  }
+  return undefined;
 }
 
 /**
@@ -106,7 +157,7 @@ export function parseFrontmatter(content: string, filePath: string): ParsedFront
  *
  * @private
  */
-function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
+function parseSchemaBlock(raw: unknown, filePath: string): readonly SchemaVariable[] {
   if (raw === null || raw === undefined) {
     return [];
   }
@@ -119,34 +170,27 @@ function parseSchemaBlock(raw: unknown, filePath: string): SchemaVariable[] {
 
   const schema = raw as Record<string, unknown>;
 
-  return Object.entries(schema).map(([varName, value]): SchemaVariable => {
-    if (typeof value === "string") {
-      return { name: varName, type: value, required: true };
-    }
-
-    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      const def = value as Record<string, unknown>;
-      // oxlint-disable-next-line unicorn/prefer-ternary -- no-ternary rule forbids ternaries
-      const type: string = (() => {
-        if (typeof def.type === "string") {
-          return def.type as string;
-        }
-        return "string";
-      })();
-      const required = def.required !== false;
-      const description: string | undefined = (() => {
-        if (typeof def.description === "string") {
-          return def.description as string;
-        }
-        return undefined;
-      })();
-
-      return { name: varName, type, required, description };
-    }
-
-    throw new Error(
-      `Invalid schema definition for "${varName}" in ${filePath}. ` +
-        "Expected a type string or an object with { type, required?, description? }.",
-    );
-  });
+  return Object.entries(schema).map(
+    ([varName, value]): SchemaVariable =>
+      match(value)
+        .with(P.string, (v) => ({ name: varName, type: v, required: true }))
+        .with(
+          P.when(
+            (v): v is Record<string, unknown> =>
+              typeof v === "object" && v !== null && !Array.isArray(v),
+          ),
+          (def) => {
+            const type = stringOrDefault(def.type, "string");
+            const required = def.required !== false;
+            const description = stringOrUndefined(def.description);
+            return { name: varName, type, required, description };
+          },
+        )
+        .otherwise(() => {
+          throw new Error(
+            `Invalid schema definition for "${varName}" in ${filePath}. ` +
+              "Expected a type string or an object with { type, required?, description? }.",
+          );
+        }),
+  );
 }

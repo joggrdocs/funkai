@@ -28,7 +28,7 @@
     "laufen": "^1.2.1",
     "oxfmt": "^0.41.0",
     "oxlint": "^1.56.0",
-    "turbo": "^2.8.17",
+    "turbo": "^2.8.20",
     "vitest": "catalog:"
   },
   "engines": {

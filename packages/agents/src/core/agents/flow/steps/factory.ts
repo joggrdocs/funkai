@@ -1,5 +1,6 @@
-/* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
-import type { StreamPart, GenerateResult, StreamResult } from "@/core/agents/base/types.js";
+import { isNil, isNotNil } from "es-toolkit";
+import { isObject } from "es-toolkit/compat";
+
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -15,8 +16,10 @@ import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
 import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
-import type { StepInfo } from "@/core/agents/flow/types.js";
+/* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
+import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
+import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -41,11 +44,7 @@ export interface StepBuilderOptions {
    */
   parentHooks?: {
     onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
-    onStepFinish?: (event: {
-      step: StepInfo;
-      result: unknown;
-      duration: number;
-    }) => void | Promise<void>;
+    onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
   };
 
   /**
@@ -138,7 +137,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     ctx.messages.push(createToolCallMessage(toolCallId, id, input));
 
     // Write tool-call event to stream if writer is available
-    if (writer !== undefined) {
+    if (isNotNil(writer)) {
       writer
         .write({
           type: "tool-call",
@@ -165,18 +164,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const finishedAt = Date.now();
       const duration = finishedAt - startedAt;
 
-      const usage: TokenUsage | undefined = (() => {
-        if (
-          type === "agent" &&
-          value !== null &&
-          value !== undefined &&
-          typeof value === "object" &&
-          "usage" in value
-        ) {
-          return (value as { usage: TokenUsage }).usage;
-        }
-        return undefined;
-      })();
+      const usage: TokenUsage | undefined = extractStepUsage(type, value);
 
       const traceRecord: TraceEntry = {
         id,
@@ -186,17 +174,15 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         finishedAt,
         children: childTrace,
         output: value,
+        ...(isNotNil(usage) && { usage }),
       };
-      if (usage !== undefined) {
-        traceRecord.usage = usage;
-      }
       ctx.trace.push(traceRecord);
 
       // Push synthetic tool-result message
       ctx.messages.push(createToolResultMessage(toolCallId, id, value));
 
       // Write tool-result event to stream
-      if (writer !== undefined) {
+      if (isNotNil(writer)) {
         writer
           .write({
             type: "tool-result",
@@ -248,7 +234,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       ctx.messages.push(createToolResultMessage(toolCallId, id, { error: error.message }, true));
 
       // Write error tool-result event to stream
-      if (writer !== undefined) {
+      if (isNotNil(writer)) {
         writer
           .write({
             type: "tool-result",
@@ -288,16 +274,17 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "agent",
       input: config.input,
       execute: async () => {
-        const agentConfig = {
-          signal: ctx.signal,
+        const agentParams = {
           ...config.config,
+          input: config.input,
+          signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
         };
 
         // When stream: true and a writer is available, use agent.stream()
         // To pipe events through the parent flow's stream
-        if (config.stream && writer !== undefined) {
-          const streamResult = await config.agent.stream(config.input, agentConfig);
+        if (config.stream && isNotNil(writer)) {
+          const streamResult = await config.agent.stream(agentParams);
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message);
           }
@@ -323,7 +310,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           };
         }
 
-        const result = await config.agent.generate(config.input, agentConfig);
+        const result = await config.agent.generate(agentParams);
         if (!result.ok) {
           throw result.error.cause ?? new Error(result.error.message);
         }
@@ -354,12 +341,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       input: config.input,
       execute: async ({ $ }) => {
         const { concurrency } = config;
-        if (
-          concurrency !== null &&
-          concurrency !== undefined &&
-          concurrency !== Infinity &&
-          concurrency > 0
-        ) {
+        if (isNotNil(concurrency) && concurrency !== Infinity && concurrency > 0) {
           return poolMap(config.input, concurrency, ctx.signal, (item, index) =>
             config.execute({ item, index, $ }),
           );
@@ -502,19 +484,37 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 // ---------------------------------------------------------------------------
 
 /**
+ * Extract token usage from an agent step result, if present.
+ *
+ * @private
+ */
+function extractStepUsage(type: OperationType, value: unknown): TokenUsage | undefined {
+  if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
+    return (value as unknown as { usage: TokenUsage }).usage;
+  }
+  return undefined;
+}
+
+/**
+ * Wrap a hook handler into a nullary callback for `fireHooks`.
+ *
  * @private
  */
 function buildHookCallback<F extends ((...args: never[]) => void | Promise<void>) | undefined>(
   handler: F,
   invoke: (fn: NonNullable<F>) => void | Promise<void>,
 ): (() => void | Promise<void>) | undefined {
-  if (handler !== null && handler !== undefined) {
-    return () => invoke(handler);
+  if (isNotNil(handler)) {
+    // TypeScript can't narrow generic types through type guards;
+    // The isNotNil check above guarantees handler is NonNullable<F>
+    return () => invoke(handler as NonNullable<F>);
   }
   return undefined;
 }
 
 /**
+ * Wrap a parent-level step hook into a nullary callback for `fireHooks`.
+ *
  * @private
  */
 function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
@@ -524,18 +524,22 @@ function buildParentHookCallback<K extends "onStepStart" | "onStepFinish">(
     fn: NonNullable<NonNullable<StepBuilderOptions["parentHooks"]>[K]>,
   ) => void | Promise<void>,
 ): (() => void | Promise<void>) | undefined {
-  if (hooks === null || hooks === undefined) {
+  if (isNil(hooks)) {
     return undefined;
   }
   // eslint-disable-next-line security/detect-object-injection -- Key is a controlled internal hook name, not user input
   const fn = hooks[key];
-  if (fn === null || fn === undefined) {
+  if (isNil(fn)) {
     return undefined;
   }
-  return () => invoke(fn);
+  // TypeScript can't narrow generic indexed types through type guards;
+  // The isNil check above guarantees fn is NonNullable
+  return () => invoke(fn as NonNullable<typeof fn>);
 }
 
 /**
+ * Build a typed onFinish handler that forwards the step result.
+ *
  * @private
  */
 function buildOnFinishHandler<T>(
@@ -543,13 +547,15 @@ function buildOnFinishHandler<T>(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result as T, duration: event.duration });
 }
 
 /**
+ * Build an onFinish handler for void steps that omits the result.
+ *
  * @private
  */
 function buildOnFinishHandlerVoid(
@@ -557,13 +563,15 @@ function buildOnFinishHandlerVoid(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, duration: event.duration });
 }
 
 /**
+ * Build an onFinish handler for race steps that passes through the raw result.
+ *
  * @private
  */
 function buildOnFinishHandlerRace(
@@ -571,13 +579,15 @@ function buildOnFinishHandlerRace(
 ):
   | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
   | undefined {
-  if (onFinish === null || onFinish === undefined) {
+  if (isNil(onFinish)) {
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result, duration: event.duration });
 }
 
 /**
+ * Sequentially reduce items with abort support using tail-recursive iteration.
+ *
  * @private
  */
 async function reduceSequential<T, R>(
@@ -601,6 +611,8 @@ async function reduceSequential<T, R>(
 }
 
 /**
+ * Sequentially execute a callback while a condition holds, with abort support.
+ *
  * @private
  */
 async function whileSequential<T>(

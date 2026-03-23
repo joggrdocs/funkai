@@ -23,6 +23,7 @@ export type ModelId = LiteralUnion<KnownModelId, string>;
  */
 export const MODELS = GENERATED_MODELS satisfies readonly ModelDefinition[];
 
+/** @private */
 const MODEL_INDEX = new Map<string, ModelDefinition>(MODELS.map((m) => [m.id, m]));
 
 /**

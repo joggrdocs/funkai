@@ -162,7 +162,7 @@ const stepsDemo = flowAgent(
   },
 );
 
-const result = await stepsDemo.generate({ numbers: [1, 2, 3, 4, 5] });
+const result = await stepsDemo.generate({ input: { numbers: [1, 2, 3, 4, 5] } });
 
 if (result.ok) {
   console.log("Result:", JSON.stringify(result.output, null, 2));

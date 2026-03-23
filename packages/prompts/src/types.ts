@@ -6,17 +6,34 @@ import type { ZodType } from "zod";
  */
 export type CreateEngineOptions = Pick<
   LiquidOptions,
-  | "root"
-  | "partials"
-  | "extname"
-  | "cache"
-  | "strictFilters"
-  | "strictVariables"
-  | "ownPropertyOnly"
+  "root" | "partials" | "extname" | "cache" | "strictVariables"
 >;
 
 /**
- * A single prompt module produced by codegen.
+ * Configuration for creating a prompt module via {@link createPrompt}.
+ *
+ * @example
+ * ```ts
+ * const config: PromptConfig<{ name: string }> = {
+ *   name: 'greeting',
+ *   template: 'Hello {{ name }}!',
+ *   schema: z.object({ name: z.string() }),
+ * }
+ * ```
+ */
+export interface PromptConfig<T = unknown> {
+  /** Kebab-case prompt identifier (e.g. `'greeting'`, `'worker-system'`). */
+  readonly name: string;
+  /** LiquidJS template string with `{{ variable }}` expressions. */
+  readonly template: string;
+  /** Zod schema for validating template variables. */
+  readonly schema: ZodType<T>;
+  /** Optional group path (e.g. `'agents'`, `'agents/core'`). */
+  readonly group?: string;
+}
+
+/**
+ * A single prompt module produced by {@link createPrompt} or codegen.
  *
  * Each `.prompt` file generates a default export conforming to this shape.
  */

@@ -1,79 +1,77 @@
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import type { Message } from "@/core/agents/base/types.js";
 import {
   buildAITools,
   buildPrompt,
-  resolveModel,
-  resolveSystem,
+  resolveValue,
+  resolveOptionalValue,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { Message } from "@/core/agents/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
-describe(resolveModel, () => {
-  it("resolves a string model ID using the provided registry", () => {
-    const registry = vi.fn((id: string) => ({ modelId: id }) as never);
-    const result = resolveModel("openai/gpt-4.1", registry);
-    expect(registry).toHaveBeenCalledWith("openai/gpt-4.1");
-    expect(result).toEqual({ modelId: "openai/gpt-4.1" });
+describe(resolveValue, () => {
+  it("returns a static value as-is", async () => {
+    expect(await resolveValue("hello", "input")).toBe("hello");
   });
 
-  it("throws when a string model ID is passed without a registry", () => {
-    expect(() => resolveModel("openai/gpt-4.1")).toThrow(
-      'Cannot resolve string model ID "openai/gpt-4.1": no registry configured',
-    );
+  it("returns a static number as-is", async () => {
+    expect(await resolveValue(42, "input")).toBe(42);
   });
 
-  it("returns a LanguageModel object as-is", () => {
-    const model = { modelId: "custom-model" } as never;
-    const result = resolveModel(model);
+  it("calls a sync resolver function with { input }", async () => {
+    const resolver = ({ input }: { input: string }) => `resolved: ${input}`;
+    expect(await resolveValue(resolver, "topic")).toBe("resolved: topic");
+  });
+
+  it("calls an async resolver function with { input }", async () => {
+    const resolver = async ({ input }: { input: string }) => `async: ${input}`;
+    expect(await resolveValue(resolver, "topic")).toBe("async: topic");
+  });
+
+  it("does not call a LanguageModel object as a function", async () => {
+    const model = { doGenerate: vi.fn(), specificationVersion: "v1" };
+    const result = await resolveValue(model, "input");
     expect(result).toBe(model);
-  });
-
-  it("does not call registry when ref is a LanguageModel", () => {
-    const registry = vi.fn();
-    const model = { modelId: "custom-model" } as never;
-    resolveModel(model, registry);
-    expect(registry).not.toHaveBeenCalled();
+    expect(model.doGenerate).not.toHaveBeenCalled();
   });
 });
 
-describe(resolveSystem, () => {
-  it("returns undefined when system is undefined", () => {
-    expect(resolveSystem(undefined, "input")).toBeUndefined();
+describe(resolveOptionalValue, () => {
+  it("returns undefined when value is undefined", async () => {
+    expect(await resolveOptionalValue(undefined, "input")).toBeUndefined();
   });
 
-  it("returns undefined when system is null", () => {
+  it("returns undefined when value is null", async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(resolveSystem(null as any, "input")).toBeUndefined();
+    expect(await resolveOptionalValue(null as any, "input")).toBeUndefined();
   });
 
-  it("returns a static string as-is", () => {
-    expect(resolveSystem("You are helpful", "input")).toBe("You are helpful");
+  it("resolves a static value", async () => {
+    expect(await resolveOptionalValue("hello", "input")).toBe("hello");
   });
 
-  it("calls function system with input and returns the result", () => {
-    // eslint-disable-next-line unicorn/consistent-function-scoping -- Test helper intentionally scoped within test case for locality
-    const system = ({ input }: { input: string }) => `System for ${input}`;
-    expect(resolveSystem(system, "topic")).toBe("System for topic");
+  it("resolves a function value", async () => {
+    const resolver = ({ input }: { input: string }) => `resolved: ${input}`;
+    expect(await resolveOptionalValue(resolver, "topic")).toBe("resolved: topic");
   });
 });
 
 describe(buildPrompt, () => {
-  it("returns { prompt } for a simple string input", () => {
-    const result = buildPrompt("hello", {});
+  it("returns { prompt } for a simple string input", async () => {
+    const result = await buildPrompt("hello", {});
     expect(result).toEqual({ prompt: "hello" });
   });
 
-  it("returns { messages } for a non-string input without typed config", () => {
+  it("returns { messages } for a non-string input without typed config", async () => {
     const messages: Message[] = [{ role: "user", content: "hi" }];
-    const result = buildPrompt(messages, {});
+    const result = await buildPrompt(messages, {});
     expect(result).toEqual({ messages });
   });
 
-  it("returns { prompt } for typed mode returning a string", () => {
-    const result = buildPrompt(
+  it("returns { prompt } for typed mode returning a string", async () => {
+    const result = await buildPrompt(
       { topic: "AI" },
       {
         input: z.object({ topic: z.string() }),
@@ -83,9 +81,9 @@ describe(buildPrompt, () => {
     expect(result).toEqual({ prompt: "Tell me about AI" });
   });
 
-  it("returns { messages } for typed mode returning messages array", () => {
+  it("returns { messages } for typed mode returning messages array", async () => {
     const messages: Message[] = [{ role: "user", content: "hello" }];
-    const result = buildPrompt(
+    const result = await buildPrompt(
       { topic: "AI" },
       {
         input: z.object({ topic: z.string() }),
@@ -95,14 +93,25 @@ describe(buildPrompt, () => {
     expect(result).toEqual({ messages });
   });
 
-  it("throws when input schema is provided without prompt function", () => {
-    expect(() => buildPrompt("test", { input: z.string() })).toThrow(
+  it("returns { prompt } for async prompt function", async () => {
+    const result = await buildPrompt(
+      { topic: "AI" },
+      {
+        input: z.object({ topic: z.string() }),
+        prompt: async ({ input }) => `Async: ${input.topic}`,
+      },
+    );
+    expect(result).toEqual({ prompt: "Async: AI" });
+  });
+
+  it("throws when input schema is provided without prompt function", async () => {
+    await expect(buildPrompt("test", { input: z.string() })).rejects.toThrow(
       "Agent has `input` schema but no `prompt` function",
     );
   });
 
-  it("throws when prompt function is provided without input schema", () => {
-    expect(() => buildPrompt("test", { prompt: ({ input }) => `${input}` })).toThrow(
+  it("throws when prompt function is provided without input schema", async () => {
+    await expect(buildPrompt("test", { prompt: ({ input }) => `${input}` })).rejects.toThrow(
       "Agent has `prompt` function but no `input` schema",
     );
   });
@@ -389,7 +398,11 @@ describe(buildAITools, () => {
       { toolCallId: "tc-1", messages: [] },
     );
     expect(output).toBe("agent-output");
-    expect(mockAgent.generate).toHaveBeenCalledWith("hello", { signal: undefined });
+    expect(mockAgent.generate).toHaveBeenCalledWith({
+      prompt: "hello",
+      signal: undefined,
+      tools: undefined,
+    });
   });
 
   it("execute throws when prompt-based agent returns error", async () => {
@@ -428,7 +441,11 @@ describe(buildAITools, () => {
       { toolCallId: "tc-1", messages: [] },
     );
     expect(output).toBe("typed-output");
-    expect(mockAgent.generate).toHaveBeenCalledWith({ query: "test" }, { signal: undefined });
+    expect(mockAgent.generate).toHaveBeenCalledWith({
+      input: { query: "test" },
+      signal: undefined,
+      tools: undefined,
+    });
   });
 
   it("execute throws when typed agent returns error", async () => {
