@@ -54,7 +54,6 @@ Signals propagate through the entire execution tree: agents, flow agents, subage
 
 ## References
 
-- [Agent](core/agent.md)
-- [Flow Agent](core/flow-agent.md)
-- [Provider Overview](provider/overview.md)
-- [Create an Agent](guides/create-agent.md)
+- [Create an Agent](create-agent.md)
+- [Create a Flow Agent](create-flow-agent.md)
+- [Overview](overview.md)

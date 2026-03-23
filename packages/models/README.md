@@ -90,7 +90,7 @@ Provider-specific subpath exports give access to filtered model lists and typed 
 ## References
 
 - [Overview](/models)
-- [Model Catalog](/models/catalog/overview)
-- [Provider Resolution](/models/provider/overview)
-- [Cost Calculation](/models/cost)
+- [Model Catalog](/models/catalog)
+- [Provider Resolution](/models/provider-resolution)
+- [Cost Tracking](/models/cost-tracking)
 - [Troubleshooting](/models/troubleshooting)

@@ -24,27 +24,27 @@ export default defineConfig({
     {
       title: "Agents",
       description:
-        "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
+        "Build AI agents and multi-step flows with typed I/O, tools, and Result-based error handling",
       icon: "mdi:robot-outline",
       link: "/agents",
     },
     {
       title: "Models",
       description:
-        "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+        "Browse 300+ models, filter by capability, resolve providers, and calculate token costs",
       icon: "mdi:currency-usd",
       link: "/models",
     },
     {
       title: "Prompts",
       description:
-        "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
+        "Author type-safe prompt templates with LiquidJS, YAML frontmatter, and build-time codegen",
       icon: "mdi:message-text-outline",
       link: "/prompts",
     },
     {
       title: "CLI",
-      description: "Generate, lint, and scaffold prompt files from the terminal",
+      description: "Generate, lint, and scaffold prompt files from the command line",
       icon: "mdi:console",
       link: "/cli",
     },
@@ -57,28 +57,25 @@ export default defineConfig({
       items: [
         {
           title: "@funkai/agents",
-          description:
-            "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
+          description: "Agent orchestration SDK",
           icon: "mdi:robot-outline",
           path: "/packages/agents",
         },
         {
           title: "@funkai/models",
-          description:
-            "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+          description: "Model catalog and cost calculation",
           icon: "mdi:currency-usd",
           path: "/packages/models",
         },
         {
           title: "@funkai/prompts",
-          description:
-            "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
+          description: "Prompt templating library",
           icon: "mdi:message-text-outline",
           path: "/packages/prompts",
         },
         {
           title: "@funkai/cli",
-          description: "Generate, lint, and scaffold prompt files from the terminal",
+          description: "Prompt CLI tooling",
           icon: "mdi:console",
           path: "/packages/cli",
         },
@@ -86,37 +83,35 @@ export default defineConfig({
     },
   ],
   sections: [
-    // ── Root ──
+    // ── Getting Started ──
     {
-      title: "Introduction",
-      path: "/introduction",
-      icon: "mdi:book-open-variant",
-      include: "docs/introduction.md",
-      hidden: true,
-    },
-    {
-      title: "Quick Start",
-      path: "/quick-start",
+      title: "Getting Started",
       icon: "mdi:rocket-launch-outline",
-      include: "docs/quick-start.md",
-      hidden: true,
-    },
-    {
-      title: "Principles",
-      path: "/principles",
-      icon: "mdi:compass-outline",
-      include: "docs/principles.md",
-      hidden: true,
-    },
-    {
-      title: "Architecture",
-      path: "/architecture",
-      icon: "mdi:sitemap-outline",
-      include: "docs/architecture.md",
-      hidden: true,
+      items: [
+        {
+          title: "Introduction",
+          path: "/introduction",
+          include: "docs/introduction.md",
+        },
+        {
+          title: "Quick Start",
+          path: "/quick-start",
+          include: "docs/quick-start.md",
+        },
+        {
+          title: "Principles",
+          path: "/principles",
+          include: "docs/principles.md",
+        },
+        {
+          title: "Architecture",
+          path: "/architecture",
+          include: "docs/architecture.md",
+        },
+      ],
     },
 
-    // ── Agents ──
+    // ── Agents (14 pages) ──
     {
       title: "Agents",
       icon: "mdi:robot-outline",
@@ -127,90 +122,69 @@ export default defineConfig({
           include: "packages/agents/docs/overview.md",
         },
         {
-          title: "Core Concepts",
-          path: "/agents/core/overview",
-          include: "packages/agents/docs/core/overview.md",
+          title: "Create an Agent",
+          path: "/agents/create-agent",
+          include: "packages/agents/docs/create-agent.md",
         },
         {
-          title: "Agent",
-          path: "/agents/core/agent",
-          include: "packages/agents/docs/core/agent.md",
-        },
-        {
-          title: "Flow Agent",
-          path: "/agents/core/flow-agent",
-          include: "packages/agents/docs/core/flow-agent.md",
+          title: "Create a Flow Agent",
+          path: "/agents/create-flow-agent",
+          include: "packages/agents/docs/create-flow-agent.md",
         },
         {
           title: "Step Builder ($)",
-          path: "/agents/core/step",
-          include: "packages/agents/docs/core/step.md",
+          path: "/agents/step-builder",
+          include: "packages/agents/docs/step-builder.md",
         },
         {
           title: "Tools",
-          path: "/agents/core/tools",
-          include: "packages/agents/docs/core/tools.md",
+          path: "/agents/tools",
+          include: "packages/agents/docs/tools.md",
         },
         {
           title: "Hooks",
-          path: "/agents/core/hooks",
-          include: "packages/agents/docs/core/hooks.md",
+          path: "/agents/hooks",
+          include: "packages/agents/docs/hooks.md",
         },
         {
           title: "Streaming",
-          path: "/agents/advanced/streaming",
-          include: "packages/agents/docs/advanced/streaming.md",
-        },
-        {
-          title: "Tracing",
-          path: "/agents/core/tracing",
-          include: "packages/agents/docs/core/tracing.md",
-        },
-        {
-          title: "Context",
-          path: "/agents/core/context",
-          include: "packages/agents/docs/core/context.md",
+          path: "/agents/streaming",
+          include: "packages/agents/docs/streaming.md",
         },
         {
           title: "Middleware",
-          path: "/agents/core/middleware",
-          include: "packages/agents/docs/core/middleware.md",
-        },
-        {
-          title: "Custom Steps",
-          path: "/agents/advanced/custom-steps",
-          include: "packages/agents/docs/advanced/custom-steps.md",
+          path: "/agents/middleware",
+          include: "packages/agents/docs/middleware.md",
         },
         {
           title: "Output Strategies",
-          path: "/agents/reference/output-strategies",
-          include: "packages/agents/docs/reference/output-strategies.md",
+          path: "/agents/output-strategies",
+          include: "packages/agents/docs/output-strategies.md",
         },
         {
-          title: "Types",
-          path: "/agents/core/types",
-          include: "packages/agents/docs/core/types.md",
+          title: "Custom Flow Engine",
+          path: "/agents/custom-flow-engine",
+          include: "packages/agents/docs/custom-flow-engine.md",
         },
         {
-          title: "Provider",
-          path: "/agents/provider/overview",
-          include: "packages/agents/docs/provider/overview.md",
+          title: "Testing",
+          path: "/agents/testing",
+          include: "packages/agents/docs/test-agents.md",
         },
         {
-          title: "Models",
-          path: "/agents/provider/models",
-          include: "packages/agents/docs/provider/models.md",
+          title: "Cost Tracking",
+          path: "/agents/cost-tracking",
+          include: "packages/agents/docs/cost-tracking.md",
         },
         {
-          title: "Token Usage",
-          path: "/agents/provider/usage",
-          include: "packages/agents/docs/provider/usage.md",
+          title: "Error Recovery",
+          path: "/agents/error-recovery",
+          include: "packages/agents/docs/error-recovery.md",
         },
         {
-          title: { from: "heading" },
-          path: "/agents/guides",
-          include: "packages/agents/docs/guides/*.md",
-          sort: "alpha",
+          title: "Multi-Agent Orchestration",
+          path: "/agents/multi-agent-orchestration",
+          include: "packages/agents/docs/multi-agent-orchestration.md",
         },
         {
           title: "Troubleshooting",
@@ -220,7 +194,7 @@ export default defineConfig({
       ],
     },
 
-    // ── Models ──
+    // ── Models (5 pages) ──
     {
       title: "Models",
       icon: "mdi:currency-usd",
@@ -231,45 +205,19 @@ export default defineConfig({
           include: "packages/models/docs/overview.md",
         },
         {
-          title: "Catalog",
-          path: "/models/catalog/overview",
-          include: "packages/models/docs/catalog/overview.md",
-        },
-        {
-          title: "Filtering",
-          path: "/models/catalog/filtering",
-          include: "packages/models/docs/catalog/filtering.md",
-        },
-        {
-          title: "Providers",
-          path: "/models/catalog/providers",
-          include: "packages/models/docs/catalog/providers.md",
+          title: "Model Catalog",
+          path: "/models/catalog",
+          include: "packages/models/docs/catalog.md",
         },
         {
           title: "Provider Resolution",
-          path: "/models/provider/overview",
-          include: "packages/models/docs/provider/overview.md",
-        },
-        {
-          title: "Configuration",
-          path: "/models/provider/configuration",
-          include: "packages/models/docs/provider/configuration.md",
-        },
-        {
-          title: "OpenRouter",
-          path: "/models/provider/openrouter",
-          include: "packages/models/docs/provider/openrouter.md",
+          path: "/models/provider-resolution",
+          include: "packages/models/docs/provider-resolution.md",
         },
         {
           title: "Cost Tracking",
-          path: "/models/cost",
-          include: "packages/models/docs/cost/overview.md",
-        },
-        {
-          title: { from: "heading" },
-          path: "/models/guides",
-          include: "packages/models/docs/guides/*.md",
-          sort: "alpha",
+          path: "/models/cost-tracking",
+          include: "packages/models/docs/cost-tracking.md",
         },
         {
           title: "Troubleshooting",
@@ -279,7 +227,7 @@ export default defineConfig({
       ],
     },
 
-    // ── Prompts ──
+    // ── Prompts (5 pages) ──
     {
       title: "Prompts",
       icon: "mdi:message-text-outline",
@@ -291,34 +239,18 @@ export default defineConfig({
         },
         {
           title: "File Format",
-          path: "/prompts/file-format/overview",
-          include: "packages/prompts/docs/file-format/overview.md",
+          path: "/prompts/file-format",
+          include: "packages/prompts/docs/file-format.md",
         },
         {
-          title: "Frontmatter",
-          path: "/prompts/file-format/frontmatter",
-          include: "packages/prompts/docs/file-format/frontmatter.md",
-        },
-        {
-          title: "Partials",
-          path: "/prompts/file-format/partials",
-          include: "packages/prompts/docs/file-format/partials.md",
-        },
-        {
-          title: "Code Generation",
+          title: "Code Generation & Library",
           path: "/prompts/codegen",
-          include: "packages/prompts/docs/codegen/overview.md",
+          include: "packages/prompts/docs/codegen.md",
         },
         {
-          title: "Library",
-          path: "/prompts/library",
-          include: "packages/prompts/docs/library/overview.md",
-        },
-        {
-          title: { from: "heading" },
-          path: "/prompts/guides",
-          include: "packages/prompts/docs/guides/*.md",
-          sort: "alpha",
+          title: "Project Setup",
+          path: "/prompts/setup",
+          include: "packages/prompts/docs/setup.md",
         },
         {
           title: "Troubleshooting",
@@ -328,25 +260,20 @@ export default defineConfig({
       ],
     },
 
-    // ── CLI ──
+    // ── CLI (1 page) ──
     {
       title: "CLI",
       icon: "mdi:console",
       items: [
         {
-          title: "Overview",
-          path: "/cli",
-          include: "packages/prompts/docs/cli/overview.md",
-        },
-        {
           title: "Commands",
-          path: "/cli/commands",
-          include: "packages/prompts/docs/cli/commands.md",
+          path: "/cli",
+          include: "packages/prompts/docs/cli.md",
         },
       ],
     },
 
-    // ── Packages (standalone — just READMEs) ──
+    // ── Packages (standalone — READMEs with nested Changelogs) ──
     {
       title: "Packages",
       icon: "mdi:package-variant-closed",
@@ -356,21 +283,49 @@ export default defineConfig({
           title: "@funkai/agents",
           path: "/packages/agents",
           include: "packages/agents/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/agents/changelog",
+              include: "packages/agents/CHANGELOG.md",
+            },
+          ],
         },
         {
           title: "@funkai/models",
           path: "/packages/models",
           include: "packages/models/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/models/changelog",
+              include: "packages/models/CHANGELOG.md",
+            },
+          ],
         },
         {
           title: "@funkai/prompts",
           path: "/packages/prompts",
           include: "packages/prompts/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/prompts/changelog",
+              include: "packages/prompts/CHANGELOG.md",
+            },
+          ],
         },
         {
           title: "@funkai/cli",
           path: "/packages/cli",
           include: "packages/cli/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/cli/changelog",
+              include: "packages/cli/CHANGELOG.md",
+            },
+          ],
         },
       ],
     },

@@ -65,7 +65,7 @@ flowchart LR
   style cost fill:#181825,stroke:#a6e3a1,stroke-width:2px
 ```
 
-The package has three domains:
+## Three Domains
 
 | Domain       | Purpose                                      | Key Exports                     |
 | ------------ | -------------------------------------------- | ------------------------------- |
@@ -73,69 +73,11 @@ The package has three domains:
 | **Provider** | Resolve model IDs to AI SDK `LanguageModel`s | `createProviderRegistry()`      |
 | **Cost**     | Calculate USD costs from token usage         | `calculateCost()`               |
 
-## Key Concepts
+## Documentation
 
-### Model Definitions
-
-Every model in the catalog is a `ModelDefinition` with pricing, capabilities, modalities, and context window metadata. The catalog is auto-generated from [models.dev](https://models.dev) and updated via `pnpm --filter=@funkai/models generate:models`.
-
-### Provider Resolution
-
-`createProviderRegistry()` maps model ID prefixes (e.g. `"openai"` from `"openai/gpt-4.1"`) to AI SDK provider factories.
-
-### Cost Calculation
-
-`calculateCost()` multiplies token counts by per-token pricing rates. Pricing is stored per-token in the catalog (converted from per-million at generation time), so no runtime conversion is needed.
-
-## Usage
-
-### Look Up a Model
-
-```ts
-const m = model("openai/gpt-4.1");
-if (m) {
-  console.log(m.name, m.contextWindow, m.capabilities.reasoning);
-}
-```
-
-### Filter Models
-
-```ts
-const reasoning = models((m) => m.capabilities.reasoning);
-const multimodal = models((m) => m.modalities.input.includes("image"));
-```
-
-### Resolve a Model
-
-```ts
-import { createProviderRegistry } from "@funkai/models";
-import { createOpenAI } from "@ai-sdk/openai";
-
-const registry = createProviderRegistry({
-  providers: {
-    openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
-  },
-});
-const lm = registry("openai/gpt-4.1");
-```
-
-### Calculate Cost
-
-```ts
-const cost = calculateCost(usage, m.pricing);
-console.log(`Total: $${cost.total.toFixed(6)}`);
-```
-
-## References
-
-- [Model Catalog](catalog/overview.md)
-- [Filtering](catalog/filtering.md)
-- [Providers](catalog/providers.md)
-- [Provider Resolution](provider/overview.md)
-- [Configuration](provider/configuration.md)
-- [OpenRouter](provider/openrouter.md)
-- [Cost Calculation](cost/overview.md)
-- [Setup Resolver Guide](guides/setup-resolver.md)
-- [Filter Models Guide](guides/filter-models.md)
-- [Track Costs Guide](guides/track-costs.md)
-- [Troubleshooting](troubleshooting.md)
+| Topic                                         | Description                                                                 |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| [Model Catalog](catalog.md)                   | Model definitions, lookup API, filtering patterns, provider subpath exports |
+| [Provider Resolution](provider-resolution.md) | Resolution algorithm, registry configuration, OpenRouter integration        |
+| [Cost Tracking](cost-tracking.md)             | calculateCost() API, types, formula, usage patterns                         |
+| [Troubleshooting](troubleshooting.md)         | Common errors and fixes                                                     |

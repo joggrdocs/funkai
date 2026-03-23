@@ -123,7 +123,7 @@
     "test": "vitest run --typecheck"
   },
   "dependencies": {
-    "ai": "^6.0.135",
+    "ai": "^6.0.136",
     "type-fest": "^5.5.0"
   },
   "devDependencies": {

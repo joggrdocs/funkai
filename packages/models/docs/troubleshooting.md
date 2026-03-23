@@ -91,7 +91,6 @@ const id: ModelId = "openai/gpt-4.1";
 
 ## References
 
-- [Model Catalog](catalog/overview.md)
-- [Provider Resolution](provider/overview.md)
-- [Cost Calculation](cost/overview.md)
-- [Setup Resolver Guide](guides/setup-resolver.md)
+- [Model Catalog](catalog.md)
+- [Provider Resolution](provider-resolution.md)
+- [Cost Tracking](cost-tracking.md)

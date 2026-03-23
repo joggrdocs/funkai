@@ -27,10 +27,11 @@ npm install @funkai/agents
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 

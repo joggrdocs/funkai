@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@funkai/models": "workspace:*",
-    "ai": "^6.0.135",
+    "ai": "^6.0.136",
     "es-toolkit": "catalog:",
     "ts-pattern": "catalog:",
     "type-fest": "^5.5.0",

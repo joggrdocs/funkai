@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.47",
+    "@ai-sdk/openai": "^3.0.48",
     "@funkai/agents": "workspace:*",
     "zod": "catalog:"
   },
