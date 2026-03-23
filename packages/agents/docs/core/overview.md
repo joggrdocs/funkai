@@ -11,7 +11,7 @@ type Result<T> = (T & { ok: true }) | { ok: false; error: ResultError };
 Success fields are **flat on the object** -- no `.value` wrapper. Callers pattern-match on `ok`:
 
 ```ts
-const result = await myAgent.generate("hello");
+const result = await myAgent.generate({ prompt: "hello" });
 
 if (!result.ok) {
   console.error(result.error.code, result.error.message);

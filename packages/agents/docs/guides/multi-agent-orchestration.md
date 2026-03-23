@@ -16,18 +16,19 @@ Pass the output of one agent as input to the next using `$.agent` steps in seque
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ topic: z.string() }),
   prompt: ({ input }) => `Research the topic thoroughly:\n\n${input.topic}`,
 });
 
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ research: z.string(), topic: z.string() }),
   prompt: ({ input }) =>
     `Write an article about "${input.topic}" using this research:\n\n${input.research}`,
@@ -35,7 +36,7 @@ const writer = agent({
 
 const editor = agent({
   name: "editor",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ draft: z.string() }),
   prompt: ({ input }) => `Edit this article for clarity and correctness:\n\n${input.draft}`,
 });
@@ -78,11 +79,12 @@ Process multiple inputs concurrently with the same agent using `$.map`.
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const translator = agent({
   name: "translator",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string(), targetLang: z.string() }),
   prompt: ({ input }) => `Translate to ${input.targetLang}:\n\n${input.text}`,
 });
@@ -127,25 +129,26 @@ When different agents need to run concurrently on different tasks, use `$.all`.
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const sentimentAgent = agent({
   name: "sentiment",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Analyze the sentiment of this text:\n\n${input.text}`,
 });
 
 const summaryAgent = agent({
   name: "summary",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize this text:\n\n${input.text}`,
 });
 
 const keywordAgent = agent({
   name: "keywords",
-  model: "openai/gpt-4.1-mini",
+  model: openai("gpt-4.1-mini"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Extract keywords from this text:\n\n${input.text}`,
 });
@@ -195,25 +198,26 @@ Declare agents in the `agents` field to let the parent delegate tasks via functi
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const codeWriter = agent({
   name: "code-writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ spec: z.string() }),
   prompt: ({ input }) => `Write TypeScript code for this specification:\n\n${input.spec}`,
 });
 
 const codeReviewer = agent({
   name: "code-reviewer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ code: z.string() }),
   prompt: ({ input }) => `Review this TypeScript code for bugs and improvements:\n\n${input.code}`,
 });
 
 const techLead = agent({
   name: "tech-lead",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: `You are a tech lead. Break down tasks and delegate:
 - Use the code-writer agent to write code from specs.
 - Use the code-reviewer agent to review written code.
@@ -222,7 +226,7 @@ Coordinate the work and provide the final result.`,
 });
 
 // The tech lead decides when to call each subagent
-const result = await techLead.generate("Build a rate limiter module");
+const result = await techLead.generate({ prompt: "Build a rate limiter module" });
 ```
 
 ### 5. Implement voting with multiple models
@@ -231,6 +235,8 @@ Race or poll multiple models and select the most common answer.
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 
 const OutputSchema = z.object({
@@ -240,7 +246,7 @@ const OutputSchema = z.object({
 
 const classifierA = agent({
   name: "classifier-a",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   output: OutputSchema,
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Classify this issue:\n\n${input.text}`,
@@ -248,7 +254,7 @@ const classifierA = agent({
 
 const classifierB = agent({
   name: "classifier-b",
-  model: "anthropic/claude-sonnet-4",
+  model: anthropic("claude-sonnet-4-20250514"),
   output: OutputSchema,
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Classify this issue:\n\n${input.text}`,
@@ -256,7 +262,7 @@ const classifierB = agent({
 
 const classifierC = agent({
   name: "classifier-c",
-  model: "openai/gpt-4.1-mini",
+  model: openai("gpt-4.1-mini"),
   output: OutputSchema,
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Classify this issue:\n\n${input.text}`,
@@ -320,17 +326,18 @@ Use `$.race` to get the first successful response from multiple providers or mod
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const fastAgent = agent({
   name: "fast",
-  model: "openai/gpt-4.1-mini",
+  model: openai("gpt-4.1-mini"),
   system: "Respond concisely.",
 });
 
 const qualityAgent = agent({
   name: "quality",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Respond concisely.",
 });
 
@@ -344,8 +351,11 @@ const racingFlowAgent = flowAgent(
     const result = await $.race({
       id: "race-models",
       entries: [
-        () => fastAgent.generate(input.question).then((r) => ({ ...r, model: "fast" })),
-        () => qualityAgent.generate(input.question).then((r) => ({ ...r, model: "quality" })),
+        () => fastAgent.generate({ prompt: input.question }).then((r) => ({ ...r, model: "fast" })),
+        () =>
+          qualityAgent
+            .generate({ prompt: input.question })
+            .then((r) => ({ ...r, model: "quality" })),
       ],
     });
 
@@ -368,19 +378,20 @@ Combine subagents with flow agents for multi-level delegation. Each level can ha
 
 ```ts
 import { agent, flowAgent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 // Level 2: Specialist agents
 const dataCollector = agent({
   name: "data-collector",
-  model: "openai/gpt-4.1-mini",
+  model: openai("gpt-4.1-mini"),
   input: z.object({ query: z.string() }),
   prompt: ({ input }) => `Find relevant data for: ${input.query}`,
 });
 
 const dataAnalyst = agent({
   name: "data-analyst",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ data: z.string() }),
   prompt: ({ input }) => `Analyze this data and provide insights:\n\n${input.data}`,
 });
@@ -388,14 +399,14 @@ const dataAnalyst = agent({
 // Level 1: Team lead agents with subagents
 const researchLead = agent({
   name: "research-lead",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You lead research. Use the data-collector to gather information.",
   agents: { dataCollector },
 });
 
 const analysisLead = agent({
   name: "analysis-lead",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You lead analysis. Use the data-analyst to analyze data.",
   agents: { dataAnalyst },
 });

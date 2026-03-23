@@ -190,11 +190,12 @@ const myFlowAgent = engine(
 
 ```ts
 import { flowAgent, agent, tool } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const analyzeAgent = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ files: z.array(z.string()) }),
   prompt: ({ input }) => `Analyze these files:\n${input.files.join("\n")}`,
 });

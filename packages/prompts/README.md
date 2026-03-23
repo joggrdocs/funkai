@@ -39,7 +39,7 @@ You are a {{ tone }} writer.
 ### Generate typed modules
 
 ```bash
-npx funkai prompts generate --out .prompts/client --roots src/agents
+npx funkai prompts generate --out .prompts/client --includes "src/agents/**"
 ```
 
 ### Consume prompts

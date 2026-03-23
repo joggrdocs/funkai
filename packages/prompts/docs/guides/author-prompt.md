@@ -26,13 +26,13 @@ prompts create my-agent --out src/agents/my-agent
 5. Lint:
 
 ```bash
-prompts lint --roots src/agents
+prompts lint --includes "src/agents/**"
 ```
 
 6. Generate:
 
 ```bash
-prompts generate --out .prompts/client --roots src/agents
+prompts generate --out .prompts/client --includes "src/agents/**"
 ```
 
 7. Import and use:

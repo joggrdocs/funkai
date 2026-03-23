@@ -110,7 +110,7 @@ Create an agent with typed input, prompt template, tools, subagents, hooks, and 
 ```ts
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });

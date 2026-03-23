@@ -33,10 +33,11 @@ Pass tools as a record on the agent config. The tool's name comes from the objec
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You research topics by fetching web pages.",
   tools: { fetchPage },
 });

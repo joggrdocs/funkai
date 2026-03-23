@@ -75,11 +75,11 @@ When `output` is omitted, agents produce plain string output:
 ```ts
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are helpful.",
 });
 
-const result = await helper.generate("What is TypeScript?");
+const result = await helper.generate({ prompt: "What is TypeScript?" });
 if (result.ok) {
   console.log(result.output); // string
 }
@@ -91,10 +91,11 @@ Produce a validated structured object:
 
 ```ts
 import { Output } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 const analyzer = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Analyze the sentiment of the given text.",
   output: Output.object({
     schema: z.object({
@@ -105,7 +106,7 @@ const analyzer = agent({
   }),
 });
 
-const result = await analyzer.generate("I love this product!");
+const result = await analyzer.generate({ prompt: "I love this product!" });
 if (result.ok) {
   console.log(result.output.sentiment); // "positive"
   console.log(result.output.confidence); // 0.95
@@ -118,10 +119,11 @@ Produce a validated array of structured elements:
 
 ```ts
 import { Output } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 const extractor = agent({
   name: "extractor",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Extract all entities from the text.",
   output: Output.array({
     element: z.object({
@@ -131,7 +133,7 @@ const extractor = agent({
   }),
 });
 
-const result = await extractor.generate("Alice works at Acme Corp in New York.");
+const result = await extractor.generate({ prompt: "Alice works at Acme Corp in New York." });
 if (result.ok) {
   for (const entity of result.output) {
     console.log(entity.name, entity.type);
@@ -145,17 +147,18 @@ Classify input into one of a set of options:
 
 ```ts
 import { Output } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 const classifier = agent({
   name: "classifier",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Classify the support ticket priority.",
   output: Output.choice({
     options: ["low", "medium", "high", "critical"] as const,
   }),
 });
 
-const result = await classifier.generate("Server is completely down");
+const result = await classifier.generate({ prompt: "Server is completely down" });
 if (result.ok) {
   console.log(result.output); // "critical"
 }
@@ -169,7 +172,7 @@ Pass a raw Zod schema instead of an explicit `Output` strategy -- the framework 
 // Equivalent to Output.object({ schema })
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Summarize the input text.",
   output: z.object({
     summary: z.string(),
@@ -180,7 +183,7 @@ const summarizer = agent({
 // Equivalent to Output.array({ element })
 const tagGenerator = agent({
   name: "tag-generator",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Generate tags for the input.",
   output: z.array(
     z.object({
@@ -196,7 +199,8 @@ const tagGenerator = agent({
 Override the output strategy for a single call via `AgentOverrides`:
 
 ```ts
-const result = await helper.generate("List three TypeScript features", {
+const result = await helper.generate({
+  prompt: "List three TypeScript features",
   output: z.object({
     features: z.array(z.string()),
   }),
@@ -208,7 +212,7 @@ const result = await helper.generate("List three TypeScript features", {
 When the model's output does not match the schema, the result contains a `VALIDATION_ERROR`:
 
 ```ts
-const result = await analyzer.generate("Analyze this");
+const result = await analyzer.generate({ prompt: "Analyze this" });
 
 if (!result.ok && result.error.code === "VALIDATION_ERROR") {
   console.error("Output did not match schema:", result.error.message);

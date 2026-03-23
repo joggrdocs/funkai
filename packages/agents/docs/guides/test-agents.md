@@ -16,13 +16,14 @@ Agents accept a `model` override on each `.generate()` call. This is useful for 
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 import { simulateReadableStream } from "ai";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });
@@ -57,17 +58,18 @@ Every agent and flow agent returns `Result<T>`. Test both success and error path
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
 describe("helper", () => {
   it("succeeds with a string output", async () => {
-    const result = await helper.generate("What is TypeScript?");
+    const result = await helper.generate({ prompt: "What is TypeScript?" });
 
     if (result.ok) {
       expect(result.output).toBeDefined();
@@ -80,7 +82,8 @@ describe("helper", () => {
     const controller = new AbortController();
     controller.abort();
 
-    const result = await helper.generate("This will be cancelled", {
+    const result = await helper.generate({
+      prompt: "This will be cancelled",
       signal: controller.signal,
     });
 
@@ -98,12 +101,13 @@ When an agent has an `output` schema, assert on the typed shape of `result.outpu
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
 const classifier = agent({
   name: "classifier",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   output: z.object({
     category: z.enum(["bug", "feature", "question"]),
     confidence: z.number(),
@@ -261,17 +265,18 @@ Verify that `result.usage` contains expected token counts after generation.
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Reply with one word.",
 });
 
 describe("usage tracking", () => {
   it("reports token usage on successful generation", async () => {
-    const result = await helper.generate("Say hello");
+    const result = await helper.generate({ prompt: "Say hello" });
 
     if (result.ok) {
       expect(result.usage.inputTokens).toBeGreaterThan(0);

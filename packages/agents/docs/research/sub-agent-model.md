@@ -17,7 +17,7 @@ Sub-agents are declared in `AgentConfig.agents` and auto-wrapped into AI SDK too
 ```typescript
 const parent = agent({
   name: "orchestrator",
-  model: "anthropic/claude-sonnet-4",
+  model: anthropic("claude-sonnet-4-20250514"),
   tools: { search, readFile },
   agents: { researcher, coder }, // auto-wrapped as callable tools
 });

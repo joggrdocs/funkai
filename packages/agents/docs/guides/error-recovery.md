@@ -104,11 +104,12 @@ When processing multiple items, some may fail while others succeed. Check each i
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize briefly:\n\n${input.text}`,
 });
@@ -269,11 +270,12 @@ Chain fallback, retry, and logging into a single flow agent.
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const analyzer = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ content: z.string() }),
   prompt: ({ input }) => `Analyze this content:\n\n${input.content}`,
 });

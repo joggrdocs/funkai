@@ -24,7 +24,7 @@ const assistant = agent({
   system: "You are a helpful assistant.",
 });
 
-const result = await assistant.generate("What is TypeScript?");
+const result = await assistant.generate({ prompt: "What is TypeScript?" });
 
 if (!result.ok) {
   console.error(result.error.code, result.error.message);
@@ -58,7 +58,7 @@ const researcher = agent({
   tools: { fetchPage },
 });
 
-const result = await researcher.generate("Summarize https://example.com");
+const result = await researcher.generate({ prompt: "Summarize https://example.com" });
 
 if (result.ok) {
   console.log(result.output);
@@ -132,7 +132,7 @@ if (result.ok) {
 Both `agent()` and `flowAgent()` support streaming via `.stream()`:
 
 ```typescript
-const result = await assistant.stream("Explain closures in JavaScript");
+const result = await assistant.stream({ prompt: "Explain closures in JavaScript" });
 
 if (result.ok) {
   for await (const part of result.fullStream) {

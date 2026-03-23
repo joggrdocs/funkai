@@ -77,10 +77,11 @@ Run an agent as a tracked flow agent step. The framework records the agent name,
 
 ```ts
 import { agent, flowAgent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const analyzer = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Analyze this text:\n\n${input.text}`,
 });
@@ -211,7 +212,7 @@ Use `.stream()` to receive `StepEvent` objects as the flow agent executes.
 const result = await myFlowAgent.stream({ url: "https://example.com" });
 
 if (result.ok) {
-  const reader = result.stream.getReader();
+  const reader = result.fullStream.getReader();
   while (true) {
     const { done, value: event } = await reader.read();
     if (done) break;
@@ -272,6 +273,7 @@ const wf = flowAgent(
 
 ```ts
 import { agent, flowAgent, tool } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 // Define tools
@@ -287,7 +289,7 @@ const fetchPage = tool({
 // Define agents
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });

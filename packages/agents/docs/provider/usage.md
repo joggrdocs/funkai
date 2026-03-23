@@ -8,7 +8,7 @@ Raw tracking record from a single model invocation. Fields are `number | undefin
 
 | Field              | Type                  | Description                              |
 | ------------------ | --------------------- | ---------------------------------------- |
-| `modelId`          | `string`              | OpenRouter model ID                      |
+| `modelId`          | `string`              | Model ID                                 |
 | `inputTokens`      | `number \| undefined` | Input (prompt) tokens                    |
 | `outputTokens`     | `number \| undefined` | Output (completion) tokens               |
 | `totalTokens`      | `number \| undefined` | Input + output                           |
@@ -28,30 +28,51 @@ source?: {
 }
 ```
 
-## Agent Usage
+## Usage Aggregation
 
-`agentUsage()` aggregates token counts from one or more raw records into a flat `AgentTokenUsage` object.
+### `usage()`
+
+Sum all token usage records into a single flat `TokenUsage`:
 
 ```ts
-import { agentUsage } from "@funkai/agents";
+import { usage, collectUsages } from "@funkai/agents";
 
-const usage = agentUsage("my-agent", records);
-console.log(usage.agentId); // 'my-agent'
-console.log(usage.inputTokens); // resolved number (0 if undefined)
-console.log(usage.outputTokens);
-console.log(usage.totalTokens);
+const result = await myFlowAgent.generate({ input: { topic: "closures" } });
+if (result.ok) {
+  const total = usage(collectUsages(result.trace));
+  console.log(total.inputTokens, total.outputTokens, total.totalTokens);
+}
 ```
 
-## Flow Agent Usage
+### `usageByAgent()`
 
-`flowAgentUsage()` groups records by `source.agentId` and computes per-agent usage.
+Group records by agent ID and compute per-agent usage:
 
 ```ts
-import { flowAgentUsage } from "@funkai/agents";
+import { usageByAgent, collectUsages } from "@funkai/agents";
 
-const usage = flowAgentUsage(allRecords);
-for (const entry of usage.usages) {
-  console.log(`${entry.agentId}: ${entry.totalTokens} tokens`);
+const result = await myFlowAgent.generate({ input: { topic: "closures" } });
+if (result.ok) {
+  const byAgent = usageByAgent(collectUsages(result.trace));
+  for (const entry of byAgent) {
+    console.log(`${entry.source.agentId}: ${entry.totalTokens} tokens`);
+  }
+}
+```
+
+### `usageByModel()`
+
+Group records by model ID and compute per-model usage:
+
+```ts
+import { usageByModel, collectUsages } from "@funkai/agents";
+
+const result = await myFlowAgent.generate({ input: { topic: "closures" } });
+if (result.ok) {
+  const byModel = usageByModel(collectUsages(result.trace));
+  for (const entry of byModel) {
+    console.log(`${entry.modelId}: ${entry.totalTokens} tokens`);
+  }
 }
 ```
 
@@ -68,29 +89,16 @@ The aggregated output type. All fields are resolved `number` (0 when the raw rec
 | `cacheWriteTokens` | `number` | Cache write tokens        |
 | `reasoningTokens`  | `number` | Internal reasoning tokens |
 
-## Usage Utilities
+## `collectUsages()`
 
-### `sumTokenUsage()`
-
-Sum multiple `TokenUsage` objects into a new one. Pure function, does not mutate inputs.
+Walk a `TraceEntry[]` tree and collect all `usage` values into a flat array (recursively including children). Compose with `usage()` to aggregate across all operations.
 
 ```ts
-import { sumTokenUsage } from "@funkai/agents";
+import { collectUsages, usage } from "@funkai/agents";
 
-const total = sumTokenUsage([usageA, usageB, usageC]);
-```
-
-### `collectUsages()`
-
-Walk a `TraceEntry[]` tree and collect all `usage` values into a flat array (recursively including children). Compose with `sumTokenUsage()` to aggregate usage across all `$.agent()` calls.
-
-```ts
-import { collectUsages, sumTokenUsage } from "@funkai/agents";
-
-const result = await myFlowAgent.generate(input);
+const result = await myFlowAgent.generate({ input: { topic: "closures" } });
 if (result.ok) {
-  // result.usage is already computed, but you can also derive it from the trace:
-  const usage = sumTokenUsage(collectUsages(result.trace));
+  const total = usage(collectUsages(result.trace));
 }
 ```
 

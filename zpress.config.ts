@@ -60,27 +60,27 @@ export default defineConfig({
           description:
             "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
           icon: "mdi:robot-outline",
-          path: "/agents",
+          path: "/packages/agents",
         },
         {
           title: "@funkai/models",
           description:
             "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
           icon: "mdi:currency-usd",
-          path: "/models",
+          path: "/packages/models",
         },
         {
           title: "@funkai/prompts",
           description:
             "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
           icon: "mdi:message-text-outline",
-          path: "/prompts",
+          path: "/packages/prompts",
         },
         {
           title: "@funkai/cli",
           description: "Generate, lint, and scaffold prompt files from the terminal",
           icon: "mdi:console",
-          path: "/cli",
+          path: "/packages/cli",
         },
       ],
     },
@@ -124,7 +124,7 @@ export default defineConfig({
         {
           title: "Overview",
           path: "/agents",
-          include: "packages/agents/README.md",
+          include: "packages/agents/docs/overview.md",
         },
         {
           title: "Core Concepts",
@@ -228,7 +228,7 @@ export default defineConfig({
         {
           title: "Overview",
           path: "/models",
-          include: "packages/models/README.md",
+          include: "packages/models/docs/overview.md",
         },
         {
           title: "Catalog",
@@ -287,11 +287,6 @@ export default defineConfig({
         {
           title: "Overview",
           path: "/prompts",
-          include: "packages/prompts/README.md",
-        },
-        {
-          title: "SDK Overview",
-          path: "/prompts/overview",
           include: "packages/prompts/docs/overview.md",
         },
         {
@@ -341,17 +336,41 @@ export default defineConfig({
         {
           title: "Overview",
           path: "/cli",
-          include: "packages/cli/README.md",
-        },
-        {
-          title: "CLI Guide",
-          path: "/cli/overview",
           include: "packages/prompts/docs/cli/overview.md",
         },
         {
           title: "Commands",
           path: "/cli/commands",
           include: "packages/prompts/docs/cli/commands.md",
+        },
+      ],
+    },
+
+    // ── Packages (standalone — just READMEs) ──
+    {
+      title: "Packages",
+      icon: "mdi:package-variant-closed",
+      standalone: true,
+      items: [
+        {
+          title: "@funkai/agents",
+          path: "/packages/agents",
+          include: "packages/agents/README.md",
+        },
+        {
+          title: "@funkai/models",
+          path: "/packages/models",
+          include: "packages/models/README.md",
+        },
+        {
+          title: "@funkai/prompts",
+          path: "/packages/prompts",
+          include: "packages/prompts/README.md",
+        },
+        {
+          title: "@funkai/cli",
+          path: "/packages/cli",
+          include: "packages/cli/README.md",
         },
       ],
     },

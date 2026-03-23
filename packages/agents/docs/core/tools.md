@@ -33,6 +33,7 @@ type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput
 
 ```ts
 import { tool, agent } from "@joggr/agent-sdk";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const fetchPage = tool({
@@ -53,7 +54,7 @@ const fetchPage = tool({
 // Tool name ("fetchPage") comes from the object key:
 const assistant = agent({
   name: "assistant",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant that can fetch web pages.",
   tools: { fetchPage },
 });

@@ -21,7 +21,7 @@ const result = await generate("Hello");
 Every public method returns `Result<T>` -- a discriminated union. Pattern-match on `ok` instead of wrapping calls in try/catch. Success fields are flat on the object alongside `ok: true`. Failure carries a structured `error` with `code`, `message`, and optional `cause`.
 
 ```typescript
-const result = await myAgent.generate("Hello");
+const result = await myAgent.generate({ prompt: "Hello" });
 
 if (!result.ok) {
   // result.error.code: 'VALIDATION_ERROR' | 'AGENT_ERROR' | ...

@@ -1,83 +1,64 @@
 # OpenRouter Integration
 
-OpenRouter acts as a model aggregator, routing requests to the underlying provider. `@funkai/models` provides two exports for OpenRouter integration: `openrouter` (cached singleton) and `createOpenRouter` (factory).
+OpenRouter acts as a model aggregator, routing requests to the underlying provider. Use the `@openrouter/ai-sdk-provider` package directly to create an OpenRouter provider instance.
 
 ## Key Concepts
 
 ### API Key Resolution
 
-Both `openrouter` and `createOpenRouter` resolve the API key in this order:
+`createOpenRouter` from `@openrouter/ai-sdk-provider` resolves the API key in this order:
 
-1. Explicit `apiKey` in options (for `createOpenRouter`)
+1. Explicit `apiKey` in options
 2. `OPENROUTER_API_KEY` environment variable
 
 If neither is set, an error is thrown at call time.
 
-### Cached Provider
-
-The `openrouter` export is a cached resolver. The underlying provider instance is created once and reused across calls. If `OPENROUTER_API_KEY` changes at runtime, the cache invalidates and a new provider is created.
-
-```ts
-const lm = openrouter("openai/gpt-4.1");
-```
-
 ### Provider Factory
 
-`createOpenRouter` creates a new `OpenRouterProvider` instance. Use this when you need multiple providers with different configurations:
+`createOpenRouter` from `@openrouter/ai-sdk-provider` creates a provider instance:
 
 ```ts
-const provider = createOpenRouter({ apiKey: "sk-..." });
-const lm = provider("openai/gpt-4.1");
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
+const lm = openrouter("openai/gpt-4.1");
 ```
 
 ## Usage
 
-### As a Fallback
+### As a Provider in the Registry
 
-The most common pattern is using `openrouter` as the fallback for `createModelResolver()`:
+The most common pattern is registering OpenRouter as a provider in `createProviderRegistry()`:
 
 ```ts
-const resolve = createModelResolver({
+import { createProviderRegistry } from "@funkai/models";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+    openrouter: createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY }),
   },
-  fallback: openrouter,
 });
 ```
 
-Models with an `"openai"` prefix route directly. All other prefixes route through OpenRouter.
-
-### As the Only Provider
-
-```ts
-const resolve = createModelResolver({
-  fallback: openrouter,
-});
-
-const lm = resolve("anthropic/claude-sonnet-4");
-```
+Models with an `"openai"` prefix route through `@ai-sdk/openai`. Models with an `"openrouter"` prefix route through OpenRouter.
 
 ### Direct Usage
 
-Use `openrouter` directly without a resolver:
+Use `createOpenRouter` directly without a registry:
 
 ```ts
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
 const lm = openrouter("openai/gpt-4.1");
-```
-
-### Custom Instance
-
-```ts
-const provider = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
-
-const lm = provider("mistral/mistral-large-latest");
 ```
 
 ## Configuration
 
-`createOpenRouter` accepts all options from `@openrouter/ai-sdk-provider`:
+`createOpenRouter` from `@openrouter/ai-sdk-provider` accepts:
 
 | Option   | Type     | Default                          | Description        |
 | -------- | -------- | -------------------------------- | ------------------ |

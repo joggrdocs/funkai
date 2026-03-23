@@ -40,7 +40,7 @@ generateText({ experimental_context: initialState })
 
 ```typescript
 const result = await generateText({
-  model: openrouter("anthropic/claude-sonnet-4"),
+  model: anthropic("claude-sonnet-4-20250514"),
   tools: {
     fetchData: tool({
       description: "Fetch data from the API",

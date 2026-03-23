@@ -98,7 +98,7 @@ The models package provides the model catalog, provider resolution, and cost cal
 | Module   | Purpose                                                              |
 | -------- | -------------------------------------------------------------------- |
 | Catalog  | Model definitions with pricing data, lookup by ID, filtered queries  |
-| Provider | OpenRouter integration, `createModelResolver()` for multi-provider   |
+| Provider | Provider registry, `createProviderRegistry()` for multi-provider     |
 | Cost     | `calculateCost()` to compute dollar costs from token usage + pricing |
 
 ### Generated Data
@@ -142,7 +142,7 @@ The prompts package provides a prompt authoring SDK with two surfaces:
 4. **Type-driven** -- Discriminated unions, branded types, exhaustive matching via ts-pattern
 5. **Zod at boundaries** -- Runtime validation for configs, user input, and external data
 6. **Vercel AI SDK foundation** -- Built on `ai` package for model interaction, tool calling, and streaming
-7. **Multi-provider support** -- Model resolution via `createModelResolver()` with OpenRouter as default fallback
+7. **Multi-provider support** -- Model resolution via `createProviderRegistry()` with configurable provider mappings
 8. **Composition over inheritance** -- Small, focused interfaces composed together
 
 ## Package Conventions

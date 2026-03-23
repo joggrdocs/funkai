@@ -5,16 +5,19 @@ Model catalog, provider resolution, and cost calculations for the funkai AI SDK.
 ## Quick Start
 
 ```ts
-import { model, models, createModelResolver, calculateCost, openrouter } from "@funkai/models";
+import { model, models, createProviderRegistry, calculateCost } from "@funkai/models";
+import { createOpenAI } from "@ai-sdk/openai";
 
 const gpt = model("openai/gpt-4.1");
 
 const reasoning = models((m) => m.capabilities.reasoning);
 
-const resolve = createModelResolver({
-  fallback: openrouter,
+const registry = createProviderRegistry({
+  providers: {
+    openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  },
 });
-const lm = resolve("openai/gpt-4.1");
+const lm = registry("openai/gpt-4.1");
 ```
 
 ## API Reference
@@ -29,11 +32,9 @@ const lm = resolve("openai/gpt-4.1");
 
 ### Provider Resolution
 
-| Export                | Type       | Description                                           |
-| --------------------- | ---------- | ----------------------------------------------------- |
-| `createModelResolver` | `function` | Create a resolver with provider mappings and fallback |
-| `openrouter`          | `function` | Cached OpenRouter model resolver (reads env API key)  |
-| `createOpenRouter`    | `function` | Create a new OpenRouter provider instance             |
+| Export                   | Type       | Description                                                     |
+| ------------------------ | ---------- | --------------------------------------------------------------- |
+| `createProviderRegistry` | `function` | Create a registry that resolves model IDs to provider instances |
 
 ### Cost Calculation
 
@@ -43,19 +44,19 @@ const lm = resolve("openai/gpt-4.1");
 
 ### Types
 
-| Export                | Kind   | Description                                       |
-| --------------------- | ------ | ------------------------------------------------- |
-| `ModelDefinition`     | `type` | Full model metadata with pricing and capabilities |
-| `ModelId`             | `type` | Model identifier with autocomplete support        |
-| `KnownModelId`        | `type` | Union of all cataloged model IDs                  |
-| `ModelPricing`        | `type` | Per-token pricing rates in USD                    |
-| `ModelCapabilities`   | `type` | Boolean capability flags (reasoning, tools, etc.) |
-| `ModelModalities`     | `type` | Input/output modality descriptors                 |
-| `ModelResolver`       | `type` | Function that resolves model ID to LanguageModel  |
-| `ModelResolverConfig` | `type` | Configuration for `createModelResolver`           |
-| `LanguageModel`       | `type` | AI SDK language model instance (v3)               |
-| `TokenUsage`          | `type` | Token counts from a model invocation              |
-| `UsageCost`           | `type` | Breakdown of cost in USD                          |
+| Export                   | Kind   | Description                                       |
+| ------------------------ | ------ | ------------------------------------------------- |
+| `ModelDefinition`        | `type` | Full model metadata with pricing and capabilities |
+| `ModelId`                | `type` | Model identifier with autocomplete support        |
+| `KnownModelId`           | `type` | Union of all cataloged model IDs                  |
+| `ModelPricing`           | `type` | Per-token pricing rates in USD                    |
+| `ModelCapabilities`      | `type` | Boolean capability flags (reasoning, tools, etc.) |
+| `ModelModalities`        | `type` | Input/output modality descriptors                 |
+| `ProviderRegistry`       | `type` | Function that resolves model ID to LanguageModel  |
+| `ProviderRegistryConfig` | `type` | Configuration for `createProviderRegistry`        |
+| `LanguageModel`          | `type` | AI SDK language model instance (v3)               |
+| `TokenUsage`             | `type` | Token counts from a model invocation              |
+| `UsageCost`              | `type` | Breakdown of cost in USD                          |
 
 ## Subpath Exports
 
@@ -79,7 +80,7 @@ Provider-specific subpath exports give access to filtered model lists and typed 
 | `@funkai/models/deepinfra`      | `deepinfraModels`, `deepinfraModel()`, etc.         |
 | `@funkai/models/cerebras`       | `cerebrasModels`, `cerebrasModel()`, etc.           |
 | `@funkai/models/perplexity`     | `perplexityModels`, `perplexityModel()`, etc.       |
-| `@funkai/models/openrouter`     | `openrouterModels`, `openrouterModel()`, etc.       |
+| `@funkai/models/openrouter`     | `openRouterModels`, `openRouterModel()`, etc.       |
 | `@funkai/models/llama`          | `llamaModels`, `llamaModel()`, etc.                 |
 | `@funkai/models/alibaba`        | `alibabaModels`, `alibabaModel()`, etc.             |
 | `@funkai/models/nvidia`         | `nvidiaModels`, `nvidiaModel()`, etc.               |

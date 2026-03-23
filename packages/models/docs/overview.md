@@ -34,9 +34,8 @@ flowchart LR
 
   subgraph resolver [" "]
     direction TB
-    createResolver["createModelResolver()"]:::core
+    createRegistry["createProviderRegistry()"]:::core
     providers["Provider map"]:::gateway
-    fallback["Fallback (OpenRouter)"]:::gateway
   end
 
   subgraph cost [" "]
@@ -49,11 +48,9 @@ flowchart LR
   ModelId --> lookup
   MODELS --> lookup
   lookup --> filter
-  ModelId --> createResolver
-  createResolver --> providers
-  createResolver --> fallback
+  ModelId --> createRegistry
+  createRegistry --> providers
   providers --> LanguageModel["LanguageModel"]:::external
-  fallback --> LanguageModel
   usage --> calcCost
   pricing --> calcCost
   calcCost --> UsageCost["UsageCost"]:::external
@@ -70,11 +67,11 @@ flowchart LR
 
 The package has three domains:
 
-| Domain       | Purpose                                      | Key Exports                           |
-| ------------ | -------------------------------------------- | ------------------------------------- |
-| **Catalog**  | Generated model metadata from models.dev     | `model()`, `models()`, `MODELS`       |
-| **Provider** | Resolve model IDs to AI SDK `LanguageModel`s | `createModelResolver()`, `openrouter` |
-| **Cost**     | Calculate USD costs from token usage         | `calculateCost()`                     |
+| Domain       | Purpose                                      | Key Exports                     |
+| ------------ | -------------------------------------------- | ------------------------------- |
+| **Catalog**  | Generated model metadata from models.dev     | `model()`, `models()`, `MODELS` |
+| **Provider** | Resolve model IDs to AI SDK `LanguageModel`s | `createProviderRegistry()`      |
+| **Cost**     | Calculate USD costs from token usage         | `calculateCost()`               |
 
 ## Key Concepts
 
@@ -84,7 +81,7 @@ Every model in the catalog is a `ModelDefinition` with pricing, capabilities, mo
 
 ### Provider Resolution
 
-`createModelResolver()` maps model ID prefixes (e.g. `"openai"` from `"openai/gpt-4.1"`) to AI SDK provider factories. Unmapped prefixes fall through to an optional fallback (typically OpenRouter).
+`createProviderRegistry()` maps model ID prefixes (e.g. `"openai"` from `"openai/gpt-4.1"`) to AI SDK provider factories.
 
 ### Cost Calculation
 
@@ -111,10 +108,15 @@ const multimodal = models((m) => m.modalities.input.includes("image"));
 ### Resolve a Model
 
 ```ts
-const resolve = createModelResolver({
-  fallback: openrouter,
+import { createProviderRegistry } from "@funkai/models";
+import { createOpenAI } from "@ai-sdk/openai";
+
+const registry = createProviderRegistry({
+  providers: {
+    openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+  },
 });
-const lm = resolve("openai/gpt-4.1");
+const lm = registry("openai/gpt-4.1");
 ```
 
 ### Calculate Cost

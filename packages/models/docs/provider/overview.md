@@ -1,6 +1,6 @@
 # Provider Resolution
 
-Provider resolution maps model ID strings to AI SDK `LanguageModel` instances. `createModelResolver()` extracts the provider prefix from a model ID and dispatches to the appropriate provider factory.
+Provider resolution maps model ID strings to AI SDK `LanguageModel` instances. `createProviderRegistry()` extracts the provider prefix from a model ID and dispatches to the appropriate provider factory.
 
 ## Architecture
 
@@ -23,20 +23,16 @@ Provider resolution maps model ID strings to AI SDK `LanguageModel` instances. `
 }}%%
 sequenceDiagram
   participant C as Caller
-  participant R as ModelResolver
+  participant R as ProviderRegistry
   participant P as ProviderFactory
-  participant F as Fallback
 
-  C->>R: resolve("openai/gpt-4.1")
+  C->>R: registry("openai/gpt-4.1")
   R->>R: Extract prefix "openai"
 
   alt Provider mapped
     R->>P: factory("gpt-4.1")
     P-->>R: LanguageModel
-  else No match, fallback configured
-    R->>F: fallback("openai/gpt-4.1")
-    F-->>R: LanguageModel
-  else No match, no fallback
+  else No match
     R-->>C: Error thrown
   end
 
@@ -47,17 +43,16 @@ sequenceDiagram
 
 ### Resolution Algorithm
 
-When `resolve("openai/gpt-4.1")` is called:
+When `registry("openai/gpt-4.1")` is called:
 
 1. The model ID is validated (non-empty)
 2. The prefix before the first `/` is extracted (`"openai"`)
 3. If a provider factory is mapped for that prefix, it receives the model portion (`"gpt-4.1"`)
-4. If no provider matches, the fallback receives the full ID (if configured)
-5. If no fallback exists, an error is thrown
+4. If no provider matches, an error is thrown
 
 ### Model IDs Without a Prefix
 
-Model IDs without a `/` (e.g. `"gpt-4.1"`) skip provider lookup entirely and go directly to the fallback. If no fallback is configured, an error is thrown.
+Model IDs without a `/` (e.g. `"gpt-4.1"`) have no prefix to match, so an error is thrown. Always use the full `"provider/model"` format.
 
 ### ProviderFactory
 
@@ -83,45 +78,36 @@ const providers: ProviderMap = {
 
 ## Usage
 
-### Basic Resolver
+### Basic Registry
 
 ```ts
-const resolve = createModelResolver({
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
   },
 });
 
-const lm = resolve("openai/gpt-4.1");
+const lm = registry("openai/gpt-4.1");
 ```
 
-### Resolver with Fallback
+### Multi-Provider Registry
 
 ```ts
-const resolve = createModelResolver({
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+    anthropic: createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
   },
-  fallback: openrouter,
 });
 
-const lm1 = resolve("openai/gpt-4.1");
-const lm2 = resolve("anthropic/claude-sonnet-4");
+const lm1 = registry("openai/gpt-4.1");
+const lm2 = registry("anthropic/claude-sonnet-4");
 ```
 
-`lm1` routes through the direct OpenAI provider. `lm2` has no mapped provider for `"anthropic"`, so it falls through to the OpenRouter fallback.
-
-### Fallback-Only Resolver
-
-```ts
-const resolve = createModelResolver({
-  fallback: openrouter,
-});
-
-const lm = resolve("openai/gpt-4.1");
-```
-
-All models route through OpenRouter regardless of prefix.
+`lm1` routes through `@ai-sdk/openai`. `lm2` routes through `@ai-sdk/anthropic`.
 
 ## References
 

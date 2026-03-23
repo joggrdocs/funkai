@@ -83,7 +83,7 @@ flowchart LR
 ## Quick Start
 
 1. Create a `.prompt` file with YAML frontmatter and a LiquidJS template body.
-2. Run `prompts generate --out .prompts/client --roots src/agents` to produce typed modules.
+2. Run `prompts generate --out .prompts/client --includes "src/agents/**"` to produce typed modules.
 3. Import from the `~prompts` alias in your application code.
 4. Call `.render({ vars })` with full type safety derived from the Zod schema in frontmatter.
 

@@ -25,7 +25,7 @@ interface ResultError {
 ```ts
 import { match } from "ts-pattern";
 
-const result = await myAgent.generate("Explain TypeScript generics");
+const result = await myAgent.generate({ prompt: "Explain TypeScript generics" });
 
 const output = match(result)
   .with({ ok: true }, (r) => r.output)

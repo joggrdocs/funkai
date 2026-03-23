@@ -16,14 +16,15 @@ Every successful `agent.generate()` returns `result.usage` with resolved token c
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
-const result = await helper.generate("What is TypeScript?");
+const result = await helper.generate({ prompt: "What is TypeScript?" });
 
 if (result.ok) {
   console.log("Input tokens:", result.usage.inputTokens);
@@ -41,15 +42,16 @@ Use `calculateCost()` to convert token counts into USD amounts. Look up model pr
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You produce concise summaries.",
 });
 
-const result = await summarizer.generate("Summarize the history of TypeScript.");
+const result = await summarizer.generate({ prompt: "Summarize the history of TypeScript." });
 
 if (result.ok) {
   const modelDef = model("gpt-4.1");
@@ -69,9 +71,9 @@ Use the `onFinish` hook to track cumulative cost and abort when a budget is exce
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 
-const modelId = "openai/gpt-4.1";
 const modelDef = model("gpt-4.1");
 
 let cumulativeCost = 0;
@@ -79,7 +81,7 @@ const budgetLimit = 0.5; // $0.50
 
 const helper = agent({
   name: "budget-helper",
-  model: modelId,
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
   onFinish: ({ result }) => {
     const cost = calculateCost(result.usage, modelDef.pricing);
@@ -99,11 +101,13 @@ Use per-call overrides to select cheaper models for simple tasks and more capabl
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import type { LanguageModel } from "@funkai/models";
 
 const assistant = agent({
   name: "smart-assistant",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({
     question: z.string(),
     complexity: z.enum(["simple", "complex"]),
@@ -111,8 +115,8 @@ const assistant = agent({
   prompt: ({ input }) => input.question,
 });
 
-const selectModel = (complexity: "simple" | "complex"): string =>
-  complexity === "simple" ? "openai/gpt-4.1-mini" : "openai/gpt-4.1";
+const selectModel = (complexity: "simple" | "complex"): LanguageModel =>
+  complexity === "simple" ? openai("gpt-4.1-mini") : openai("gpt-4.1");
 
 const result = await assistant.generate(
   { question: "What is 2 + 2?", complexity: "simple" },
@@ -126,12 +130,13 @@ Flow agent results include `result.usage` with aggregated token counts from all 
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
 const analyzer = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Analyze:\n\n${input.text}`,
 });
@@ -204,15 +209,15 @@ Use `onStepFinish` to calculate and log the cost of each agent step as it comple
 
 ```ts
 import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
-const modelId = "openai/gpt-4.1";
 const modelDef = model("gpt-4.1");
 
 const writer = agent({
   name: "writer",
-  model: modelId,
+  model: openai("gpt-4.1"),
   input: z.object({ topic: z.string() }),
   prompt: ({ input }) => `Write about: ${input.topic}`,
 });

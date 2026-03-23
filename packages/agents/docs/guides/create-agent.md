@@ -14,14 +14,15 @@ Pass a `name`, `model`, and optional `system` prompt. In simple mode, `.generate
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
-const result = await helper.generate("What is TypeScript?");
+const result = await helper.generate({ prompt: "What is TypeScript?" });
 if (result.ok) {
   console.log(result.output); // string
 }
@@ -33,11 +34,12 @@ Add an `input` Zod schema and a `prompt` function. Both are required together. `
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({
     text: z.string(),
     maxLength: z.number().optional(),
@@ -59,6 +61,7 @@ Pass a `tools` record. Tool names come from the object keys. See [Create a Tool]
 
 ```ts
 import { agent, tool } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const fetchPage = tool({
@@ -72,7 +75,7 @@ const fetchPage = tool({
 
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You research topics by fetching web pages.",
   tools: { fetchPage },
 });
@@ -85,14 +88,14 @@ Pass an `agents` record. Each subagent is auto-wrapped as a delegatable tool. Ab
 ```ts
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ topic: z.string() }),
   prompt: ({ input }) => `Write an article about ${input.topic}`,
 });
 
 const editor = agent({
   name: "editor",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You review and improve articles. Delegate writing to the writer agent.",
   agents: { writer },
 });
@@ -104,11 +107,12 @@ Pass an `output` config to get typed structured output instead of a string. Acce
 
 ```ts
 import { Output } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 // Zod schema auto-wrapped as Output.object()
 const classifier = agent({
   name: "classifier",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   output: z.object({
     category: z.enum(["bug", "feature", "question"]),
     confidence: z.number(),
@@ -120,7 +124,7 @@ const classifier = agent({
 // Or use Output directly
 const tagger = agent({
   name: "tagger",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   output: Output.array({ element: z.object({ tag: z.string(), score: z.number() }) }),
   system: "Extract tags from the text.",
 });
@@ -131,11 +135,11 @@ const tagger = agent({
 Use `.stream()` for incremental text delivery. The result contains a `ReadableStream<string>` for live chunks, plus `output` and `messages` as promises that resolve after the stream completes.
 
 ```ts
-const result = await helper.stream("Explain async/await in detail");
+const result = await helper.stream({ prompt: "Explain async/await in detail" });
 
 if (result.ok) {
   // Consume text chunks as they arrive
-  const reader = result.stream.getReader();
+  const reader = result.fullStream.getReader();
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -169,7 +173,8 @@ const controller = new AbortController();
 // Cancel after 10 seconds
 setTimeout(() => controller.abort(), 10_000);
 
-const result = await helper.generate("Explain quantum computing", {
+const result = await helper.generate({
+  prompt: "Explain quantum computing",
   signal: controller.signal,
 });
 
@@ -183,8 +188,9 @@ if (!result.ok) {
 Override model, system prompt, tools, output, and hooks for a single call without changing the agent definition.
 
 ```ts
-const result = await helper.generate("Explain monads", {
-  model: "anthropic/claude-sonnet-4-20250514",
+const result = await helper.generate({
+  prompt: "Explain monads",
+  model: anthropic("claude-sonnet-4-20250514"),
   system: "You explain concepts using simple analogies.",
   maxSteps: 5,
   onStart: ({ input }) => console.log("Starting with:", input),
