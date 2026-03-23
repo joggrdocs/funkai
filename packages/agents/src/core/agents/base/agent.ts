@@ -200,7 +200,11 @@ export function agent<
     params: GenerateParams<TInput, TTools, TSubAgents>,
   ): Promise<PreparedGeneration> {
     const resolvedModel = params.model ?? (await resolveValue(config.model, input));
-    const model = await withModelMiddleware({ model: resolvedModel });
+    const model = await withModelMiddleware({
+      model: resolvedModel,
+      middleware: config.middleware,
+      toolInputExamples: config.toolInputExamples,
+    });
 
     const resolvedTools =
       (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
