@@ -627,12 +627,10 @@ export interface AgentConfig<
    *
    * @example
    * ```typescript
-   * import { addToolInputExamplesMiddleware } from 'ai'
-   *
    * agent({
    *   name: 'my-agent',
    *   model: openai('gpt-4.1'),
-   *   middleware: [myCustomMiddleware],
+   *   middleware: [loggingMiddleware, rateLimitMiddleware],
    *   tools: { ... },
    * })
    * ```
