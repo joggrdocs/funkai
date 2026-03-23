@@ -8,64 +8,33 @@ export default defineConfig({
   theme: {
     name: "arcade",
   },
-  workspaces: [
+  features: [
     {
-      title: "@funkai/agents",
+      title: "Agents",
       description:
         "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
-      icon: "pixelarticons:robot",
-      items: [
-        {
-          title: "@funkai/agents",
-          description:
-            "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
-          path: "/agents",
-          tags: [],
-        },
-      ],
+      icon: "mdi:robot-outline",
+      link: "/agents",
     },
     {
-      title: "@funkai/models",
+      title: "Models",
       description:
         "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
-      icon: "pixelarticons:coin",
-      items: [
-        {
-          title: "@funkai/models",
-          description:
-            "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
-          path: "/models",
-          tags: [],
-        },
-      ],
+      icon: "mdi:currency-usd",
+      link: "/models",
     },
     {
-      title: "@funkai/prompts",
+      title: "Prompts",
       description:
         "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
-      icon: "pixelarticons:message-text",
-      items: [
-        {
-          title: "@funkai/prompts",
-          description:
-            "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
-          path: "/prompts",
-          tags: [],
-        },
-      ],
+      icon: "mdi:message-text-outline",
+      link: "/prompts",
     },
     {
-      title: "@funkai/cli",
+      title: "CLI",
       description: "Generate, lint, and scaffold prompt files from the terminal",
-      icon: "pixelarticons:terminal",
-      items: [
-        {
-          title: "@funkai/cli",
-          description: "Generate, lint, and scaffold prompt files from the terminal",
-          path: "/cli",
-          tags: [],
-        },
-      ],
+      icon: "mdi:console",
+      link: "/cli",
     },
   ],
   sections: [
@@ -73,28 +42,28 @@ export default defineConfig({
     {
       title: "Introduction",
       path: "/introduction",
-      icon: "pixelarticons:book-open",
+      icon: "mdi:book-open-variant",
       include: "docs/introduction.md",
       hidden: true,
     },
     {
       title: "Quick Start",
       path: "/quick-start",
-      icon: "pixelarticons:speed-fast",
+      icon: "mdi:rocket-launch-outline",
       include: "docs/quick-start.md",
       hidden: true,
     },
     {
       title: "Principles",
       path: "/principles",
-      icon: "pixelarticons:label",
+      icon: "mdi:compass-outline",
       include: "docs/principles.md",
       hidden: true,
     },
     {
       title: "Architecture",
       path: "/architecture",
-      icon: "pixelarticons:layout-sidebar-right",
+      icon: "mdi:sitemap-outline",
       include: "docs/architecture.md",
       hidden: true,
     },
@@ -102,7 +71,7 @@ export default defineConfig({
     // ── Agents ──
     {
       title: "Agents",
-      icon: "pixelarticons:robot",
+      icon: "mdi:robot-outline",
       frontmatter: {
         description:
           "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
@@ -234,7 +203,7 @@ export default defineConfig({
     // ── Models ──
     {
       title: "Models",
-      icon: "pixelarticons:coin",
+      icon: "mdi:currency-usd",
       frontmatter: {
         description:
           "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
@@ -309,7 +278,7 @@ export default defineConfig({
     // ── Prompts ──
     {
       title: "Prompts",
-      icon: "pixelarticons:message-text",
+      icon: "mdi:message-text-outline",
       frontmatter: {
         description:
           "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
@@ -368,7 +337,7 @@ export default defineConfig({
     // ── CLI ──
     {
       title: "CLI",
-      icon: "pixelarticons:terminal",
+      icon: "mdi:console",
       frontmatter: {
         description: "Generate, lint, and scaffold prompt files from the terminal",
       },
@@ -389,7 +358,7 @@ export default defineConfig({
     // ── Examples ──
     {
       title: "Examples",
-      icon: "pixelarticons:file-alt",
+      icon: "mdi:file-document-outline",
       items: [
         {
           title: "Real-World CLI",
@@ -402,7 +371,7 @@ export default defineConfig({
     // ── Contributing ──
     {
       title: "Contributing",
-      icon: "pixelarticons:git-merge",
+      icon: "mdi:source-merge",
       standalone: true,
       hidden: true,
       items: [
