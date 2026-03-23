@@ -1,4 +1,10 @@
-import type { AsyncIterableStream, ModelMessage, UIMessage, UIMessageStreamOptions } from "ai";
+import type {
+  AsyncIterableStream,
+  LanguageModelMiddleware,
+  ModelMessage,
+  UIMessage,
+  UIMessageStreamOptions,
+} from "ai";
 import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
@@ -611,6 +617,38 @@ export interface AgentConfig<
    * @default Output.text()
    */
   output?: OutputParam;
+
+  /**
+   * Language model middleware to apply.
+   *
+   * An array of AI SDK `LanguageModelMiddleware` instances applied
+   * before default middleware (outermost). Middleware runs in array
+   * order — the first entry wraps outermost.
+   *
+   * @example
+   * ```typescript
+   * agent({
+   *   name: 'my-agent',
+   *   model: openai('gpt-4.1'),
+   *   middleware: [loggingMiddleware, rateLimitMiddleware],
+   *   tools: { ... },
+   * })
+   * ```
+   *
+   * @see {@link https://ai-sdk.dev/docs/ai-sdk-core/middleware}
+   */
+  middleware?: LanguageModelMiddleware[];
+
+  /**
+   * Whether to enable the `addToolInputExamplesMiddleware`.
+   *
+   * When enabled, `inputExamples` defined on tools are appended to
+   * each tool's description before the model sees it — ensuring
+   * models receive usage examples that guide correct tool invocation.
+   *
+   * @default true
+   */
+  toolInputExamples?: boolean;
 
   /**
    * Pino-compatible logger.

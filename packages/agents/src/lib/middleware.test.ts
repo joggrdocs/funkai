@@ -25,7 +25,19 @@ function createStubMiddleware(
 }
 
 describe(withModelMiddleware, () => {
-  it("returns the model unchanged when there is no middleware and devtools is off", async () => {
+  it("returns the model unchanged when there is no middleware and all defaults are off", async () => {
+    const model = createStubModel();
+
+    const result = await withModelMiddleware({
+      model: model as never,
+      devtools: false,
+      toolInputExamples: false,
+    });
+
+    expect(result).toBe(model);
+  });
+
+  it("wraps the model with tool input examples middleware by default", async () => {
     const model = createStubModel();
 
     const result = await withModelMiddleware({
@@ -33,7 +45,8 @@ describe(withModelMiddleware, () => {
       devtools: false,
     });
 
-    expect(result).toBe(model);
+    expect(result).not.toBe(model);
+    expect(result.modelId).toBe("test-model");
   });
 
   it("wraps the model when custom middleware is provided", async () => {
@@ -88,11 +101,24 @@ describe(withModelMiddleware, () => {
     const result = await withModelMiddleware({
       model: model as never,
       devtools: false,
+      toolInputExamples: false,
     });
 
     expect(result).toBe(model);
 
     process.env.NODE_ENV = original;
+  });
+
+  it("respects toolInputExamples=false", async () => {
+    const model = createStubModel();
+
+    const result = await withModelMiddleware({
+      model: model as never,
+      devtools: false,
+      toolInputExamples: false,
+    });
+
+    expect(result).toBe(model);
   });
 
   it("enables devtools automatically when NODE_ENV is development and devtools is not set", async () => {
