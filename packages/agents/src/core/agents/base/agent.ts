@@ -11,6 +11,7 @@ import {
   buildPrompt,
   toTokenUsage,
 } from "@/core/agents/base/utils.js";
+import type { ParentAgentContext } from "@/core/agents/base/utils.js";
 import type {
   Agent,
   AgentConfig,
@@ -99,7 +100,7 @@ export function agent<
    *
    * @private
    */
-  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents>): TInput {
+  function extractInput(params: GenerateParams<TInput, TTools, TSubAgents, TOutput>): TInput {
     if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt as unknown as TInput;
     }
@@ -171,7 +172,7 @@ export function agent<
    * @private
    */
   function resolveSignal(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): AbortSignal | undefined {
     const { timeout, signal } = params;
     if (signal && isNotNil(timeout)) {
@@ -197,7 +198,7 @@ export function agent<
   async function prepareGeneration(
     input: TInput,
     log: Logger,
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<PreparedGeneration> {
     const resolvedModel = params.model ?? (await resolveValue(config.model, input));
     const model = await withModelMiddleware({
@@ -214,9 +215,23 @@ export function agent<
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
+    // Only fixed-type hooks (onStepStart, onStepFinish) are forwarded to
+    // Sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
+    // Forwarded because their event types are parameterized by TInput/TOutput
+    // — a sub-agent has different generics, so the parent's typed hook
+    // Would receive the wrong event shape at runtime. Sub-agent activity
+    // Is still observable via onStepFinish at the parent's tool-loop level.
+    // See packages/agents/docs/core/hooks.md for the full lifecycle.
+    const parentCtx: ParentAgentContext = {
+      log,
+      onStepStart: params.onStepStart,
+      onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
+    };
+
     const aiTools = buildAITools(
       valueOrUndefined(hasTools, mergedTools),
       valueOrUndefined(hasAgents, mergedAgents),
+      parentCtx,
     );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- params.system is Resolver-shaped; safe to resolve
@@ -273,7 +288,7 @@ export function agent<
   }
 
   async function generate(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>> {
     const startedAt = Date.now();
     let resolvedInput: TInput | undefined;
@@ -333,7 +348,7 @@ export function agent<
         wrapHook(config.onFinish, { input, result: generateResult, duration }),
         wrapHook(params.onFinish, {
           input,
-          result: generateResult as GenerateResult,
+          result: generateResult,
           duration,
         }),
       );
@@ -372,7 +387,7 @@ export function agent<
   }
 
   async function stream(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>> {
     const startedAt = Date.now();
     let resolvedInput: TInput | undefined;
@@ -458,7 +473,7 @@ export function agent<
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
           wrapHook(params.onFinish, {
             input,
-            result: generateResult as GenerateResult,
+            result: generateResult,
             duration,
           }),
         );
@@ -661,4 +676,25 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
     return ifOutput;
   }
   return ifText;
+}
+
+/**
+ * Build a merged hook that fires config-level and per-call hooks sequentially.
+ *
+ * Returns `undefined` when both are absent so `buildParentParams` skips
+ * the field entirely and sub-agent defaults are preserved.
+ *
+ * @private
+ */
+function buildMergedHook<E>(
+  log: Logger,
+  configHook: ((event: E) => void | Promise<void>) | undefined,
+  callHook: ((event: E) => void | Promise<void>) | undefined,
+): ((event: E) => void | Promise<void>) | undefined {
+  if (isNil(configHook) && isNil(callHook)) {
+    return undefined;
+  }
+  return async (event: E) => {
+    await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
+  };
 }

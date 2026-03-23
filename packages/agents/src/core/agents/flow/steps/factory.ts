@@ -275,9 +275,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       input: config.input,
       execute: async () => {
         const agentParams = {
+          ...config.config,
           input: config.input,
           signal: ctx.signal,
-          ...config.config,
           logger: ctx.log.child({ stepId: config.id }),
         };
 

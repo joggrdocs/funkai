@@ -113,7 +113,7 @@ describe("agent()", () => {
     expect(agent.generate).toHaveBeenCalledWith(
       expect.objectContaining({
         input: "hello",
-        signal: config.signal,
+        signal: ctx.signal,
         logger: expect.any(Object),
       }),
     );
@@ -132,7 +132,7 @@ describe("agent()", () => {
     );
   });
 
-  it("user-provided config.signal takes precedence over ctx.signal", async () => {
+  it("framework ctx.signal takes precedence over user-provided config.signal", async () => {
     const ctxController = new AbortController();
     const userController = new AbortController();
     const ctx = createMockCtx({ signal: ctxController.signal });
@@ -147,7 +147,7 @@ describe("agent()", () => {
     });
 
     expect(agent.generate).toHaveBeenCalledWith(
-      expect.objectContaining({ input: "test", signal: userController.signal }),
+      expect.objectContaining({ input: "test", signal: ctxController.signal }),
     );
   });
 

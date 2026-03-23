@@ -299,7 +299,7 @@ export interface StreamResult<TOutput = string> {
  *
  * @private — use `GenerateParams` instead.
  */
-export interface BaseGenerateParams<TInput = unknown> {
+export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
   /**
    * Override the logger for this call.
    *
@@ -343,7 +343,7 @@ export interface BaseGenerateParams<TInput = unknown> {
    */
   onFinish?: (event: {
     input: TInput;
-    result: GenerateResult;
+    result: GenerateResult<TOutput>;
     duration: number;
   }) => void | Promise<void>;
 
@@ -480,7 +480,10 @@ export type GenerateParams<
   TInput = unknown,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
-> = BaseGenerateParams<TInput> & AgentGenerateOverrides<TTools, TSubAgents> & InputUnion<TInput>;
+  TOutput = string,
+> = BaseGenerateParams<TInput, TOutput> &
+  AgentGenerateOverrides<TTools, TSubAgents> &
+  InputUnion<TInput>;
 
 /**
  * Configuration for creating an agent.
@@ -783,7 +786,7 @@ export interface Agent<
    * ```
    */
   generate(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>>;
 
   /**
@@ -799,7 +802,7 @@ export interface Agent<
    *   `result.output` / `result.messages` after the stream ends.
    */
   stream(
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>>;
 
   /**
@@ -817,6 +820,6 @@ export interface Agent<
    * ```
    */
   fn(): (
-    params: GenerateParams<TInput, TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ) => Promise<Result<GenerateResult<TOutput>>>;
 }
