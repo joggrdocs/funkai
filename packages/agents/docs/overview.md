@@ -6,7 +6,7 @@
 
 | Principle                      | Description                                                                                |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
-| Functions all the way down     | `agent()`, `tool()`, `flowAgent()` return plain objects, no classes                       |
+| Functions all the way down     | `agent()`, `tool()`, `flowAgent()` return plain objects, no classes                        |
 | Composition over configuration | Combine small functions instead of large option bags                                       |
 | Closures are state             | Flow agent state is just variables in your handler                                         |
 | Result, never throw            | Every public method returns `Result<T>`, callers pattern-match                             |

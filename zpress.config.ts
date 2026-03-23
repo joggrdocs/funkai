@@ -11,21 +11,24 @@ export default defineConfig({
   packages: [
     {
       title: "@funkai/agents",
-      description: "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
+      description:
+        "Composable agents, flow orchestration, tools, and Result-based error handling — all without classes",
       icon: "pixelarticons:robot",
       prefix: "/agents",
       tags: [],
     },
     {
       title: "@funkai/models",
-      description: "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
+      description:
+        "Query 300+ models by capability, resolve providers by string ID, and track token costs in dollars",
       icon: "pixelarticons:coin",
       prefix: "/models",
       tags: [],
     },
     {
       title: "@funkai/prompts",
-      description: "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
+      description:
+        "Type-safe prompt files with LiquidJS templates, YAML frontmatter, and Zod-validated inputs",
       icon: "pixelarticons:message-text",
       prefix: "/prompts",
       tags: [],
@@ -343,8 +346,7 @@ export default defineConfig({
       title: "CLI",
       icon: "pixelarticons:terminal",
       frontmatter: {
-        description:
-          "Generate, lint, and scaffold prompt files from the terminal",
+        description: "Generate, lint, and scaffold prompt files from the terminal",
       },
       items: [
         {

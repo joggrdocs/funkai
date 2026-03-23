@@ -51,9 +51,9 @@ Both `Agent` and `FlowAgent` satisfy the `Runnable` interface:
 
 ```typescript
 interface Runnable<TInput, TOutput> {
-  generate(input: TInput, config?): Promise<Result<{ output: TOutput }>>
-  stream(input: TInput, config?): Promise<Result<{ output: Promise<TOutput>; fullStream }>>
-  fn(): (input: TInput, config?) => Promise<Result<{ output: TOutput }>>
+  generate(input: TInput, config?): Promise<Result<{ output: TOutput }>>;
+  stream(input: TInput, config?): Promise<Result<{ output: Promise<TOutput>; fullStream }>>;
+  fn(): (input: TInput, config?) => Promise<Result<{ output: TOutput }>>;
 }
 ```
 

@@ -18,49 +18,52 @@ Both return `Result<T>` from every public method -- a discriminated union you pa
 
 ## Packages
 
-| Package | Name | Description |
-|---|---|---|
-| `@funkai/agents` | Agents | Agent orchestration -- `agent()`, `flowAgent()`, `tool()`, `Result` utilities |
-| `@funkai/models` | Models | Model catalog, provider registry, and cost calculation |
-| `@funkai/prompts` | Prompts | Build-time prompt templating with LiquidJS and Zod validation |
-| `@funkai/cli` | CLI | Command-line tooling for prompt generation, linting, and setup |
+| Package           | Name    | Description                                                                   |
+| ----------------- | ------- | ----------------------------------------------------------------------------- |
+| `@funkai/agents`  | Agents  | Agent orchestration -- `agent()`, `flowAgent()`, `tool()`, `Result` utilities |
+| `@funkai/models`  | Models  | Model catalog, provider registry, and cost calculation                        |
+| `@funkai/prompts` | Prompts | Build-time prompt templating with LiquidJS and Zod validation                 |
+| `@funkai/cli`     | CLI     | Command-line tooling for prompt generation, linting, and setup                |
 
 ## Design at a glance
 
 ```typescript
-import { agent, flowAgent, tool } from '@funkai/agents'
-import { openai } from '@ai-sdk/openai'
-import { z } from 'zod'
+import { agent, flowAgent, tool } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
+import { z } from "zod";
 
 // Single LLM boundary
 const writer = agent({
-  name: 'writer',
-  model: openai('gpt-4.1'),
-  system: 'You write concise technical docs.',
-})
+  name: "writer",
+  model: openai("gpt-4.1"),
+  system: "You write concise technical docs.",
+});
 
 // Multi-step orchestration
-const pipeline = flowAgent({
-  name: 'pipeline',
-  input: z.object({ topics: z.array(z.string()) }),
-  output: z.object({ docs: z.array(z.string()) }),
-}, async ({ input, $ }) => {
-  const docs = await $.map({
-    id: 'write-docs',
-    input: input.topics,
-    execute: async ({ item, $ }) => {
-      const result = await $.agent({ id: 'write', agent: writer, input: item })
-      return result.ok ? result.value.output : ''
-    },
-    concurrency: 3,
-  })
-  return { docs: docs.ok ? docs.value : [] }
-})
+const pipeline = flowAgent(
+  {
+    name: "pipeline",
+    input: z.object({ topics: z.array(z.string()) }),
+    output: z.object({ docs: z.array(z.string()) }),
+  },
+  async ({ input, $ }) => {
+    const docs = await $.map({
+      id: "write-docs",
+      input: input.topics,
+      execute: async ({ item, $ }) => {
+        const result = await $.agent({ id: "write", agent: writer, input: item });
+        return result.ok ? result.value.output : "";
+      },
+      concurrency: 3,
+    });
+    return { docs: docs.ok ? docs.value : [] };
+  },
+);
 
 // Both satisfy Runnable -- same .generate(), .stream(), .fn()
-const result = await pipeline.generate({ topics: ['TypeScript', 'Zod'] })
+const result = await pipeline.generate({ topics: ["TypeScript", "Zod"] });
 if (result.ok) {
-  console.log(result.output)
+  console.log(result.output);
 }
 ```
 

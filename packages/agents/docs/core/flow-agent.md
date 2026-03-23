@@ -13,17 +13,17 @@ function flowAgent<TInput, TOutput>(
 
 ## FlowAgentConfig
 
-| Field          | Required | Type                                                            | Description                                    |
-| -------------- | -------- | --------------------------------------------------------------- | ---------------------------------------------- |
-| `name`         | Yes      | `string`                                                        | Unique flow agent name (used in logs, traces)  |
-| `input`        | Yes      | `ZodType<TInput>`                                               | Zod schema for validating input             |
-| `output`       | Yes      | `ZodType<TOutput>`                                              | Zod schema for validating output            |
-| `logger`       | No       | `Logger`                                                        | Pino-compatible logger                      |
-| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts      |
-| `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                      |
-| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                        |
-| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts        |
-| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes      |
+| Field          | Required | Type                                                            | Description                                   |
+| -------------- | -------- | --------------------------------------------------------------- | --------------------------------------------- |
+| `name`         | Yes      | `string`                                                        | Unique flow agent name (used in logs, traces) |
+| `input`        | Yes      | `ZodType<TInput>`                                               | Zod schema for validating input               |
+| `output`       | Yes      | `ZodType<TOutput>`                                              | Zod schema for validating output              |
+| `logger`       | No       | `Logger`                                                        | Pino-compatible logger                        |
+| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts        |
+| `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                        |
+| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                          |
+| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts          |
+| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes        |
 
 ## FlowAgentHandler
 
@@ -42,9 +42,18 @@ The handler returns `TOutput`, which is validated against the `output` Zod schem
 
 ```ts
 interface FlowAgent<TInput, TOutput> {
-  generate(input: TInput, config?: FlowAgentOverrides): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
-  stream(input: TInput, config?: FlowAgentOverrides): Promise<Result<FlowAgentStreamResult<TOutput>>>;
-  fn(): (input: TInput, config?: FlowAgentOverrides) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  generate(
+    input: TInput,
+    config?: FlowAgentOverrides,
+  ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
+  stream(
+    input: TInput,
+    config?: FlowAgentOverrides,
+  ): Promise<Result<FlowAgentStreamResult<TOutput>>>;
+  fn(): (
+    input: TInput,
+    config?: FlowAgentOverrides,
+  ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 ```
 
@@ -83,12 +92,12 @@ Subscribe to `stream` for real-time step progress events.
 
 Events emitted on the flow agent stream:
 
-| Type              | Fields                       | Description               |
-| ----------------- | ---------------------------- | ------------------------- |
-| `step:start`      | `step: StepInfo`             | A `$` operation started   |
-| `step:finish`     | `step`, `result`, `duration` | A `$` operation completed |
-| `step:error`      | `step`, `error`              | A `$` operation failed    |
-| `flow:finish`     | `output`, `duration`         | The flow agent completed  |
+| Type          | Fields                       | Description               |
+| ------------- | ---------------------------- | ------------------------- |
+| `step:start`  | `step: StepInfo`             | A `$` operation started   |
+| `step:finish` | `step`, `result`, `duration` | A `$` operation completed |
+| `step:error`  | `step`, `error`              | A `$` operation failed    |
+| `flow:finish` | `output`, `duration`         | The flow agent completed  |
 
 ### fn()
 
@@ -116,9 +125,9 @@ function createFlowEngine<TCustomSteps>(
 
 ### FlowEngineConfig
 
-| Field          | Type                    | Description                     |
-| -------------- | ----------------------- | ------------------------------- |
-| `$`            | `CustomStepDefinitions` | Custom step types to add to `$` |
+| Field          | Type                    | Description                      |
+| -------------- | ----------------------- | -------------------------------- |
+| `$`            | `CustomStepDefinitions` | Custom step types to add to `$`  |
 | `onStart`      | hook                    | Default hook for all flow agents |
 | `onFinish`     | hook                    | Default hook for all flow agents |
 | `onError`      | hook                    | Default hook for all flow agents |
