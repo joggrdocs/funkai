@@ -45,6 +45,28 @@ export type Model = LanguageModel;
 export type StreamPart = TextStreamPart<ToolSet>;
 
 /**
+ * An entry in the agent chain — identifies one agent in the
+ * ancestry from root to current.
+ *
+ * Uses an object (not a bare string) so additional fields can be
+ * added later without breaking consumers.
+ *
+ * @example
+ * ```typescript
+ * // Root flow → sub-agent → sub-sub-agent
+ * const chain: AgentChainEntry[] = [
+ *   { id: 'pipeline' },
+ *   { id: 'researcher' },
+ *   { id: 'search' },
+ * ]
+ * ```
+ */
+export interface AgentChainEntry {
+  /** Agent name (matches `config.name`). */
+  readonly id: string;
+}
+
+/**
  * Information about a step in execution.
  *
  * Passed to step-level hooks (`onStepStart`, `onStepFinish`)
@@ -74,6 +96,21 @@ export interface StepInfo {
    * Discriminant for filtering or grouping step events.
    */
   type: OperationType;
+
+  /**
+   * Agent ancestry chain from root to the agent that owns this step.
+   *
+   * Each entry identifies one agent in the chain. The first entry is
+   * the root agent, the last is the agent that produced this step.
+   *
+   * @example
+   * ```typescript
+   * // Step inside a sub-agent called by a flow agent:
+   * event.step.agentChain
+   * // → [{ id: 'pipeline' }, { id: 'writer' }]
+   * ```
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**
@@ -134,6 +171,18 @@ export interface StepFinishEvent {
    * Present on flow orchestration steps. `undefined` on agent steps.
    */
   duration?: number;
+
+  /**
+   * Agent ancestry chain from root to the agent that produced this event.
+   *
+   * Each entry identifies one agent in the chain. The first entry is
+   * the root agent, the last is the agent that produced this step.
+   *
+   * Present on both agent tool-loop steps and flow orchestration steps
+   * when the agent is part of a chain. `undefined` for top-level agents
+   * called directly by the user without a parent.
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**

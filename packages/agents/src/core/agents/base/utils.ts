@@ -9,7 +9,7 @@ import type { Agent, Message, Resolver } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { StepFinishEvent, StepInfo } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 
@@ -68,6 +68,13 @@ export interface ParentAgentContext {
    * Uses `StepFinishEvent` — a fixed (non-generic) type, safe to forward.
    */
   onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+
+  /**
+   * Agent ancestry chain from root to the current agent.
+   *
+   * @internal Framework-only — not exposed on public `GenerateParams`.
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**
@@ -423,6 +430,7 @@ function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, 
       logger: ctx.log,
       onStepStart: ctx.onStepStart,
       onStepFinish: ctx.onStepFinish,
+      agentChain: ctx.agentChain,
     },
     isNil,
   );

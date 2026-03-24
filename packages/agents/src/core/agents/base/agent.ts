@@ -26,7 +26,7 @@ import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { Model, StepFinishEvent, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, Model, StepFinishEvent, StreamPart } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -215,6 +215,10 @@ export function agent<
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
+    // Build agent chain: extend incoming chain with this agent's identity
+    const incomingChain = extractAgentChain(params);
+    const currentChain: readonly AgentChainEntry[] = [...incomingChain, { id: config.name }];
+
     // Only fixed-type hooks (onStepStart, onStepFinish) are forwarded to
     // Sub-agents. Generic hooks (onStart, onFinish, onError) are NOT
     // Forwarded because their event types are parameterized by TInput/TOutput
@@ -226,6 +230,7 @@ export function agent<
       log,
       onStepStart: params.onStepStart,
       onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
+      agentChain: currentChain,
     };
 
     const aiTools = buildAITools(
@@ -266,7 +271,7 @@ export function agent<
         return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
       });
       const usage = extractUsage(step.usage);
-      const event: StepFinishEvent = { stepId, toolCalls, toolResults, usage };
+      const event: StepFinishEvent = { stepId, toolCalls, toolResults, usage, agentChain: currentChain };
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),
@@ -697,4 +702,22 @@ function buildMergedHook<E>(
   return async (event: E) => {
     await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
   };
+}
+
+/**
+ * Extract the internal `agentChain` from raw generate params.
+ *
+ * `agentChain` is a framework-internal transport field — it is NOT
+ * on the public `GenerateParams` type. It's passed via untyped
+ * spreads from `buildParentParams` and flow agent `$.agent()` calls.
+ *
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
+function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
+  const raw = params as Record<string, unknown>;
+  if (Array.isArray(raw.agentChain)) {
+    return raw.agentChain as readonly AgentChainEntry[];
+  }
+  return [];
 }

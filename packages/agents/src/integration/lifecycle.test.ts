@@ -531,6 +531,8 @@ describe("FlowAgent with $.agent() (integration)", () => {
     expect(tracker.events).toEqual([
       { type: "onStart" },
       { type: "onStepStart", detail: "write" },
+      // Sub-agent internal tool-loop step (forwarded via hook propagation)
+      { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
       { type: "onFinish" },
     ]);
@@ -589,8 +591,10 @@ describe("FlowAgent with $.agent() (integration)", () => {
     expect(result.ok).toBe(true);
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "research" },
+      { type: "onStepFinish", detail: "researcher:0" },
       { type: "onStepFinish", detail: "research" },
       { type: "onStepStart", detail: "write" },
+      { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
     ]);
   });
@@ -703,6 +707,7 @@ describe("FlowAgent agents dependency lifecycle (integration)", () => {
 
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "run-core" },
+      { type: "onStepFinish", detail: "core:0" },
       { type: "onStepFinish", detail: "run-core" },
     ]);
   });
@@ -965,6 +970,7 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
 
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "write" },
+      { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
     ]);
   });
@@ -1715,5 +1721,170 @@ describe("Step index uniqueness (integration)", () => {
 
     // Should be sequential: 0, 1, 2, 3
     expect(indices).toEqual([0, 1, 2, 3]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Agent chain propagation
+// ---------------------------------------------------------------------------
+
+describe("Agent chain propagation (integration)", () => {
+  const Input = z.object({ topic: z.string() });
+  const Output = z.object({ summary: z.string() });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("flow agent step events carry agentChain with flow agent id", async () => {
+    const chains: (readonly { id: string }[] | undefined)[] = [];
+
+    const fa = flowAgent<{ topic: string }, { summary: string }>(
+      {
+        name: "my-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: (event) => {
+          chains.push(event.agentChain);
+        },
+      },
+      async ({ input, $ }) => {
+        await $.step({ id: "work", execute: async () => input.topic });
+        return { summary: input.topic };
+      },
+    );
+
+    await fa.generate({ input: { topic: "test" } });
+
+    expect(chains).toEqual([[{ id: "my-flow" }]]);
+  });
+
+  it("$.agent() sub-agent internal steps carry extended agentChain", async () => {
+    const chains: (readonly { id: string }[] | undefined)[] = [];
+    const stepIds: string[] = [];
+
+    const writer = agent({
+      name: "writer",
+      model: createMockModel("written content"),
+      logger: createMockLogger(),
+    });
+
+    const fa = flowAgent<{ topic: string }, { summary: string }>(
+      {
+        name: "pipeline",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: (event) => {
+          const id = event.step?.id ?? event.stepId ?? "unknown";
+          stepIds.push(id);
+          chains.push(event.agentChain);
+        },
+      },
+      async ({ input, $ }) => {
+        const r = await $.agent({
+          id: "write",
+          agent: writer,
+          input: `Write about ${input.topic}`,
+        });
+        if (r.ok) {
+          return { summary: String(r.value.output) };
+        }
+        return { summary: "failed" };
+      },
+    );
+
+    await fa.generate({ input: { topic: "TypeScript" } });
+
+    // Sub-agent internal step carries extended chain
+    expect(stepIds[0]).toBe("writer:0");
+    expect(chains[0]).toEqual([{ id: "pipeline" }, { id: "writer" }]);
+
+    // Flow-level $.agent() step carries flow chain
+    expect(stepIds[1]).toBe("write");
+    expect(chains[1]).toEqual([{ id: "pipeline" }]);
+  });
+
+  it("base agent step events carry agentChain", async () => {
+    const chains: (readonly { id: string }[] | undefined)[] = [];
+
+    const myAgent = agent({
+      name: "solo-agent",
+      model: createMockModel("response"),
+      logger: createMockLogger(),
+    });
+
+    await myAgent.generate({
+      prompt: "hello",
+      onStepFinish: (event) => {
+        chains.push(event.agentChain);
+      },
+    });
+
+    // Direct agent call: chain is just this agent
+    expect(chains).toEqual([[{ id: "solo-agent" }]]);
+  });
+
+  it("agent chain cascades through agent → sub-agent tool calls", async () => {
+    const stepEvents: { stepId: string | undefined; chain: readonly { id: string }[] | undefined }[] = [];
+
+    const sub = agent({
+      name: "sub-agent",
+      model: createMockModel("sub response"),
+      input: z.object({ task: z.string() }),
+      prompt: ({ input }) => input.task,
+    });
+
+    const toolCallModel = new MockLanguageModelV3({
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      doGenerate: mockValues(
+        {
+          content: [
+            {
+              type: "tool-call" as const,
+              toolCallId: "tc1",
+              toolName: "agent_sub",
+              input: JSON.stringify({ task: "do it" }),
+            },
+          ],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        {
+          content: [{ type: "text" as const, text: "done" }],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
+      ) as any,
+    });
+
+    const parent = agent({
+      name: "parent-agent",
+      model: toolCallModel,
+      system: "Delegate.",
+      agents: { sub },
+    });
+
+    await parent.generate({
+      prompt: "go",
+      logger: createMockLogger(),
+      onStepFinish: (event) => {
+        stepEvents.push({ stepId: event.stepId, chain: event.agentChain });
+      },
+    });
+
+    // Sub-agent internal step: chain = [parent, sub]
+    const subEvents = stepEvents.filter((e) => e.stepId?.startsWith("sub-agent"));
+    expect(subEvents.length).toBeGreaterThan(0);
+    expect(subEvents[0]?.chain).toEqual([{ id: "parent-agent" }, { id: "sub-agent" }]);
+
+    // Parent's own steps: chain = [parent]
+    const parentEvents = stepEvents.filter((e) => e.stepId?.startsWith("parent-agent"));
+    expect(parentEvents.length).toBeGreaterThan(0);
+    expect(parentEvents[0]?.chain).toEqual([{ id: "parent-agent" }]);
   });
 });

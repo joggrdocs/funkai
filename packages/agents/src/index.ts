@@ -7,7 +7,14 @@ export { ok, err, isOk, isErr } from "@/utils/result.js";
 export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
-export type { Runnable, Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+export type {
+  Runnable,
+  Model,
+  AgentChainEntry,
+  StepFinishEvent,
+  StepInfo,
+  StreamPart,
+} from "@/core/types.js";
 export type {
   TextStreamPart,
   AsyncIterableStream,

@@ -19,7 +19,7 @@ import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -55,6 +55,17 @@ export interface StepBuilderOptions {
    * step events through the readable stream.
    */
   writer?: WritableStreamDefaultWriter<StreamPart>;
+
+  /**
+   * Agent ancestry chain from root to the current flow agent.
+   *
+   * Attached to every `StepInfo` and `StepFinishEvent` so hook
+   * consumers can trace which agent produced the event. Also
+   * forwarded to sub-agents called via `$.agent()`.
+   *
+   * @internal Framework-only — not exposed to users.
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**
@@ -88,7 +99,7 @@ export function createStepBuilder(options: StepBuilderOptions): StepBuilder {
  * the same ref so step indices are globally unique.
  */
 function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexRef): StepBuilder {
-  const { ctx, parentHooks, writer } = options;
+  const { ctx, parentHooks, writer, agentChain } = options;
 
   /**
    * Core step primitive — every other method delegates here.
@@ -120,7 +131,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }): Promise<StepResult<T>> {
     const { id, type, execute, input, onStart, onFinish, onError } = params;
 
-    const stepInfo: StepInfo = { id, index: indexRef.current++, type };
+    const stepInfo: StepInfo = { id, index: indexRef.current++, type, agentChain };
     const startedAt = Date.now();
 
     const childTrace: TraceEntry[] = [];
@@ -130,7 +141,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       trace: childTrace,
       messages: ctx.messages,
     };
-    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, writer }, indexRef);
+    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, writer, agentChain }, indexRef);
 
     // Build synthetic tool-call message and push to context
     const toolCallId = buildToolCallId(id, stepInfo.index);
@@ -202,7 +213,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         fn({ id, result: value as T, duration }),
       );
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: value, duration }),
+        fn({ step: stepInfo, result: value, duration, agentChain }),
       );
 
       await fireHooks(ctx.log, onFinishHook, parentOnStepFinishHook);
@@ -255,7 +266,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }));
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: undefined, duration }),
+        fn({ step: stepInfo, result: undefined, duration, agentChain }),
       );
 
       await fireHooks(ctx.log, onErrorHook, parentOnStepFinishHook);
@@ -279,6 +290,14 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           input: config.input,
           signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
+          // Forward fixed-type step hooks so sub-agent internal steps
+          // (tool-loop iterations, nested flow steps) are visible to
+          // the root flow's onStepStart/onStepFinish hooks.
+          onStepStart: parentHooks?.onStepStart,
+          onStepFinish: parentHooks?.onStepFinish,
+          // Internal-only: thread the agent chain so sub-agents can
+          // extend it and attach to their own step events.
+          agentChain,
         };
 
         // When stream: true and a writer is available, use agent.stream()

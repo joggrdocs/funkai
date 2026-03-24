@@ -24,7 +24,7 @@ import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/co
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { FLOW_AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -326,6 +326,10 @@ export function flowAgent<TInput, TOutput = any>(
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
+    // Build agent chain: extend incoming chain with this flow agent's identity
+    const incomingChain = extractAgentChain(params);
+    const currentChain: readonly AgentChainEntry[] = [...incomingChain, { id: config.name }];
+
     const mergedOnStepStart = buildMergedStepStartHook(log, config.onStepStart, params.onStepStart);
     const mergedOnStepFinish = buildMergedStepFinishHook(
       log,
@@ -340,6 +344,7 @@ export function flowAgent<TInput, TOutput = any>(
         onStepFinish: mergedOnStepFinish,
       },
       writer,
+      agentChain: currentChain,
     });
 
     const $ = augmentStepBuilder(base$, ctx, _internal);
@@ -617,6 +622,24 @@ export function flowAgent<TInput, TOutput = any>(
  *
  * @private
  */
+/**
+ * Extract the internal `agentChain` from raw generate params.
+ *
+ * `agentChain` is a framework-internal transport field — it is NOT
+ * on the public `GenerateParams` type. It's passed via untyped
+ * spreads from flow agent `$.agent()` calls.
+ *
+ * @private
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
+function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
+  const raw = params as Record<string, unknown>;
+  if (Array.isArray(raw.agentChain)) {
+    return raw.agentChain as readonly AgentChainEntry[];
+  }
+  return [];
+}
+
 function sumTokenUsages(usages: TokenUsage[]): TokenUsage {
   const sum = (fn: (u: TokenUsage) => number): number => usages.reduce((acc, u) => acc + fn(u), 0);
   return {
