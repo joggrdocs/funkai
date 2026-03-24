@@ -364,11 +364,9 @@ describe("flow agent hooks", () => {
 
 **Issue:** Hook events arrive in an unexpected order.
 
-**Fix:** Hooks fire in a deterministic order: base hooks first, then per-call hooks. See [Hooks](hooks.md) for the full execution order.
+**Fix:** Hooks fire in a deterministic order: base hooks first, then per-call hooks.
 
 ## References
 
-- [Create an Agent](create-agent.md)
-- [Create a Flow Agent](create-flow-agent.md)
-- [Hooks](hooks.md)
-- [Overview](overview.md)
+- [`agent()` reference](/reference/agents/agent)
+- [`flowAgent()` reference](/reference/agents/flow-agent)

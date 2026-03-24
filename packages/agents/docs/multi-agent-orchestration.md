@@ -153,8 +153,8 @@ const analyze = flowAgent(
     const results = await $.all({
       id: "analyze-parallel",
       entries: [
-        () => sentimentAgent.generate({ text: input.text }),
-        () => summaryAgent.generate({ text: input.text }),
+        (signal) => sentimentAgent.generate({ text: input.text }, { signal }),
+        (signal) => summaryAgent.generate({ text: input.text }, { signal }),
       ],
     });
 
@@ -315,10 +315,13 @@ const racingFlowAgent = flowAgent(
     const result = await $.race({
       id: "race-models",
       entries: [
-        () => fastAgent.generate({ prompt: input.question }).then((r) => ({ ...r, model: "fast" })),
-        () =>
+        (signal) =>
+          fastAgent
+            .generate({ prompt: input.question }, { signal })
+            .then((r) => ({ ...r, model: "fast" })),
+        (signal) =>
           qualityAgent
-            .generate({ prompt: input.question })
+            .generate({ prompt: input.question }, { signal })
             .then((r) => ({ ...r, model: "quality" })),
       ],
     });
@@ -422,7 +425,5 @@ const project = flowAgent(
 
 ## References
 
-- [Create an Agent](create-agent.md)
-- [Step Builder ($)](step-builder.md)
-- [Create a Flow Agent](create-flow-agent.md)
-- [Hooks](hooks.md)
+- [`agent()` reference](/reference/agents/agent)
+- [`flowAgent()` reference](/reference/agents/flow-agent)

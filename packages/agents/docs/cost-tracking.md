@@ -52,6 +52,10 @@ const result = await summarizer.generate({ prompt: "Summarize the history of Typ
 
 if (result.ok) {
   const modelDef = model("gpt-4.1");
+  if (!modelDef) {
+    return;
+  }
+
   const cost = calculateCost(result.usage, modelDef.pricing);
 
   console.log("Input cost:", `$${cost.input.toFixed(6)}`);
@@ -72,6 +76,10 @@ import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 
 const modelDef = model("gpt-4.1");
+
+if (!modelDef) {
+  throw new Error("Unknown model: gpt-4.1");
+}
 
 let cumulativeCost = 0;
 const budgetLimit = 0.5; // $0.50
@@ -212,6 +220,10 @@ import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
 const modelDef = model("gpt-4.1");
+
+if (!modelDef) {
+  throw new Error("Unknown model: gpt-4.1");
+}
 
 const writer = agent({
   name: "writer",
@@ -404,6 +416,6 @@ Hooks are observability callbacks — they cannot abort execution. To enforce a 
 
 ## See also
 
-- [Create an Agent](create-agent.md)
-- [Create a Flow Agent](create-flow-agent.md)
-- [Hooks](hooks.md)
+- [`agent()` reference](/reference/agents/agent)
+- [`flowAgent()` reference](/reference/agents/flow-agent)
+- [`calculateCost()` reference](/reference/models/calculate-cost)

@@ -233,5 +233,5 @@ if (result.ok) {
 
 ## References
 
-- [Create an Agent](create-agent.md)
-- [Create a Flow Agent](create-flow-agent.md)
+- [`agent()` reference](/reference/agents/agent)
+- [`flowAgent()` reference](/reference/agents/flow-agent)

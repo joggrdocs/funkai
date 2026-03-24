@@ -122,7 +122,7 @@ if (result.ok) {
 
 ## Documentation
 
-For comprehensive documentation, see the [Agents docs](/agents).
+For comprehensive documentation, see the [Agents concept](/concepts/agents) and [`agent()` reference](/reference/agents/agent).
 
 ## License
 

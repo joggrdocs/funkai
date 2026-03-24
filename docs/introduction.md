@@ -1,6 +1,6 @@
 # Introduction
 
-funkai is a composable, functional TypeScript microframework for AI agent orchestration. It is built on the [Vercel AI SDK](https://ai-sdk.dev) -- not a replacement, but a composition layer on top of it.
+funkai is a composable, functional TypeScript microframework for AI agent orchestration. It is built on the [Vercel AI SDK](https://ai-sdk.dev) -- not a replacement, but a thin layer that adds typed agents, multi-step workflows, and structured error handling on top of `generateText`/`streamText`.
 
 ## The problem
 
@@ -75,6 +75,6 @@ if (result.ok) {
 
 ## Next steps
 
-- [Quick Start](./quick-start.md) -- Install and build your first agent in minutes.
-- [Principles](./principles.md) -- The design philosophy behind funkai.
-- [Architecture](./architecture.md) -- How the packages fit together.
+- [Quick Start](/quick-start) -- Install and build your first agent in minutes.
+- [Agents](/concepts/agents) -- Understand the core `agent()` primitive.
+- [Flow Agents](/concepts/flow-agents) -- Multi-step orchestration with `flowAgent()`.

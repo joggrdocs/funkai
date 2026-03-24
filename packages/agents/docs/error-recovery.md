@@ -1,4 +1,4 @@
-# Handle Error Recovery
+# Error Recovery
 
 Patterns for building resilient agents and flow agents that recover gracefully from failures.
 
@@ -313,7 +313,7 @@ const robust = flowAgent(
 - Failing steps return `StepResult` with `ok: false` instead of throwing
 - Retry loops terminate within the configured bounds
 - Partial success flow agents return results for both succeeded and failed items
-- Hook errors are swallowed and never mask the original error
+- Hook errors are caught, logged, and discarded — they never mask the original step error
 - Circuit breaker skips remaining items after the failure threshold
 
 ## Troubleshooting
@@ -328,7 +328,7 @@ const robust = flowAgent(
 
 **Issue:** Expected error information is missing.
 
-**Fix:** Hook errors are swallowed by design (via `attemptEachAsync`). The original step error is always preserved in the `StepResult`.
+**Fix:** Hook errors are caught and discarded by design (via `attemptEachAsync`) so they never mask step errors. The original step error is always preserved in the `StepResult`. Check your logger output for hook error details.
 
 ### `$.map` fails on first error
 
@@ -344,7 +344,5 @@ const robust = flowAgent(
 
 ## References
 
-- [Step Builder ($)](step-builder.md)
-- [Hooks](hooks.md)
-- [Create a Flow Agent](create-flow-agent.md)
-- [Overview](overview.md)
+- [`agent()` reference](/reference/agents/agent)
+- [`flowAgent()` reference](/reference/agents/flow-agent)

@@ -78,7 +78,7 @@ Configures VSCode file associations, Liquid extension recommendation, `.gitignor
 
 ## Documentation
 
-See the [Prompts SDK docs](/prompts) for the full file format, library API, and guides.
+See the [Prompts concept](/concepts/prompts) and [Prompts CLI reference](/reference/prompts/cli) for the full file format, library API, and guides.
 
 ## License
 
