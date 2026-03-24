@@ -26,7 +26,7 @@ On success, `result.ok` is `true` and `result.output`, `result.messages`, and `r
 
 ## Typed I/O
 
-Add an `input` Zod schema and a `prompt` function. Both are required together — providing one without the other is a type error. `.generate()` now accepts the typed input directly.
+Add an `input` Zod schema and a `prompt` function. Both are required together — providing one without the other is a type error. `.generate()` now accepts the typed input via the `input` field.
 
 ```ts
 import { agent } from "@funkai/agents";
@@ -46,8 +46,7 @@ const summarizer = agent({
 });
 
 const result = await summarizer.generate({
-  text: "A very long article...",
-  maxLength: 100,
+  input: { text: "A very long article...", maxLength: 100 },
 });
 ```
 
@@ -145,7 +144,7 @@ Accepted output values:
 
 ## Streaming
 
-Use `.stream()` for incremental text delivery. The result contains `fullStream` (a `ReadableStream<string>`) for live chunks, plus `output` and `messages` as promises that resolve after the stream completes.
+Use `.stream()` for incremental text delivery. The result contains `fullStream` (an `AsyncIterableStream<StreamPart>`) for live events, plus `output` and `messages` as promises that resolve after the stream completes.
 
 ```ts
 import { agent } from "@funkai/agents";
@@ -160,9 +159,11 @@ const helper = agent({
 const result = await helper.stream({ prompt: "Explain async/await in detail" });
 
 if (result.ok) {
-  // Consume text chunks as they arrive
-  for await (const chunk of result.fullStream) {
-    process.stdout.write(chunk);
+  // Consume stream events as they arrive
+  for await (const part of result.fullStream) {
+    if (part.type === "text-delta") {
+      process.stdout.write(part.textDelta);
+    }
   }
 
   // Await final output and messages after stream completes
@@ -214,7 +215,7 @@ Use `.fn()` for clean single-function exports. The returned function has the sam
 export const summarize = summarizer.fn();
 
 // Callers use it like a regular async function
-const result = await summarize({ text: "...", maxLength: 50 });
+const result = await summarize({ input: { text: "...", maxLength: 50 } });
 ```
 
 ---
@@ -222,55 +223,55 @@ const result = await summarize({ text: "...", maxLength: 50 });
 ## Reference: `agent()` signature
 
 ```ts
-function agent<TInput, TOutput, TTools, TSubAgents>(
-  config: AgentConfig<TInput, TOutput, TTools, TSubAgents>,
-): Agent<TInput, TOutput, TTools, TSubAgents>;
+function agent<TInput, TOutput, TTools, TSubAgents, TModel>(
+  config: AgentConfig<TInput, TOutput, TTools, TSubAgents, TModel>,
+): Agent<TInput, TOutput, TTools, TSubAgents, TModel>;
 ```
 
 ## Reference: AgentConfig
 
-| Field          | Required | Type                                                            | Description                                                 |
-| -------------- | -------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
-| `name`         | Yes      | `string`                                                        | Unique agent name (used in logs, traces, hooks)             |
-| `model`        | Yes      | `LanguageModel`                                                 | Model instance (e.g. `openai("gpt-4.1")`)                   |
-| `input`        | No       | `ZodType<TInput>`                                               | Zod schema for typed input (requires `prompt`)              |
-| `prompt`       | No       | `(params: { input: TInput }) => string \| Message[]`            | Render typed input into the model prompt (requires `input`) |
-| `system`       | No       | `string \| ((params: { input: TInput }) => string)`             | System prompt (static or dynamic)                           |
-| `tools`        | No       | `TTools` (Record of `Tool`)                                     | Tools for function calling                                  |
-| `agents`       | No       | `TSubAgents` (Record of `Agent`)                                | Subagents, auto-wrapped as callable tools                   |
-| `maxSteps`     | No       | `number`                                                        | Max tool-loop iterations (default: `20`)                    |
-| `output`       | No       | `OutputParam`                                                   | Output type strategy                                        |
-| `logger`       | No       | `Logger`                                                        | Pino-compatible logger                                      |
-| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the agent starts                           |
-| `onFinish`     | No       | `(event: { input, result, duration }) => void \| Promise<void>` | Hook: fires on success                                      |
-| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                                        |
-| `onStepFinish` | No       | `(event: { stepId }) => void \| Promise<void>`                  | Hook: fires after each tool-loop step                       |
+| Field          | Required | Type                                                                                 | Description                                                 |
+| -------------- | -------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `name`         | Yes      | `string`                                                                             | Unique agent name (used in logs, traces, hooks)             |
+| `model`        | Yes      | `Resolver<TInput, Model>`                                                            | Model instance or resolver function                         |
+| `input`        | No       | `ZodType<TInput>`                                                                    | Zod schema for typed input (requires `prompt`)              |
+| `prompt`       | No       | `(params: { input: TInput }) => string \| Message[] \| Promise<string \| Message[]>` | Render typed input into the model prompt (requires `input`) |
+| `system`       | No       | `Resolver<TInput, string>`                                                           | System prompt (static string or resolver function)          |
+| `tools`        | No       | `Resolver<TInput, TTools>`                                                           | Tools for function calling                                  |
+| `agents`       | No       | `Resolver<TInput, TSubAgents>`                                                       | Subagents, auto-wrapped as callable tools                   |
+| `maxSteps`     | No       | `Resolver<TInput, number>`                                                           | Max tool-loop iterations (default: `20`)                    |
+| `output`       | No       | `OutputParam`                                                                        | Output type strategy                                        |
+| `logger`       | No       | `Resolver<TInput, Logger>`                                                           | Pino-compatible logger                                      |
+| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                                        | Hook: fires when the agent starts                           |
+| `onFinish`     | No       | `(event: { input, result, duration }) => void \| Promise<void>`                      | Hook: fires on success                                      |
+| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`                                 | Hook: fires on error                                        |
+| `onStepFinish` | No       | `(event: { stepId }) => void \| Promise<void>`                                       | Hook: fires after each tool-loop step                       |
 
 ### Two modes
 
-| Config                 | `.generate()` first param         | How prompt is built            |
-| ---------------------- | --------------------------------- | ------------------------------ |
-| `input` + `prompt` set | Typed `TInput`                    | `prompt({ input })` renders it |
-| Both omitted           | `{ prompt: string } \| Message[]` | Passed directly to the model   |
+| Config                 | `.generate()` params                                                          | How prompt is built            |
+| ---------------------- | ----------------------------------------------------------------------------- | ------------------------------ |
+| `input` + `prompt` set | `{ input: TInput, ...overrides }`                                             | `prompt({ input })` renders it |
+| Both omitted           | `{ prompt: string, ...overrides }` or `{ messages: Message[], ...overrides }` | Passed directly to the model   |
 
 ## Reference: Agent interface
 
 ```ts
-interface Agent<TInput, TOutput, TTools, TSubAgents> {
+interface Agent<TInput, TOutput, TTools, TSubAgents, TModel> {
+  readonly model: TModel;
   generate(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>>;
   stream(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>>;
   fn(): (
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ) => Promise<Result<GenerateResult<TOutput>>>;
 }
 ```
+
+`GenerateParams` combines input and per-call overrides into a single object. Input is specified via exactly one of `prompt`, `messages`, or `input`.
 
 ## Reference: GenerateResult
 
@@ -291,23 +292,26 @@ interface StreamResult<TOutput = string> {
   messages: Promise<Message[]>; // resolves after stream completes
   usage: Promise<TokenUsage>; // resolves after stream completes
   finishReason: Promise<string>; // resolves after stream completes
-  fullStream: ReadableStream<string>; // live text deltas
+  fullStream: AsyncIterableStream<StreamPart>; // live stream events
+  toTextStreamResponse(init?: ResponseInit): Response; // SSE text stream
+  toUIMessageStreamResponse(options?: unknown): Response; // UI message stream
 }
 ```
 
-## Reference: AgentOverrides
+## Reference: Per-Call Overrides (GenerateParams)
 
-Per-call overrides passed as the optional second parameter to `.generate()` or `.stream()`. Override fields replace the base config for that call only.
+Per-call overrides are passed as fields in the `GenerateParams` object alongside the input. Override fields replace the base config for that call only.
 
 | Field          | Type                                          | Description                     |
 | -------------- | --------------------------------------------- | ------------------------------- |
-| `model`        | `LanguageModel`                               | Override the model              |
+| `model`        | `Model`                                       | Override the model              |
 | `system`       | `string \| ((params) => string)`              | Override the system prompt      |
 | `tools`        | `Partial<TTools> & Record<string, Tool>`      | Merge with base tools           |
 | `agents`       | `Partial<TSubAgents> & Record<string, Agent>` | Merge with base subagents       |
 | `maxSteps`     | `number`                                      | Override max tool-loop steps    |
 | `output`       | `OutputParam`                                 | Override the output strategy    |
 | `signal`       | `AbortSignal`                                 | Abort signal for cancellation   |
+| `timeout`      | `number`                                      | Timeout in milliseconds         |
 | `logger`       | `Logger`                                      | Override the logger             |
 | `onStart`      | hook                                          | Per-call hook, fires after base |
 | `onFinish`     | hook                                          | Per-call hook, fires after base |

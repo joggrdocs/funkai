@@ -39,10 +39,10 @@ describe("summarizer", () => {
       }),
     };
 
-    const result = await summarizer.generate(
-      { text: "Long article content..." },
-      { model: mockModel as any },
-    );
+    const result = await summarizer.generate({
+      input: { text: "Long article content..." },
+      model: mockModel as any,
+    });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -119,8 +119,10 @@ const classifier = agent({
 describe("classifier", () => {
   it("returns structured output matching the schema", async () => {
     const result = await classifier.generate({
-      title: "App crashes on login",
-      body: "When I click the login button, the app crashes.",
+      input: {
+        title: "App crashes on login",
+        body: "When I click the login button, the app crashes.",
+      },
     });
 
     if (result.ok) {
@@ -192,7 +194,7 @@ const pipeline = flowAgent(
 
 describe("text-stats flow agent", () => {
   it("computes word and character counts", async () => {
-    const result = await pipeline.generate({ text: "hello world" });
+    const result = await pipeline.generate({ input: { text: "hello world" } });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -204,7 +206,7 @@ describe("text-stats flow agent", () => {
 
   it("rejects invalid input", async () => {
     // @ts-expect-error intentionally passing wrong type
-    const result = await pipeline.generate({ text: 42 });
+    const result = await pipeline.generate({ input: { text: 42 } });
     expect(result.ok).toBe(false);
   });
 });
@@ -240,7 +242,7 @@ const failingFlowAgent = flowAgent(
 
 describe("error paths", () => {
   it("handles step failure gracefully", async () => {
-    const result = await failingFlowAgent.generate({ shouldFail: true });
+    const result = await failingFlowAgent.generate({ input: { shouldFail: true } });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -249,7 +251,7 @@ describe("error paths", () => {
   });
 
   it("succeeds on happy path", async () => {
-    const result = await failingFlowAgent.generate({ shouldFail: false });
+    const result = await failingFlowAgent.generate({ input: { shouldFail: false } });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -327,7 +329,7 @@ describe("flow agent hooks", () => {
       },
     );
 
-    await traced.generate({ value: "test" });
+    await traced.generate({ input: { value: "test" } });
 
     expect(events).toEqual([
       "flow:start",

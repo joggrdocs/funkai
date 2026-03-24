@@ -21,7 +21,7 @@ schema:
     type: string
     description: The code diff to review
   strict:
-    type: boolean
+    type: string
     required: false
 ---
 

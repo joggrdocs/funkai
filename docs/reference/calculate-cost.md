@@ -73,6 +73,8 @@ total     = input + output + cacheRead + cacheWrite + reasoning
 
 ## Usage Helpers
 
+> These functions are exported from `@funkai/agents`, not `@funkai/models`.
+
 These functions operate on `TokenUsageRecord[]` — the raw tracking records collected from agent execution traces.
 
 ### usage()

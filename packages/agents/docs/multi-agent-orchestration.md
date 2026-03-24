@@ -153,8 +153,8 @@ const analyze = flowAgent(
     const results = await $.all({
       id: "analyze-parallel",
       entries: [
-        (signal) => sentimentAgent.generate({ text: input.text }, { signal }),
-        (signal) => summaryAgent.generate({ text: input.text }, { signal }),
+        (signal) => sentimentAgent.generate({ input: { text: input.text }, signal }),
+        (signal) => summaryAgent.generate({ input: { text: input.text }, signal }),
       ],
     });
 
@@ -317,11 +317,11 @@ const racingFlowAgent = flowAgent(
       entries: [
         (signal) =>
           fastAgent
-            .generate({ prompt: input.question }, { signal })
+            .generate({ prompt: input.question, signal })
             .then((r) => ({ ...r, model: "fast" })),
         (signal) =>
           qualityAgent
-            .generate({ prompt: input.question }, { signal })
+            .generate({ prompt: input.question, signal })
             .then((r) => ({ ...r, model: "quality" })),
       ],
     });

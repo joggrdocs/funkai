@@ -2,7 +2,7 @@
 
 `flowAgent()` creates a multi-step agent whose logic is plain imperative TypeScript. There are no step arrays or definition objects — you write a handler function and use `$` for tracked operations.
 
-Flow agents always require typed I/O: both `input` and `output` must be Zod schemas. Input is validated on entry; output is validated before it is returned to the caller.
+Flow agents always require a typed `input` Zod schema, validated on entry. The `output` schema is optional — when provided, the handler's return value is validated against it before being returned to the caller. When omitted, the handler returns `void` and the collected text from sub-agent responses becomes a `string` output.
 
 ## Basic example
 
@@ -46,7 +46,7 @@ const pipeline = flowAgent(
   },
 );
 
-const result = await pipeline.generate({ topic: "pattern matching" });
+const result = await pipeline.generate({ input: { topic: "pattern matching" } });
 
 if (result.ok) {
   console.log(result.output.text);
@@ -81,7 +81,7 @@ State lives in plain variables — use closures. There is no shared state object
 `.stream()` emits `StepEvent` objects (`step:start`, `step:finish`, `step:error`, `flow:finish`) as each `$` operation runs. Use this to push real-time progress to a UI.
 
 ```typescript
-const result = await pipeline.stream({ topic: "closures" });
+const result = await pipeline.stream({ input: { topic: "closures" } });
 
 if (result.ok) {
   for await (const event of result.fullStream) {

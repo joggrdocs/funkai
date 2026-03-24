@@ -20,7 +20,7 @@ Set on `FlowAgentConfig`:
 | Hook           | Event fields                           | When                                                  |
 | -------------- | -------------------------------------- | ----------------------------------------------------- |
 | `onStart`      | `{ input }`                            | After input validation, before handler runs           |
-| `onFinish`     | `{ input, output, duration }`          | After successful completion                           |
+| `onFinish`     | `{ input, result, duration }`          | After successful completion                           |
 | `onError`      | `{ input, error }`                     | On error, before Result is returned                   |
 | `onStepStart`  | `{ step: StepInfo }`                   | Before any `$` operation executes                     |
 | `onStepFinish` | `{ step: StepInfo, result, duration }` | After any `$` operation completes (success AND error) |
@@ -41,7 +41,7 @@ These are available on `$.step`, `$.agent`, `$.map`, `$.each`, `$.reduce`, `$.wh
 
 ## Per-Call Hooks
 
-Agent per-call hooks are set on `AgentOverrides` (the second parameter to `.generate()` or `.stream()`). They have the same names as the base hooks but fire **after** the base hooks.
+Agent per-call hooks are set on the `GenerateParams` object passed to `.generate()` or `.stream()`. They have the same names as the base hooks but fire **after** the base hooks.
 
 ```ts
 await myAgent.generate({

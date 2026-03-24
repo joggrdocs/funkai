@@ -219,13 +219,17 @@ $.all(config: AllConfig): Promise<StepResult<unknown[]>>
 | `onFinish` | No       | hook             | Hook: fires when all complete         |
 | `onError`  | No       | hook             | Hook: fires on error                  |
 
-Where `EntryFactory = (signal: AbortSignal) => Promise<any>`.
+Where `EntryFactory = (signal: AbortSignal, $: StepBuilder) => Promise<unknown>`.
 
 ```ts
-const [users, repos] = await $.all({
+const result = await $.all({
   id: "fetch-data",
   entries: [(signal) => fetchUsers(signal), (signal) => fetchRepos(signal)],
 });
+
+if (result.ok) {
+  const [users, repos] = result.value;
+}
 ```
 
 ## $.race

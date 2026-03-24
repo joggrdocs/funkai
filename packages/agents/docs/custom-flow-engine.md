@@ -278,7 +278,8 @@ The abort signal cascades through the entire execution tree. When a flow agent r
 ```ts
 const controller = new AbortController();
 
-const result = await myFlowAgent.generate(input, {
+const result = await myFlowAgent.generate({
+  input,
   signal: controller.signal,
 });
 

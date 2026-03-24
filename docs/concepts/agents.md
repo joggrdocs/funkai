@@ -42,7 +42,7 @@ const summarizer = agent({
   prompt: ({ input }) => `Summarize the following in ${input.maxWords} words:\n\n${input.text}`,
 });
 
-const result = await summarizer.generate({ text: "Long article...", maxWords: 50 });
+const result = await summarizer.generate({ input: { text: "Long article...", maxWords: 50 } });
 
 if (result.ok) {
   console.log(result.output);

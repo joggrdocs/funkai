@@ -4,7 +4,7 @@
 
 ## Basic flow agent
 
-A flow agent has typed `input` and `output` Zod schemas and a handler function. The handler receives validated input and a `$` step builder for tracked operations.
+A flow agent has a typed `input` Zod schema and an optional `output` Zod schema, plus a handler function. The handler receives validated input and a `$` step builder for tracked operations.
 
 ```ts
 import { flowAgent } from "@funkai/agents";
@@ -34,7 +34,7 @@ const myFlowAgent = flowAgent(
   },
 );
 
-const result = await myFlowAgent.generate({ url: "https://example.com" });
+const result = await myFlowAgent.generate({ input: { url: "https://example.com" } });
 if (result.ok) {
   console.log(result.output); // validated output
   console.log(result.trace); // frozen execution trace tree
@@ -211,7 +211,7 @@ const converged = await $.while({
 Every `$` operation produces a `TraceEntry`. Nested operations appear as `children`, forming a tree that represents the full execution graph. After execution completes, the trace is deep-cloned and frozen via `snapshotTrace()`.
 
 ```ts
-const result = await myFlowAgent.generate(input);
+const result = await myFlowAgent.generate({ input });
 
 if (result.ok) {
   for (const entry of result.trace) {
@@ -256,7 +256,7 @@ See [Cost Tracking](cost-tracking.md) for full usage aggregation and cost calcul
 
 ## Typed I/O
 
-Both `input` and `output` Zod schemas are required on a flow agent. The handler must return a value that satisfies the `output` schema — validation runs before the result is returned to the caller.
+The `input` Zod schema is required on a flow agent. The `output` schema is optional — when provided, the handler must return a value that satisfies it (validation runs before the result is returned to the caller). When omitted, the handler returns `void` and the collected text from sub-agent responses becomes a `string` output.
 
 ```ts
 import { flowAgent } from "@funkai/agents";
@@ -288,7 +288,7 @@ const pipeline = flowAgent(
 Use `.stream()` to receive `StepEvent` objects as the flow agent executes.
 
 ```ts
-const result = await myFlowAgent.stream({ url: "https://example.com" });
+const result = await myFlowAgent.stream({ input: { url: "https://example.com" } });
 
 if (result.ok) {
   for await (const event of result.fullStream) {
@@ -308,9 +308,8 @@ if (result.ok) {
     }
   }
 
-  // Final output, trace, and duration are on the result
-  console.log(result.output);
-  console.log(result.trace);
+  // Final output resolves after stream completes
+  const output = await result.output;
 }
 ```
 
@@ -323,7 +322,7 @@ const wf = flowAgent(
     input: InputSchema,
     output: OutputSchema,
     onStart: ({ input }) => console.log("Flow agent started"),
-    onFinish: ({ input, output, duration }) => console.log(`Done in ${duration}ms`),
+    onFinish: ({ input, result, duration }) => console.log(`Done in ${duration}ms`),
     onError: ({ input, error }) => console.error("Failed:", error.message),
     onStepStart: ({ step }) => console.log(`Step ${step.id} started`),
     onStepFinish: ({ step, result, duration }) =>
@@ -341,7 +340,7 @@ Use `.fn()` for clean single-function exports.
 export const processData = myFlowAgent.fn();
 
 // Callers use it like a regular async function
-const result = await processData({ url: "https://example.com" });
+const result = await processData({ input: { url: "https://example.com" } });
 ```
 
 ## Full example
@@ -410,31 +409,41 @@ export const summarizePages = pipeline.fn();
 ## Reference: `flowAgent()` signature
 
 ```ts
+// With structured output
 function flowAgent<TInput, TOutput>(
-  config: FlowAgentConfig<TInput, TOutput>,
+  config: FlowAgentConfigWithOutput<TInput, TOutput>,
   handler: FlowAgentHandler<TInput, TOutput>,
 ): FlowAgent<TInput, TOutput>;
+
+// Without output schema (void handler, string output)
+function flowAgent<TInput>(
+  config: FlowAgentConfigWithoutOutput<TInput>,
+  handler: FlowAgentHandler<TInput, void>,
+): FlowAgent<TInput, string>;
 ```
 
 ## Reference: FlowAgentConfig
 
-| Field          | Required | Type                                                            | Description                                   |
-| -------------- | -------- | --------------------------------------------------------------- | --------------------------------------------- |
-| `name`         | Yes      | `string`                                                        | Unique flow agent name (used in logs, traces) |
-| `input`        | Yes      | `ZodType<TInput>`                                               | Zod schema for validating input               |
-| `output`       | Yes      | `ZodType<TOutput>`                                              | Zod schema for validating output              |
-| `logger`       | No       | `Logger`                                                        | Pino-compatible logger                        |
-| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts        |
-| `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                        |
-| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                          |
-| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts          |
-| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes        |
+| Field          | Required | Type                                                            | Description                                               |
+| -------------- | -------- | --------------------------------------------------------------- | --------------------------------------------------------- |
+| `name`         | Yes      | `string`                                                        | Unique flow agent name (used in logs, traces)             |
+| `input`        | Yes      | `ZodType<TInput>`                                               | Zod schema for validating input                           |
+| `output`       | No       | `ZodType<TOutput>`                                              | Zod schema for validating output (omit for string output) |
+| `agents`       | No       | `FlowSubAgents`                                                 | Record of agents available to `$.agent()`                 |
+| `logger`       | No       | `Resolver<TInput, Logger>`                                      | Pino-compatible logger                                    |
+| `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts                    |
+| `onFinish`     | No       | `(event: { input, result, duration }) => void \| Promise<void>` | Hook: fires on success                                    |
+| `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                                      |
+| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts                      |
+| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes                    |
 
 ## Reference: FlowAgentGenerateResult
 
 ```ts
 interface FlowAgentGenerateResult<TOutput> {
   output: TOutput; // validated output
+  messages: Message[]; // full message history
+  finishReason: string; // why the model stopped
   trace: readonly TraceEntry[]; // frozen execution trace tree
   usage: TokenUsage; // aggregated token usage from all $.agent() calls
   duration: number; // wall-clock time in ms

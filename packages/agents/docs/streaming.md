@@ -173,7 +173,7 @@ const pipeline = flowAgent(
   },
 );
 
-const result = await pipeline.stream({ topic: "TypeScript patterns" });
+const result = await pipeline.stream({ input: { topic: "TypeScript patterns" } });
 if (result.ok) {
   for await (const part of result.fullStream) {
     if (part.type === "text-delta") {

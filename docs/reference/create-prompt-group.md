@@ -5,8 +5,15 @@ Create a group of related prompt modules under a shared namespace. Groups are us
 ## Function Signature
 
 ```typescript
-function createPromptGroup(config: unknown): unknown;
+function createPromptGroup<T extends Record<string, PromptModule>>(name: string, prompts: T): T;
 ```
+
+| Parameter | Type                                     | Description                                         |
+| --------- | ---------------------------------------- | --------------------------------------------------- |
+| `name`    | `string`                                 | Group name applied to each prompt (e.g. `'agents'`) |
+| `prompts` | `T extends Record<string, PromptModule>` | Record of prompt modules to group                   |
+
+**Returns:** A new record with the same keys, each module tagged with the group name.
 
 ## How Groups Work
 
@@ -28,26 +35,28 @@ The codegen output registers this prompt at the path `prompts.agents.coverageAss
 import { createPrompt, createPromptGroup, createPromptRegistry } from "@funkai/prompts";
 import { z } from "zod";
 
-// Create individual prompts with a group
+// Create individual prompts
 const systemPrompt = createPrompt({
   name: "system-prompt",
-  group: "agents/reviewer",
   template: "You are a {{ language }} code reviewer.",
   schema: z.object({ language: z.string() }),
 });
 
 const feedbackPrompt = createPrompt({
   name: "feedback",
-  group: "agents/reviewer",
   template: "Provide feedback on:\n\n{{ code }}",
   schema: z.object({ code: z.string() }),
 });
 
-// Groups are assembled into a registry
+// Group them under a namespace
+const reviewer = createPromptGroup("agents/reviewer", {
+  systemPrompt,
+  feedback: feedbackPrompt,
+});
+
+// Assemble into a registry
 const prompts = createPromptRegistry({
-  agents: {
-    reviewer: { systemPrompt, feedback: feedbackPrompt },
-  },
+  agents: { reviewer },
 });
 
 // Access via nested path

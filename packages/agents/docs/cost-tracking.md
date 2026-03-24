@@ -125,10 +125,10 @@ const assistant = agent({
 const selectModel = (complexity: "simple" | "complex"): LanguageModel =>
   complexity === "simple" ? openai("gpt-4.1-mini") : openai("gpt-4.1");
 
-const result = await assistant.generate(
-  { question: "What is 2 + 2?", complexity: "simple" },
-  { model: selectModel("simple") },
-);
+const result = await assistant.generate({
+  input: { question: "What is 2 + 2?", complexity: "simple" },
+  model: selectModel("simple"),
+});
 ```
 
 ## Compare model costs before selecting
@@ -200,12 +200,15 @@ const pipeline = flowAgent(
   },
 );
 
-const result = await pipeline.generate({ texts: ["Text A", "Text B", "Text C"] });
+const result = await pipeline.generate({ input: { texts: ["Text A", "Text B", "Text C"] } });
 
 if (result.ok) {
   const modelDef = model("gpt-4.1");
-  const cost = calculateCost(result.usage, modelDef.pricing);
-  console.log(`Flow agent total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
+
+  if (modelDef) {
+    const cost = calculateCost(result.usage, modelDef.pricing);
+    console.log(`Flow agent total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
+  }
 }
 ```
 
@@ -343,11 +346,14 @@ const result = await myFlowAgent.generate(input);
 if (result.ok) {
   const usages = collectUsages(result.trace);
   const m = model("gpt-4.1");
-  const totalCost = usages.reduce((sum, u) => {
-    const cost = calculateCost(u, m.pricing);
-    return sum + cost.total;
-  }, 0);
-  console.log(`Total cost: $${totalCost.toFixed(4)}`);
+
+  if (m) {
+    const totalCost = usages.reduce((sum, u) => {
+      const cost = calculateCost(u, m.pricing);
+      return sum + cost.total;
+    }, 0);
+    console.log(`Total cost: $${totalCost.toFixed(4)}`);
+  }
 }
 ```
 

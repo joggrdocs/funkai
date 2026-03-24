@@ -21,7 +21,7 @@ const prompts = createPromptRegistry({
 });
 
 prompts.agents.coverageAssessor.render({ scope: "full" });
-prompts.greeting.render();
+prompts.greeting.render({ name: "Alice" });
 ```
 
 ## PromptNamespace

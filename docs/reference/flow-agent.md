@@ -1,6 +1,6 @@
 # flowAgent()
 
-Create a multi-step agent whose orchestration logic is plain imperative TypeScript. The handler function receives a `$` StepBuilder for tracked operations that appear in the execution trace. Flow agents always require typed I/O via Zod schemas.
+Create a multi-step agent whose orchestration logic is plain imperative TypeScript. The handler function receives a `$` StepBuilder for tracked operations that appear in the execution trace. Flow agents require a typed `input` Zod schema; the `output` schema is optional (omitting it yields a `string` output from collected sub-agent text).
 
 ## Function Signature
 

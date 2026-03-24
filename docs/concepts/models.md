@@ -10,7 +10,7 @@
 import { model, models } from "@funkai/models";
 
 // Single lookup — returns ModelDefinition | null
-const gpt41 = model("openai/gpt-4.1");
+const gpt41 = model("gpt-4.1");
 if (gpt41) {
   console.log(gpt41.name);
   console.log(gpt41.contextWindow);
@@ -54,7 +54,7 @@ The prefix before the first `/` selects the provider factory. Model IDs without 
 ```typescript
 import { model, calculateCost } from "@funkai/models";
 
-const m = model("openai/gpt-4.1");
+const m = model("gpt-4.1");
 
 if (m) {
   const cost = calculateCost(
