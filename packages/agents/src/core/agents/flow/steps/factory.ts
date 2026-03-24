@@ -285,18 +285,14 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "agent",
       input: config.input,
       execute: async () => {
+        // Forward fixed-type step hooks and agent chain to sub-agent
+        const forwardedHooks = resolveParentHooks(parentHooks);
         const agentParams = {
           ...config.config,
           input: config.input,
           signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
-          // Forward fixed-type step hooks so sub-agent internal steps
-          // (tool-loop iterations, nested flow steps) are visible to
-          // the root flow's onStepStart/onStepFinish hooks.
-          onStepStart: parentHooks?.onStepStart,
-          onStepFinish: parentHooks?.onStepFinish,
-          // Internal-only: thread the agent chain so sub-agents can
-          // extend it and attach to their own step events.
+          ...forwardedHooks,
           agentChain,
         };
 
@@ -602,6 +598,28 @@ function buildOnFinishHandlerRace(
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result, duration: event.duration });
+}
+
+/**
+ * Extract step hooks from the parent hook bag without optional
+ * chaining or ternaries (both disallowed by oxlint).
+ *
+ * Returns an object with `onStepStart` / `onStepFinish` suitable
+ * for spreading into sub-agent params. When `parentHooks` is nil,
+ * returns an empty object so the spread is a no-op.
+ *
+ * @private
+ */
+function resolveParentHooks(
+  parentHooks: StepBuilderOptions["parentHooks"],
+): Record<string, unknown> {
+  if (isNil(parentHooks)) {
+    return {};
+  }
+  return {
+    onStepStart: parentHooks.onStepStart,
+    onStepFinish: parentHooks.onStepFinish,
+  };
 }
 
 /**
