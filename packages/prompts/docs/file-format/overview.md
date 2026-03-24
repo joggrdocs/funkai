@@ -44,7 +44,7 @@ Names must match `^[a-z0-9-]+$` (lowercase, digits, hyphens). The `name` field i
 
 ## Discovery
 
-The CLI scans `--roots` directories recursively (max depth 5). Files must have the `.prompt` extension. Symbolic links are skipped. Duplicate names across roots cause an error with paths listed.
+The CLI scans `--includes` glob patterns recursively (max depth 5). Files must have the `.prompt` extension. Symbolic links are skipped. Duplicate names across roots cause an error with paths listed.
 
 Results are sorted alphabetically by name.
 

@@ -10,10 +10,10 @@
 
 ## Features
 
-- :zap: **Functions all the way down** — `agent`, `tool`, `workflow` are functions returning plain objects.
+- :zap: **Functions all the way down** — `agent`, `tool`, `flowAgent` are functions returning plain objects.
 - :jigsaw: **Composition over configuration** — Combine small pieces instead of configuring large ones.
 - :shield: **Result, never throw** — Every public method returns `Result<T>`.
-- :lock: **Closures are state** — Workflow state is just variables in your handler.
+- :lock: **Closures are state** — Flow agent state is just variables in your handler.
 - :triangular_ruler: **Type-driven design** — Zod schemas, discriminated unions, exhaustive matching.
 
 ## Install
@@ -28,16 +28,16 @@ npm install @funkai/agents @funkai/prompts
 
 ```ts
 import { agent } from "@funkai/agents";
-import { prompts } from "~prompts";
+import { openai } from "@ai-sdk/openai";
 
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
-  system: prompts("writer"),
+  model: openai("gpt-4.1"),
+  system: "You are a helpful writer.",
   tools: { search },
 });
 
-const result = await writer.generate("Write about closures");
+const result = await writer.generate({ prompt: "Write about closures" });
 ```
 
 ### Define a prompt
@@ -54,14 +54,15 @@ You are a {{ tone }} writer.
 ### Generate typed prompts
 
 ```bash
-npx funkai prompts generate --out .prompts/client --roots src/agents
+npx funkai prompts generate --out .prompts/client --includes "src/agents/**"
 ```
 
 ## Packages
 
 | Package                               | Description                                                          |
 | ------------------------------------- | -------------------------------------------------------------------- |
-| [`@funkai/agents`](packages/agents)   | Lightweight agent, tool, and workflow orchestration                  |
+| [`@funkai/agents`](packages/agents)   | Lightweight agent, tool, and flow agent orchestration                |
+| [`@funkai/models`](packages/models)   | Model catalog, provider resolution, and cost calculations            |
 | [`@funkai/prompts`](packages/prompts) | Prompt SDK with LiquidJS templating, Zod validation, and CLI codegen |
 | [`@funkai/cli`](packages/cli)         | CLI for the funkai prompt SDK                                        |
 

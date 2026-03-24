@@ -1,6 +1,6 @@
 # Hooks
 
-Hooks provide lifecycle callbacks for agents, workflows, and steps. All hooks are optional. Hook errors are swallowed (logged via `attemptEachAsync`, never thrown) so they never mask the original error or interrupt execution.
+Hooks provide lifecycle callbacks for agents, flow agents, and steps. All hooks are optional. Hook errors are swallowed (logged via `attemptEachAsync`, never thrown) so they never mask the original error or interrupt execution.
 
 ## Agent Hooks
 
@@ -13,9 +13,9 @@ Set on `AgentConfig`:
 | `onError`      | `{ input, error }`            | On error, before Result is returned                                          |
 | `onStepFinish` | `{ stepId }`                  | After each tool-loop step (counter-based: `agentName:0`, `agentName:1`, ...) |
 
-## Workflow Hooks
+## Flow Agent Hooks
 
-Set on `WorkflowConfig`:
+Set on `FlowAgentConfig`:
 
 | Hook           | Event fields                           | When                                                  |
 | -------------- | -------------------------------------- | ----------------------------------------------------- |
@@ -44,7 +44,8 @@ These are available on `$.step`, `$.agent`, `$.map`, `$.each`, `$.reduce`, `$.wh
 Agent per-call hooks are set on `AgentOverrides` (the second parameter to `.generate()` or `.stream()`). They have the same names as the base hooks but fire **after** the base hooks.
 
 ```ts
-await myAgent.generate("hello", {
+await myAgent.generate({
+  prompt: "hello",
   onStart: ({ input }) => console.log("call-level start"),
   onFinish: ({ result, duration }) => console.log(`call done in ${duration}ms`),
 });
@@ -54,20 +55,20 @@ await myAgent.generate("hello", {
 
 Per-call hooks merge with base hooks -- base fires first, then call-level. Both are independently wrapped with `attemptEachAsync`, so an error in one hook does not prevent the other from running.
 
-For workflow engines created with `createWorkflowEngine()`, engine-level hooks fire first, then workflow-level hooks fire second.
+For flow engines created with `createFlowEngine()`, engine-level hooks fire first, then flow agent-level hooks fire second.
 
 ## Hook Execution Order
 
-For a `$.agent` call inside a workflow:
+For a `$.agent` call inside a flow agent:
 
 ```
-step.onStart -> workflow.onStepStart -> execute -> step.onFinish -> workflow.onStepFinish
+step.onStart -> flowAgent.onStepStart -> execute -> step.onFinish -> flowAgent.onStepFinish
 ```
 
 On error, the sequence diverges:
 
 ```
-step.onStart -> workflow.onStepStart -> execute (throws) -> step.onError -> workflow.onStepFinish
+step.onStart -> flowAgent.onStepStart -> execute (throws) -> step.onError -> flowAgent.onStepFinish
 ```
 
 For an agent's tool-loop steps:
@@ -150,5 +151,5 @@ This means a failing hook will never mask the original error or prevent other ho
 ## References
 
 - [Agent](agent.md)
-- [Workflow](workflow.md)
+- [Flow Agent](flow-agent.md)
 - [Step Builder ($)](step.md)

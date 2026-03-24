@@ -1,17 +1,16 @@
 # Provider Configuration
 
-Configuration options for `createModelResolver()` and how to set up provider mappings.
+Configuration options for `createProviderRegistry()` and how to set up provider mappings.
 
 ## Key Concepts
 
-### ModelResolverConfig
+### ProviderRegistryConfig
 
-| Option      | Type                                 | Default     | Description                               |
-| ----------- | ------------------------------------ | ----------- | ----------------------------------------- |
-| `providers` | `ProviderMap`                        | `{}`        | Direct AI SDK provider mappings by prefix |
-| `fallback`  | `(modelId: string) => LanguageModel` | `undefined` | Fallback factory for unmapped prefixes    |
+| Option      | Type          | Default | Description                               |
+| ----------- | ------------- | ------- | ----------------------------------------- |
+| `providers` | `ProviderMap` | `{}`    | Direct AI SDK provider mappings by prefix |
 
-Both fields are optional. A resolver with no configuration throws on every call.
+A registry with no providers throws on every call.
 
 ### ProviderMap
 
@@ -35,7 +34,7 @@ const providers: ProviderMap = {
 Map each provider explicitly. Unmapped prefixes throw an error:
 
 ```ts
-const resolve = createModelResolver({
+const resolve = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
     anthropic: createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
@@ -44,54 +43,32 @@ const resolve = createModelResolver({
 });
 ```
 
-### Direct Providers with OpenRouter Fallback
+### With OpenRouter
 
-Map preferred providers directly. Unmapped prefixes route through OpenRouter:
+Include OpenRouter as a provider using `@openrouter/ai-sdk-provider`:
 
 ```ts
-const resolve = createModelResolver({
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
-  },
-  fallback: openrouter,
-});
-```
-
-### OpenRouter-Only
-
-Route all models through OpenRouter:
-
-```ts
-const resolve = createModelResolver({
-  fallback: openrouter,
-});
-```
-
-### Custom Fallback
-
-Use any function as a fallback:
-
-```ts
-const resolve = createModelResolver({
-  providers: {
-    openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
-  },
-  fallback: (modelId: string) => {
-    const provider = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
-    return provider(modelId);
+    openrouter: createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY }),
   },
 });
+
+const lm = registry("openrouter/anthropic/claude-sonnet-4");
 ```
 
 ## Error Handling
 
-`createModelResolver()` throws in these cases:
+`createProviderRegistry()` throws in these cases:
 
-| Condition                    | Error Message                                                                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| Empty model ID               | `Cannot resolve model: model ID is empty`                                                   |
-| No prefix, no fallback       | `Cannot resolve model "<id>": no provider prefix and no fallback configured`                |
-| Unmapped prefix, no fallback | `Cannot resolve model "<id>": no provider mapped for "<prefix>" and no fallback configured` |
+| Condition       | Error Message                                                    |
+| --------------- | ---------------------------------------------------------------- |
+| Empty model ID  | `Cannot resolve model: model ID is empty`                        |
+| No prefix       | `Cannot resolve model "<id>": no provider prefix`                |
+| Unmapped prefix | `Cannot resolve model "<id>": no provider mapped for "<prefix>"` |
 
 ## References
 

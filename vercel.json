@@ -3,5 +3,5 @@
   "outputDirectory": ".zpress/dist",
   "framework": null,
   "installCommand": "pnpm install",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet vercel.json zpress.config.ts packages/agents/docs/ packages/prompts/docs/ packages/cli/README.md contributing/"
+  "ignoreCommand": "pnpm zpress diff --ref HEAD^"
 }

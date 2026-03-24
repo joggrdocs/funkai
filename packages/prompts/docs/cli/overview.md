@@ -61,7 +61,7 @@ Add a generate script to your `package.json`:
 ```json
 {
   "scripts": {
-    "prompts:generate": "prompts generate --out .prompts/client --roots prompts src/agents"
+    "prompts:generate": "prompts generate --out .prompts/client --includes \"prompts/**\" \"src/agents/**\""
   }
 }
 ```

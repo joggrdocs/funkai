@@ -1,6 +1,6 @@
 # $ StepBuilder
 
-The `$` object is passed into every workflow handler and step callback. It provides tracked operations that register data flow in the execution trace. Every call through `$` becomes a `TraceEntry`.
+The `$` object is passed into every flow agent handler and step callback. It provides tracked operations that register data flow in the execution trace. Every call through `$` becomes a `TraceEntry`.
 
 `$` is passed into every callback, enabling composition and nesting. You can always skip `$` and use plain imperative code -- it just will not appear in the trace.
 
@@ -19,7 +19,7 @@ type StepResult<T> =
 ```ts
 interface StepInfo {
   id: string; // from the $ config's `id` field
-  index: number; // auto-incrementing within the workflow
+  index: number; // auto-incrementing within the flow agent
   type: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
 }
 ```
@@ -66,7 +66,7 @@ $.agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateRes
 | Field      | Required | Type               | Description                          |
 | ---------- | -------- | ------------------ | ------------------------------------ |
 | `id`       | Yes      | `string`           | Unique step identifier               |
-| `agent`    | Yes      | `Runnable<TInput>` | The agent (or workflow) to invoke    |
+| `agent`    | Yes      | `Runnable<TInput>` | The agent (or flow agent) to invoke  |
 | `input`    | Yes      | `TInput`           | Input to pass to the agent           |
 | `config`   | No       | `AgentOverrides`   | Inline overrides for this agent call |
 | `onStart`  | No       | hook               | Hook: fires when step starts         |
@@ -274,6 +274,6 @@ const result = await $.step({
 
 ## References
 
-- [Workflow](workflow.md)
+- [Flow Agent](flow-agent.md)
 - [Hooks](hooks.md)
 - [Core Overview](overview.md)

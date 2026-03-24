@@ -13,13 +13,13 @@
     "prompts:generate": "funkai prompts generate --out .prompts/client --includes \"api/agents/**\""
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.0",
+    "@ai-sdk/openai": "^3.0.48",
     "@clack/prompts": "^1.1.0",
     "@funkai/agents": "workspace:*",
     "@funkai/prompts": "workspace:*",
     "@hono/node-server": "^1.19.11",
     "dotenv": "^17.3.1",
-    "hono": "^4.12.8",
+    "hono": "^4.12.9",
     "zod": "catalog:"
   },
   "devDependencies": {

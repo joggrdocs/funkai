@@ -1,12 +1,12 @@
-# Test Agents and Workflows
+# Test Agents and Flow Agents
 
-Patterns for unit testing agents, workflows, and tools with mocked models and deterministic assertions.
+Patterns for unit testing agents, flow agents, and tools with mocked models and deterministic assertions.
 
 ## Prerequisites
 
 - `@funkai/agents` installed
 - Vitest configured (`pnpm test --filter=@funkai/agents`)
-- Familiarity with `agent()`, `workflow()`, and `tool()` APIs
+- Familiarity with `agent()`, `flowAgent()`, and `tool()` APIs
 
 ## Steps
 
@@ -16,13 +16,14 @@ Agents accept a `model` override on each `.generate()` call. This is useful for 
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 import { simulateReadableStream } from "ai";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });
@@ -53,21 +54,22 @@ describe("summarizer", () => {
 
 ### 2. Assert on Result shape
 
-Every agent and workflow returns `Result<T>`. Test both success and error paths by checking `result.ok`.
+Every agent and flow agent returns `Result<T>`. Test both success and error paths by checking `result.ok`.
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
 describe("helper", () => {
   it("succeeds with a string output", async () => {
-    const result = await helper.generate("What is TypeScript?");
+    const result = await helper.generate({ prompt: "What is TypeScript?" });
 
     if (result.ok) {
       expect(result.output).toBeDefined();
@@ -80,7 +82,8 @@ describe("helper", () => {
     const controller = new AbortController();
     controller.abort();
 
-    const result = await helper.generate("This will be cancelled", {
+    const result = await helper.generate({
+      prompt: "This will be cancelled",
       signal: controller.signal,
     });
 
@@ -98,12 +101,13 @@ When an agent has an `output` schema, assert on the typed shape of `result.outpu
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
 const classifier = agent({
   name: "classifier",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   output: z.object({
     category: z.enum(["bug", "feature", "question"]),
     confidence: z.number(),
@@ -156,16 +160,16 @@ describe("calculator tool", () => {
 });
 ```
 
-### 5. Test workflow steps
+### 5. Test flow agent steps
 
-Workflows have typed input/output schemas. Test the full pipeline or individual steps by checking `result.ok`, `result.output`, and `result.trace`.
+Flow agents have typed input/output schemas. Test the full pipeline or individual steps by checking `result.ok`, `result.output`, and `result.trace`.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
-const pipeline = workflow(
+const pipeline = flowAgent(
   {
     name: "text-stats",
     input: z.object({ text: z.string() }),
@@ -186,7 +190,7 @@ const pipeline = workflow(
   },
 );
 
-describe("text-stats workflow", () => {
+describe("text-stats flow agent", () => {
   it("computes word and character counts", async () => {
     const result = await pipeline.generate({ text: "hello world" });
 
@@ -211,11 +215,11 @@ describe("text-stats workflow", () => {
 Verify that failing steps produce `ok: false` with meaningful error codes.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
-const failingWorkflow = workflow(
+const failingFlowAgent = flowAgent(
   {
     name: "failing",
     input: z.object({ shouldFail: z.boolean() }),
@@ -236,7 +240,7 @@ const failingWorkflow = workflow(
 
 describe("error paths", () => {
   it("handles step failure gracefully", async () => {
-    const result = await failingWorkflow.generate({ shouldFail: true });
+    const result = await failingFlowAgent.generate({ shouldFail: true });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -245,7 +249,7 @@ describe("error paths", () => {
   });
 
   it("succeeds on happy path", async () => {
-    const result = await failingWorkflow.generate({ shouldFail: false });
+    const result = await failingFlowAgent.generate({ shouldFail: false });
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -261,17 +265,18 @@ Verify that `result.usage` contains expected token counts after generation.
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { describe, it, expect } from "vitest";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "Reply with one word.",
 });
 
 describe("usage tracking", () => {
   it("reports token usage on successful generation", async () => {
-    const result = await helper.generate("Say hello");
+    const result = await helper.generate({ prompt: "Say hello" });
 
     if (result.ok) {
       expect(result.usage.inputTokens).toBeGreaterThan(0);
@@ -287,21 +292,21 @@ describe("usage tracking", () => {
 Capture lifecycle events with hooks to verify execution order and timing.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 import { describe, it, expect } from "vitest";
 
-describe("workflow hooks", () => {
+describe("flow agent hooks", () => {
   it("fires hooks in correct order", async () => {
     const events: string[] = [];
 
-    const traced = workflow(
+    const traced = flowAgent(
       {
         name: "traced",
         input: z.object({ value: z.string() }),
         output: z.object({ result: z.string() }),
         onStart: () => {
-          events.push("workflow:start");
+          events.push("flow:start");
         },
         onStepStart: ({ step }) => {
           events.push(`step:start:${step.id}`);
@@ -310,7 +315,7 @@ describe("workflow hooks", () => {
           events.push(`step:finish:${step.id}`);
         },
         onFinish: () => {
-          events.push("workflow:finish");
+          events.push("flow:finish");
         },
       },
       async ({ input, $ }) => {
@@ -325,10 +330,10 @@ describe("workflow hooks", () => {
     await traced.generate({ value: "test" });
 
     expect(events).toEqual([
-      "workflow:start",
+      "flow:start",
       "step:start:process",
       "step:finish:process",
-      "workflow:finish",
+      "flow:finish",
     ]);
   });
 });
@@ -364,7 +369,7 @@ describe("workflow hooks", () => {
 ## References
 
 - [Create an Agent](create-agent.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)
 - [Hooks](../core/hooks.md)
 - [Core Overview](../core/overview.md)
 - [Troubleshooting](../troubleshooting.md)

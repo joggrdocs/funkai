@@ -46,7 +46,7 @@ Read the project docs in this order:
 2. [`contributing/concepts/architecture.md`](../concepts/architecture.md) -- package ecosystem, design principles, data flow
 3. [`contributing/concepts/tech-stack.md`](../concepts/tech-stack.md) -- tools, libraries, and design rationale
 4. Relevant standards in `contributing/standards/` as needed
-5. Package docs: [`@funkai/agents`](/agents/) and [`@funkai/prompts`](/prompts/)
+5. Package docs: [`@funkai/agents`](/concepts/agents) and [`@funkai/prompts`](/concepts/prompts)
 
 ### 6. Set up Claude Code (optional)
 

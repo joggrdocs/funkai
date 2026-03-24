@@ -1,4 +1,4 @@
-# Prompts SDK Overview
+# Prompts SDK
 
 Prompt authoring SDK with two surfaces: a **CLI** for build-time code generation from `.prompt` files, and a **library** for runtime template rendering with full type safety.
 
@@ -51,28 +51,6 @@ flowchart LR
   classDef gateway fill:#313244,stroke:#fab387,stroke-width:2px,color:#cdd6f4
 ```
 
-## Package Structure
-
-```
-📁 packages/prompts/
-├── 📁 src/
-│   ├── 📁 prompts/            # Built-in partials (identity, constraints, tools)
-│   ├── 📄 engine.ts           # LiquidJS engine factory
-│   ├── 📄 registry.ts         # Typed prompt registry
-│   ├── 📄 clean.ts            # Frontmatter stripping pipeline
-│   ├── 📄 partials-dir.ts     # PARTIALS_DIR export for CLI/consumers
-│   ├── 📄 types.ts            # PromptModule, PromptNamespace, PromptRegistry types
-│   └── 📄 index.ts            # Public exports
-└── 📁 docs/
-
-📁 packages/cli/               # @funkai/cli — CLI binary (see @funkai/cli README)
-├── 📁 commands/               # generate, lint, create, setup
-├── 📁 src/lib/                # codegen, frontmatter, flatten, lint, paths
-└── 📄 index.ts                # CLI entry point (kidd-cli)
-```
-
-> **Note:** The CLI was extracted to `@funkai/cli`. Install it separately for the `prompts` binary.
-
 ## Dual Surface
 
 | Surface | When       | What                                                                         |
@@ -83,20 +61,15 @@ flowchart LR
 ## Quick Start
 
 1. Create a `.prompt` file with YAML frontmatter and a LiquidJS template body.
-2. Run `prompts generate --out .prompts/client --roots src/agents` to produce typed modules.
+2. Run `prompts generate --out .prompts/client --includes "src/agents/**"` to produce typed modules.
 3. Import from the `~prompts` alias in your application code.
 4. Call `.render({ vars })` with full type safety derived from the Zod schema in frontmatter.
 
-## References
+## Documentation
 
-- [File Format](file-format/overview.md)
-- [Frontmatter](file-format/frontmatter.md)
-- [Partials](file-format/partials.md)
-- [CLI](cli/overview.md)
-- [CLI Commands](cli/commands.md)
-- [Code Generation](codegen/overview.md)
-- [Library API](library/overview.md)
-- [Guide: Author a Prompt](guides/author-prompt.md)
-- [Guide: Setup Project](guides/setup-project.md)
-- [Guide: Add a Partial](guides/add-partial.md)
-- [Troubleshooting](troubleshooting.md)
+| Topic                                   | Description                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------- |
+| [File Format](file-format.md)           | .prompt anatomy, frontmatter, schema variables, partials, authoring guide |
+| [Code Generation & Library](codegen.md) | Build pipeline, generated output, runtime API, consumer patterns          |
+| [Project Setup](setup.md)               | VSCode, .gitignore, tsconfig, package.json configuration                  |
+| [Troubleshooting](troubleshooting.md)   | Common errors and fixes                                                   |

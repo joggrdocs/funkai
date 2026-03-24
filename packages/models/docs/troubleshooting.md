@@ -4,7 +4,7 @@ Common issues and fixes for `@funkai/models`.
 
 ## Cannot resolve model: model ID is empty
 
-The model ID passed to the resolver is an empty string or whitespace.
+The model ID passed to the registry is an empty string or whitespace.
 
 **Fix:** Ensure the model ID is a non-empty string:
 
@@ -12,30 +12,27 @@ The model ID passed to the resolver is an empty string or whitespace.
 const lm = resolve("openai/gpt-4.1");
 ```
 
-## Cannot resolve model: no provider prefix and no fallback configured
+## Cannot resolve model: no provider prefix
 
-A model ID without a `/` (e.g. `"gpt-4.1"`) was passed to a resolver with no fallback.
+A model ID without a `/` (e.g. `"gpt-4.1"`) was passed to the registry.
 
-**Fix:** Either use the full `"provider/model"` format or configure a fallback:
+**Fix:** Use the full `"provider/model"` format:
 
 ```ts
-const resolve = createModelResolver({
-  fallback: openrouter,
-});
+const lm = registry("openai/gpt-4.1");
 ```
 
-## Cannot resolve model: no provider mapped for "x" and no fallback configured
+## Cannot resolve model: no provider mapped for "x"
 
-The model ID prefix does not match any key in the `providers` map and no `fallback` is configured.
+The model ID prefix does not match any key in the `providers` map.
 
-**Fix:** Add the provider to the `providers` map or add a fallback:
+**Fix:** Add the provider to the `providers` map:
 
 ```ts
-const resolve = createModelResolver({
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
   },
-  fallback: openrouter,
 });
 ```
 
@@ -94,7 +91,6 @@ const id: ModelId = "openai/gpt-4.1";
 
 ## References
 
-- [Model Catalog](catalog/overview.md)
-- [Provider Resolution](provider/overview.md)
-- [Cost Calculation](cost/overview.md)
-- [Setup Resolver Guide](guides/setup-resolver.md)
+- [Model Catalog](catalog.md)
+- [Provider Resolution](provider-resolution.md)
+- [Cost Tracking](cost-tracking.md)

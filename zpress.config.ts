@@ -8,274 +8,343 @@ export default defineConfig({
   theme: {
     name: "arcade",
   },
+  actions: [
+    {
+      theme: "brand",
+      text: "Quick Start",
+      link: "/quick-start",
+    },
+    {
+      theme: "alt",
+      text: "Introduction",
+      link: "/introduction",
+    },
+  ],
+  features: [
+    {
+      title: "Functions All the Way Down",
+      description:
+        "agent(), tool(), flowAgent() are plain functions returning composable objects. No classes, no decorators, no inheritance — just functions you can read top to bottom.",
+      icon: "mdi:lambda",
+      link: "/concepts/agents",
+    },
+    {
+      title: "One API, Zero Workflows",
+      description:
+        "agent() for single-turn, flowAgent() for multi-step — same programming model, same hooks, same tools. No workflow DSL to learn, no orchestrator to configure. Just functions that compose.",
+      icon: "mdi:puzzle-outline",
+      link: "/concepts/flow-agents",
+    },
+    {
+      title: "Type-Safe Prompts",
+      description:
+        "Write .prompt files with YAML frontmatter and LiquidJS templates. Build-time codegen produces fully typed TypeScript modules with Zod validation.",
+      icon: "mdi:file-code-outline",
+      link: "/concepts/prompts",
+    },
+  ],
   packages: [
     {
       title: "@funkai/agents",
-      description: "Lightweight workflow and agent orchestration framework",
-      icon: "pixelarticons:robot",
-      prefix: "/agents",
-      tags: [],
-      discovery: {},
+      description: "Agent orchestration SDK",
+      icon: "mdi:robot-outline",
+      path: "/packages/agents",
+    },
+    {
+      title: "@funkai/models",
+      description: "Model catalog and cost calculation",
+      icon: "mdi:currency-usd",
+      path: "/packages/models",
     },
     {
       title: "@funkai/prompts",
-      description: "Prompt SDK with LiquidJS templating and Zod validation",
-      icon: "pixelarticons:message-text",
-      prefix: "/prompts",
-      tags: [],
-      discovery: {},
+      description: "Prompt templating library",
+      icon: "mdi:message-text-outline",
+      path: "/packages/prompts",
     },
     {
       title: "@funkai/cli",
-      description: "CLI for the funkai prompt SDK",
-      icon: "pixelarticons:terminal",
-      prefix: "/cli",
-      tags: [],
-      discovery: {},
+      description: "Prompt CLI tooling",
+      icon: "mdi:console",
+      path: "/packages/cli",
     },
   ],
   sections: [
     // ── Getting Started ──
     {
       title: "Getting Started",
-      link: "/getting-started",
-      icon: "pixelarticons:speed-fast",
-      content: [
-        "# Getting Started",
-        "",
-        "funkai is a lightweight, functional TypeScript framework for AI agent orchestration.",
-        "",
-        "## Packages",
-        "",
-        "| Package | Description |",
-        "| --- | --- |",
-        "| [`@funkai/agents`](/agents/) | Lightweight workflow and agent orchestration framework |",
-        "| [`@funkai/prompts`](/prompts/) | Prompt SDK with LiquidJS templating and Zod validation |",
-        "| [`@funkai/cli`](/cli/) | CLI for the funkai prompt SDK |",
-        "",
-        "## Quick Start",
-        "",
-        "```bash",
-        "pnpm add @funkai/agents",
-        "```",
-        "",
-        "Then check out the [Agents overview](/agents/) or the [Create an Agent guide](/agents/guides/create-agent).",
-      ].join("\n"),
-    },
-
-    // ── Agents ──
-    {
-      title: "Agents",
-      icon: "pixelarticons:robot",
-      content: "Lightweight workflow and agent orchestration framework",
+      icon: "mdi:rocket-launch-outline",
       items: [
         {
-          title: "Overview",
-          link: "/agents/",
-          from: "packages/agents/docs/overview.md",
+          title: "Introduction",
+          path: "/introduction",
+          include: "docs/introduction.md",
         },
         {
-          title: "Core",
-          prefix: "/agents/core",
-          items: [
-            {
-              title: "Overview",
-              link: "/agents/core/overview",
-              from: "packages/agents/docs/core/overview.md",
-            },
-            {
-              title: "Agent",
-              link: "/agents/core/agent",
-              from: "packages/agents/docs/core/agent.md",
-            },
-            {
-              title: "Workflow",
-              link: "/agents/core/workflow",
-              from: "packages/agents/docs/core/workflow.md",
-            },
-            {
-              title: "Step",
-              link: "/agents/core/step",
-              from: "packages/agents/docs/core/step.md",
-            },
-            {
-              title: "Tools",
-              link: "/agents/core/tools",
-              from: "packages/agents/docs/core/tools.md",
-            },
-            {
-              title: "Hooks",
-              link: "/agents/core/hooks",
-              from: "packages/agents/docs/core/hooks.md",
-            },
-          ],
-        },
-        {
-          title: "Guides",
-          prefix: "/agents/guides",
-          from: "packages/agents/docs/guides/*.md",
-          titleFrom: "heading",
-          sort: "alpha",
-        },
-        {
-          title: "Provider",
-          prefix: "/agents/provider",
-          items: [
-            {
-              title: "Overview",
-              link: "/agents/provider/overview",
-              from: "packages/agents/docs/provider/overview.md",
-            },
-            {
-              title: "Models",
-              link: "/agents/provider/models",
-              from: "packages/agents/docs/provider/models.md",
-            },
-            {
-              title: "Usage",
-              link: "/agents/provider/usage",
-              from: "packages/agents/docs/provider/usage.md",
-            },
-          ],
-        },
-        {
-          title: "Troubleshooting",
-          link: "/agents/troubleshooting",
-          from: "packages/agents/docs/troubleshooting.md",
+          title: "Quick Start",
+          path: "/quick-start",
+          include: "docs/quick-start.md",
         },
       ],
     },
 
-    // ── Prompts ──
+    // ── Concepts ──
     {
-      title: "Prompts",
-      icon: "pixelarticons:message-text",
-      frontmatter: {
-        description: "Prompt SDK with LiquidJS templating and Zod validation",
-      },
+      title: "Concepts",
+      icon: "mdi:lightbulb-outline",
       items: [
         {
-          title: "Overview",
-          link: "/prompts/",
-          from: "packages/prompts/docs/overview.md",
+          title: "Agents",
+          path: "/concepts/agents",
+          include: "docs/concepts/agents.md",
         },
         {
-          title: "File Format",
-          prefix: "/prompts/file-format",
-          items: [
-            {
-              title: "Overview",
-              link: "/prompts/file-format/overview",
-              from: "packages/prompts/docs/file-format/overview.md",
-            },
-            {
-              title: "Frontmatter",
-              link: "/prompts/file-format/frontmatter",
-              from: "packages/prompts/docs/file-format/frontmatter.md",
-            },
-            {
-              title: "Partials",
-              link: "/prompts/file-format/partials",
-              from: "packages/prompts/docs/file-format/partials.md",
-            },
-          ],
+          title: "Flow Agents",
+          path: "/concepts/flow-agents",
+          include: "docs/concepts/flow-agents.md",
         },
         {
-          title: "CLI",
-          prefix: "/prompts/cli",
-          items: [
-            {
-              title: "Overview",
-              link: "/prompts/cli/overview",
-              from: "packages/prompts/docs/cli/overview.md",
-            },
-            {
-              title: "Commands",
-              link: "/prompts/cli/commands",
-              from: "packages/prompts/docs/cli/commands.md",
-            },
-          ],
+          title: "Tools",
+          path: "/concepts/tools",
+          include: "docs/concepts/tools.md",
         },
         {
-          title: "Code Generation",
-          link: "/prompts/codegen/overview",
-          from: "packages/prompts/docs/codegen/overview.md",
+          title: "Prompts",
+          path: "/concepts/prompts",
+          include: "docs/concepts/prompts.md",
         },
         {
-          title: "Library",
-          link: "/prompts/library/overview",
-          from: "packages/prompts/docs/library/overview.md",
-        },
-        {
-          title: "Guides",
-          prefix: "/prompts/guides",
-          from: "packages/prompts/docs/guides/*.md",
-          titleFrom: "heading",
-          sort: "alpha",
-        },
-        {
-          title: "Troubleshooting",
-          link: "/prompts/troubleshooting",
-          from: "packages/prompts/docs/troubleshooting.md",
+          title: "Models",
+          path: "/concepts/models",
+          include: "docs/concepts/models.md",
         },
       ],
     },
 
-    // ── CLI ──
+    // ── Guides ──
     {
-      title: "CLI",
-      icon: "pixelarticons:terminal",
-      link: "/cli/",
-      from: "packages/cli/README.md",
+      title: "Guides",
+      icon: "mdi:book-open-page-variant-outline",
+      items: [
+        {
+          title: "Streaming",
+          path: "/guides/streaming",
+          include: "packages/agents/docs/streaming.md",
+        },
+        {
+          title: "Testing",
+          path: "/guides/testing",
+          include: "packages/agents/docs/test-agents.md",
+        },
+        {
+          title: "Error Recovery",
+          path: "/guides/error-recovery",
+          include: "packages/agents/docs/error-recovery.md",
+        },
+        {
+          title: "Multi-Agent Orchestration",
+          path: "/guides/multi-agent",
+          include: "packages/agents/docs/multi-agent-orchestration.md",
+        },
+        {
+          title: "Cost Tracking",
+          path: "/guides/cost-tracking",
+          include: "packages/agents/docs/cost-tracking.md",
+        },
+      ],
+    },
+
+    // ── Reference ──
+    {
+      title: "Reference",
+      icon: "mdi:code-braces",
+      items: [
+        {
+          title: "@funkai/agents",
+          items: [
+            {
+              title: "agent()",
+              path: "/reference/agents/agent",
+              include: "docs/reference/agent.md",
+            },
+            {
+              title: "flowAgent()",
+              path: "/reference/agents/flow-agent",
+              include: "docs/reference/flow-agent.md",
+            },
+            {
+              title: "tool()",
+              path: "/reference/agents/tool",
+              include: "docs/reference/tool.md",
+            },
+          ],
+        },
+        {
+          title: "@funkai/models",
+          items: [
+            {
+              title: "model()",
+              path: "/reference/models/model",
+              include: "docs/reference/model.md",
+            },
+            {
+              title: "models()",
+              path: "/reference/models/models",
+              include: "docs/reference/models.md",
+            },
+            {
+              title: "createProviderRegistry()",
+              path: "/reference/models/provider-registry",
+              include: "docs/reference/provider-registry.md",
+            },
+            {
+              title: "calculateCost()",
+              path: "/reference/models/calculate-cost",
+              include: "docs/reference/calculate-cost.md",
+            },
+          ],
+        },
+        {
+          title: "@funkai/prompts",
+          items: [
+            {
+              title: "createPrompt()",
+              path: "/reference/prompts/create-prompt",
+              include: "docs/reference/create-prompt.md",
+            },
+            {
+              title: "createPromptGroup()",
+              path: "/reference/prompts/create-prompt-group",
+              include: "docs/reference/create-prompt-group.md",
+            },
+            {
+              title: "createPromptRegistry()",
+              path: "/reference/prompts/create-prompt-registry",
+              include: "docs/reference/create-prompt-registry.md",
+            },
+            {
+              title: "CLI",
+              path: "/reference/prompts/cli",
+              include: "docs/reference/prompts-cli.md",
+            },
+          ],
+        },
+      ],
+    },
+
+    // ── Packages (standalone — READMEs with nested Changelogs) ──
+    {
+      title: "Packages",
+      icon: "mdi:package-variant-closed",
+      standalone: true,
+      items: [
+        {
+          title: "@funkai/agents",
+          path: "/packages/agents",
+          include: "packages/agents/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/agents/changelog",
+              include: "packages/agents/CHANGELOG.md",
+            },
+          ],
+        },
+        {
+          title: "@funkai/models",
+          path: "/packages/models",
+          include: "packages/models/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/models/changelog",
+              include: "packages/models/CHANGELOG.md",
+            },
+          ],
+        },
+        {
+          title: "@funkai/prompts",
+          path: "/packages/prompts",
+          include: "packages/prompts/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/prompts/changelog",
+              include: "packages/prompts/CHANGELOG.md",
+            },
+          ],
+        },
+        {
+          title: "@funkai/cli",
+          path: "/packages/cli",
+          include: "packages/cli/README.md",
+          items: [
+            {
+              title: "Changelog",
+              path: "/packages/cli/changelog",
+              include: "packages/cli/CHANGELOG.md",
+            },
+          ],
+        },
+      ],
+    },
+
+    // ── Examples ──
+    {
+      title: "Examples",
+      icon: "mdi:file-document-outline",
+      items: [
+        {
+          title: "Real-World CLI",
+          path: "/examples/realworld-cli",
+          include: "examples/realworld-cli/README.md",
+        },
+      ],
     },
 
     // ── Contributing ──
     {
       title: "Contributing",
-      icon: "pixelarticons:git-merge",
-      isolated: true,
+      icon: "mdi:source-merge",
+      standalone: true,
+      hidden: true,
       items: [
         {
           title: "Overview",
-          link: "/contributing/overview",
-          from: "contributing/README.md",
+          path: "/contributing/overview",
+          include: "contributing/README.md",
         },
         {
-          title: "Concepts",
-          prefix: "/contributing/concepts",
-          from: "contributing/concepts/*.md",
-          titleFrom: "heading",
+          title: { from: "heading" },
+          path: "/contributing/concepts",
+          include: "contributing/concepts/*.md",
           sort: "alpha",
         },
         {
-          title: "Guides",
-          prefix: "/contributing/guides",
-          from: "contributing/guides/*.md",
-          titleFrom: "heading",
+          title: { from: "heading" },
+          path: "/contributing/guides",
+          include: "contributing/guides/*.md",
           sort: "alpha",
         },
         {
           title: "Standards",
           items: [
             {
-              title: "TypeScript",
-              prefix: "/contributing/standards/typescript",
-              from: "contributing/standards/typescript/*.md",
-              titleFrom: "heading",
+              title: { from: "heading" },
+              path: "/contributing/standards/typescript",
+              include: "contributing/standards/typescript/*.md",
               sort: "alpha",
             },
             {
-              title: "Documentation",
-              prefix: "/contributing/standards/documentation",
-              from: "contributing/standards/documentation/*.md",
-              titleFrom: "heading",
+              title: { from: "heading" },
+              path: "/contributing/standards/documentation",
+              include: "contributing/standards/documentation/*.md",
               sort: "alpha",
             },
             {
-              title: "Git",
-              prefix: "/contributing/standards/git",
-              from: "contributing/standards/git-*.md",
-              titleFrom: "heading",
+              title: { from: "heading" },
+              path: "/contributing/standards/git",
+              include: "contributing/standards/git-*.md",
               sort: "alpha",
             },
           ],

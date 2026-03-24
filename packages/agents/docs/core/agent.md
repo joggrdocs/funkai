@@ -131,13 +131,13 @@ Agents declared in the `agents` field are automatically wrapped as tools that th
 ```ts
 const researcher = agent({
   name: "researcher",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You research topics thoroughly.",
 });
 
 const writer = agent({
   name: "writer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a technical writer. Delegate research to the researcher agent.",
   agents: { researcher },
 });
@@ -150,11 +150,11 @@ const writer = agent({
 ```ts
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
-const result = await helper.generate("What is TypeScript?");
+const result = await helper.generate({ prompt: "What is TypeScript?" });
 if (result.ok) {
   console.log(result.output); // string
 }
@@ -165,7 +165,7 @@ if (result.ok) {
 ```ts
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize the following:\n\n${input.text}`,
 });
@@ -184,7 +184,7 @@ const search = tool({
 
 const assistant = agent({
   name: "assistant",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant with web search.",
   tools: { search },
 });
@@ -195,7 +195,7 @@ const assistant = agent({
 ```ts
 const analyst = agent({
   name: "analyst",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You analyze data. Delegate searches to the searcher.",
   agents: { searcher: searchAgent },
 });
@@ -204,9 +204,9 @@ const analyst = agent({
 ### Streaming
 
 ```ts
-const result = await helper.stream("Tell me a story");
+const result = await helper.stream({ prompt: "Tell me a story" });
 if (result.ok) {
-  for await (const chunk of result.stream) {
+  for await (const chunk of result.fullStream) {
     process.stdout.write(chunk);
   }
   const finalOutput = await result.output;
@@ -216,8 +216,9 @@ if (result.ok) {
 ### Inline overrides
 
 ```ts
-const result = await helper.generate("Explain quantum computing", {
-  model: "anthropic/claude-sonnet-4",
+const result = await helper.generate({
+  prompt: "Explain quantum computing",
+  model: anthropic("claude-sonnet-4-20250514"),
   maxSteps: 5,
   onFinish: ({ duration }) => console.log(`Took ${duration}ms`),
 });

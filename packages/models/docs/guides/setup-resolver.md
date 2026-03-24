@@ -1,12 +1,11 @@
-# Set Up a Model Resolver
+# Set Up a Provider Registry
 
-Configure `createModelResolver()` with multiple providers and an OpenRouter fallback.
+Configure `createProviderRegistry()` with multiple providers.
 
 ## Prerequisites
 
 - `@funkai/models` installed
 - API keys for your providers (OpenAI, Anthropic, etc.)
-- `OPENROUTER_API_KEY` set in the environment (for fallback)
 
 ## Steps
 
@@ -18,55 +17,52 @@ Install the AI SDK providers you want to use directly:
 pnpm add @ai-sdk/openai @ai-sdk/anthropic
 ```
 
-### 2. Create the Resolver
+### 2. Create the Registry
 
 ```ts
-import { createModelResolver, openrouter } from "@funkai/models";
+import { createProviderRegistry } from "@funkai/models";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 
-const resolve = createModelResolver({
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
     anthropic: createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY }),
   },
-  fallback: openrouter,
 });
 ```
 
 ### 3. Resolve Models
 
 ```ts
-const gpt = resolve("openai/gpt-4.1");
-const claude = resolve("anthropic/claude-sonnet-4");
-const mistral = resolve("mistral/mistral-large-latest");
+const gpt = registry("openai/gpt-4.1");
+const claude = registry("anthropic/claude-sonnet-4");
 ```
 
 - `"openai/gpt-4.1"` routes through `@ai-sdk/openai` directly
 - `"anthropic/claude-sonnet-4"` routes through `@ai-sdk/anthropic` directly
-- `"mistral/mistral-large-latest"` has no mapped provider, so it routes through OpenRouter
 
 ### 4. Use with Agents
 
-Pass the resolver to `@funkai/agents` by resolving the model before creating the agent:
+Pass the registry to `@funkai/agents` by resolving the model before creating the agent:
 
 ```ts
 import { agent } from "@funkai/agents";
 
 const summarizer = agent({
   name: "summarizer",
-  model: resolve("openai/gpt-4.1"),
+  model: registry("openai/gpt-4.1"),
   prompt: ({ input }) => `Summarize:\n\n${input.text}`,
 });
 ```
 
 ## Verification
 
-Verify the resolver works by resolving each configured provider:
+Verify the registry works by resolving each configured provider:
 
 ```ts
-const gpt = resolve("openai/gpt-4.1");
-const claude = resolve("anthropic/claude-sonnet-4");
+const gpt = registry("openai/gpt-4.1");
+const claude = registry("anthropic/claude-sonnet-4");
 
 console.log(gpt.modelId);
 console.log(claude.modelId);
@@ -76,27 +72,16 @@ console.log(claude.modelId);
 
 ### Cannot resolve model: no provider mapped
 
-**Issue:** The model ID prefix does not match any key in `providers` and no `fallback` is configured.
+**Issue:** The model ID prefix does not match any key in `providers`.
 
-**Fix:** Add the provider to the `providers` map or configure a `fallback`:
+**Fix:** Add the provider to the `providers` map:
 
 ```ts
-const resolve = createModelResolver({
+const registry = createProviderRegistry({
   providers: {
     openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
   },
-  fallback: openrouter,
 });
-```
-
-### OPENROUTER_API_KEY environment variable is required
-
-**Issue:** Using `openrouter` as the fallback but `OPENROUTER_API_KEY` is not set.
-
-**Fix:** Set the environment variable:
-
-```bash
-export OPENROUTER_API_KEY=sk-or-...
 ```
 
 ## References

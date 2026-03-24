@@ -6,14 +6,14 @@ Generate typed TypeScript modules from `.prompt` files.
 
 **Alias:** `gen`
 
-| Flag       | Alias | Required | Description                                             |
-| ---------- | ----- | -------- | ------------------------------------------------------- |
-| `--out`    | `-o`  | Yes      | Output directory for generated files                    |
-| `--roots`  | `-r`  | Yes      | Space-separated directories to scan for `.prompt` files |
-| `--silent` | ---   | No       | Suppress output except errors                           |
+| Flag         | Alias | Required | Description                               |
+| ------------ | ----- | -------- | ----------------------------------------- |
+| `--out`      | `-o`  | Yes      | Output directory for generated files      |
+| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files |
+| `--silent`   | ---   | No       | Suppress output except errors             |
 
 ```bash
-prompts generate --out .prompts/client --roots prompts src/agents src/workflows
+prompts generate --out .prompts/client --includes "prompts/**" "src/agents/**" "src/workflows/**"
 ```
 
 Custom partials are auto-discovered from the sibling `partials/` directory (relative to `--out`).
@@ -26,7 +26,7 @@ Validate `.prompt` files without generating output.
 
 | Flag         | Alias | Required | Description                                              |
 | ------------ | ----- | -------- | -------------------------------------------------------- |
-| `--roots`    | `-r`  | Yes      | Directories to scan                                      |
+| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files                |
 | `--partials` | `-p`  | No       | Custom partials directory (default: `.prompts/partials`) |
 | `--silent`   | ---   | No       | Suppress output except errors                            |
 
@@ -38,7 +38,7 @@ Validate `.prompt` files without generating output.
 | Warn  | Schema variable not used in template     |
 
 ```bash
-prompts lint --roots prompts src/agents
+prompts lint --includes "prompts/**" "src/agents/**"
 ```
 
 ## `prompts create`

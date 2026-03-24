@@ -1,95 +1,120 @@
-# @funkai/models
+<div align="center">
+  <p><strong>@funkai/models</strong></p>
+  <p>Model catalog, provider resolution, and cost calculations for the funkai AI SDK.</p>
 
-Model catalog, provider resolution, and cost calculations for the funkai AI SDK.
+<a href="https://www.npmjs.com/package/@funkai/models"><img src="https://img.shields.io/npm/v/@funkai/models" alt="npm version" /></a>
+<a href="https://github.com/joggrdocs/funkai/blob/main/LICENSE"><img src="https://img.shields.io/github/license/joggrdocs/funkai" alt="License" /></a>
 
-## Quick Start
+</div>
 
-```ts
-import { model, models, createModelResolver, calculateCost, openrouter } from "@funkai/models";
+## Features
 
-const gpt = model("openai/gpt-4.1");
+- :books: **300+ model catalog** — Unified catalog across 20+ providers, sourced from models.dev.
+- :dart: **Type-safe model IDs** — Autocomplete for all cataloged models while accepting arbitrary strings.
+- :electric_plug: **Provider resolution** — Map `"provider/model"` strings to AI SDK `LanguageModel` instances.
+- :moneybag: **Cost calculation** — Calculate USD cost from token usage and per-token pricing.
+- :package: **Subpath imports** — Per-provider imports for filtered model lists and typed IDs with zero-bundle overhead.
 
-const reasoning = models((m) => m.capabilities.reasoning);
+## Install
 
-const resolve = createModelResolver({
-  fallback: openrouter,
-});
-const lm = resolve("openai/gpt-4.1");
+```bash
+npm install @funkai/models
 ```
 
-## API Reference
+## Usage
 
-### Catalog
+### Look up a model
 
-| Export   | Type       | Description                                      |
-| -------- | ---------- | ------------------------------------------------ |
-| `model`  | `function` | Look up a single model definition by ID          |
-| `models` | `function` | Return all models, optionally filtered           |
-| `MODELS` | `const`    | Complete readonly array of all model definitions |
+```ts
+import { model } from "@funkai/models";
 
-### Provider Resolution
+const gpt = model("gpt-4.1");
 
-| Export                | Type       | Description                                           |
-| --------------------- | ---------- | ----------------------------------------------------- |
-| `createModelResolver` | `function` | Create a resolver with provider mappings and fallback |
-| `openrouter`          | `function` | Cached OpenRouter model resolver (reads env API key)  |
-| `createOpenRouter`    | `function` | Create a new OpenRouter provider instance             |
+if (gpt) {
+  console.log(gpt.name); // "GPT-4.1"
+  console.log(gpt.contextWindow); // 1047576
+  console.log(gpt.pricing.input); // cost per input token in USD
+  console.log(gpt.capabilities); // { reasoning, toolCall, ... }
+}
+```
 
-### Cost Calculation
+### Filter models
 
-| Export          | Type       | Description                                   |
-| --------------- | ---------- | --------------------------------------------- |
-| `calculateCost` | `function` | Calculate USD cost from token usage + pricing |
+```ts
+import { models } from "@funkai/models";
 
-### Types
+const reasoning = models((m) => m.capabilities.reasoning);
+const vision = models((m) => m.modalities.input.includes("image"));
+const cheap = models((m) => m.capabilities.toolCall).toSorted(
+  (a, b) => a.pricing.input - b.pricing.input,
+);
+```
 
-| Export                | Kind   | Description                                       |
-| --------------------- | ------ | ------------------------------------------------- |
-| `ModelDefinition`     | `type` | Full model metadata with pricing and capabilities |
-| `ModelId`             | `type` | Model identifier with autocomplete support        |
-| `KnownModelId`        | `type` | Union of all cataloged model IDs                  |
-| `ModelPricing`        | `type` | Per-token pricing rates in USD                    |
-| `ModelCapabilities`   | `type` | Boolean capability flags (reasoning, tools, etc.) |
-| `ModelModalities`     | `type` | Input/output modality descriptors                 |
-| `ModelResolver`       | `type` | Function that resolves model ID to LanguageModel  |
-| `ModelResolverConfig` | `type` | Configuration for `createModelResolver`           |
-| `LanguageModel`       | `type` | AI SDK language model instance (v3)               |
-| `TokenUsage`          | `type` | Token counts from a model invocation              |
-| `UsageCost`           | `type` | Breakdown of cost in USD                          |
+### Resolve providers
+
+```ts
+import { createProviderRegistry } from "@funkai/models";
+import { createOpenAI } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+
+const registry = createProviderRegistry({
+  providers: {
+    openai: createOpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+    anthropic,
+  },
+});
+
+// Returns a LanguageModel — pass directly to agent()
+const lm = registry("openai/gpt-4.1");
+```
+
+### Calculate costs
+
+```ts
+import { model, calculateCost } from "@funkai/models";
+
+const m = model("gpt-4.1");
+if (m) {
+  const cost = calculateCost(
+    {
+      inputTokens: 1000,
+      outputTokens: 500,
+      totalTokens: 1500,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      reasoningTokens: 0,
+    },
+    m.pricing,
+  );
+  console.log(`Total: $${cost.total.toFixed(6)}`);
+}
+```
+
+## API
+
+| Export                   | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| `model(id)`              | Look up a single model definition by ID                |
+| `models(filter?)`        | Return all models, optionally filtered by a predicate  |
+| `MODELS`                 | Complete readonly array of all model definitions       |
+| `createProviderRegistry` | Create a registry that resolves model IDs to providers |
+| `calculateCost`          | Calculate USD cost from token usage and pricing        |
 
 ## Subpath Exports
 
-Provider-specific subpath exports give access to filtered model lists and typed IDs:
+Per-provider subpath imports give access to filtered model lists and typed IDs:
 
-| Import Path                     | Exports                                             |
-| ------------------------------- | --------------------------------------------------- |
-| `@funkai/models`                | Full API (catalog, provider, cost)                  |
-| `@funkai/models/openai`         | `openAIModels`, `openAIModel()`, `OpenAIModelId`    |
-| `@funkai/models/anthropic`      | `anthropicModels`, `anthropicModel()`, etc.         |
-| `@funkai/models/google`         | `googleModels`, `googleModel()`, etc.               |
-| `@funkai/models/google-vertex`  | `googleVertexModels`, `googleVertexModel()`, etc.   |
-| `@funkai/models/mistral`        | `mistralModels`, `mistralModel()`, etc.             |
-| `@funkai/models/amazon-bedrock` | `amazonBedrockModels`, `amazonBedrockModel()`, etc. |
-| `@funkai/models/groq`           | `groqModels`, `groqModel()`, etc.                   |
-| `@funkai/models/deepseek`       | `deepseekModels`, `deepseekModel()`, etc.           |
-| `@funkai/models/xai`            | `xaiModels`, `xaiModel()`, etc.                     |
-| `@funkai/models/cohere`         | `cohereModels`, `cohereModel()`, etc.               |
-| `@funkai/models/fireworks-ai`   | `fireworksAIModels`, `fireworksAIModel()`, etc.     |
-| `@funkai/models/togetherai`     | `togetheraiModels`, `togetheraiModel()`, etc.       |
-| `@funkai/models/deepinfra`      | `deepinfraModels`, `deepinfraModel()`, etc.         |
-| `@funkai/models/cerebras`       | `cerebrasModels`, `cerebrasModel()`, etc.           |
-| `@funkai/models/perplexity`     | `perplexityModels`, `perplexityModel()`, etc.       |
-| `@funkai/models/openrouter`     | `openrouterModels`, `openrouterModel()`, etc.       |
-| `@funkai/models/llama`          | `llamaModels`, `llamaModel()`, etc.                 |
-| `@funkai/models/alibaba`        | `alibabaModels`, `alibabaModel()`, etc.             |
-| `@funkai/models/nvidia`         | `nvidiaModels`, `nvidiaModel()`, etc.               |
-| `@funkai/models/huggingface`    | `huggingfaceModels`, `huggingfaceModel()`, etc.     |
-| `@funkai/models/inception`      | `inceptionModels`, `inceptionModel()`, etc.         |
+```ts
+import { openAIModels, openAIModel } from "@funkai/models/openai";
+import { anthropicModels } from "@funkai/models/anthropic";
+```
 
-## References
+Available for: `openai`, `anthropic`, `google`, `google-vertex`, `mistral`, `amazon-bedrock`, `groq`, `deepseek`, `xai`, `cohere`, `fireworks-ai`, `togetherai`, `deepinfra`, `cerebras`, `perplexity`, `openrouter`, `llama`, `alibaba`, `nvidia`, `huggingface`, `inception`.
 
-- [Overview](docs/overview.md)
-- [Model Catalog](docs/catalog/overview.md)
-- [Provider Resolution](docs/provider/overview.md)
-- [Cost Calculation](docs/cost/overview.md)
-- [Troubleshooting](docs/troubleshooting.md)
+## Documentation
+
+For comprehensive documentation, see the [Models concept](/concepts/models) and [`model()` reference](/reference/models/model).
+
+## License
+
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)

@@ -10,7 +10,7 @@
     "prompts:generate": "funkai prompts generate --out .prompts/client --includes \"src/agents/**\""
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.0",
+    "@ai-sdk/openai": "^3.0.48",
     "@funkai/agents": "workspace:*",
     "@funkai/prompts": "workspace:*",
     "zod": "catalog:"

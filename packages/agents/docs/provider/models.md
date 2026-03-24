@@ -1,18 +1,17 @@
 # Models
 
-The SDK includes a model catalog with metadata and pricing for supported OpenRouter models. Used for cost calculation and model selection.
-
-Model data is auto-generated from the OpenRouter API. Run `pnpm --filter=@funkai/agents generate:models` to refresh.
+For model metadata, pricing, and catalog lookups, use the `@funkai/models` package.
 
 ## Model Definition
 
 Each model entry has:
 
-| Field      | Type            | Description                                   |
-| ---------- | --------------- | --------------------------------------------- |
-| `id`       | `string`        | OpenRouter model ID (e.g. `'openai/gpt-4.1'`) |
-| `category` | `ModelCategory` | `'chat'`, `'coding'`, or `'reasoning'`        |
-| `pricing`  | `ModelPricing`  | Per-token rates (OpenRouter convention)       |
+| Field          | Type                | Description                                   |
+| -------------- | ------------------- | --------------------------------------------- |
+| `id`           | `string`            | Model ID (e.g. `'openai/gpt-4.1'`)            |
+| `capabilities` | `ModelCapabilities` | Boolean flags (reasoning, tools, vision, etc) |
+| `pricing`      | `ModelPricing`      | Per-token rates in USD                        |
+| `modalities`   | `ModelModalities`   | Input/output modality descriptors             |
 
 ## Pricing
 
@@ -28,28 +27,47 @@ Each model entry has:
 
 ## Lookup
 
-Three functions:
-
-- `model(id)` -- Returns a single `ModelDefinition` or throws if the ID is not in the catalog.
-- `tryModel(id)` -- Returns a single `ModelDefinition` or `undefined` if the ID is not in the catalog.
-- `models(filter?)` -- Returns model definitions, optionally filtered by a predicate.
-
 ```ts
-import { model, tryModel, models } from "@funkai/agents";
+import { model, models } from "@funkai/models";
 
-const m = model("openai/gpt-4.1");
-console.log(m.pricing.prompt); // cost per input token
-console.log(m.category); // 'chat'
+// Look up a single model (returns null if not found)
+const gpt4 = model("openai/gpt-4.1");
+if (gpt4) {
+  console.log(gpt4.pricing.prompt); // cost per input token
+}
 
+// List all models, optionally filtered
 const all = models();
-const reasoning = models((m) => m.category === "reasoning");
+const reasoning = models((m) => m.capabilities.reasoning);
 ```
 
-## Adding a Model
+## Using with Agents
 
-Add an entry to `models.config.json` at the package root with the OpenRouter model ID and category, then run `pnpm --filter=@funkai/agents generate:models` to fetch pricing from the API.
+Pass AI SDK provider instances directly to agents -- model catalog lookups are separate from model resolution:
+
+```ts
+import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
+import { model, calculateCost } from "@funkai/models";
+
+const helper = agent({
+  name: "helper",
+  model: openai("gpt-4.1"),
+  system: "You are helpful.",
+});
+
+const result = await helper.generate({ prompt: "Hello" });
+if (result.ok) {
+  const pricing = model("openai/gpt-4.1")?.pricing;
+  if (pricing) {
+    const cost = calculateCost(result.usage, pricing);
+    console.log(`Cost: $${cost.total.toFixed(6)}`);
+  }
+}
+```
 
 ## References
 
 - [Provider Overview](overview.md)
 - [Token Usage](usage.md)
+- [@funkai/models docs](/models)

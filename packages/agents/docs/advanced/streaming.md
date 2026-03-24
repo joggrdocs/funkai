@@ -106,7 +106,7 @@ while (true) {
 ### Basic Streaming
 
 ```ts
-const result = await myAgent.stream("Tell me a story");
+const result = await myAgent.stream({ prompt: "Tell me a story" });
 
 if (!result.ok) {
   console.error(result.error.message);
@@ -127,7 +127,7 @@ const finalOutput = await result.output;
 ```ts
 import { match } from "ts-pattern";
 
-const result = await myAgent.stream("Search and summarize");
+const result = await myAgent.stream({ prompt: "Search and summarize" });
 if (!result.ok) return;
 
 for await (const part of result.fullStream) {
@@ -188,7 +188,7 @@ if (result.ok) {
 Errors in the stream can appear as `StreamPart` events or as rejected promises on the result fields:
 
 ```ts
-const result = await myAgent.stream("Generate content");
+const result = await myAgent.stream({ prompt: "Generate content" });
 if (!result.ok) {
   console.error("Failed to start stream:", result.error.message);
   return;
@@ -215,7 +215,8 @@ Pass an `AbortSignal` to cancel streaming:
 ```ts
 const controller = new AbortController();
 
-const result = await myAgent.stream("Long generation", {
+const result = await myAgent.stream({
+  prompt: "Long generation",
   signal: controller.signal,
 });
 
@@ -234,4 +235,4 @@ if (result.ok) {
 
 - [Agent](../core/agent.md)
 - [Core Types](../core/types.md)
-- [Workflow](../core/workflow.md)
+- [Flow Agent](../core/flow-agent.md)

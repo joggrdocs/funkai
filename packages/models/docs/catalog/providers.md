@@ -56,7 +56,7 @@ const withReasoning = anthropicModels.filter((m) => m.capabilities.reasoning);
 
 ## Model ID Format
 
-Model IDs in the catalog use the format `<provider-native-id>` (e.g. `"gpt-4.1"`, `"claude-sonnet-4-20250514"`). When used with `createModelResolver()`, prefix them with the provider slug: `"openai/gpt-4.1"`, `"anthropic/claude-sonnet-4-20250514"`.
+Model IDs in the catalog use the format `<provider-native-id>` (e.g. `"gpt-4.1"`, `"claude-sonnet-4-20250514"`). When used with `createProviderRegistry()`, prefix them with the provider slug: `"openai/gpt-4.1"`, `"anthropic/claude-sonnet-4-20250514"`.
 
 ## Data Source
 

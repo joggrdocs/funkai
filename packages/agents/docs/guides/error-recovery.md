@@ -1,11 +1,11 @@
 # Handle Error Recovery
 
-Patterns for building resilient agents and workflows that recover gracefully from failures.
+Patterns for building resilient agents and flow agents that recover gracefully from failures.
 
 ## Prerequisites
 
 - `@funkai/agents` installed
-- Familiarity with `workflow()`, `$.step`, `$.while`, `$.map`, and hooks
+- Familiarity with `flowAgent()`, `$.step`, `$.while`, `$.map`, and hooks
 - Understanding of `StepResult` and `Result` types
 
 ## Steps
@@ -15,10 +15,10 @@ Patterns for building resilient agents and workflows that recover gracefully fro
 Every `$` method returns `StepResult<T>` with an `ok` field. Check it before accessing `.value` and provide a fallback when the step fails.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
-const resilient = workflow(
+const resilient = flowAgent(
   {
     name: "resilient-fetch",
     input: z.object({ url: z.string() }),
@@ -60,10 +60,10 @@ const resilient = workflow(
 Use `$.while` for retry logic with a bounded iteration count. The condition receives the last value and iteration index.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
-const retryable = workflow(
+const retryable = flowAgent(
   {
     name: "retry-fetch",
     input: z.object({ url: z.string(), maxRetries: z.number().default(3) }),
@@ -103,17 +103,18 @@ const retryable = workflow(
 When processing multiple items, some may fail while others succeed. Check each item's result independently rather than failing the entire batch.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const summarizer = agent({
   name: "summarizer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ text: z.string() }),
   prompt: ({ input }) => `Summarize briefly:\n\n${input.text}`,
 });
 
-const batchSummarizer = workflow(
+const batchSummarizer = flowAgent(
   {
     name: "batch-summarize",
     input: z.object({ texts: z.array(z.string()) }),
@@ -165,7 +166,7 @@ const batchSummarizer = workflow(
 Track consecutive failures and stop processing when a threshold is reached.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
 interface CircuitState {
@@ -174,7 +175,7 @@ interface CircuitState {
   readonly tripped: boolean;
 }
 
-const circuitBreaker = workflow(
+const circuitBreaker = flowAgent(
   {
     name: "circuit-breaker",
     input: z.object({ urls: z.array(z.string()), maxFailures: z.number().default(3) }),
@@ -226,19 +227,19 @@ const circuitBreaker = workflow(
 
 ### 5. Log errors with hooks
 
-Use workflow and step hooks to capture errors for logging and observability without interrupting the execution flow.
+Use flow agent and step hooks to capture errors for logging and observability without interrupting the execution flow.
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
-const observed = workflow(
+const observed = flowAgent(
   {
     name: "observed-pipeline",
     input: z.object({ data: z.string() }),
     output: z.object({ result: z.string() }),
     onError: ({ input, error }) => {
-      console.error(`Workflow failed for input: ${JSON.stringify(input)}`, error.message);
+      console.error(`Flow agent failed for input: ${JSON.stringify(input)}`, error.message);
     },
     onStepFinish: ({ step, result, duration }) => {
       if (result === undefined) {
@@ -265,20 +266,21 @@ const observed = workflow(
 
 ### 6. Combine patterns for robust pipelines
 
-Chain fallback, retry, and logging into a single workflow.
+Chain fallback, retry, and logging into a single flow agent.
 
 ```ts
-import { workflow, agent } from "@funkai/agents";
+import { flowAgent, agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 const analyzer = agent({
   name: "analyzer",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   input: z.object({ content: z.string() }),
   prompt: ({ input }) => `Analyze this content:\n\n${input.content}`,
 });
 
-const robust = workflow(
+const robust = flowAgent(
   {
     name: "robust-analysis",
     input: z.object({ url: z.string() }),
@@ -332,7 +334,7 @@ const robust = workflow(
 
 - Failing steps return `StepResult` with `ok: false` instead of throwing
 - Retry loops terminate within the configured bounds
-- Partial success workflows return results for both succeeded and failed items
+- Partial success flow agents return results for both succeeded and failed items
 - Hook errors are swallowed and never mask the original error
 - Circuit breaker skips remaining items after the failure threshold
 
@@ -366,6 +368,6 @@ const robust = workflow(
 
 - [Step Builder ($)](../core/step.md)
 - [Hooks](../core/hooks.md)
-- [Create a Workflow](create-workflow.md)
+- [Create a Flow Agent](create-flow-agent.md)
 - [Core Overview](../core/overview.md)
 - [Troubleshooting](../troubleshooting.md)

@@ -50,7 +50,7 @@ Or configure manually (steps 3-6).
 ```json
 {
   "scripts": {
-    "prompts:generate": "prompts generate --out .prompts/client --roots prompts src/agents"
+    "prompts:generate": "prompts generate --out .prompts/client --includes \"prompts/**\" \"src/agents/**\""
   }
 }
 ```

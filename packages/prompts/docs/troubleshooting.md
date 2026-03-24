@@ -14,7 +14,7 @@
 
 ## Invalid prompt name
 
-**Fix:** Names must match `^[a-z0-9-]+$` — lowercase letters, digits, and hyphens only.
+**Fix:** Names must match `^[a-z0-9-]+$` -- lowercase letters, digits, and hyphens only.
 
 ## Partial variable reference error
 

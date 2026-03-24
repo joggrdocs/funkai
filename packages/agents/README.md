@@ -27,14 +27,15 @@ npm install @funkai/agents
 
 ```ts
 import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const helper = agent({
   name: "helper",
-  model: "openai/gpt-4.1",
+  model: openai("gpt-4.1"),
   system: "You are a helpful assistant.",
 });
 
-const result = await helper.generate("What is TypeScript?");
+const result = await helper.generate({ prompt: "What is TypeScript?" });
 
 if (!result.ok) {
   console.error(result.error.code, result.error.message);
@@ -59,13 +60,13 @@ const fetchPage = tool({
 });
 ```
 
-### Workflow
+### Flow Agent
 
 ```ts
-import { workflow } from "@funkai/agents";
+import { flowAgent } from "@funkai/agents";
 import { z } from "zod";
 
-const research = workflow(
+const research = flowAgent(
   {
     name: "research",
     input: z.object({ topic: z.string() }),
@@ -87,7 +88,7 @@ const research = workflow(
     });
 
     return {
-      summary: analysis.ok ? analysis.output : "Failed to summarize",
+      summary: analysis.ok ? analysis.value.output : "Failed to summarize",
       sources,
     };
   },
@@ -99,30 +100,30 @@ const result = await research.generate({ topic: "Effect systems" });
 ### Streaming
 
 ```ts
-const result = await helper.stream("Explain closures");
+const result = await helper.stream({ prompt: "Explain closures" });
 
 if (result.ok) {
-  for await (const chunk of result.stream) {
-    process.stdout.write(chunk);
+  for await (const part of result.fullStream) {
+    if (part.type === "text-delta") {
+      process.stdout.write(part.textDelta);
+    }
   }
 }
 ```
 
 ## API
 
-| Export                         | Description                                                           |
-| ------------------------------ | --------------------------------------------------------------------- |
-| `agent(config)`                | Create an agent. Returns `{ generate, stream, fn }`.                  |
-| `tool(config)`                 | Create a tool for function calling.                                   |
-| `workflow(config, handler)`    | Create a workflow with typed I/O and tracked steps.                   |
-| `createWorkflowEngine(config)` | Create a workflow factory with shared configuration and custom steps. |
-| `openrouter(modelId)`          | Shorthand to create an OpenRouter language model from env key.        |
-| `createOpenRouter(options?)`   | Create a reusable OpenRouter provider instance.                       |
+| Export                       | Description                                                             |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `agent(config)`              | Create an agent. Returns `{ generate, stream, fn }`.                    |
+| `tool(config)`               | Create a tool for function calling.                                     |
+| `flowAgent(config, handler)` | Create a flow agent with typed I/O and tracked steps.                   |
+| `createFlowEngine(config)`   | Create a flow agent factory with shared configuration and custom steps. |
 
 ## Documentation
 
-For comprehensive documentation, see [docs/overview.md](docs/overview.md).
+For comprehensive documentation, see the [Agents concept](/concepts/agents) and [`agent()` reference](/reference/agents/agent).
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)

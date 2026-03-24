@@ -39,7 +39,7 @@ You are a {{ tone }} writer.
 ### Generate typed modules
 
 ```bash
-npx funkai prompts generate --out .prompts/client --roots src/agents
+npx funkai prompts generate --out .prompts/client --includes "src/agents/**"
 ```
 
 ### Consume prompts
@@ -94,8 +94,8 @@ Use `{% render 'name', key: 'value' %}` to include shared partials. Partials res
 
 ## Documentation
 
-For comprehensive documentation, see [docs/overview.md](docs/overview.md).
+For comprehensive documentation, see the [Prompts concept](/concepts/prompts) and [Prompts CLI reference](/reference/prompts/cli).
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)

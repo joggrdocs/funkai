@@ -105,7 +105,7 @@ prepareStep: async ({ steps }) => {
   const lastStep = steps.at(-1);
   // Switch to a more capable model if the task is complex
   if (lastStep?.toolCalls.length > 3) {
-    return { model: openrouter("anthropic/claude-sonnet-4") };
+    return { model: anthropic("claude-sonnet-4-20250514") };
   }
   return {};
 };

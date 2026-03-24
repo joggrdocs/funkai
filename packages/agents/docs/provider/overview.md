@@ -1,106 +1,91 @@
 # Provider Overview
 
-The provider module integrates with OpenRouter for model access and provides a model catalog with pricing data.
+Agents require an AI SDK `LanguageModel` instance for their `model` field. The `@funkai/agents` package does not bundle any provider -- you bring your own from the AI SDK ecosystem.
 
-## OpenRouter
+## Passing a Model
 
-All models are accessed via OpenRouter. The `openrouter()` function creates a language model from a model ID.
+Use any `@ai-sdk/*` provider package to create a language model instance:
 
 ```ts
-import { openrouter } from "@funkai/agents";
+import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
-const m = openrouter("openai/gpt-4.1");
+const helper = agent({
+  name: "helper",
+  model: openai("gpt-4.1"),
+  system: "You are a helpful assistant.",
+});
 ```
 
-The provider instance is cached at module scope and reused across calls. If `OPENROUTER_API_KEY` changes at runtime, the cache is invalidated and a new provider is created.
+## Supported Providers
 
-## API Key
+Any package that returns an AI SDK v3 `LanguageModel` works:
 
-Resolved from the `OPENROUTER_API_KEY` environment variable. Throws if not set.
+| Package                       | Example                                 |
+| ----------------------------- | --------------------------------------- |
+| `@ai-sdk/openai`              | `openai("gpt-4.1")`                     |
+| `@ai-sdk/anthropic`           | `anthropic("claude-sonnet-4-20250514")` |
+| `@ai-sdk/google`              | `google("gemini-2.5-pro")`              |
+| `@openrouter/ai-sdk-provider` | `createOpenRouter()("openai/gpt-4.1")`  |
+
+## Dynamic Model Resolution
+
+Use a resolver function to pick models at runtime:
 
 ```ts
-// Override with a custom provider instance
-import { createOpenRouter } from "@funkai/agents";
+import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 
-const provider = createOpenRouter({ apiKey: "sk-..." });
-const m = provider("openai/gpt-4.1");
+const helper = agent({
+  name: "helper",
+  model: ({ input }) =>
+    input.fast ? openai("gpt-4.1-mini") : anthropic("claude-sonnet-4-20250514"),
+  input: z.object({ fast: z.boolean() }),
+  system: "You are a helpful assistant.",
+});
 ```
 
 ## Model Catalog
 
-Models are defined in `models.config.json` and auto-generated into provider-specific files. Use the catalog functions to look up model definitions and pricing.
+For model metadata and pricing, use `@funkai/models`:
 
 ```ts
-import { model, tryModel, models } from "@funkai/agents";
+import { model, models } from "@funkai/models";
 
-// Look up a model (throws if not found)
 const gpt4 = model("openai/gpt-4.1");
-console.log(gpt4.pricing.prompt); // cost per input token
+console.log(gpt4?.pricing.prompt); // cost per input token
 
-// Safe lookup (returns undefined if not found)
-const maybe = tryModel("openai/gpt-4.1");
-
-// List all models, optionally filtered
-const allModels = models();
-const reasoningModels = models((m) => m.category === "reasoning");
+const reasoning = models((m) => m.capabilities.reasoning);
 ```
 
 ## Token Usage
 
-Aggregate token counts across agent and workflow executions.
+Aggregate token counts across agent and flow agent executions:
 
 ```ts
-import { agentUsage, workflowUsage } from "@funkai/agents";
+import { usage, usageByAgent, usageByModel, collectUsages } from "@funkai/agents";
 
-// Single agent usage
-const usage = agentUsage("my-agent", tokenRecords);
-console.log(usage.inputTokens, usage.outputTokens, usage.totalTokens);
-
-// Workflow usage with per-agent breakdown
-const wfUsage = workflowUsage(allTokenRecords);
-for (const entry of wfUsage.usages) {
-  console.log(`${entry.agentId}: ${entry.totalTokens} tokens`);
+const result = await myFlowAgent.generate({ input: { topic: "closures" } });
+if (result.ok) {
+  const records = collectUsages(result.trace);
+  const total = usage(records);
+  const byAgent = usageByAgent(records);
+  const byModel = usageByModel(records);
 }
 ```
 
 ## Exports
 
-| Export                         | Description                                                       |
-| ------------------------------ | ----------------------------------------------------------------- |
-| `openrouter(modelId)`          | Create a language model from OpenRouter (cached provider)         |
-| `createOpenRouter(options?)`   | Create a custom OpenRouter provider instance                      |
-| `model(id)`                    | Look up a model definition from the catalog (throws if not found) |
-| `tryModel(id)`                 | Look up a model definition (returns `undefined` if not found)     |
-| `models(filter?)`              | Get model definitions, optionally filtered by predicate           |
-| `agentUsage(agentId, records)` | Aggregate token counts for a single agent                         |
-| `workflowUsage(records)`       | Aggregate token counts for a workflow with per-agent breakdown    |
-
-## Model Reference
-
-String model IDs passed to `agent()` or `openrouter()` are resolved via OpenRouter at runtime. You can also pass an AI SDK `LanguageModel` instance directly.
-
-```ts
-import { agent } from "@funkai/agents";
-
-// String ID -- resolved via OpenRouter
-const a1 = agent({
-  name: "my-agent",
-  model: "openai/gpt-4.1",
-  system: "You are helpful.",
-});
-
-// AI SDK provider instance -- bypasses OpenRouter
-import { openai } from "@ai-sdk/openai";
-
-const a2 = agent({
-  name: "my-agent",
-  model: openai("gpt-4.1"),
-  system: "You are helpful.",
-});
-```
+| Export                  | Description                                     |
+| ----------------------- | ----------------------------------------------- |
+| `usage(records)`        | Sum all token usage records into a single total |
+| `usageByAgent(records)` | Group and sum usage by agent ID                 |
+| `usageByModel(records)` | Group and sum usage by model ID                 |
+| `collectUsages(trace)`  | Walk a trace tree and collect all usage records |
 
 ## References
 
 - [Models](models.md)
+- [Token Usage](usage.md)
 - [Create an Agent](../guides/create-agent.md)
-- [Troubleshooting](../troubleshooting.md)

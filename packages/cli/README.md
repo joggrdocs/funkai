@@ -27,27 +27,27 @@ npm install @funkai/cli
 Generate typed TypeScript modules from `.prompt` files.
 
 ```bash
-funkai prompts generate --out .prompts/client --roots src/agents
+funkai prompts generate --out .prompts/client --includes "src/agents/**"
 ```
 
-| Flag         | Description                                         |
-| ------------ | --------------------------------------------------- |
-| `--out`      | Output directory for generated files                |
-| `--roots`    | Directories to scan recursively for `.prompt` files |
-| `--partials` | Custom partials directory                           |
-| `--silent`   | Suppress output except errors                       |
+| Flag         | Description                               |
+| ------------ | ----------------------------------------- |
+| `--out`      | Output directory for generated files      |
+| `--includes` | Glob patterns to scan for `.prompt` files |
+| `--partials` | Custom partials directory                 |
+| `--silent`   | Suppress output except errors             |
 
 ### `funkai prompts lint`
 
 Validate `.prompt` files without generating output.
 
 ```bash
-funkai prompts lint --roots src/agents
+funkai prompts lint --includes "src/agents/**"
 ```
 
 | Flag         | Description                                              |
 | ------------ | -------------------------------------------------------- |
-| `--roots`    | Directories to scan                                      |
+| `--includes` | Glob patterns to scan for `.prompt` files                |
 | `--partials` | Custom partials directory (default: `.prompts/partials`) |
 | `--silent`   | Suppress output except errors                            |
 
@@ -78,8 +78,8 @@ Configures VSCode file associations, Liquid extension recommendation, `.gitignor
 
 ## Documentation
 
-See the [Prompts SDK docs](../prompts/docs/overview.md) for the full file format, library API, and guides.
+See the [Prompts concept](/concepts/prompts) and [Prompts CLI reference](/reference/prompts/cli) for the full file format, library API, and guides.
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](https://github.com/joggrdocs/funkai/blob/main/LICENSE)
