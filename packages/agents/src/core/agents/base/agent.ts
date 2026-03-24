@@ -272,7 +272,13 @@ export function agent<
         return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
       });
       const usage = extractUsage(step.usage);
-      const event: StepFinishEvent = { stepId, toolCalls, toolResults, usage, agentChain: currentChain };
+      const event: StepFinishEvent = {
+        stepId,
+        toolCalls,
+        toolResults,
+        usage,
+        agentChain: currentChain,
+      };
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),
@@ -704,4 +710,3 @@ function buildMergedHook<E>(
     await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
   };
 }
-

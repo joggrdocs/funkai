@@ -141,7 +141,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       trace: childTrace,
       messages: ctx.messages,
     };
-    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, writer, agentChain }, indexRef);
+    const child$ = createStepBuilderInternal(
+      { ctx: childCtx, parentHooks, writer, agentChain },
+      indexRef,
+    );
 
     // Build synthetic tool-call message and push to context
     const toolCallId = buildToolCallId(id, stepInfo.index);

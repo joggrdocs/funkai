@@ -1827,7 +1827,10 @@ describe("Agent chain propagation (integration)", () => {
   });
 
   it("agent chain cascades through agent → sub-agent tool calls", async () => {
-    const stepEvents: { stepId: string | undefined; chain: readonly { id: string }[] | undefined }[] = [];
+    const stepEvents: {
+      stepId: string | undefined;
+      chain: readonly { id: string }[] | undefined;
+    }[] = [];
 
     const sub = agent({
       name: "sub-agent",
