@@ -1,7 +1,7 @@
 import type { AsyncIterableStream } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 
-import { resolveOptionalValue } from "@/core/agents/base/utils.js";
+import { extractAgentChain, resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,
   createAssistantMessage,
@@ -622,24 +622,6 @@ export function flowAgent<TInput, TOutput = any>(
  *
  * @private
  */
-/**
- * Extract the internal `agentChain` from raw generate params.
- *
- * `agentChain` is a framework-internal transport field — it is NOT
- * on the public `GenerateParams` type. It's passed via untyped
- * spreads from flow agent `$.agent()` calls.
- *
- * @private
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
-function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
-  const raw = params as Record<string, unknown>;
-  if (Array.isArray(raw.agentChain)) {
-    return raw.agentChain as readonly AgentChainEntry[];
-  }
-  return [];
-}
-
 function sumTokenUsages(usages: TokenUsage[]): TokenUsage {
   const sum = (fn: (u: TokenUsage) => number): number => usages.reduce((acc, u) => acc + fn(u), 0);
   return {

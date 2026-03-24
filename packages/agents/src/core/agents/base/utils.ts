@@ -421,6 +421,33 @@ function buildAgentTool(
  *
  * @private
  */
+/**
+ * Shared empty chain — avoids allocating a new `[]` on every
+ * top-level agent call where no parent chain exists.
+ *
+ * @private
+ */
+const EMPTY_CHAIN: readonly AgentChainEntry[] = [];
+
+/**
+ * Extract the internal `agentChain` from raw generate params.
+ *
+ * `agentChain` is a framework-internal transport field — it is NOT
+ * on the public `GenerateParams` type. It's passed via untyped
+ * spreads from `buildParentParams` and flow agent `$.agent()` calls.
+ *
+ * @param params - The raw generate params object.
+ * @returns The agent chain array, or an empty array if absent.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
+export function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
+  const raw = params as Record<string, unknown>;
+  if (Array.isArray(raw.agentChain)) {
+    return raw.agentChain as readonly AgentChainEntry[];
+  }
+  return EMPTY_CHAIN;
+}
+
 function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, unknown> {
   if (isNil(ctx)) {
     return {};

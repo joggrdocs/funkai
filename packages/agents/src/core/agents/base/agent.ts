@@ -6,6 +6,7 @@ import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
 import {
   buildAITools,
+  extractAgentChain,
   resolveValue,
   resolveOptionalValue,
   buildPrompt,
@@ -704,20 +705,3 @@ function buildMergedHook<E>(
   };
 }
 
-/**
- * Extract the internal `agentChain` from raw generate params.
- *
- * `agentChain` is a framework-internal transport field — it is NOT
- * on the public `GenerateParams` type. It's passed via untyped
- * spreads from `buildParentParams` and flow agent `$.agent()` calls.
- *
- * @private
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
-function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
-  const raw = params as Record<string, unknown>;
-  if (Array.isArray(raw.agentChain)) {
-    return raw.agentChain as readonly AgentChainEntry[];
-  }
-  return [];
-}
