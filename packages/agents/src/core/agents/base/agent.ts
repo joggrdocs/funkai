@@ -283,17 +283,18 @@ export function agent<
     // Build onStepStart handler that fires config + per-call hooks
     const stepStartCounter = { value: 0 };
     const mergedOnStepStart = buildMergedHook(log, config.onStepStart, params.onStepStart);
-    const onStepStart = isNotNil(mergedOnStepStart)
-      ? async (_aiEvent: unknown) => {
-          const stepId = `${config.name}:${stepStartCounter.value++}`;
-          const event: StepStartEvent = {
-            stepId,
-            stepOperation: "agent",
-            agentChain: currentChain,
-          };
-          await mergedOnStepStart(event);
-        }
-      : undefined;
+    let onStepStart: ((event: unknown) => Promise<void>) | undefined;
+    if (isNotNil(mergedOnStepStart)) {
+      onStepStart = async (_aiEvent: unknown) => {
+        const stepId = `${config.name}:${stepStartCounter.value++}`;
+        const event: StepStartEvent = {
+          stepId,
+          stepOperation: "agent",
+          agentChain: currentChain,
+        };
+        await mergedOnStepStart(event);
+      };
+    }
 
     // Collect AI SDK passthrough params (per-call overrides config)
     const aiSdkParams = pickBy(
@@ -535,9 +536,11 @@ export function agent<
 
         // Build a GenerateResult for the onFinish hook by awaiting remaining fields
         const steps = await aiResult.steps;
+        // Steps always has at least one entry after stream completes
+        const lastStep = steps.at(-1) as (typeof steps)[number];
         const generateResult = formatGenerateResult<TOutput>(
           {
-            ...steps.at(-1)!,
+            ...lastStep,
             totalUsage: await aiResult.totalUsage,
             steps,
             output: await aiResult.output,

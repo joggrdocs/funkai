@@ -10,14 +10,12 @@ import type {
   ToolCallRepairFunction,
   ToolChoice,
   ToolSet,
-  UIMessage,
-  UIMessageStreamOptions,
 } from "ai";
 
 // The AI SDK's `Output` is a merged namespace + interface. TypeScript resolves
 // `import type { Output }` to the namespace, which can't be used as a type param.
 // We only need this for the `Omit`'d fields (`output`, `experimental_output`), so
-// the actual type param is irrelevant — `any` satisfies the `extends Output` constraint.
+// The actual type param is irrelevant — `any` satisfies the `extends Output` constraint.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AIOutput = any;
 import type { CamelCase, SnakeCase } from "type-fest";
@@ -354,37 +352,59 @@ interface AgentGenerateOverrides<
    */
   output?: OutputParam;
 
-  /** Override the tool choice strategy for this call. */
+  /**
+   * Override the tool choice strategy for this call.
+   */
   toolChoice?: ToolChoice<Record<string, unknown>>;
 
-  /** Override provider-specific options for this call. */
+  /**
+   * Override provider-specific options for this call.
+   */
   providerOptions?: Record<string, Record<string, unknown>>;
 
-  /** Override active tools for this call. */
+  /**
+   * Override active tools for this call.
+   */
   activeTools?: string[];
 
-  /** Override prepareStep for this call. */
+  /**
+   * Override prepareStep for this call.
+   */
   prepareStep?: PrepareStepFunction;
 
-  /** Override repairToolCall for this call. */
+  /**
+   * Override repairToolCall for this call.
+   */
   repairToolCall?: ToolCallRepairFunction<ToolSet>;
 
-  /** Override HTTP headers for this call. */
+  /**
+   * Override HTTP headers for this call.
+   */
   headers?: Record<string, string | undefined>;
 
-  /** Override include settings for this call. */
+  /**
+   * Override include settings for this call.
+   */
   experimental_include?: { requestBody?: boolean; responseBody?: boolean };
 
-  /** Override context for this call. */
+  /**
+   * Override context for this call.
+   */
   experimental_context?: unknown;
 
-  /** Override download function for this call. */
+  /**
+   * Override download function for this call.
+   */
   experimental_download?: Experimental_DownloadFunction | undefined;
 
-  /** Override onToolCallStart for this call. */
+  /**
+   * Override onToolCallStart for this call.
+   */
   onToolCallStart?: (event: OnToolCallStartEvent) => void | Promise<void>;
 
-  /** Override onToolCallFinish for this call. */
+  /**
+   * Override onToolCallFinish for this call.
+   */
   onToolCallFinish?: (event: OnToolCallFinishEvent) => void | Promise<void>;
 }
 

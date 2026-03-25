@@ -440,7 +440,7 @@ export function flowAgent<TInput, TOutput = any>(
         duration,
       };
 
-      // config.onFinish is a union from the discriminated config type — cast to the unified hook shape
+      // Config.onFinish is a union from the discriminated config type — cast to the unified hook shape
       const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
 
       await fireHooks(
@@ -522,7 +522,7 @@ export function flowAgent<TInput, TOutput = any>(
           duration,
         };
 
-        // config.onFinish is a union from the discriminated config type — cast to the unified hook shape
+        // Config.onFinish is a union from the discriminated config type — cast to the unified hook shape
         const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
 
         await fireHooks(

@@ -532,9 +532,9 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
-    // funkai additions
+    // Funkai additions
     expect(event.stepId).toBe("test-agent:0");
     expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);
@@ -608,7 +608,7 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
     // Full tool call objects preserved (not stripped to toolName + argsTextLength)
     expect(event.toolCalls).toEqual(mockStepData.toolCalls);
@@ -623,7 +623,7 @@ describe("generate() hooks", () => {
     // Usage passed through as-is
     expect(event.usage).toEqual(mockStepData.usage);
 
-    // finishReason passed through (not as stepId)
+    // FinishReason passed through (not as stepId)
     expect(event.finishReason).toBe("tool-calls");
   });
 
@@ -1118,9 +1118,9 @@ describe("stream() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
-    // funkai additions
+    // Funkai additions
     expect(event.stepId).toBe("test-agent:0");
     expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);

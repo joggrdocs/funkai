@@ -1,3 +1,4 @@
+import { isPlainObject } from "es-toolkit";
 import type { PromptModule, PromptNamespace, PromptRegistry } from "./types.js";
 
 /**
@@ -56,7 +57,7 @@ function isPromptModule(value: unknown): value is PromptModule {
  */
 function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
   const copied = Object.entries(obj).reduce<Record<string, unknown>>((acc, [key, value]) => {
-    const isNamespace = typeof value === "object" && value !== null && !isPromptModule(value);
+    const isNamespace = isPlainObject(value) && !isPromptModule(value);
     if (isNamespace) {
       acc[key] = deepFreeze({ ...value } as PromptNamespace);
     } else {

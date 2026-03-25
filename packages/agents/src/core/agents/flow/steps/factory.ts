@@ -396,7 +396,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           throw generateResult.error.cause ?? new Error(generateResult.error.message);
         }
         // Runnable.generate() types only { output }, but Agent.generate()
-        // returns full GenerateResult at runtime including usage, finishReason.
+        // Returns full GenerateResult at runtime including usage, finishReason.
         const full = generateResult as unknown as BaseGenerateResult & {
           ok: true;
         };
