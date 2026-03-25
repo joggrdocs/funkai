@@ -61,7 +61,6 @@ jobs:
           found=0
           for f in .changeset/*.md; do
             [ "$f" = ".changeset/README.md" ] && continue
-            [ "$f" = ".changeset/AGENTS.md" ] && continue
             if grep -qP '^"@funkai/.+?":\s*major' "$f"; then
               echo "::error file=$f::Major bump detected — all @funkai/* packages are pre-1.0. Use 'minor' for breaking changes."
               found=1

@@ -85,7 +85,7 @@ For architectural details, see [Architecture](contributing/concepts/architecture
 - **Commit format**: Conventional Commits (`type(scope): description`)
 - **Types**: feat, fix, docs, refactor, test, chore, perf, style, ci, deps, revert
 - **Scopes**: packages/models, packages/agents, packages/prompts, workspace, tooling
-- **Changesets**: Run `pnpm changeset` for changes to published packages
+- **Changesets**: Run `pnpm changeset` for changes to published packages. All `@funkai/*` packages are **pre-1.0** — use `minor` for breaking changes, `patch` for non-breaking. **Never use `major`** until the team decides to release 1.0. CI will reject PRs with major bumps.
 - **PR standards**: Keep PRs focused — one feature/fix per PR
 
 For details, see [Commit Standards](contributing/standards/git-commits.md) and [PR Standards](contributing/standards/git-pulls.md).
