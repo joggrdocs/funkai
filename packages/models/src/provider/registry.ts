@@ -97,9 +97,9 @@ export function createProviderRegistry(config: ProviderRegistryConfig): Provider
     // But our ModelId is a branded string union. The runtime validates the format.
     try {
       // SAFETY: The first cast (`as \`${string}/${string}\``) is safe because we
-      // validated above that `modelId` contains `/`. The second cast (`as
+      // Validated above that `modelId` contains `/`. The second cast (`as
       // LanguageModel`) narrows from the AI SDK's broader LanguageModel union to
-      // the v3 specification, which is the only version we support.
+      // The v3 specification, which is the only version we support.
       return inner.languageModel(modelId as `${string}/${string}`) as LanguageModel;
     } catch (error) {
       throw new Error(`Failed to resolve model "${modelId}": ${errorMessage(error)}`, {

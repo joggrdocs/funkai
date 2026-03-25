@@ -2,6 +2,7 @@ import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { basename, extname, join, relative, resolve } from "node:path";
 
 import picomatch from "picomatch";
+import { match } from "ts-pattern";
 import { parse as parseYaml } from "yaml";
 
 import { FRONTMATTER_RE, NAME_RE } from "./frontmatter.js";
@@ -86,7 +87,9 @@ function extractBaseDir(pattern: string): string {
   const globChars = new Set(["*", "?", "{", "["]);
   const parts = pattern.split("/");
   const firstGlobIndex = parts.findIndex((part) => [...part].some((ch) => globChars.has(ch)));
-  const staticParts = firstGlobIndex === -1 ? parts : parts.slice(0, firstGlobIndex);
+  const staticParts = match(firstGlobIndex)
+    .with(-1, () => parts)
+    .otherwise(() => parts.slice(0, firstGlobIndex));
 
   if (staticParts.length === 0) {
     return ".";

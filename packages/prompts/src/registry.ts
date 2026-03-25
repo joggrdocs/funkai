@@ -57,12 +57,9 @@ function isPromptModule(value: unknown): value is PromptModule {
 function deepFreeze<T extends PromptNamespace>(obj: T): PromptRegistry<T> {
   const copied = Object.entries(obj).reduce<Record<string, unknown>>(
     (acc, [key, value]) => {
-      if (
-        typeof value === "object" &&
-        value !== null &&
-        !Object.isFrozen(value) &&
-        !isPromptModule(value)
-      ) {
+      const isNamespace =
+        typeof value === "object" && value !== null && !Object.isFrozen(value) && !isPromptModule(value);
+      if (isNamespace) {
         acc[key] = deepFreeze({ ...value } as PromptNamespace);
       } else {
         acc[key] = value;

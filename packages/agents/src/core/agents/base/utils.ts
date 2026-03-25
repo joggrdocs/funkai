@@ -374,9 +374,7 @@ function buildAgentTool(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): ReturnType<typeof tool<any, any>> {
   const parentParams = buildParentParams(parentCtx);
-  const parentChain: readonly AgentChainEntry[] | undefined = isNotNil(parentCtx)
-    ? parentCtx.agentChain
-    : undefined;
+  const parentChain = resolveParentChain(parentCtx);
 
   if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
     return tool({
@@ -486,4 +484,18 @@ function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, 
     },
     isNil,
   );
+}
+
+/**
+ * Extract the agent chain from a parent context, if present.
+ *
+ * @private
+ */
+function resolveParentChain(
+  parentCtx: ParentAgentContext | undefined,
+): readonly AgentChainEntry[] | undefined {
+  if (isNotNil(parentCtx)) {
+    return parentCtx.agentChain;
+  }
+  return undefined;
 }

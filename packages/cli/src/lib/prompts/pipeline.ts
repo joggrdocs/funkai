@@ -3,6 +3,7 @@ import { relative, resolve } from "node:path";
 
 import type { PromptGroup } from "@funkai/config";
 import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
+import { isNil } from "es-toolkit";
 import picomatch from "picomatch";
 
 import { toFileSlug } from "./codegen.js";
@@ -58,7 +59,11 @@ function resolveGroupFromConfig(
     return isIncluded(matchPath) && !isExcluded(matchPath);
   });
 
-  return matched?.name;
+  if (isNil(matched)) {
+    return undefined;
+  }
+
+  return matched.name;
 }
 
 /**

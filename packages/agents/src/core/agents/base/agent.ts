@@ -471,17 +471,14 @@ export function agent<
       const streamLog = log as Logger;
 
       /**
-       * Process the stream: pipe events through the TransformStream,
-       * resolve final output, and fire onFinish hooks.
-       *
        * @private
        */
-      async function processStream(): Promise<{
+      const processStream = async (): Promise<{
         output: TOutput;
         messages: Message[];
         usage: ReturnType<typeof toTokenUsage>;
         finishReason: string;
-      }> {
+      }> => {
         const writer = writable.getWriter();
         try {
           for await (const part of aiResult.fullStream) {
