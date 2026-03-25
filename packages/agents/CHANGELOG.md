@@ -1,5 +1,11 @@
 # @funkai/agents
 
+## 0.12.0
+
+### Minor Changes
+
+- d0a0134: Add `AgentChainEntry` type and `agentChain` field to `StepInfo` and `StepFinishEvent` for agent ancestry tracking. Forward `onStepStart`/`onStepFinish` hooks from flow agent `$.agent()` to sub-agents, enabling full observability of nested agent steps from root hooks.
+
 ## 0.11.0
 
 ### Minor Changes
