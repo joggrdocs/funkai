@@ -295,11 +295,18 @@ export function flowAgent<TInput, TOutput = any>(
    */
   function resolveSignal(params: FlowGenerateParams): AbortSignal {
     const { timeout, signal } = params;
-    if (signal && isNotNil(timeout)) {
-      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
+
+    // Object timeout — use totalMs for the flow-level signal (stepMs/toolMs
+    // are forwarded to individual agent calls, not handled here)
+    const timeoutMs = typeof timeout === "number"
+      ? timeout
+      : (typeof timeout === "object" && isNotNil(timeout) ? timeout.totalMs : undefined);
+
+    if (signal && isNotNil(timeoutMs)) {
+      return AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]);
     }
-    if (isNotNil(timeout)) {
-      return AbortSignal.timeout(timeout);
+    if (isNotNil(timeoutMs)) {
+      return AbortSignal.timeout(timeoutMs);
     }
     if (signal) {
       return signal;

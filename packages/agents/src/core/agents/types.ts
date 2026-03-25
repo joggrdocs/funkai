@@ -6,7 +6,9 @@ import type {
   OnToolCallFinishEvent,
   OnToolCallStartEvent,
   PrepareStepFunction,
+  StopCondition,
   StreamTextResult,
+  TelemetrySettings,
   ToolCallRepairFunction,
   ToolChoice,
   ToolSet,
@@ -245,13 +247,24 @@ export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
   signal?: AbortSignal | undefined;
 
   /**
-   * Timeout in milliseconds.
+   * Timeout for the call.
    *
-   * When set, the call is automatically aborted after the specified
-   * duration. Internally creates an `AbortSignal` that fires after
-   * the timeout.
+   * When a `number` is provided, the call is automatically aborted
+   * after that many milliseconds via `AbortSignal.timeout()`.
+   *
+   * When an object is provided, granular timeout control is forwarded
+   * directly to the AI SDK:
+   * - `totalMs` — total timeout for the entire call.
+   * - `stepMs` — timeout for each individual LLM step.
+   * - `toolMs` — default timeout for all tool executions.
+   * - Per-tool timeouts via additional keys (e.g. `{ weatherMs: 5000 }`).
    */
-  timeout?: number;
+  timeout?: number | {
+    totalMs?: number;
+    stepMs?: number;
+    toolMs?: number;
+    [toolTimeout: string]: number | undefined;
+  };
 
   /**
    * Per-call hook — fires after base `onStart`.
@@ -352,6 +365,51 @@ interface AgentGenerateOverrides<
   maxSteps?: number;
 
   /**
+   * Override maximum output tokens for this call.
+   */
+  maxOutputTokens?: number;
+
+  /**
+   * Override temperature for this call.
+   */
+  temperature?: number;
+
+  /**
+   * Override nucleus sampling (topP) for this call.
+   */
+  topP?: number;
+
+  /**
+   * Override top-K sampling for this call.
+   */
+  topK?: number;
+
+  /**
+   * Override presence penalty for this call.
+   */
+  presencePenalty?: number;
+
+  /**
+   * Override frequency penalty for this call.
+   */
+  frequencyPenalty?: number;
+
+  /**
+   * Override stop sequences for this call.
+   */
+  stopSequences?: string[];
+
+  /**
+   * Override seed for this call.
+   */
+  seed?: number;
+
+  /**
+   * Override max retries for this call.
+   */
+  maxRetries?: number;
+
+  /**
    * Override or set the output type for this call.
    *
    * Accepts an AI SDK `Output` strategy or a raw Zod schema:
@@ -415,6 +473,44 @@ interface AgentGenerateOverrides<
    * Override onToolCallFinish for this call.
    */
   onToolCallFinish?: (event: OnToolCallFinishEvent) => void | Promise<void>;
+
+  /**
+   * Telemetry configuration for this call.
+   *
+   * Experimental — passed through to the AI SDK.
+   */
+  experimental_telemetry?: TelemetrySettings;
+
+  /**
+   * Additional stop conditions for this call.
+   *
+   * Combined with the internal `stepCountIs(maxSteps)` condition —
+   * `maxSteps` always acts as a ceiling.
+   */
+  stopWhen?: StopCondition<ToolSet>[];
+
+  /**
+   * Callback for individual stream chunks.
+   *
+   * Only applies to `.stream()` — ignored by `.generate()`.
+   */
+  onChunk?: (event: { chunk: unknown }) => void | Promise<void>;
+
+  /**
+   * Callback for stream-level errors.
+   *
+   * Only applies to `.stream()` — ignored by `.generate()`.
+   * This is the AI SDK's `onError`, distinct from funkai's
+   * lifecycle `onError` hook.
+   */
+  onStreamError?: (event: { error: unknown }) => void | Promise<void>;
+
+  /**
+   * Callback fired when a stream is aborted via `AbortSignal`.
+   *
+   * Only applies to `.stream()` — ignored by `.generate()`.
+   */
+  onAbort?: (event: { steps: unknown[] }) => void | Promise<void>;
 }
 
 /**
@@ -584,6 +680,75 @@ export interface AgentConfig<
   maxSteps?: Resolver<TInput, number>;
 
   /**
+   * Maximum number of output tokens to generate per LLM call.
+   *
+   * Passed through to the AI SDK's `generateText`/`streamText`.
+   */
+  maxOutputTokens?: number;
+
+  /**
+   * Temperature for controlling randomness of the model output.
+   *
+   * The value is passed through to the provider. The range depends on
+   * the provider and model (commonly 0–2).
+   */
+  temperature?: number;
+
+  /**
+   * Nucleus sampling — limits tokens to those with cumulative probability `topP`.
+   *
+   * The value is passed through to the provider. The range depends on
+   * the provider and model (commonly 0–1).
+   */
+  topP?: number;
+
+  /**
+   * Top-K sampling — limits tokens to the top `topK` candidates.
+   *
+   * The value is passed through to the provider. The range depends on
+   * the provider and model.
+   */
+  topK?: number;
+
+  /**
+   * Presence penalty for discouraging repeated topics.
+   *
+   * The value is passed through to the provider. The range depends on
+   * the provider and model.
+   */
+  presencePenalty?: number;
+
+  /**
+   * Frequency penalty for discouraging repeated words/phrases.
+   *
+   * The value is passed through to the provider. The range depends on
+   * the provider and model.
+   */
+  frequencyPenalty?: number;
+
+  /**
+   * Stop sequences that halt text generation.
+   *
+   * If the model generates any of these sequences, it stops producing
+   * further text.
+   */
+  stopSequences?: string[];
+
+  /**
+   * Seed for deterministic generation.
+   *
+   * When set and supported by the model, calls produce deterministic results.
+   */
+  seed?: number;
+
+  /**
+   * Maximum number of retries for failed LLM calls.
+   *
+   * @default 2
+   */
+  maxRetries?: number;
+
+  /**
    * Output type strategy.
    *
    * Controls the shape of the generation output. Accepts an AI SDK
@@ -695,6 +860,14 @@ export interface AgentConfig<
    * Callback invoked after each tool execution completes.
    */
   onToolCallFinish?: (event: OnToolCallFinishEvent) => void | Promise<void>;
+
+  /**
+   * Telemetry configuration.
+   *
+   * Experimental — passed through to the AI SDK's
+   * `experimental_telemetry` parameter.
+   */
+  experimental_telemetry?: TelemetrySettings;
 
   /**
    * Pino-compatible logger.
