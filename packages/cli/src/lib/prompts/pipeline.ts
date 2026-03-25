@@ -3,6 +3,7 @@ import { relative, resolve } from "node:path";
 
 import type { PromptGroup } from "@funkai/config";
 import { clean, PARTIALS_DIR } from "@funkai/prompts/cli";
+import { isNil } from "es-toolkit";
 import picomatch from "picomatch";
 
 import { toFileSlug } from "./codegen.js";
@@ -52,15 +53,17 @@ function resolveGroupFromConfig(
 ): string | undefined {
   const matchPath = relative(process.cwd(), filePath).replaceAll("\\", "/");
 
-  for (const group of groups) {
+  const matched = groups.find((group) => {
     const isIncluded = picomatch(group.includes as string[]);
     const isExcluded = picomatch((group.excludes ?? []) as string[]);
+    return isIncluded(matchPath) && !isExcluded(matchPath);
+  });
 
-    if (isIncluded(matchPath) && !isExcluded(matchPath)) {
-      return group.name;
-    }
+  if (isNil(matched)) {
+    return undefined;
   }
-  return undefined;
+
+  return matched.name;
 }
 
 /**
@@ -119,7 +122,12 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
     const frontmatter = parseFrontmatter({ content: raw, filePath: d.filePath });
     const template = flattenPartials({ template: clean(raw), partialsDirs });
     const templateVars = extractVariables(template);
-    return lintPrompt(frontmatter.name, d.filePath, frontmatter.schema, templateVars);
+    return lintPrompt({
+      name: frontmatter.name,
+      filePath: d.filePath,
+      schemaVars: frontmatter.schema,
+      templateVars,
+    });
   });
 
   return { discovered: discovered.length, results };
@@ -192,7 +200,12 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
       promptObj.group = group;
     }
     return {
-      lintResult: lintPrompt(frontmatter.name, d.filePath, frontmatter.schema, templateVars),
+      lintResult: lintPrompt({
+        name: frontmatter.name,
+        filePath: d.filePath,
+        schemaVars: frontmatter.schema,
+        templateVars,
+      }),
       prompt: promptObj satisfies ParsedPrompt,
     };
   });

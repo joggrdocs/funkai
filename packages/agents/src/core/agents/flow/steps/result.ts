@@ -11,7 +11,7 @@ export interface StepError extends ResultError {
   /**
    * The `id` from the step config that failed.
    */
-  stepId: string;
+  readonly stepId: string;
 }
 
 /**

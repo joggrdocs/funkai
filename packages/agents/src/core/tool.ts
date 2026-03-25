@@ -75,7 +75,7 @@ export interface ToolConfig<TInput, TOutput> {
  * @typeParam TInput - Tool input type.
  * @typeParam TOutput - Tool output type.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any -- any required for Record<string, Tool> assignability with concrete typed tools
 export type Tool<TInput = any, TOutput = any> = ReturnType<typeof aiTool<TInput, TOutput>>;
 
 /**

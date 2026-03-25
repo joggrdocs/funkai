@@ -3,14 +3,6 @@ import { createProviderRegistry as baseCreateProviderRegistry } from "ai";
 import type { ModelId } from "@/catalog/index.js";
 import type { LanguageModel } from "@/provider/types.js";
 
-/** @private */
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
-}
-
 /**
  * Extract the provider type accepted by the AI SDK's `createProviderRegistry`.
  *
@@ -67,6 +59,8 @@ export type ProviderRegistry = (modelId: ModelId) => LanguageModel;
  *
  * @param config - Provider mappings.
  * @returns A resolver function that maps model IDs to {@link LanguageModel} instances.
+ * @throws {Error} If the model ID is empty, missing the `provider/model` format,
+ *   or the underlying AI SDK registry fails to resolve the provider or model.
  *
  * @example
  * ```typescript
@@ -102,6 +96,10 @@ export function createProviderRegistry(config: ProviderRegistryConfig): Provider
     // Cast needed: AI SDK overloads expect `provider/model` template literal,
     // But our ModelId is a branded string union. The runtime validates the format.
     try {
+      // SAFETY: The first cast (`as \`${string}/${string}\``) is safe because we
+      // Validated above that `modelId` contains `/`. The second cast (`as
+      // LanguageModel`) narrows from the AI SDK's broader LanguageModel union to
+      // The v3 specification, which is the only version we support.
       return inner.languageModel(modelId as `${string}/${string}`) as LanguageModel;
     } catch (error) {
       throw new Error(`Failed to resolve model "${modelId}": ${errorMessage(error)}`, {
@@ -109,4 +107,21 @@ export function createProviderRegistry(config: ProviderRegistryConfig): Provider
       });
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract a human-readable message from an unknown error value.
+ *
+ * @param error - The caught error value.
+ * @returns The error message string.
+ *
+ * @private
+ */
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
 }

@@ -479,8 +479,12 @@ export function flowAgent<TInput, TOutput = any>(
 
     log.debug("flowAgent.stream start", { name: config.name });
 
-    // Run handler in background, piping results through stream
-    const done = (async () => {
+    /**
+     * Run the handler, pipe results through the stream, and fire lifecycle hooks.
+     *
+     * @private
+     */
+    async function processStream(): Promise<FlowAgentGenerateResult<unknown>> {
       try {
         const output = await (handler as FlowAgentHandler<TInput, TOutput>)({
           input: parsedInput,
@@ -568,7 +572,10 @@ export function flowAgent<TInput, TOutput = any>(
 
         throw error;
       }
-    })();
+    }
+
+    // Run handler in background, piping results through stream
+    const done = processStream();
 
     // Catch stream errors to prevent unhandled rejections
     done.catch(() => {});

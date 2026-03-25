@@ -389,12 +389,12 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "each",
       input: config.input,
       execute: async ({ $ }) => {
-        for (const [i, item] of config.input.entries()) {
+        // oxlint-disable-next-line -- for-of required for sequential async execution over input items
+        for (const [index, item] of config.input.entries()) {
           if (ctx.signal.aborted) {
             throw new Error("Aborted");
           }
-          // oxlint-disable-next-line no-await-in-loop - sequential by design
-          await config.execute({ item, index: i, $ });
+          await config.execute({ item, index, $ });
         }
       },
       onStart: config.onStart,
@@ -736,6 +736,7 @@ async function poolMap<T, R>(
   const indexRef = { current: 0 };
 
   async function worker(): Promise<void> {
+    // oxlint-disable-next-line -- while loop required for concurrent worker pool with shared mutable index
     while (indexRef.current < items.length) {
       if (signal.aborted) {
         throw new Error("Aborted");

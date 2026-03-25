@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import type { Context } from "@kidd-cli/core";
 import { command } from "@kidd-cli/core";
 import { match } from "ts-pattern";
 
@@ -44,23 +45,7 @@ export default command({
     });
 
     if (shouldCreateConfig) {
-      let includes = ["src/prompts/**"];
-      let out = ".prompts/client";
-
-      if (hasPrompts) {
-        const includesInput = await ctx.prompts.text({
-          message: "Prompt include patterns (comma-separated)",
-          defaultValue: "src/prompts/**",
-          placeholder: "src/prompts/**",
-        });
-        includes = includesInput.split(",").map((r) => r.trim());
-
-        out = await ctx.prompts.text({
-          message: "Output directory for generated prompt modules",
-          defaultValue: ".prompts/client",
-          placeholder: ".prompts/client",
-        });
-      }
+      const { includes, out } = await resolvePromptSettings(ctx, hasPrompts);
 
       const template = buildConfigTemplate({ hasPrompts, hasAgents, includes, out });
       const configPath = resolve("funkai.config.ts");
@@ -89,6 +74,43 @@ export default command({
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
+
+/** @private */
+interface PromptSettings {
+  readonly includes: readonly string[];
+  readonly out: string;
+}
+
+/**
+ * Gather prompt include patterns and output directory from the user.
+ *
+ * @private
+ * @param ctx - CLI context for prompts.
+ * @param hasPrompts - Whether the prompts domain is selected.
+ * @returns The resolved prompt settings.
+ */
+async function resolvePromptSettings(ctx: Context, hasPrompts: boolean): Promise<PromptSettings> {
+  if (!hasPrompts) {
+    return { includes: ["src/prompts/**"], out: ".prompts/client" };
+  }
+
+  const includesInput = await ctx.prompts.text({
+    message: "Prompt include patterns (comma-separated)",
+    defaultValue: "src/prompts/**",
+    placeholder: "src/prompts/**",
+  });
+
+  const out = await ctx.prompts.text({
+    message: "Output directory for generated prompt modules",
+    defaultValue: ".prompts/client",
+    placeholder: ".prompts/client",
+  });
+
+  return {
+    includes: includesInput.split(",").map((r) => r.trim()),
+    out,
+  };
+}
 
 /** @private */
 interface ConfigTemplateOptions {

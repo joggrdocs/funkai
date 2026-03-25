@@ -46,10 +46,10 @@ export async function fireHooks(
   log: Logger,
   ...handlers: ((() => void | Promise<void>) | undefined)[]
 ): Promise<void> {
+  // oxlint-disable-next-line -- for-of required for sequential async execution of hook callbacks
   for (const h of handlers) {
     if (isNotNil(h)) {
       try {
-        // oxlint-disable-next-line no-await-in-loop - sequential by design
         await h();
       } catch (error) {
         const errorMessage = formatHookError(error);

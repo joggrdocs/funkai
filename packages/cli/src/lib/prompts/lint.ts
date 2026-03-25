@@ -18,24 +18,45 @@ export interface LintResult {
 }
 
 /**
+ * Parameters for linting a single prompt.
+ */
+export interface LintPromptParams {
+  /** Prompt name (for error messages). */
+  readonly name: string;
+  /** Source file path (for error messages). */
+  readonly filePath: string;
+  /** Variables declared in frontmatter schema. */
+  readonly schemaVars: readonly SchemaVariable[];
+  /** Variables extracted from the template body. */
+  readonly templateVars: readonly string[];
+}
+
+/**
  * Lint a prompt by comparing declared schema variables against
  * variables actually used in the template body.
  *
  * - **Error**: template uses a variable NOT declared in the schema (undefined var).
  * - **Warn**: schema declares a variable NOT used in the template (unused var).
  *
- * @param name - Prompt name (for error messages).
- * @param filePath - Source file path (for error messages).
- * @param schemaVars - Variables declared in frontmatter schema.
- * @param templateVars - Variables extracted from the template body.
+ * @param params - Lint prompt parameters.
  * @returns Lint result with diagnostics.
+ *
+ * @example
+ * ```ts
+ * const result = lintPrompt({
+ *   name: 'greeting',
+ *   filePath: 'prompts/greeting.prompt',
+ *   schemaVars: [{ name: 'name', type: 'string', required: true }],
+ *   templateVars: ['name'],
+ * });
+ * ```
  */
-export function lintPrompt(
-  name: string,
-  filePath: string,
-  schemaVars: readonly SchemaVariable[],
-  templateVars: readonly string[],
-): LintResult {
+export function lintPrompt({
+  name,
+  filePath,
+  schemaVars,
+  templateVars,
+}: LintPromptParams): LintResult {
   const declared = new Set(schemaVars.map((v) => v.name));
   const used = new Set(templateVars);
 

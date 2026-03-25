@@ -81,13 +81,13 @@ export interface PrivateField<T> {
 /**
  * Create a type-safe accessor for a Symbol-keyed private field.
  *
- * The returned accessor provides `.get()`, `.set()`, `.has()`, and
- * `.remove()` methods. The field is stored as a non-enumerable
+ * The returned accessor provides `.get()`, `.set()`, and `.has()`
+ * methods. The field is stored as a non-enumerable
  * property, invisible to `Object.keys()`, `JSON.stringify()`,
  * `for...in`, and object spread (`{ ...obj }`).
  *
- * Uses `Symbol.for(description)` internally so the same description
- * produces the same Symbol across package boundaries.
+ * Uses a unique `Symbol(description)` internally. Cross-package sharing
+ * happens through module imports, not the global symbol registry.
  *
  * @typeParam T - The type of the stored value.
  * @param description - A namespaced key for the Symbol (e.g. `"funkai:agent-chain"`).
@@ -108,7 +108,7 @@ export interface PrivateField<T> {
  * ```
  */
 export function privateField<T>(description: string): PrivateField<T> {
-  const sym = Symbol.for(description);
+  const sym = Symbol(description);
 
   function get(obj: object): T | undefined;
   function get(obj: object, defaultValue: T): T;

@@ -80,7 +80,7 @@ export interface StepInfo {
    * For flow agents, matches the `id` field on the step config.
    * For agents, auto-generated as `agentName:stepIndex`.
    */
-  id: string;
+  readonly id: string;
 
   /**
    * Auto-incrementing index within the execution.
@@ -88,14 +88,14 @@ export interface StepInfo {
    * Starts at `0` for the first step and increments for each
    * subsequent tracked operation.
    */
-  index: number;
+  readonly index: number;
 
   /**
    * What kind of operation produced this step.
    *
    * Discriminant for filtering or grouping step events.
    */
-  type: OperationType;
+  readonly type: OperationType;
 
   /**
    * Agent ancestry chain from root to the agent that owns this step.
@@ -110,7 +110,7 @@ export interface StepInfo {
    * // → [{ id: 'pipeline' }, { id: 'writer' }]
    * ```
    */
-  agentChain?: readonly AgentChainEntry[] | undefined;
+  readonly agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**
@@ -128,49 +128,49 @@ export interface StepFinishEvent {
    *
    * Present on agent tool-loop steps. `undefined` on flow steps.
    */
-  stepId?: string;
+  readonly stepId?: string;
 
   /**
    * Tool calls made in this step.
    *
    * Present on agent tool-loop steps. `undefined` on flow steps.
    */
-  toolCalls?: readonly { toolName: string; argsTextLength: number }[];
+  readonly toolCalls?: readonly { toolName: string; argsTextLength: number }[];
 
   /**
    * Tool results returned in this step.
    *
    * Present on agent tool-loop steps. `undefined` on flow steps.
    */
-  toolResults?: readonly { toolName: string; resultTextLength: number }[];
+  readonly toolResults?: readonly { toolName: string; resultTextLength: number }[];
 
   /**
    * Token usage for this step.
    *
    * Present on agent tool-loop steps. `undefined` on flow steps.
    */
-  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+  readonly usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
 
   /**
    * Flow step info (id, index, type).
    *
    * Present on flow orchestration steps. `undefined` on agent steps.
    */
-  step?: StepInfo;
+  readonly step?: StepInfo;
 
   /**
    * Flow step result value.
    *
    * Present on flow orchestration steps. `undefined` on agent steps.
    */
-  result?: unknown;
+  readonly result?: unknown;
 
   /**
    * Flow step duration in milliseconds.
    *
    * Present on flow orchestration steps. `undefined` on agent steps.
    */
-  duration?: number;
+  readonly duration?: number;
 
   /**
    * Agent ancestry chain from root to the agent that produced this event.
@@ -182,7 +182,7 @@ export interface StepFinishEvent {
    * For direct top-level executions, the chain contains the current
    * agent as a single entry.
    */
-  agentChain?: readonly AgentChainEntry[] | undefined;
+  readonly agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**

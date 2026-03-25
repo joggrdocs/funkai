@@ -24,6 +24,7 @@ export type {
 } from "ai";
 export { toError, safeStringify, safeStringifyJSON } from "@/utils/error.js";
 export type { Result, ResultError } from "@/utils/result.js";
+export { createDefaultLogger } from "@/core/logger.js";
 export type { Logger } from "@/core/logger.js";
 export type { Tool, ToolConfig } from "@/core/tool.js";
 export type { OutputSpec, OutputParam } from "@/core/agents/base/output.js";

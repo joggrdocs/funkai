@@ -8,6 +8,12 @@ import type { TokenUsage } from "@/provider/types.js";
  * Multiplies each token count by the corresponding per-token pricing rate.
  * Optional pricing fields (cache) default to `0` when absent.
  *
+ * **Reasoning token semantics**: `reasoningTokens` in {@link TokenUsage} are
+ * expected to be **exclusive** of `outputTokens` — they are billed separately.
+ * If your provider includes reasoning tokens _within_ the `outputTokens` count,
+ * you must deduct them before passing usage to this function to avoid
+ * double-counting output costs.
+ *
  * @param usage - Token counts from a model invocation.
  * @param pricing - Per-token pricing rates for the model.
  * @returns A {@link UsageCost} with per-field and total costs in USD.
