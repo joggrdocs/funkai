@@ -1,5 +1,11 @@
 # @funkai/models
 
+## 0.4.0
+
+### Minor Changes
+
+- 6528121: Export additional provider types and update cost calculation to support surfaced AI SDK data.
+
 ## 0.3.3
 
 ### Patch Changes
