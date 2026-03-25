@@ -1,3 +1,4 @@
+import { privateField } from "@funkai/utils";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
@@ -373,18 +374,27 @@ function buildAgentTool(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): ReturnType<typeof tool<any, any>> {
   const parentParams = buildParentParams(parentCtx);
+  let parentChain: readonly AgentChainEntry[] | undefined;
+  if (isNotNil(parentCtx)) {
+    parentChain = parentCtx.agentChain;
+  }
 
   if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
     return tool({
       description: `Delegate to ${toolName}`,
       inputSchema: meta.inputSchema,
       execute: async (input, { abortSignal }) => {
-        const r = await runnable.generate({
+        const generateParams = {
           input,
           signal: abortSignal,
           tools,
           ...parentParams,
-        });
+        };
+        // Stamp after spread — Symbol fields don't survive spread
+        if (isNotNil(parentChain)) {
+          _agentChainField.set(generateParams, parentChain);
+        }
+        const r = await runnable.generate(generateParams);
         if (!r.ok) {
           throw new Error(r.error.message);
         }
@@ -396,18 +406,62 @@ function buildAgentTool(
     description: `Delegate to ${toolName}`,
     inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
     execute: async (input: { prompt: string }, { abortSignal }) => {
-      const r = await runnable.generate({
+      const generateParams = {
         prompt: input.prompt,
         signal: abortSignal,
         tools,
         ...parentParams,
-      });
+      };
+      if (isNotNil(parentChain)) {
+        _agentChainField.set(generateParams, parentChain);
+      }
+      const r = await runnable.generate(generateParams);
       if (!r.ok) {
         throw new Error(r.error.message);
       }
       return r.output;
     },
   });
+}
+
+/**
+ * Private field for transporting agent ancestry chain through params.
+ *
+ * Uses a Symbol key so it is invisible to `Object.keys()`,
+ * `JSON.stringify()`, `for...in`, and object spread.
+ *
+ * @internal
+ */
+export const _agentChainField = privateField<readonly AgentChainEntry[]>("funkai:agent-chain");
+
+/**
+ * Shared empty chain — avoids allocating a new `[]` on every
+ * top-level agent call where no parent chain exists.
+ *
+ * @private
+ */
+const EMPTY_CHAIN: readonly AgentChainEntry[] = [];
+
+/**
+ * Extract the internal `agentChain` from raw generate params.
+ *
+ * Reads the agent chain from a Symbol-keyed private field on
+ * the params object. Returns an empty array when absent.
+ *
+ * @param params - The raw generate params object.
+ * @returns The agent chain array, or an empty array if absent.
+ *
+ * @example
+ * ```ts
+ * const chain = extractAgentChain(params);
+ * // => [{ id: "root" }] or []
+ * ```
+ */
+export function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
+  if (typeof params !== "object" || params === null) {
+    return EMPTY_CHAIN;
+  }
+  return _agentChainField.get(params, EMPTY_CHAIN);
 }
 
 /**
@@ -421,42 +475,6 @@ function buildAgentTool(
  *
  * @private
  */
-/**
- * Shared empty chain — avoids allocating a new `[]` on every
- * top-level agent call where no parent chain exists.
- *
- * @private
- */
-const EMPTY_CHAIN: readonly AgentChainEntry[] = [];
-
-/**
- * Extract the internal `agentChain` from raw generate params.
- *
- * `agentChain` is a framework-internal transport field — it is NOT
- * on the public `GenerateParams` type. It's passed via untyped
- * spreads from `buildParentParams` and flow agent `$.agent()` calls.
- *
- * @param params - The raw generate params object.
- * @returns The agent chain array, or an empty array if absent.
- *
- * @example
- * ```ts
- * const chain = extractAgentChain({ agentChain: [{ id: "root" }] });
- * // => [{ id: "root" }]
- *
- * const empty = extractAgentChain({});
- * // => []
- * ```
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
-export function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
-  const raw = params as Record<string, unknown>;
-  if (Array.isArray(raw.agentChain)) {
-    return raw.agentChain as readonly AgentChainEntry[];
-  }
-  return EMPTY_CHAIN;
-}
-
 function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, unknown> {
   if (isNil(ctx)) {
     return {};
@@ -466,7 +484,6 @@ function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, 
       logger: ctx.log,
       onStepStart: ctx.onStepStart,
       onStepFinish: ctx.onStepFinish,
-      agentChain: ctx.agentChain,
     },
     isNil,
   );

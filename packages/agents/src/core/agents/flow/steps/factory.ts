@@ -1,6 +1,7 @@
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
 
+import { _agentChainField } from "@/core/agents/base/utils.js";
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -297,8 +298,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
           ...mergedHooks,
-          agentChain,
         };
+        // Stamp after spread — Symbol fields don't survive spread
+        if (isNotNil(agentChain)) {
+          _agentChainField.set(agentParams, agentChain);
+        }
 
         // When stream: true and a writer is available, use agent.stream()
         // To pipe events through the parent flow's stream
