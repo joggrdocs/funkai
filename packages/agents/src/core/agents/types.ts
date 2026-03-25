@@ -694,6 +694,13 @@ export interface AgentConfig<
   onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
 
   /**
+   * Hook: fires when a step starts.
+   *
+   * Receives a unified {@link StepStartEvent}.
+   */
+  onStepStart?: (event: StepStartEvent) => void | Promise<void>;
+
+  /**
    * Hook: fires after each step completes.
    *
    * Receives a unified {@link StepFinishEvent}.
