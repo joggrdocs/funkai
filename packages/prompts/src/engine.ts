@@ -21,6 +21,7 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
     ...options,
     // Safety defaults — applied after spread so callers cannot disable them
     strictFilters: true,
+    strictVariables: true,
     ownPropertyOnly: true,
   });
 }
@@ -36,5 +37,6 @@ export function createEngine(partialsDir: string, options?: Partial<CreateEngine
  */
 export const liquidEngine = new Liquid({
   strictFilters: true,
+  strictVariables: true,
   ownPropertyOnly: true,
 });

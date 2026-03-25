@@ -335,7 +335,7 @@ export function agent<
 
       log.debug("agent.generate start", { name: config.name });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK requires any for exactOptionalPropertyTypes compatibility
       const generateParams: any = {
         model,
         ...promptParams,
@@ -444,7 +444,7 @@ export function agent<
 
       log.debug("agent.stream start", { name: config.name });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK requires any for exactOptionalPropertyTypes compatibility
       const streamParams: any = {
         model,
         ...promptParams,
@@ -470,7 +470,18 @@ export function agent<
       // Capture log for async closures — guaranteed set at this point
       const streamLog = log as Logger;
 
-      const done = (async () => {
+      /**
+       * Process the stream: pipe events through the TransformStream,
+       * resolve final output, and fire onFinish hooks.
+       *
+       * @private
+       */
+      async function processStream(): Promise<{
+        output: TOutput;
+        messages: Message[];
+        usage: ReturnType<typeof toTokenUsage>;
+        finishReason: string;
+      }> {
         const writer = writable.getWriter();
         try {
           for await (const part of aiResult.fullStream) {
@@ -518,7 +529,9 @@ export function agent<
           usage: finalUsage,
           finishReason: finalFinishReason,
         };
-      })();
+      }
+
+      const done = processStream();
 
       // Catch stream errors: fire onError hooks and prevent unhandled rejections
       done.catch(async (caughtError) => {

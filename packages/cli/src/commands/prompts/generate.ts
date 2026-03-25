@@ -118,13 +118,13 @@ export function handleGenerate({ args, config, logger, fail }: HandleGeneratePar
   }
 
   if (!silent) {
-    for (const prompt of prompts) {
+    prompts.forEach((prompt) => {
       const varList = formatVarList(prompt.schema);
       logger.step(`${prompt.name}${varList}`);
-    }
+    });
   }
 
-  for (const diag of lintResults.flatMap((result) => result.diagnostics)) {
+  lintResults.flatMap((result) => result.diagnostics).forEach((diag) => {
     match(diag.level)
       .with("error", () => logger.error(diag.message))
       .with("warn", () => {
@@ -133,7 +133,7 @@ export function handleGenerate({ args, config, logger, fail }: HandleGeneratePar
         }
       })
       .exhaustive();
-  }
+  });
 
   if (hasLintErrors(lintResults)) {
     fail("Lint errors found. Fix them before generating.");
@@ -143,12 +143,12 @@ export function handleGenerate({ args, config, logger, fail }: HandleGeneratePar
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: output directory from CLI config
   mkdirSync(outDir, { recursive: true });
 
-  for (const prompt of prompts) {
+  prompts.forEach((prompt) => {
     const content = generatePromptModule(prompt);
     const fileSlug = toFileSlug(prompt.name, prompt.group);
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated module to output directory
     writeFileSync(resolve(outDir, `${fileSlug}.ts`), content, "utf8");
-  }
+  });
 
   const registryContent = generateRegistry(prompts);
   // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: writing generated registry to output directory

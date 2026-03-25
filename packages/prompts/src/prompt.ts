@@ -33,12 +33,26 @@ export function createPrompt<T>(config: PromptConfig<T>): PromptModule<T> {
     name,
     group,
     schema,
+    /**
+     * Render the prompt template with the given variables.
+     *
+     * @param variables - Template variables matching the prompt schema.
+     * @returns The rendered prompt string.
+     * @throws {ZodError} If variables fail schema validation.
+     */
     render(variables: T): string {
       return liquidEngine.parseAndRenderSync(
         template,
         schema.parse(variables) as Record<string, unknown>,
       );
     },
+    /**
+     * Validate variables against the prompt schema.
+     *
+     * @param variables - Variables to validate.
+     * @returns The parsed and validated variables.
+     * @throws {ZodError} If variables fail schema validation.
+     */
     validate(variables: unknown): T {
       return schema.parse(variables);
     },

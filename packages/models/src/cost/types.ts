@@ -3,6 +3,10 @@
  *
  * Each field is the dollar cost for that token category.
  * All fields are non-negative numbers. Fields that don't apply are `0`.
+ *
+ * **Note**: Values may exhibit floating-point imprecision inherent to
+ * JavaScript `number` (IEEE 754 double-precision) arithmetic. Do not rely
+ * on exact equality comparisons against expected cost values.
  */
 export interface UsageCost {
   /** Cost for input tokens. */

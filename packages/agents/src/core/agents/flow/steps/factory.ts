@@ -389,13 +389,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "each",
       input: config.input,
       execute: async ({ $ }) => {
-        for (const [i, item] of config.input.entries()) {
+        await config.input.reduce(async (prev, item, i) => {
+          await prev;
           if (ctx.signal.aborted) {
             throw new Error("Aborted");
           }
-          // oxlint-disable-next-line no-await-in-loop - sequential by design
           await config.execute({ item, index: i, $ });
-        }
+        }, Promise.resolve());
       },
       onStart: config.onStart,
       onFinish: onFinishHandler,
@@ -629,19 +629,15 @@ function mergeStepHooks(
   type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
   type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
-  let parentStart: StepStartHook | undefined;
-  let parentFinish: StepFinishHook | undefined;
-  if (isNotNil(parentHooks)) {
-    parentStart = parentHooks.onStepStart;
-    parentFinish = parentHooks.onStepFinish;
-  }
+  const parentStart: StepStartHook | undefined = parentHooks?.onStepStart;
+  const parentFinish: StepFinishHook | undefined = parentHooks?.onStepFinish;
 
-  let childStart: StepStartHook | undefined;
-  let childFinish: StepFinishHook | undefined;
-  if (isNotNil(childConfig)) {
-    childStart = childConfig["onStepStart"] as StepStartHook | undefined;
-    childFinish = childConfig["onStepFinish"] as StepFinishHook | undefined;
-  }
+  const childStart: StepStartHook | undefined = childConfig?.["onStepStart"] as
+    | StepStartHook
+    | undefined;
+  const childFinish: StepFinishHook | undefined = childConfig?.["onStepFinish"] as
+    | StepFinishHook
+    | undefined;
 
   const result: Record<string, unknown> = {};
 
@@ -736,6 +732,7 @@ async function poolMap<T, R>(
   const indexRef = { current: 0 };
 
   async function worker(): Promise<void> {
+    // oxlint-ignore-next-line -- while loop required for concurrent worker pool with shared mutable index
     while (indexRef.current < items.length) {
       if (signal.aborted) {
         throw new Error("Aborted");

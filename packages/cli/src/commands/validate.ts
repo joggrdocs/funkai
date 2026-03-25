@@ -36,7 +36,7 @@ export default command({
     // --- Future: agents validation ---
 
     if (!silent) {
-      ctx.logger.success("All validations passed.");
+      ctx.logger.success("No errors found.");
     }
   },
 });

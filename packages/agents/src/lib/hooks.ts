@@ -46,10 +46,10 @@ export async function fireHooks(
   log: Logger,
   ...handlers: ((() => void | Promise<void>) | undefined)[]
 ): Promise<void> {
-  for (const h of handlers) {
+  await handlers.reduce(async (prev, h) => {
+    await prev;
     if (isNotNil(h)) {
       try {
-        // oxlint-disable-next-line no-await-in-loop - sequential by design
         await h();
       } catch (error) {
         const errorMessage = formatHookError(error);
@@ -58,5 +58,5 @@ export async function fireHooks(
         });
       }
     }
-  }
+  }, Promise.resolve());
 }

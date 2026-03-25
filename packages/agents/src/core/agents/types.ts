@@ -155,7 +155,7 @@ export interface GenerateResult<TOutput = string> {
    * - `T[]` when using `Output.array<T>({ element })`.
    * - One of the option strings when using `Output.choice()`.
    */
-  output: TOutput;
+  readonly output: TOutput;
 
   /**
    * Full message history including tool calls.
@@ -164,7 +164,7 @@ export interface GenerateResult<TOutput = string> {
    * including system messages, user prompts, assistant responses,
    * and tool call/result pairs.
    */
-  messages: Message[];
+  readonly messages: Message[];
 
   /**
    * Aggregated token usage across all tool-loop steps.
@@ -173,7 +173,7 @@ export interface GenerateResult<TOutput = string> {
    * All fields are resolved numbers (0 when the provider does not
    * report a given field).
    */
-  usage: TokenUsage;
+  readonly usage: TokenUsage;
 
   /**
    * The reason the model stopped generating.
@@ -181,7 +181,7 @@ export interface GenerateResult<TOutput = string> {
    * Common values: `"stop"`, `"length"`, `"content-filter"`,
    * `"tool-calls"`, `"error"`, `"other"`.
    */
-  finishReason: string;
+  readonly finishReason: string;
 }
 
 /**

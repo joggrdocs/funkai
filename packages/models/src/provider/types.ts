@@ -17,6 +17,12 @@ export type LanguageModel = Extract<BaseLanguageModel, { specificationVersion: "
  * Base token counts shared by raw tracking records and final output.
  *
  * All fields are resolved `number` (0 when absent).
+ *
+ * **Reasoning token semantics**: `reasoningTokens` must be **exclusive** of
+ * `outputTokens`. Some providers include reasoning tokens inside the output
+ * token count — if so, callers must deduct reasoning tokens from
+ * `outputTokens` before constructing this type to avoid double-counting in
+ * cost calculations.
  */
 export interface TokenUsage {
   /** Number of input (prompt) tokens. */

@@ -108,10 +108,9 @@ function generateSchemaExpression(vars: readonly SchemaVariable[]): string {
 
 /** @private */
 function formatHeader(sourcePath?: string): string {
-  let sourceLine = "";
-  if (sourcePath) {
-    sourceLine = `//  Source:      ${sourcePath}\n`;
-  }
+  const sourceLine = match(sourcePath)
+    .with(undefined, () => "")
+    .otherwise((p) => `//  Source:      ${p}\n`);
   return [
     "// ─── AUTO-GENERATED ────────────────────────────────────────",
     `${sourceLine}//  Regenerate:  funkai prompts generate`,

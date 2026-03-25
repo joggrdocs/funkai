@@ -85,14 +85,8 @@ function deriveNameFromPath(filePath: string): string {
 function extractBaseDir(pattern: string): string {
   const globChars = new Set(["*", "?", "{", "["]);
   const parts = pattern.split("/");
-  const staticParts: string[] = [];
-
-  for (const part of parts) {
-    if ([...part].some((ch) => globChars.has(ch))) {
-      break;
-    }
-    staticParts.push(part);
-  }
+  const firstGlobIndex = parts.findIndex((part) => [...part].some((ch) => globChars.has(ch)));
+  const staticParts = firstGlobIndex === -1 ? parts : parts.slice(0, firstGlobIndex);
 
   if (staticParts.length === 0) {
     return ".";

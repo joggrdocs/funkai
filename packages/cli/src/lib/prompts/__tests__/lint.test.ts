@@ -4,17 +4,17 @@ import { hasLintErrors, lintPrompt } from "@/lib/prompts/lint.js";
 
 describe(lintPrompt, () => {
   it("returns no diagnostics when vars match schema", () => {
-    const result = lintPrompt(
-      "test",
-      "test.prompt",
-      [{ name: "scope", type: "string", required: true }],
-      ["scope"],
-    );
+    const result = lintPrompt({
+      name: "test",
+      filePath: "test.prompt",
+      schemaVars: [{ name: "scope", type: "string", required: true }],
+      templateVars: ["scope"],
+    });
     expect(result.diagnostics).toEqual([]);
   });
 
   it("errors on undefined template variable", () => {
-    const result = lintPrompt("test", "test.prompt", [], ["scope"]);
+    const result = lintPrompt({ name: "test", filePath: "test.prompt", schemaVars: [], templateVars: ["scope"] });
     expect(result.diagnostics).toHaveLength(1);
     const [diag0] = result.diagnostics;
     expect(diag0?.level).toBe("error");
@@ -22,12 +22,12 @@ describe(lintPrompt, () => {
   });
 
   it("warns on unused schema variable", () => {
-    const result = lintPrompt(
-      "test",
-      "test.prompt",
-      [{ name: "scope", type: "string", required: true }],
-      [],
-    );
+    const result = lintPrompt({
+      name: "test",
+      filePath: "test.prompt",
+      schemaVars: [{ name: "scope", type: "string", required: true }],
+      templateVars: [],
+    });
     expect(result.diagnostics).toHaveLength(1);
     const [diag0] = result.diagnostics;
     expect(diag0?.level).toBe("warn");
@@ -35,19 +35,19 @@ describe(lintPrompt, () => {
   });
 
   it("reports both errors and warnings", () => {
-    const result = lintPrompt(
-      "test",
-      "test.prompt",
-      [{ name: "declared", type: "string", required: true }],
-      ["undeclared"],
-    );
+    const result = lintPrompt({
+      name: "test",
+      filePath: "test.prompt",
+      schemaVars: [{ name: "declared", type: "string", required: true }],
+      templateVars: ["undeclared"],
+    });
     expect(result.diagnostics).toHaveLength(2);
     const levels = result.diagnostics.map((d) => d.level).toSorted();
     expect(levels).toEqual(["error", "warn"]);
   });
 
   it("returns no diagnostics for prompts with no schema and no vars", () => {
-    const result = lintPrompt("test", "test.prompt", [], []);
+    const result = lintPrompt({ name: "test", filePath: "test.prompt", schemaVars: [], templateVars: [] });
     expect(result.diagnostics).toEqual([]);
   });
 });
