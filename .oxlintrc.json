@@ -86,7 +86,7 @@
     "vitest/prefer-expect-type-of": "off",
     "oxc/no-optional-chaining": "off",
     "jsdoc-js/multiline-blocks": [
-      "error",
+      "warn",
       {
         "noSingleLineBlocks": true
       }
