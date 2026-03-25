@@ -266,17 +266,24 @@ interface StepInfo {
 
 ## StepFinishEvent
 
-Emitted by `onStepFinish`. Agent tool-loop steps populate the left columns; flow orchestration steps populate the right.
+Emitted by `onStepFinish`. For agent tool-loop steps, the event is a full superset of the Vercel AI SDK's `StepResult<ToolSet>` — all SDK fields are passed through unchanged, plus funkai-specific additions. Flow orchestration steps populate the flow-specific fields instead.
 
-| Field         | Type                                                                 | Present on               |
-| ------------- | -------------------------------------------------------------------- | ------------------------ |
-| `stepId`      | `string`                                                             | Agent tool-loop steps    |
-| `toolCalls`   | `readonly { toolName: string; argsTextLength: number }[]`            | Agent tool-loop steps    |
-| `toolResults` | `readonly { toolName: string; resultTextLength: number }[]`          | Agent tool-loop steps    |
-| `usage`       | `{ inputTokens: number; outputTokens: number; totalTokens: number }` | Agent tool-loop steps    |
-| `step`        | `StepInfo`                                                           | Flow orchestration steps |
-| `result`      | `unknown`                                                            | Flow orchestration steps |
-| `duration`    | `number`                                                             | Flow orchestration steps |
+| Field            | Type                        | Present on               | Description                                   |
+| ---------------- | --------------------------- | ------------------------ | --------------------------------------------- |
+| `stepId`         | `string`                    | Agent tool-loop steps    | funkai addition: e.g. `"myAgent:0"`           |
+| `agentChain`     | `AgentChainEntry[]`         | Both                     | funkai addition: agent ancestry chain         |
+| `stepNumber`     | `number`                    | Agent tool-loop steps    | AI SDK: zero-based step index                 |
+| `text`           | `string`                    | Agent tool-loop steps    | AI SDK: generated text                        |
+| `toolCalls`      | `TypedToolCall<ToolSet>[]`  | Agent tool-loop steps    | AI SDK: full tool call objects with `input`    |
+| `toolResults`    | `TypedToolResult<ToolSet>[]`| Agent tool-loop steps    | AI SDK: full tool result objects with `output` |
+| `finishReason`   | `FinishReason`              | Agent tool-loop steps    | AI SDK: why the step ended                    |
+| `usage`          | `LanguageModelUsage`        | Agent tool-loop steps    | AI SDK: token usage                           |
+| `reasoning`      | `ReasoningPart[]`           | Agent tool-loop steps    | AI SDK: reasoning content                     |
+| `sources`        | `Source[]`                  | Agent tool-loop steps    | AI SDK: cited sources                         |
+| `response`       | `LanguageModelResponseMetadata & { messages }` | Agent tool-loop steps | AI SDK: response metadata |
+| `step`           | `StepInfo`                  | Flow orchestration steps | Flow step info (id, index, type)              |
+| `result`         | `unknown`                   | Flow orchestration steps | Flow step result value                        |
+| `duration`       | `number`                    | Flow orchestration steps | Flow step duration in ms                      |
 
 ## FlowAgentOverrides
 

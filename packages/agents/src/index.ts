@@ -8,6 +8,7 @@ export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
 export type {
+  AIStepResult,
   Runnable,
   Model,
   AgentChainEntry,

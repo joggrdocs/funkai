@@ -39,17 +39,17 @@ const geographyAgent = agent({
     if (toolCalls && toolCalls.length > 0) {
       console.log(`\n[step ${stepId}] Tool calls:`);
       for (const tc of toolCalls) {
-        console.log(`  → ${tc.toolName} (${tc.argsTextLength} chars args)`);
+        console.log(`  → ${tc.toolName} (input: ${JSON.stringify(tc.input)})`);
       }
     }
     if (toolResults && toolResults.length > 0) {
       console.log(`[step ${stepId}] Tool results:`);
       for (const tr of toolResults) {
-        console.log(`  ← ${tr.toolName} (${tr.resultTextLength} chars result)`);
+        console.log(`  ← ${tr.toolName} (output: ${JSON.stringify(tr.output)})`);
       }
     }
-    if (usage && usage.totalTokens > 0) {
-      console.log(`[step ${stepId}] Tokens: ${usage.inputTokens} in / ${usage.outputTokens} out`);
+    if (usage && (usage.totalTokens ?? 0) > 0) {
+      console.log(`[step ${stepId}] Tokens: ${usage.inputTokens ?? 0} in / ${usage.outputTokens ?? 0} out`);
     }
   },
 });
