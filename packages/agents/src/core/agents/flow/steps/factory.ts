@@ -389,13 +389,15 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "each",
       input: config.input,
       execute: async ({ $ }) => {
-        await config.input.reduce(async (prev, item, i) => {
-          await prev;
+        let i = 0;
+        // oxlint-disable-next-line -- for-of required for sequential async execution over input items
+        for (const item of config.input) {
           if (ctx.signal.aborted) {
             throw new Error("Aborted");
           }
           await config.execute({ item, index: i, $ });
-        }, Promise.resolve());
+          i++;
+        }
       },
       onStart: config.onStart,
       onFinish: onFinishHandler,
