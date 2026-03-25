@@ -54,8 +54,11 @@ const geographyAgent = agent({
         (usage.inputTokens ?? 0) > 0 ||
         (usage.outputTokens ?? 0) > 0)
     ) {
+      const inputTokens = usage.inputTokens ?? 0;
+      const outputTokens = usage.outputTokens ?? 0;
+      const totalTokens = usage.totalTokens ?? inputTokens + outputTokens;
       console.log(
-        `[step ${stepId}] Tokens: ${usage.inputTokens ?? 0} in / ${usage.outputTokens ?? 0} out`,
+        `[step ${stepId}] Tokens: ${inputTokens} in / ${outputTokens} out / ${totalTokens} total`,
       );
     }
   },
