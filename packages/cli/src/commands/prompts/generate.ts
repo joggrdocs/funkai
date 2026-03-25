@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import type { FunkaiConfig } from "@funkai/config";
+import type { FunkaiConfig, PromptGroup } from "@funkai/config";
 import { command } from "@kidd-cli/core";
 import { match } from "ts-pattern";
 import { z } from "zod";
@@ -71,7 +71,22 @@ function resolveGenerateArgs(
     fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");
   }
 
-  return { out, includes, excludes, partials, silent: args.silent };
+  const resolved: {
+    out: string;
+    includes: readonly string[];
+    excludes: readonly string[];
+    silent: boolean;
+    partials?: string;
+  } = {
+    out,
+    includes,
+    excludes,
+    silent: args.silent,
+  };
+  if (partials !== undefined) {
+    resolved.partials = partials;
+  }
+  return resolved;
 }
 
 /**
@@ -82,13 +97,21 @@ function resolveGenerateArgs(
 export function handleGenerate({ args, config, logger, fail }: HandleGenerateParams): void {
   const { out, includes, excludes, partials, silent } = resolveGenerateArgs(args, config, fail);
 
-  const { discovered, lintResults, prompts } = runGeneratePipeline({
-    includes,
-    excludes,
-    out,
-    partials,
-    groups: config && config.groups,
-  });
+  const configGroups = config && config.groups;
+  const pipelineOptions: {
+    includes: readonly string[];
+    excludes: readonly string[];
+    out: string;
+    partials?: string;
+    groups?: readonly PromptGroup[];
+  } = { includes, excludes, out };
+  if (partials !== undefined) {
+    pipelineOptions.partials = partials;
+  }
+  if (configGroups !== undefined) {
+    pipelineOptions.groups = configGroups;
+  }
+  const { discovered, lintResults, prompts } = runGeneratePipeline(pipelineOptions);
 
   if (!silent) {
     logger.info(`Found ${discovered} prompt(s)`);
@@ -149,8 +172,23 @@ export default command({
   options: generateArgs,
   handler(ctx) {
     const config = getConfig(ctx);
+    const generateArgs2: {
+      silent: boolean;
+      out?: string;
+      includes?: readonly string[];
+      partials?: string;
+    } = { silent: ctx.args.silent };
+    if (ctx.args.out !== undefined) {
+      generateArgs2.out = ctx.args.out;
+    }
+    if (ctx.args.includes !== undefined) {
+      generateArgs2.includes = ctx.args.includes;
+    }
+    if (ctx.args.partials !== undefined) {
+      generateArgs2.partials = ctx.args.partials;
+    }
     handleGenerate({
-      args: ctx.args,
+      args: generateArgs2,
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,

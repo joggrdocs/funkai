@@ -687,7 +687,7 @@ describe("FlowAgent agents dependency lifecycle (integration)", () => {
         const r = await $.agent({
           id: "run-core",
           // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- FlowSubAgents union includes FlowAgent; narrow to Agent for $.agent()
-          agent: agents.core as any,
+          agent: agents["core"] as any,
           input: input.text,
         });
         if (r.ok) {

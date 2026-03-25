@@ -43,9 +43,13 @@ function extractName(content: string): string | undefined {
   }
 
   try {
-    const parsed = parseYaml(fmMatch[1]) as Record<string, unknown> | null;
-    if (parsed !== null && parsed !== undefined && typeof parsed.name === "string") {
-      return parsed.name;
+    const [, fmContent] = fmMatch;
+    if (fmContent === undefined) {
+      return undefined;
+    }
+    const parsed = parseYaml(fmContent) as Record<string, unknown> | null;
+    if (parsed !== null && parsed !== undefined && typeof parsed["name"] === "string") {
+      return parsed["name"];
     }
     return undefined;
   } catch {

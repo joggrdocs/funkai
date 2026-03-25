@@ -5,21 +5,28 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2024"],
+    "types": ["node"],
+
     "strict": true,
-    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+
     "outDir": "./dist",
     "rootDir": ".",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "types": ["node"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

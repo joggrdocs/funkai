@@ -15,8 +15,19 @@ export default command({
       ctx.logger.info("Running prompts validation...");
     }
 
+    const lintHandleArgs: {
+      silent: boolean;
+      includes?: readonly string[];
+      partials?: string;
+    } = { silent: ctx.args.silent };
+    if (ctx.args.includes !== undefined) {
+      lintHandleArgs.includes = ctx.args.includes;
+    }
+    if (ctx.args.partials !== undefined) {
+      lintHandleArgs.partials = ctx.args.partials;
+    }
     handleLint({
-      args: ctx.args,
+      args: lintHandleArgs,
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,

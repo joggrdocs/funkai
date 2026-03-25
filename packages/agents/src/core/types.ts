@@ -110,7 +110,7 @@ export interface StepInfo {
    * // → [{ id: 'pipeline' }, { id: 'writer' }]
    * ```
    */
-  agentChain?: readonly AgentChainEntry[];
+  agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**
@@ -182,7 +182,7 @@ export interface StepFinishEvent {
    * For direct top-level executions, the chain contains the current
    * agent as a single entry.
    */
-  agentChain?: readonly AgentChainEntry[];
+  agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**

@@ -32,18 +32,19 @@ function parseParamsOrEmpty(raw: string, partialName: string): Record<string, st
  */
 function parseParams(raw: string, partialName: string): Record<string, string> {
   const literalMatches = [...raw.matchAll(LITERAL_PARAM_RE)];
-  const allParamNames = [...raw.matchAll(/(\w+)\s*:/g)].map((m) => m[1]);
+  const allParamNames = [...raw.matchAll(/(\w+)\s*:/g)].map(([, m1]) => m1);
 
   return Object.fromEntries(
     allParamNames.map((name) => {
-      const literal = literalMatches.find((m) => m[1] === name);
+      const literal = literalMatches.find(([, m1]) => m1 === name);
       if (!literal) {
         throw new Error(
           `Cannot flatten {% render '${partialName}' %}: parameter "${name}" uses a variable reference. ` +
             "Only literal string values are supported at codegen time.",
         );
       }
-      return [name, literal[2]];
+      const { 2: literalValue } = literal;
+      return [name, literalValue];
     }),
   );
 }
@@ -81,10 +82,14 @@ function renderPartial(engine: Liquid, tag: RenderTag): string {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
+    const [, partialName] = m;
+    if (partialName === undefined) {
+      throw new Error("Malformed render tag: missing partial name");
+    }
     const rawParams: string = (m[2] ?? "").trim();
-    const params = parseParamsOrEmpty(rawParams, m[1]);
+    const params = parseParamsOrEmpty(rawParams, partialName);
 
-    return { fullMatch: m[0], partialName: m[1], params };
+    return { fullMatch: m[0], partialName, params };
   });
 }
 

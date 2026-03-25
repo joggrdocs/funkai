@@ -318,7 +318,7 @@ export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
    *
    * When fired, the agent should stop generation and clean up.
    */
-  signal?: AbortSignal;
+  signal?: AbortSignal | undefined;
 
   /**
    * Timeout in milliseconds.
@@ -410,7 +410,7 @@ interface AgentGenerateOverrides<
    * Merged with the agent's base tools. Use `Partial<TTools>` to
    * replace specific tools, or add new ones via the index signature.
    */
-  tools?: Partial<TTools> & Record<string, Tool>;
+  tools?: (Partial<TTools> & Record<string, Tool>) | undefined;
 
   /**
    * Override or extend subagents for this call.
@@ -563,7 +563,7 @@ export interface AgentConfig<
    *
    * @see {@link Resolver}
    */
-  system?: Resolver<TInput, string>;
+  system?: Resolver<TInput, string> | undefined;
 
   /**
    * Tools available to this agent for function calling.

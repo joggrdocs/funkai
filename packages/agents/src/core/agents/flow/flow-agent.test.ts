@@ -642,8 +642,8 @@ describe("stream() success", () => {
     // Last part should be a finish event
     expect(parts.length).toBeGreaterThanOrEqual(1);
     const lastPart = parts.at(-1) as Record<string, unknown>;
-    expect(lastPart.type).toBe("finish");
-    expect(lastPart.finishReason).toBe("stop");
+    expect(lastPart["type"]).toBe("finish");
+    expect(lastPart["finishReason"]).toBe("stop");
   });
 
   it("messages promise resolves after stream completes", async () => {
@@ -760,18 +760,18 @@ describe("stream() with steps", () => {
     // Should have tool-call event, tool-result event, and finish event
     expect(parts.length).toBeGreaterThanOrEqual(3);
 
-    const toolCallPart = parts.find((p) => p.type === "tool-call");
+    const toolCallPart = parts.find((p) => p["type"] === "tool-call");
     expect(toolCallPart).toBeDefined();
-    expect(toolCallPart?.toolName).toBe("compute");
+    expect(toolCallPart?.["toolName"]).toBe("compute");
 
-    const toolResultPart = parts.find((p) => p.type === "tool-result");
+    const toolResultPart = parts.find((p) => p["type"] === "tool-result");
     expect(toolResultPart).toBeDefined();
-    expect(toolResultPart?.toolName).toBe("compute");
-    expect(toolResultPart?.output).toBe(6);
+    expect(toolResultPart?.["toolName"]).toBe("compute");
+    expect(toolResultPart?.["output"]).toBe(6);
 
-    const finishPart = parts.find((p) => p.type === "finish");
+    const finishPart = parts.find((p) => p["type"] === "finish");
     expect(finishPart).toBeDefined();
-    expect(finishPart?.finishReason).toBe("stop");
+    expect(finishPart?.["finishReason"]).toBe("stop");
   });
 });
 
@@ -850,7 +850,7 @@ describe("stream() error handling", () => {
     }
 
     // Should have an error event in the stream
-    const errorPart = parts.find((p) => p.type === "error");
+    const errorPart = parts.find((p) => p["type"] === "error");
     expect(errorPart).toBeDefined();
 
     // Output should reject
@@ -1102,7 +1102,7 @@ describe("generate() with agents dependency", () => {
     await fa.generate({ input: { x: 1 } });
 
     expect(receivedAgents).toBeDefined();
-    expect(receivedAgents?.core).toBe(mockAgent);
+    expect(receivedAgents?.["core"]).toBe(mockAgent);
   });
 
   it("handler receives empty record when agents not configured", async () => {
@@ -1165,7 +1165,7 @@ describe("stream() with agents dependency", () => {
     await result.output;
 
     expect(receivedAgents).toBeDefined();
-    expect(receivedAgents?.core).toBe(mockAgent);
+    expect(receivedAgents?.["core"]).toBe(mockAgent);
   });
 });
 

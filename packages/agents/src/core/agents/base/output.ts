@@ -56,7 +56,7 @@ export function resolveOutput(output: OutputParam): OutputSpec {
       const schema = output as ZodType;
       return match(isZodArray(schema))
         .with(true, () => {
-          const def = (schema as unknown as Record<string, unknown>)._zod as
+          const def = (schema as unknown as Record<string, unknown>)["_zod"] as
             | { def: { element?: ZodType } }
             | undefined;
           if (isNotNil(def) && isNotNil(def.def.element)) {

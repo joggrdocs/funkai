@@ -14,7 +14,6 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@pkg/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

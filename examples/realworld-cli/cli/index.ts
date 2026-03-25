@@ -23,7 +23,7 @@ if (p.isCancel(targetInput)) {
   process.exit(0);
 }
 
-const apiUrl = process.env.API_URL ?? "http://localhost:4321";
+const apiUrl = process.env["API_URL"] ?? "http://localhost:4321";
 const baseDir = resolve(process.cwd(), targetInput);
 
 p.log.info(`Target directory: ${baseDir}`);

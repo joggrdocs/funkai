@@ -33,6 +33,9 @@ export default command({
         if (includes.length > 0) {
           // Extract the static base directory from the first include pattern
           const [pattern] = includes;
+          if (pattern === undefined) {
+            return undefined;
+          }
           const parts = pattern.split("/");
           const staticParts = parts.filter((p) => !p.includes("*") && !p.includes("?"));
           if (staticParts.length > 0) {

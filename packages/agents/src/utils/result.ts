@@ -103,7 +103,11 @@ export function err(
   message: string,
   cause?: Error,
 ): { ok: false; error: ResultError } {
-  return { ok: false as const, error: { code, message, cause } };
+  const error: ResultError = { code, message };
+  if (cause !== undefined) {
+    error.cause = cause;
+  }
+  return { ok: false as const, error };
 }
 
 /**

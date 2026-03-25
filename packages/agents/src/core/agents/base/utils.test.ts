@@ -306,7 +306,7 @@ describe(buildAITools, () => {
     >;
     expect(tools["agent_sub"]).toHaveProperty("description");
     // Description should use meta name
-    expect(tools["agent_sub"].description).toContain("custom-name");
+    expect(tools["agent_sub"]!.description).toContain("custom-name");
   });
 
   it("uses fallback name when agent has no RUNNABLE_META name", () => {
@@ -320,7 +320,7 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    expect(tools["agent_fallbackKey"].description).toContain("fallbackKey");
+    expect(tools["agent_fallbackKey"]!.description).toContain("fallbackKey");
   });
 
   it("throws on agent key with dashes", () => {
@@ -393,7 +393,7 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    const output = await tools["agent_sub"].execute(
+    const output = await tools["agent_sub"]!.execute(
       { prompt: "hello" },
       { toolCallId: "tc-1", messages: [] },
     );
@@ -417,7 +417,7 @@ describe(buildAITools, () => {
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
     await expect(
-      tools["agent_sub"].execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent_sub"]!.execute({ prompt: "hello" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("agent failed");
   });
 
@@ -436,7 +436,7 @@ describe(buildAITools, () => {
       string,
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
-    const output = await tools["agent_sub"].execute(
+    const output = await tools["agent_sub"]!.execute(
       { query: "test" },
       { toolCallId: "tc-1", messages: [] },
     );
@@ -464,7 +464,7 @@ describe(buildAITools, () => {
       { description: string; execute: (...args: unknown[]) => unknown }
     >;
     await expect(
-      tools["agent_sub"].execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
+      tools["agent_sub"]!.execute({ query: "test" }, { toolCallId: "tc-1", messages: [] }),
     ).rejects.toThrow("typed failed");
   });
 });

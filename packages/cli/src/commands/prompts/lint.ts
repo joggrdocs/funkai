@@ -57,7 +57,16 @@ function resolveLintArgs(
   const excludes = (config && config.excludes) ?? [];
   const partials = args.partials ?? (config && config.partials);
 
-  return { includes, excludes, partials, silent: args.silent };
+  const resolved: {
+    includes: readonly string[];
+    excludes: readonly string[];
+    silent: boolean;
+    partials?: string;
+  } = { includes, excludes, silent: args.silent };
+  if (partials !== undefined) {
+    resolved.partials = partials;
+  }
+  return resolved;
 }
 
 /**
@@ -68,7 +77,15 @@ function resolveLintArgs(
 export function handleLint({ args, config, logger, fail }: HandleLintParams): void {
   const { includes, excludes, partials, silent } = resolveLintArgs(args, config, fail);
 
-  const { discovered, results } = runLintPipeline({ includes, excludes, partials });
+  const lintPipelineOptions: {
+    includes: readonly string[];
+    excludes: readonly string[];
+    partials?: string;
+  } = { includes, excludes };
+  if (partials !== undefined) {
+    lintPipelineOptions.partials = partials;
+  }
+  const { discovered, results } = runLintPipeline(lintPipelineOptions);
 
   if (!silent) {
     logger.info(`Linting ${discovered} prompt(s)...`);
@@ -109,8 +126,19 @@ export default command({
   options: lintArgs,
   handler(ctx) {
     const config = getConfig(ctx);
+    const lintHandleArgs: {
+      silent: boolean;
+      includes?: readonly string[];
+      partials?: string;
+    } = { silent: ctx.args.silent };
+    if (ctx.args.includes !== undefined) {
+      lintHandleArgs.includes = ctx.args.includes;
+    }
+    if (ctx.args.partials !== undefined) {
+      lintHandleArgs.partials = ctx.args.partials;
+    }
     handleLint({
-      args: ctx.args,
+      args: lintHandleArgs,
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,
