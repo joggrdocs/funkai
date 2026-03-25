@@ -1,8 +1,8 @@
 # @funkai/agents
 
-## 1.0.0
+## 0.13.0
 
-### Major Changes
+### Minor Changes
 
 - 2d7b765: Pass through full AI SDK `StepResult` fields in `onStepFinish` events instead of stripping tool calls/results to summary fields. `StepFinishEvent` is now a superset of the Vercel AI SDK's `StepResult<ToolSet>` — all SDK fields (`text`, `toolCalls`, `toolResults`, `finishReason`, `usage`, `reasoning`, `sources`, `response`, etc.) are passed through unchanged, plus funkai-specific additions (`stepId`, `agentChain`).
 
