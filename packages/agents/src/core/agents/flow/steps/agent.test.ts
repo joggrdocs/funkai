@@ -43,7 +43,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -63,7 +63,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -82,7 +82,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-cause", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -99,7 +99,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-no-cause", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

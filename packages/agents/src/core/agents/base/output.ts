@@ -57,11 +57,11 @@ export function resolveOutput(output: OutputParam): OutputSpec {
       return match(isZodArray(schema))
         .with(true, () => {
           // Zod v4 does not expose a public API to extract the element schema
-          // from a z.array(). We access the private `_zod.def.element` property
-          // which is stable across Zod 4.x but may break in a future major.
+          // From a z.array(). We access the private `_zod.def.element` property
+          // Which is stable across Zod 4.x but may break in a future major.
           // The guard below fails safely — if the internal shape changes, the
-          // throw instructs users to pass `Output.array()` explicitly.
-          // TODO: replace with a public API if Zod exposes one.
+          // Throw instructs users to pass `Output.array()` explicitly.
+          // Replace with a public API if Zod exposes one in the future.
           const def = (schema as unknown as Record<string, unknown>)["_zod"] as
             | { def: { element?: ZodType } }
             | undefined;

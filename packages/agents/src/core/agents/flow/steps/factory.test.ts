@@ -17,7 +17,7 @@ describe("step()", () => {
       execute: async () => ({ greeting: "hello" }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -38,7 +38,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -167,7 +167,7 @@ describe("step()", () => {
       execute: async () => ({ value: 42 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -254,7 +254,7 @@ describe("step()", () => {
       execute: async () => "hello",
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -270,7 +270,7 @@ describe("step()", () => {
       execute: async () => 42,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -309,7 +309,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -329,7 +329,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -443,7 +443,7 @@ describe("map()", () => {
       execute: async ({ item }) => ({ doubled: item * 2 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -492,7 +492,7 @@ describe("map()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -520,7 +520,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(order).toEqual([1, 2, 3]);
     expect(result.stepOperation).toBe("each");
   });
@@ -539,7 +539,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -559,7 +559,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -585,7 +585,7 @@ describe("reduce()", () => {
       execute: async ({ accumulator }) => accumulator,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
@@ -605,7 +605,7 @@ describe("while()", () => {
       execute: async ({ index }) => ({ count: index }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(result.stepOperation).toBe("while");
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
@@ -625,7 +625,7 @@ describe("while()", () => {
       execute: async () => ({ v: 1 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
@@ -644,7 +644,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve("a"), () => Promise.resolve("b"), () => Promise.resolve("c")],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -670,7 +670,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -720,7 +720,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -752,7 +752,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -760,7 +760,7 @@ describe("race()", () => {
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
-    expect(signals.loser.aborted).toBeTruthy();
+    expect(signals.loser.aborted).toBe(true);
   });
 });
 
@@ -846,7 +846,7 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -883,7 +883,7 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -912,7 +912,7 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -979,7 +979,7 @@ describe("map() with aborted signal", () => {
       execute: async ({ item }) => item * 2,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

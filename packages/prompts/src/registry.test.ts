@@ -34,14 +34,14 @@ describe(createPromptRegistry, () => {
 
   it("should freeze the top-level registry object", () => {
     const registry = createPromptRegistry({ testPrompt: mockPrompt });
-    expect(Object.isFrozen(registry)).toBeTruthy();
+    expect(Object.isFrozen(registry)).toBe(true);
   });
 
   it("should freeze nested namespace objects", () => {
     const registry = createPromptRegistry({
       agents: { testPrompt: mockPrompt },
     });
-    expect(Object.isFrozen(registry.agents)).toBeTruthy();
+    expect(Object.isFrozen(registry.agents)).toBe(true);
   });
 
   it("should expose all keys via Object.keys", () => {

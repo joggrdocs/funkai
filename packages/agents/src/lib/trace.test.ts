@@ -17,14 +17,14 @@ describe(snapshotTrace, () => {
   it("returns a frozen array", () => {
     const trace = [createEntry()];
     const snapshot = snapshotTrace(trace);
-    expect(Object.isFrozen(snapshot)).toBeTruthy();
+    expect(Object.isFrozen(snapshot)).toBe(true);
   });
 
   it("freezes each entry in the array", () => {
     const trace = [createEntry(), createEntry({ id: "entry-2" })];
     const snapshot = snapshotTrace(trace);
-    expect(Object.isFrozen(snapshot[0])).toBeTruthy();
-    expect(Object.isFrozen(snapshot[1])).toBeTruthy();
+    expect(Object.isFrozen(snapshot[0])).toBe(true);
+    expect(Object.isFrozen(snapshot[1])).toBe(true);
   });
 
   it("returns a structural clone, not the same references", () => {
@@ -50,9 +50,9 @@ describe(snapshotTrace, () => {
 
     const snapped = snapshot[0] as TraceEntry;
     const snappedChildren = snapped.children as readonly TraceEntry[];
-    expect(Object.isFrozen(snapped)).toBeTruthy();
-    expect(Object.isFrozen(snappedChildren)).toBeTruthy();
-    expect(Object.isFrozen(snappedChildren[0])).toBeTruthy();
+    expect(Object.isFrozen(snapped)).toBe(true);
+    expect(Object.isFrozen(snappedChildren)).toBe(true);
+    expect(Object.isFrozen(snappedChildren[0])).toBe(true);
   });
 
   it("handles deeply nested children (3 levels)", () => {
@@ -67,14 +67,14 @@ describe(snapshotTrace, () => {
     const mid = root0Children[0] as TraceEntry;
     const midChildren = mid.children as readonly TraceEntry[];
     const deep = midChildren[0] as TraceEntry;
-    expect(Object.isFrozen(deep)).toBeTruthy();
+    expect(Object.isFrozen(deep)).toBe(true);
     expect(deep.id).toBe("grandchild");
   });
 
   it("handles an empty trace array", () => {
     const snapshot = snapshotTrace([]);
     expect(snapshot).toEqual([]);
-    expect(Object.isFrozen(snapshot)).toBeTruthy();
+    expect(Object.isFrozen(snapshot)).toBe(true);
   });
 
   it("preserves all entry fields", () => {
@@ -123,8 +123,8 @@ describe(snapshotTrace, () => {
 
     // Original should remain unfrozen and mutable
     const original = trace[0] as TraceEntry;
-    expect(Object.isFrozen(trace)).toBeFalsy();
-    expect(Object.isFrozen(original)).toBeFalsy();
+    expect(Object.isFrozen(trace)).toBe(false);
+    expect(Object.isFrozen(original)).toBe(false);
     original.id = "mutated";
     expect(original.id).toBe("mutated");
   });

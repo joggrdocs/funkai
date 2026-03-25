@@ -186,7 +186,7 @@ describe("generate() success", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -199,7 +199,7 @@ describe("generate() success", () => {
     const a = createTypedAgent();
     const result = await a.generate({ input: { topic: "TypeScript" } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -281,7 +281,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.generate({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -295,7 +295,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally missing field
     const result = await a.generate({ input: {} });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -315,7 +315,7 @@ describe("generate() input validation", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "anything" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 });
 
@@ -326,7 +326,7 @@ describe("generate() output resolution", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -343,7 +343,7 @@ describe("generate() output resolution", () => {
     });
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -682,7 +682,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -697,7 +697,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -766,7 +766,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -782,7 +782,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -800,7 +800,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -859,7 +859,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -875,7 +875,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -903,7 +903,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -926,7 +926,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -956,7 +956,7 @@ describe("stream() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.stream({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -993,7 +993,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onFinish });
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1042,7 +1042,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1094,7 +1094,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1145,7 +1145,7 @@ describe("stream() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1180,7 +1180,7 @@ describe("stream() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1244,7 +1244,7 @@ describe("fn()", () => {
 
     const result = await fn({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1258,8 +1258,8 @@ describe("fn()", () => {
     const resultGenerate = await a.generate({ prompt: "test" });
     const resultFn = await fn({ prompt: "test" });
 
-    expect(resultGenerate.ok).toBeTruthy();
-    expect(resultFn.ok).toBeTruthy();
+    expect(resultGenerate.ok).toBe(true);
+    expect(resultFn.ok).toBe(true);
     if (!resultGenerate.ok || !resultFn.ok) {
       return;
     }
@@ -1283,7 +1283,7 @@ describe("fn()", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fn({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1344,14 +1344,14 @@ describe("edge cases", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("handles empty string input for simple agent", async () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses default logger when none provided", async () => {
@@ -1363,7 +1363,7 @@ describe("edge cases", () => {
 
     // Should not throw when no logger is provided
     const result = await a.generate({ prompt: "test" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 });
 
@@ -1403,7 +1403,7 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1435,7 +1435,7 @@ describe("stream() async error during consumption", () => {
     // Should have received the partial chunk before error closed the stream
     expect(parts.length).toBeGreaterThanOrEqual(1);
     expect(parts[0]).toEqual({ type: "text-delta", textDelta: "partial" });
-    expect(streamErrored).toBeTruthy();
+    expect(streamErrored).toBe(true);
   });
 
   it("fires onError hook when fullStream throws during iteration", async () => {
@@ -1447,7 +1447,7 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent({ onError, onFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1521,7 +1521,7 @@ describe("stream() unhandled rejection safety", () => {
       const a = createSimpleAgent();
       const result = await a.stream({ prompt: "test" });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -1570,7 +1570,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1591,7 +1591,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1611,7 +1611,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }

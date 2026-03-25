@@ -429,11 +429,11 @@ export function flowAgent<TInput, TOutput = any>(
         duration,
       };
 
-      // config.onFinish is a union (WithOutput | WithoutOutput) whose parameter
-      // types differ by TOutput vs string. TS can't call a union of contravariant
-      // functions — even discriminant narrowing doesn't help because `result` stays
-      // typed as FlowAgentGenerateResult<TOutput>. The cast is safe: the implementation
-      // signature uses TOutput = any, so both variants accept the event at runtime.
+      // Config.onFinish is a union (WithOutput | WithoutOutput) whose parameter
+      // Types differ by TOutput vs string. TS can't call a union of contravariant
+      // Functions — even discriminant narrowing doesn't help because `result` stays
+      // Typed as FlowAgentGenerateResult<TOutput>. The cast is safe: the implementation
+      // Signature uses TOutput = any, so both variants accept the event at runtime.
       const configOnFinish = config.onFinish as
         | ((event: {
             input: TInput;
@@ -595,11 +595,11 @@ export function flowAgent<TInput, TOutput = any>(
     // Prevent unhandled rejection warnings when consumers don't await all promises
     // PromiseLike doesn't have .catch(), so use .then(undefined, noop)
     const noop = () => {};
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
     streamResult.output.then(undefined, noop);
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
     streamResult.usage.then(undefined, noop);
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
     streamResult.finishReason.then(undefined, noop);
 
     return { ok: true, ...streamResult };

@@ -592,7 +592,7 @@ export function agent<
       const streamResult: StreamResult<TOutput> = {
         ...aiResult,
         // Rebind promise fields through the done gate to ensure they only
-        // resolve after processStream() has fully consumed the AI SDK stream.
+        // Resolve after processStream() has fully consumed the AI SDK stream.
         // Without this, consumers could race with stream consumption.
         text: gatePromise(done, aiResult.text),
         reasoning: gatePromise(done, aiResult.reasoning),
@@ -617,7 +617,7 @@ export function agent<
 
       // Prevent unhandled rejection warnings when consumers don't await all promises.
       // Each gated promise rejects when `done` rejects (stream error), so every
-      // promise field needs a no-op rejection handler attached.
+      // Promise field needs a no-op rejection handler attached.
       suppressRejection(streamResult.output);
       suppressRejection(streamResult.text);
       suppressRejection(streamResult.reasoning);

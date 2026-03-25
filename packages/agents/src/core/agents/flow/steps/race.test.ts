@@ -21,7 +21,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -49,7 +49,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -57,7 +57,7 @@ describe("race()", () => {
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
-    expect(signals.loser.aborted).toBeTruthy();
+    expect(signals.loser.aborted).toBe(true);
   });
 
   it("passes abort signal to all entry factories", async () => {
@@ -124,7 +124,7 @@ describe("race()", () => {
     });
 
     // Promise.race rejects with the first rejection
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -140,7 +140,7 @@ describe("race()", () => {
       entries: [() => Promise.resolve("only")],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -281,7 +281,7 @@ describe("race()", () => {
 
     // The finally block in race() always aborts
     if (signals.entry !== undefined) {
-      expect(signals.entry.aborted).toBeTruthy();
+      expect(signals.entry.aborted).toBe(true);
     }
   });
 
@@ -308,7 +308,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }

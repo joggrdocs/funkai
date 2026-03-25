@@ -283,7 +283,7 @@ describe("evolve() with FlowAgent", () => {
     const evolved = evolve(base, { name: "evolved-flow" });
 
     const result = await evolved.generate({ input: { text: "hello" } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.output).toEqual({ result: "HELLO" });
     }
@@ -296,7 +296,7 @@ describe("evolve() with FlowAgent", () => {
     }));
 
     const result = await evolved.generate({ input: { text: "test" } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.output).toEqual({ result: "replaced:test" });
     }
@@ -457,7 +457,7 @@ describe("evolve() with FlowAgent mapper function", () => {
     const evolved = evolve(base, () => ({ name: "mapper-flow" }));
 
     const result = await evolved.generate({ input: { text: "hello" } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.output).toEqual({ result: "HELLO" });
     }
@@ -502,7 +502,7 @@ describe("evolve() with FlowAgent mapper function", () => {
     );
 
     const result = await evolved.generate({ input: { text: "test" } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.output).toEqual({ result: "mapped:test" });
     }

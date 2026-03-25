@@ -54,7 +54,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -65,7 +65,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -89,7 +89,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -100,7 +100,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -111,7 +111,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -143,7 +143,7 @@ describe("generate() with steps", () => {
 
     const result = await fa.generate({ input: { x: 7 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -158,7 +158,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fa.generate({ input: { x: "not-a-number" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -172,7 +172,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally missing field
     const result = await fa.generate({ input: {} });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -212,7 +212,7 @@ describe("generate() output validation", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -229,7 +229,7 @@ describe("generate() error handling", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -245,7 +245,7 @@ describe("generate() error handling", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -442,7 +442,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -458,7 +458,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -479,7 +479,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -494,7 +494,7 @@ describe("generate() overrides", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 }, signal: controller.signal });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses override logger when provided", async () => {
@@ -524,7 +524,7 @@ describe("generate() void output", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -537,7 +537,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -551,7 +551,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 4 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -573,7 +573,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 2 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -599,7 +599,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -618,7 +618,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -653,7 +653,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -693,7 +693,7 @@ describe("stream() with steps", () => {
 
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -733,7 +733,7 @@ describe("stream() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fa.stream({ input: { x: "not-a-number" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -750,7 +750,7 @@ describe("stream() error handling", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -778,7 +778,7 @@ describe("stream() error handling", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -821,7 +821,7 @@ describe("stream() output validation", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -862,7 +862,7 @@ describe("stream() hooks", () => {
     const fa = createSimpleFlowAgent({ onFinish });
     const result = await fa.stream({ input: { x: 3 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -889,7 +889,7 @@ describe("stream() hooks", () => {
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
     const result = await fa.stream({ input: { x: 7 }, onStart: overrideOnStart });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -926,7 +926,7 @@ describe("stream() hooks", () => {
     });
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -969,7 +969,7 @@ describe("stream() void output", () => {
 
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -995,7 +995,7 @@ describe("fn()", () => {
 
     const result = await fn({ input: { x: 6 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1019,7 +1019,7 @@ describe("fn()", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fn({ input: { x: "bad" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1095,7 +1095,7 @@ describe("stream() with agents dependency", () => {
     );
 
     const result = await fa.stream({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1121,7 +1121,7 @@ describe("edge cases", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses default logger when none provided", async () => {
@@ -1135,7 +1135,7 @@ describe("edge cases", () => {
     );
 
     const result = await fa.generate({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("handler receives scoped logger", async () => {
@@ -1174,7 +1174,7 @@ describe("stream() unhandled rejection safety", () => {
     try {
       const result = await fa.stream({ input: { x: 1 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }

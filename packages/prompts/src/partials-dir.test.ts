@@ -6,7 +6,7 @@ import { PARTIALS_DIR } from "@/partials-dir.js";
 
 describe(PARTIALS_DIR, () => {
   it("should be an absolute path", () => {
-    expect(isAbsolute(PARTIALS_DIR)).toBeTruthy();
+    expect(isAbsolute(PARTIALS_DIR)).toBe(true);
   });
 
   it("should point to the prompts directory", () => {

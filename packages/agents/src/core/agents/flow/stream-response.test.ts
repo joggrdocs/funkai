@@ -129,7 +129,7 @@ describe(buildStreamResponseMethods, () => {
       const response = methods.toUIMessageStreamResponse();
 
       expect(response).toBeInstanceOf(Response);
-      expect(response.body).toBeTruthy();
+      expect(response.body).toBe(true);
     });
 
     it("accepts custom response init options", () => {

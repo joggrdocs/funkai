@@ -14,8 +14,8 @@ describe("MODELS catalog", () => {
       expect(typeof m.provider).toBe("string");
       expect(typeof m.pricing.input).toBe("number");
       expect(typeof m.pricing.output).toBe("number");
-      expect(Array.isArray(m.modalities.input)).toBeTruthy();
-      expect(Array.isArray(m.modalities.output)).toBeTruthy();
+      expect(Array.isArray(m.modalities.input)).toBe(true);
+      expect(Array.isArray(m.modalities.output)).toBe(true);
       expect(typeof m.capabilities.reasoning).toBe("boolean");
     }
   });
@@ -30,7 +30,7 @@ describe("MODELS catalog", () => {
     const seen = new Map<string, Set<string>>();
     for (const m of MODELS) {
       const providerSet = seen.get(m.provider) ?? new Set<string>();
-      expect(providerSet.has(m.id)).toBeFalsy();
+      expect(providerSet.has(m.id)).toBe(false);
       providerSet.add(m.id);
       seen.set(m.provider, providerSet);
     }
@@ -58,7 +58,7 @@ describe("model()", () => {
     const result = model("o1");
 
     expect(result).not.toBeNull();
-    expect(result!.capabilities.reasoning).toBeTruthy();
+    expect(result!.capabilities.reasoning).toBe(true);
   });
 
   it("returns model with correct modalities", () => {
@@ -82,7 +82,7 @@ describe("models()", () => {
 
     expect(reasoningModels.length).toBeGreaterThan(0);
     for (const m of reasoningModels) {
-      expect(m.capabilities.reasoning).toBeTruthy();
+      expect(m.capabilities.reasoning).toBe(true);
     }
   });
 

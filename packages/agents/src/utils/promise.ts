@@ -34,5 +34,6 @@ export function gatePromise<T>(gate: Promise<unknown>, source: PromiseLike<T>): 
  * ```
  */
 export function suppressRejection(promise: PromiseLike<unknown>): void {
+  // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
   promise.then(undefined, () => {});
 }
