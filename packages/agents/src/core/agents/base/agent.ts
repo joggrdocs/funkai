@@ -531,13 +531,15 @@ export function agent<
         const duration = Date.now() - startedAt;
 
         // Build a GenerateResult for the onFinish hook by awaiting remaining fields
+        const steps = await aiResult.steps;
         const generateResult = formatGenerateResult<TOutput>(
           {
-            ...(await aiResult.steps).at(-1)!,
+            ...steps.at(-1)!,
             totalUsage: await aiResult.totalUsage,
-            steps: await aiResult.steps,
+            steps,
             output: await aiResult.output,
-          } as unknown as GenerateTextResult<ToolSet, AIOutput>,
+            experimental_output: await aiResult.output,
+          },
           output,
         );
         await fireHooks(
@@ -578,7 +580,6 @@ export function agent<
         );
       });
 
-      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK stream result requires casting for typed output override
       const streamResult: StreamResult<TOutput> = {
         ...aiResult,
         output: done.then((r) => r.output),
@@ -588,9 +589,8 @@ export function agent<
         // Do NOT consume fullStream concurrently with these methods —
         // They share the same underlying stream source.
         toTextStreamResponse: (init?: ResponseInit) => aiResult.toTextStreamResponse(init),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK UIMessage generics are complex; passthrough only
-        toUIMessageStreamResponse: (options?: any) => aiResult.toUIMessageStreamResponse(options),
-      } as any;
+        toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
+      };
 
       // Prevent unhandled rejection warnings when consumers don't await all promises
       (streamResult.output as Promise<TOutput>).catch(() => {});
@@ -660,11 +660,10 @@ function formatGenerateResult<TOutput>(
   aiResult: GenerateTextResult<ToolSet, AIOutput>,
   output: OutputSpec | undefined,
 ): GenerateResult<TOutput> {
-  // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK result shape requires casting for our typed output
   return {
     ...aiResult,
     output: pickByOutput(output, aiResult.output, aiResult.text) as TOutput,
-  } as any;
+  };
 }
 
 /**
