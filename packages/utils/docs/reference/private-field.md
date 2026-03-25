@@ -13,7 +13,7 @@ import type { PrivateField } from "@funkai/utils";
 
 ### `privateField<T>(description: string): PrivateField<T>`
 
-Creates a frozen accessor for a private Symbol-keyed property.
+Creates an accessor for a private Symbol-keyed property.
 
 Uses `Symbol.for(description)` internally — the same description string produces the same Symbol across package boundaries.
 
@@ -23,7 +23,7 @@ Uses `Symbol.for(description)` internally — the same description string produc
 | ------------- | -------- | ------------------------------------------------------------- |
 | `description` | `string` | A namespaced key for the Symbol (e.g. `"funkai:agent-chain"`) |
 
-**Returns:** A frozen `PrivateField<T>` accessor.
+**Returns:** A `PrivateField<T>` accessor.
 
 ### `PrivateField<T>`
 
@@ -34,7 +34,6 @@ Uses `Symbol.for(description)` internally — the same description string produc
 | `get`    | `(obj: object, defaultValue: T) => T`       | Read the field with a fallback                |
 | `set`    | `<O extends object>(obj: O, value: T) => O` | Attach the field. Returns the same object     |
 | `has`    | `(obj: object) => boolean`                  | Check if the field is present                 |
-| `remove` | `(obj: object) => boolean`                  | Delete the field. Returns `true` if removed   |
 
 ## Usage
 
@@ -89,7 +88,7 @@ Fields are defined with:
 
 - **Non-enumerable** — hidden from iteration and spread
 - **Writable** — allows `set()` to overwrite without delete+redefine
-- **Configurable** — allows `remove()` to delete the property
+- **Configurable** — allows property descriptor to be changed if needed
 
 The Symbol itself is the access control mechanism. Without the Symbol reference, the field cannot be read or written.
 

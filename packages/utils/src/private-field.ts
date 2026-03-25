@@ -76,19 +76,6 @@ export interface PrivateField<T> {
    * ```
    */
   has(obj: object): boolean;
-
-  /**
-   * Remove the private field from an object.
-   *
-   * @param obj - The object to remove from.
-   * @returns `true` if the field was present and removed, `false` otherwise.
-   *
-   * @example
-   * ```ts
-   * _chainField.remove(params);
-   * ```
-   */
-  remove(obj: object): boolean;
 }
 
 /**
@@ -152,12 +139,5 @@ export function privateField<T>(description: string): PrivateField<T> {
     return sym in obj;
   }
 
-  function remove(obj: object): boolean {
-    if (!(sym in obj)) {
-      return false;
-    }
-    return Reflect.deleteProperty(obj, sym);
-  }
-
-  return Object.freeze({ symbol: sym, get, set, has, remove });
+  return { symbol: sym, get, set, has };
 }

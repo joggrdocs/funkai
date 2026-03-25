@@ -66,29 +66,6 @@ describe("private field accessor", () => {
       _field.set(obj, "value");
       expect(_field.has(obj)).toBe(true);
     });
-
-    it("returns false after remove", () => {
-      const _field = privateField<string>("test:has-removed");
-      const obj = {};
-      _field.set(obj, "value");
-      _field.remove(obj);
-      expect(_field.has(obj)).toBe(false);
-    });
-  });
-
-  describe("remove", () => {
-    it("returns false when field is absent", () => {
-      const _field = privateField<string>("test:remove-absent");
-      expect(_field.remove({})).toBe(false);
-    });
-
-    it("returns true and removes when field is present", () => {
-      const _field = privateField<string>("test:remove-present");
-      const obj = {};
-      _field.set(obj, "value");
-      expect(_field.remove(obj)).toBe(true);
-      expect(_field.get(obj)).toBeUndefined();
-    });
   });
 
   describe("symbol", () => {
@@ -155,13 +132,6 @@ describe("private field accessor", () => {
       _field.set(obj, "hidden");
       const symbols = Object.getOwnPropertySymbols(obj);
       expect(symbols).toContain(_field.symbol);
-    });
-  });
-
-  describe("accessor is frozen", () => {
-    it("cannot be modified", () => {
-      const _field = privateField<string>("test:frozen");
-      expect(Object.isFrozen(_field)).toBe(true);
     });
   });
 
