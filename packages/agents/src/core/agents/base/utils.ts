@@ -1,14 +1,13 @@
 import { privateField } from "@funkai/utils";
-import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
-import { match, P } from "ts-pattern";
+import { match } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
-import type { Agent, Message, Resolver } from "@/core/agents/types.js";
+import type { Agent, Resolver } from "@/core/agents/types.js";
+import type { ModelMessage } from "ai";
 import type { Logger } from "@/core/logger.js";
-import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
@@ -171,9 +170,9 @@ export async function buildPrompt<TInput>(
   input: TInput,
   config: {
     input?: ZodType<TInput>;
-    prompt?: (params: { input: TInput }) => string | Message[] | Promise<string | Message[]>;
+    prompt?: (params: { input: TInput }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
   },
-): Promise<{ prompt: string } | { messages: Message[] }> {
+): Promise<{ prompt: string } | { messages: ModelMessage[] }> {
   const hasInput = Boolean(config.input);
   const hasPrompt = Boolean(config.prompt);
 
@@ -194,46 +193,13 @@ export async function buildPrompt<TInput>(
       const built = await promptFn({ input });
       return match(isString(built))
         .with(true, () => ({ prompt: built as string }))
-        .otherwise(() => ({ messages: built as Message[] }));
+        .otherwise(() => ({ messages: built as ModelMessage[] }));
     })
     .otherwise(() =>
       match(isString(input))
         .with(true, () => ({ prompt: input as string }))
-        .otherwise(() => ({ messages: input as Message[] })),
+        .otherwise(() => ({ messages: input as ModelMessage[] })),
     );
-}
-
-/**
- * Convert AI SDK's `LanguageModelUsage` to our flat `TokenUsage`.
- *
- * Maps nested `inputTokenDetails` / `outputTokenDetails` to flat
- * fields, resolving `undefined` → `0`.
- *
- * @param usage - The AI SDK usage object (from `totalUsage`).
- * @returns A resolved {@link TokenUsage} with all fields as numbers.
- */
-export function toTokenUsage(usage: LanguageModelUsage): TokenUsage {
-  const inputDetails = match(usage.inputTokenDetails)
-    .with(P.nonNullable, (d) => ({
-      cacheReadTokens: d.cacheReadTokens ?? 0,
-      cacheWriteTokens: d.cacheWriteTokens ?? 0,
-    }))
-    .otherwise(() => ({ cacheReadTokens: 0, cacheWriteTokens: 0 }));
-
-  const outputDetails = match(usage.outputTokenDetails)
-    .with(P.nonNullable, (d) => ({
-      reasoningTokens: d.reasoningTokens ?? 0,
-    }))
-    .otherwise(() => ({ reasoningTokens: 0 }));
-
-  return {
-    inputTokens: usage.inputTokens ?? 0,
-    outputTokens: usage.outputTokens ?? 0,
-    totalTokens: usage.totalTokens ?? 0,
-    cacheReadTokens: inputDetails.cacheReadTokens,
-    cacheWriteTokens: inputDetails.cacheWriteTokens,
-    reasoningTokens: outputDetails.reasoningTokens,
-  };
 }
 
 // ---------------------------------------------------------------------------

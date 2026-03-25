@@ -1,4 +1,4 @@
-import type { Agent, GenerateParams, GenerateResult } from "@/core/agents/types.js";
+import type { Agent, BaseGenerateResult, GenerateParams } from "@/core/agents/types.js";
 
 /**
  * Configuration for `$.agent()` — execute an agent call as a tracked operation.
@@ -66,12 +66,12 @@ export interface AgentStepConfig<TInput> {
    *
    * @param event - Event containing the step id, result, and duration.
    * @param event.id - The step's unique identifier.
-   * @param event.result - The agent's `GenerateResult`.
+   * @param event.result - The agent's `BaseGenerateResult`.
    * @param event.duration - Wall-clock time in milliseconds.
    */
   onFinish?: (event: {
     id: string;
-    result: GenerateResult;
+    result: BaseGenerateResult;
     duration: number;
   }) => void | Promise<void>;
 

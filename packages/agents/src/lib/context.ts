@@ -1,4 +1,4 @@
-import type { Message } from "@/core/agents/types.js";
+import type { ModelMessage } from "ai";
 import type { Logger } from "@/core/logger.js";
 import type { TraceEntry } from "@/lib/trace.js";
 
@@ -45,5 +45,5 @@ export interface Context extends ExecutionContext {
    *
    * Used by `flowAgent` to populate `GenerateResult.messages`.
    */
-  readonly messages: Message[];
+  readonly messages: ModelMessage[];
 }

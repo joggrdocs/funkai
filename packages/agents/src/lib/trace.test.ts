@@ -1,6 +1,6 @@
+import type { LanguageModelUsage } from "ai";
 import { describe, expect, it } from "vitest";
 
-import type { TokenUsage } from "@/core/provider/types.js";
 import { collectUsages, snapshotTrace } from "@/lib/trace.js";
 import type { TraceEntry } from "@/lib/trace.js";
 
@@ -79,13 +79,19 @@ describe(snapshotTrace, () => {
 
   it("preserves all entry fields", () => {
     const error = new Error("test failure");
-    const usage = {
+    const usage: LanguageModelUsage = {
       inputTokens: 100,
       outputTokens: 50,
       totalTokens: 150,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: 100,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      },
+      outputTokenDetails: {
+        textTokens: 50,
+        reasoningTokens: 0,
+      },
     };
     const entry = createEntry({
       id: "full-entry",
@@ -153,16 +159,22 @@ describe("TraceEntry type", () => {
   });
 });
 
-const ZERO_USAGE: TokenUsage = {
+const ZERO_USAGE: LanguageModelUsage = {
   inputTokens: 0,
   outputTokens: 0,
   totalTokens: 0,
-  cacheReadTokens: 0,
-  cacheWriteTokens: 0,
-  reasoningTokens: 0,
+  inputTokenDetails: {
+    noCacheTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  },
+  outputTokenDetails: {
+    textTokens: 0,
+    reasoningTokens: 0,
+  },
 };
 
-function createUsage(overrides?: Partial<TokenUsage>): TokenUsage {
+function createUsage(overrides?: Partial<LanguageModelUsage>): LanguageModelUsage {
   return { ...ZERO_USAGE, ...overrides };
 }
 

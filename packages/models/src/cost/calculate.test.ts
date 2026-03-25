@@ -1,16 +1,22 @@
+import type { LanguageModelUsage } from "ai";
 import { describe, expect, it } from "vitest";
 
 import { calculateCost } from "./calculate.js";
 import type { ModelPricing } from "@/catalog/types.js";
-import type { TokenUsage } from "@/provider/types.js";
 
-const ZERO_USAGE: TokenUsage = {
+const ZERO_USAGE: LanguageModelUsage = {
   inputTokens: 0,
   outputTokens: 0,
   totalTokens: 0,
-  cacheReadTokens: 0,
-  cacheWriteTokens: 0,
-  reasoningTokens: 0,
+  inputTokenDetails: {
+    noCacheTokens: 0,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  },
+  outputTokenDetails: {
+    textTokens: 0,
+    reasoningTokens: 0,
+  },
 };
 
 const BASIC_PRICING: ModelPricing = {
@@ -46,7 +52,7 @@ describe("calculateCost()", () => {
   });
 
   it("calculates input and output costs", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
       ...ZERO_USAGE,
       inputTokens: 1000,
       outputTokens: 500,
@@ -61,13 +67,20 @@ describe("calculateCost()", () => {
   });
 
   it("handles pricing without optional fields", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
+      ...ZERO_USAGE,
       inputTokens: 1000,
       outputTokens: 500,
       totalTokens: 1500,
-      cacheReadTokens: 200,
-      cacheWriteTokens: 100,
-      reasoningTokens: 50,
+      inputTokenDetails: {
+        noCacheTokens: 700,
+        cacheReadTokens: 200,
+        cacheWriteTokens: 100,
+      },
+      outputTokenDetails: {
+        textTokens: 450,
+        reasoningTokens: 50,
+      },
     };
 
     const result = calculateCost(usage, BASIC_PRICING);
@@ -80,13 +93,20 @@ describe("calculateCost()", () => {
   });
 
   it("calculates full cost breakdown with all pricing fields", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
+      ...ZERO_USAGE,
       inputTokens: 1000,
       outputTokens: 500,
       totalTokens: 1500,
-      cacheReadTokens: 200,
-      cacheWriteTokens: 100,
-      reasoningTokens: 300,
+      inputTokenDetails: {
+        noCacheTokens: 700,
+        cacheReadTokens: 200,
+        cacheWriteTokens: 100,
+      },
+      outputTokenDetails: {
+        textTokens: 200,
+        reasoningTokens: 300,
+      },
     };
 
     const result = calculateCost(usage, FULL_PRICING);
@@ -99,13 +119,15 @@ describe("calculateCost()", () => {
   });
 
   it("calculates reasoning token costs when pricing is provided", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
+      ...ZERO_USAGE,
       inputTokens: 1000,
       outputTokens: 500,
       totalTokens: 1500,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 800,
+      outputTokenDetails: {
+        textTokens: 500,
+        reasoningTokens: 800,
+      },
     };
 
     const result = calculateCost(usage, REASONING_PRICING);
@@ -115,13 +137,15 @@ describe("calculateCost()", () => {
   });
 
   it("defaults reasoning cost to zero when pricing omits reasoning", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
+      ...ZERO_USAGE,
       inputTokens: 1000,
       outputTokens: 500,
       totalTokens: 1500,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 800,
+      outputTokenDetails: {
+        textTokens: 500,
+        reasoningTokens: 800,
+      },
     };
 
     const result = calculateCost(usage, BASIC_PRICING);
@@ -131,13 +155,20 @@ describe("calculateCost()", () => {
   });
 
   it("total equals sum of all fields", () => {
-    const usage: TokenUsage = {
+    const usage: LanguageModelUsage = {
+      ...ZERO_USAGE,
       inputTokens: 500,
       outputTokens: 250,
       totalTokens: 750,
-      cacheReadTokens: 100,
-      cacheWriteTokens: 50,
-      reasoningTokens: 150,
+      inputTokenDetails: {
+        noCacheTokens: 600,
+        cacheReadTokens: 100,
+        cacheWriteTokens: 50,
+      },
+      outputTokenDetails: {
+        textTokens: 100,
+        reasoningTokens: 150,
+      },
     };
 
     const result = calculateCost(usage, FULL_PRICING);

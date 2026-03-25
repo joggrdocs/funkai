@@ -1,34 +1,36 @@
+import type { LanguageModelUsage } from "ai";
+
 import type { UsageCost } from "./types.js";
 import type { ModelPricing } from "@/catalog/types.js";
-import type { TokenUsage } from "@/provider/types.js";
 
 /**
  * Calculate the dollar cost from token usage and model pricing.
  *
- * Multiplies each token count by the corresponding per-token pricing rate.
- * Optional pricing fields (cache) default to `0` when absent.
+ * Reads token counts from the AI SDK's {@link LanguageModelUsage} type,
+ * extracting nested detail fields for cache and reasoning tokens.
+ * Optional pricing fields (cache, reasoning) default to `0` when absent.
  *
- * **Reasoning token semantics**: `reasoningTokens` in {@link TokenUsage} are
+ * **Reasoning token semantics**: `outputTokenDetails.reasoningTokens` are
  * expected to be **exclusive** of `outputTokens` — they are billed separately.
  * If your provider includes reasoning tokens _within_ the `outputTokens` count,
  * you must deduct them before passing usage to this function to avoid
  * double-counting output costs.
  *
- * @param usage - Token counts from a model invocation.
+ * @param usage - Token counts from a model invocation (AI SDK `LanguageModelUsage`).
  * @param pricing - Per-token pricing rates for the model.
  * @returns A {@link UsageCost} with per-field and total costs in USD.
  *
  * @example
  * ```typescript
  * import { calculateCost, model } from '@funkai/models'
+ * import type { LanguageModelUsage } from 'ai'
  *
- * const usage: TokenUsage = {
+ * const usage: LanguageModelUsage = {
  *   inputTokens: 1000,
  *   outputTokens: 500,
  *   totalTokens: 1500,
- *   cacheReadTokens: 200,
- *   cacheWriteTokens: 0,
- *   reasoningTokens: 0,
+ *   inputTokenDetails: { noCacheTokens: 800, cacheReadTokens: 200, cacheWriteTokens: undefined },
+ *   outputTokenDetails: { textTokens: 500, reasoningTokens: undefined },
  * }
  * const m = model('gpt-4.1')
  * if (m) {
@@ -37,12 +39,13 @@ import type { TokenUsage } from "@/provider/types.js";
  * }
  * ```
  */
-export function calculateCost(usage: TokenUsage, pricing: ModelPricing): UsageCost {
-  const input = usage.inputTokens * pricing.input;
-  const output = usage.outputTokens * pricing.output;
-  const cacheRead = usage.cacheReadTokens * (pricing.cacheRead ?? 0);
-  const cacheWrite = usage.cacheWriteTokens * (pricing.cacheWrite ?? 0);
-  const reasoning = usage.reasoningTokens * (pricing.reasoning ?? 0);
+export function calculateCost(usage: LanguageModelUsage, pricing: ModelPricing): UsageCost {
+  const input = (usage.inputTokens ?? 0) * pricing.input;
+  const output = (usage.outputTokens ?? 0) * pricing.output;
+  const cacheRead = (usage.inputTokenDetails?.cacheReadTokens ?? 0) * (pricing.cacheRead ?? 0);
+  const cacheWrite = (usage.inputTokenDetails?.cacheWriteTokens ?? 0) * (pricing.cacheWrite ?? 0);
+  const reasoning =
+    (usage.outputTokenDetails?.reasoningTokens ?? 0) * (pricing.reasoning ?? 0);
   const total = input + output + cacheRead + cacheWrite + reasoning;
 
   return { input, output, cacheRead, cacheWrite, reasoning, total };

@@ -176,7 +176,6 @@ describe("generate() success", () => {
       return;
     }
     expect(result.output).toBe("mock response text");
-    expect(result.messages).toBeInstanceOf(Array);
     expect(result.usage).toEqual({
       inputTokens: 100,
       outputTokens: 50,
@@ -857,10 +856,9 @@ describe("stream() success", () => {
       return;
     }
     expect(result.fullStream).toBeInstanceOf(ReadableStream);
-    expect(result.output).toBeInstanceOf(Promise);
-    expect(result.messages).toBeInstanceOf(Promise);
-    expect(result.usage).toBeInstanceOf(Promise);
-    expect(result.finishReason).toBeInstanceOf(Promise);
+    expect(result.output).toBeDefined();
+    expect(result.usage).toBeDefined();
+    expect(result.finishReason).toBeDefined();
   });
 
   it("fullStream emits typed StreamPart events", async () => {
@@ -940,8 +938,6 @@ describe("stream() success", () => {
       }
     }
 
-    const messages = await result.messages;
-    expect(messages).toEqual(expectedMessages);
   });
 
   it("usage and finishReason promises resolve after stream completes", async () => {
@@ -1437,10 +1433,9 @@ describe("stream() async error during consumption", () => {
     }
 
     // Suppress derived promise rejections
-    result.output.catch(() => {});
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    result.output.then(undefined, () => {});
+    result.usage.then(undefined, () => {});
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream — writer.abort() errors the readable side, so
     // Reader.read() will reject once the error propagates.
@@ -1481,10 +1476,9 @@ describe("stream() async error during consumption", () => {
       return;
     }
 
-    result.output.catch(() => {});
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    result.output.then(undefined, () => {});
+    result.usage.then(undefined, () => {});
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream to trigger the error — reader.read() rejects
     // Once the writer aborts the transform stream.

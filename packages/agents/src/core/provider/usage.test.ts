@@ -9,9 +9,15 @@ function createRecord(overrides?: Partial<TokenUsageRecord>): TokenUsageRecord {
     inputTokens: undefined,
     outputTokens: undefined,
     totalTokens: undefined,
-    cacheReadTokens: undefined,
-    cacheWriteTokens: undefined,
-    reasoningTokens: undefined,
+    inputTokenDetails: {
+      noCacheTokens: undefined,
+      cacheReadTokens: undefined,
+      cacheWriteTokens: undefined,
+    },
+    outputTokenDetails: {
+      textTokens: undefined,
+      reasoningTokens: undefined,
+    },
     ...overrides,
   };
 }
@@ -24,9 +30,15 @@ describe("usage()", () => {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: 0,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      },
+      outputTokenDetails: {
+        textTokens: 0,
+        reasoningTokens: 0,
+      },
     });
   });
 
@@ -45,27 +57,61 @@ describe("usage()", () => {
 
   it("treats undefined fields as 0", () => {
     const records = [
-      createRecord({ inputTokens: 100, cacheReadTokens: undefined }),
-      createRecord({ inputTokens: undefined, cacheReadTokens: 30 }),
+      createRecord({
+        inputTokens: 100,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: undefined,
+          cacheWriteTokens: undefined,
+        },
+      }),
+      createRecord({
+        inputTokens: undefined,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 30,
+          cacheWriteTokens: undefined,
+        },
+      }),
     ];
 
     const result = usage(records);
 
     expect(result.inputTokens).toBe(100);
-    expect(result.cacheReadTokens).toBe(30);
+    expect(result.inputTokenDetails.cacheReadTokens).toBe(30);
   });
 
   it("sums cache and reasoning token fields", () => {
     const records = [
-      createRecord({ cacheReadTokens: 10, cacheWriteTokens: 5, reasoningTokens: 20 }),
-      createRecord({ cacheReadTokens: 30, cacheWriteTokens: 15, reasoningTokens: 40 }),
+      createRecord({
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 10,
+          cacheWriteTokens: 5,
+        },
+        outputTokenDetails: {
+          textTokens: undefined,
+          reasoningTokens: 20,
+        },
+      }),
+      createRecord({
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 30,
+          cacheWriteTokens: 15,
+        },
+        outputTokenDetails: {
+          textTokens: undefined,
+          reasoningTokens: 40,
+        },
+      }),
     ];
 
     const result = usage(records);
 
-    expect(result.cacheReadTokens).toBe(40);
-    expect(result.cacheWriteTokens).toBe(20);
-    expect(result.reasoningTokens).toBe(60);
+    expect(result.inputTokenDetails.cacheReadTokens).toBe(40);
+    expect(result.inputTokenDetails.cacheWriteTokens).toBe(20);
+    expect(result.outputTokenDetails.reasoningTokens).toBe(60);
   });
 
   it("returns exact values for a single record", () => {
@@ -74,9 +120,15 @@ describe("usage()", () => {
         inputTokens: 42,
         outputTokens: 21,
         totalTokens: 63,
-        cacheReadTokens: 5,
-        cacheWriteTokens: 3,
-        reasoningTokens: 10,
+        inputTokenDetails: {
+          noCacheTokens: 34,
+          cacheReadTokens: 5,
+          cacheWriteTokens: 3,
+        },
+        outputTokenDetails: {
+          textTokens: 11,
+          reasoningTokens: 10,
+        },
       }),
     ];
 
@@ -85,9 +137,9 @@ describe("usage()", () => {
     expect(result.inputTokens).toBe(42);
     expect(result.outputTokens).toBe(21);
     expect(result.totalTokens).toBe(63);
-    expect(result.cacheReadTokens).toBe(5);
-    expect(result.cacheWriteTokens).toBe(3);
-    expect(result.reasoningTokens).toBe(10);
+    expect(result.inputTokenDetails.cacheReadTokens).toBe(5);
+    expect(result.inputTokenDetails.cacheWriteTokens).toBe(3);
+    expect(result.outputTokenDetails.reasoningTokens).toBe(10);
   });
 });
 
@@ -107,9 +159,15 @@ describe("usageByAgent()", () => {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: 0,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      },
+      outputTokenDetails: {
+        textTokens: 0,
+        reasoningTokens: 0,
+      },
     });
   });
 
@@ -119,9 +177,15 @@ describe("usageByAgent()", () => {
         inputTokens: 100,
         outputTokens: 50,
         totalTokens: 150,
-        cacheReadTokens: 10,
-        cacheWriteTokens: 5,
-        reasoningTokens: 20,
+        inputTokenDetails: {
+          noCacheTokens: 85,
+          cacheReadTokens: 10,
+          cacheWriteTokens: 5,
+        },
+        outputTokenDetails: {
+          textTokens: 30,
+          reasoningTokens: 20,
+        },
         source: { agentId: "agent-2", scope: [] },
       }),
     ];
@@ -133,9 +197,9 @@ describe("usageByAgent()", () => {
     expect(result[0]!.inputTokens).toBe(100);
     expect(result[0]!.outputTokens).toBe(50);
     expect(result[0]!.totalTokens).toBe(150);
-    expect(result[0]!.cacheReadTokens).toBe(10);
-    expect(result[0]!.cacheWriteTokens).toBe(5);
-    expect(result[0]!.reasoningTokens).toBe(20);
+    expect(result[0]!.inputTokenDetails.cacheReadTokens).toBe(10);
+    expect(result[0]!.inputTokenDetails.cacheWriteTokens).toBe(5);
+    expect(result[0]!.outputTokenDetails.reasoningTokens).toBe(20);
   });
 
   it("aggregates token counts across multiple records from the same agent", () => {
@@ -346,12 +410,20 @@ describe("usageByModel()", () => {
       createRecord({
         modelId: "openai/gpt-5.2-codex",
         inputTokens: 100,
-        cacheReadTokens: undefined,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: undefined,
+          cacheWriteTokens: undefined,
+        },
       }),
       createRecord({
         modelId: "openai/gpt-5.2-codex",
         inputTokens: undefined,
-        cacheReadTokens: 30,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 30,
+          cacheWriteTokens: undefined,
+        },
       }),
     ];
 
@@ -359,30 +431,42 @@ describe("usageByModel()", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.inputTokens).toBe(100);
-    expect(result[0]!.cacheReadTokens).toBe(30);
+    expect(result[0]!.inputTokenDetails.cacheReadTokens).toBe(30);
   });
 
   it("includes cache and reasoning fields per model", () => {
     const records = [
       createRecord({
         modelId: "openai/o4-mini",
-        cacheReadTokens: 10,
-        cacheWriteTokens: 5,
-        reasoningTokens: 500,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 10,
+          cacheWriteTokens: 5,
+        },
+        outputTokenDetails: {
+          textTokens: undefined,
+          reasoningTokens: 500,
+        },
       }),
       createRecord({
         modelId: "openai/o4-mini",
-        cacheReadTokens: 20,
-        cacheWriteTokens: 10,
-        reasoningTokens: 300,
+        inputTokenDetails: {
+          noCacheTokens: undefined,
+          cacheReadTokens: 20,
+          cacheWriteTokens: 10,
+        },
+        outputTokenDetails: {
+          textTokens: undefined,
+          reasoningTokens: 300,
+        },
       }),
     ];
 
     const result = usageByModel(records);
 
     expect(result).toHaveLength(1);
-    expect(result[0]!.cacheReadTokens).toBe(30);
-    expect(result[0]!.cacheWriteTokens).toBe(15);
-    expect(result[0]!.reasoningTokens).toBe(800);
+    expect(result[0]!.inputTokenDetails.cacheReadTokens).toBe(30);
+    expect(result[0]!.inputTokenDetails.cacheWriteTokens).toBe(15);
+    expect(result[0]!.outputTokenDetails.reasoningTokens).toBe(800);
   });
 });

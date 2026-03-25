@@ -51,7 +51,6 @@ const result = await weatherAgent.generate({ prompt: "What is the weather in San
 
 if (result.ok) {
   console.log("Output:", result.output);
-  console.log("Messages:", result.messages.length);
   console.log("Usage:", result.usage);
 } else {
   console.error("Error:", result.error);

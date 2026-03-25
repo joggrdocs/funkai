@@ -19,6 +19,7 @@ export type {
 export type {
   TextStreamPart,
   AsyncIterableStream,
+  ModelMessage,
   ToolSet,
   UIMessage,
   UIMessageStreamOptions,
@@ -34,13 +35,14 @@ export type {
   Resolver,
   ToolName,
   SubAgents,
-  Message,
   Agent,
   AgentConfig,
   AgentOverrides,
   BaseGenerateParams,
   GenerateParams,
+  BaseGenerateResult,
   GenerateResult,
+  BaseStreamResult,
   StreamResult,
 } from "@/core/agents/types.js";
 
@@ -76,7 +78,8 @@ export type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 export type { AllConfig, EntryFactory } from "@/core/agents/flow/steps/all.js";
 export type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 
-export type { LanguageModel, TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
+export type { LanguageModel, TokenUsageRecord } from "@/core/provider/types.js";
+export type { LanguageModelUsage } from "ai";
 export type {
   AgentSource,
   AgentTokenUsage,

@@ -1,16 +1,29 @@
 import type {
   AsyncIterableStream,
+  Experimental_DownloadFunction,
+  FinishReason,
+  GenerateTextResult,
   LanguageModelMiddleware,
+  LanguageModelUsage,
   ModelMessage,
+  OnToolCallFinishEvent,
+  OnToolCallStartEvent,
+  PrepareStepFunction,
+  StreamTextResult,
+  ToolCallRepairFunction,
+  ToolChoice,
+  ToolSet,
   UIMessage,
   UIMessageStreamOptions,
 } from "ai";
+// oxlint-disable-next-line -- Output is a dual value/type export from AI SDK; we use `any` for the omitted output type param
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AIOutput = any;
 import type { CamelCase, SnakeCase } from "type-fest";
 import type { ZodType } from "zod";
 
 import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
-import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
 import type { Model, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
@@ -126,18 +139,30 @@ export type ToolName<S extends string> = S extends ""
 export type SubAgents = Record<string, Agent<any, any, any, any, any>>;
 
 /**
- * Chat message type.
+ * Minimal shared contract for generation results.
  *
- * Re-exported from the Vercel AI SDK (`ModelMessage`). Used for
- * multi-turn conversations, message arrays, and tool-call history.
+ * Both `GenerateResult` (full AI SDK passthrough) and
+ * `FlowAgentGenerateResult` (flow-specific) extend this.
+ *
+ * @typeParam TOutput - The output type.
  */
-export type Message = ModelMessage;
+export interface BaseGenerateResult<TOutput = string> {
+  /** The generation output. */
+  readonly output: TOutput;
+
+  /** Aggregated token usage across all tool-loop steps. */
+  readonly usage: LanguageModelUsage;
+
+  /** The reason the model stopped generating. */
+  readonly finishReason: FinishReason;
+}
 
 /**
  * Result of a completed agent generation.
  *
- * Mirrors the AI SDK's `GenerateTextResult`. The `output` field is
- * typed based on the agent's configured Output variant.
+ * Extends the AI SDK's `GenerateTextResult` with full field passthrough.
+ * Only `output` is overridden to carry the agent's typed output.
+ * Access messages via `result.response.messages`.
  *
  * @typeParam TOutput - The output type.
  *   - `string` for `Output.text()` (the default).
@@ -145,153 +170,47 @@ export type Message = ModelMessage;
  *   - `T[]` for `Output.array({ element })`.
  *   - `T` for `Output.choice({ options })`.
  */
-export interface GenerateResult<TOutput = string> {
-  /**
-   * The generation output.
-   *
-   * Type depends on the configured `Output` variant:
-   * - `string` when using `Output.text()` (default).
-   * - `T` when using `Output.object<T>({ schema })`.
-   * - `T[]` when using `Output.array<T>({ element })`.
-   * - One of the option strings when using `Output.choice()`.
-   */
-  readonly output: TOutput;
+export interface GenerateResult<TOutput = string>
+  extends BaseGenerateResult<TOutput>,
+    Omit<GenerateTextResult<ToolSet, AIOutput>, "output" | "experimental_output"> {}
 
-  /**
-   * Full message history including tool calls.
-   *
-   * Contains the complete conversation from the generation,
-   * including system messages, user prompts, assistant responses,
-   * and tool call/result pairs.
-   */
-  readonly messages: Message[];
+/**
+ * Minimal shared contract for streaming results.
+ *
+ * Both `StreamResult` (full AI SDK passthrough) and flow agent
+ * stream results extend this.
+ *
+ * @typeParam TOutput - The output type (available after stream completes).
+ */
+export interface BaseStreamResult<TOutput = string> {
+  /** Resolves after the stream completes with the generation output. */
+  readonly output: PromiseLike<TOutput>;
 
-  /**
-   * Aggregated token usage across all tool-loop steps.
-   *
-   * Includes input, output, cache, and reasoning token counts.
-   * All fields are resolved numbers (0 when the provider does not
-   * report a given field).
-   */
-  readonly usage: TokenUsage;
+  /** Aggregated token usage. Resolves after the stream completes. */
+  readonly usage: PromiseLike<LanguageModelUsage>;
 
-  /**
-   * The reason the model stopped generating.
-   *
-   * Common values: `"stop"`, `"length"`, `"content-filter"`,
-   * `"tool-calls"`, `"error"`, `"other"`.
-   */
-  readonly finishReason: string;
+  /** The reason the model stopped generating. Resolves after the stream completes. */
+  readonly finishReason: PromiseLike<FinishReason>;
+
+  /** The full stream of typed events. */
+  readonly fullStream: AsyncIterableStream<StreamPart>;
 }
 
 /**
  * Result of a streaming agent generation.
  *
- * The `fullStream` emits typed `StreamPart` events as they arrive —
- * text deltas, tool calls, tool results, step boundaries, finish,
- * and errors. Implements both `AsyncIterable` and `ReadableStream`
- * so consumers can use `for await...of` or `.getReader()`.
- *
- * `output` and `messages` are promises that resolve once the stream
- * has been fully consumed.
+ * Extends the AI SDK's `StreamTextResult` with full field passthrough.
+ * Only `output` is overridden to carry the agent's typed output.
+ * Access messages via `result.response` promise.
  *
  * @typeParam TOutput - The output type (available after stream completes).
  */
-export interface StreamResult<TOutput = string> {
-  /**
-   * The generation output.
-   *
-   * Resolves after the stream completes. Same typing rules as
-   * `GenerateResult.output`.
-   */
-  output: Promise<TOutput>;
-
-  /**
-   * Full message history.
-   *
-   * Resolves after the stream completes. Contains the complete
-   * conversation including tool calls.
-   */
-  messages: Promise<Message[]>;
-
-  /**
-   * Aggregated token usage across all tool-loop steps.
-   *
-   * Resolves after the stream completes. Includes input, output,
-   * cache, and reasoning token counts.
-   */
-  usage: Promise<TokenUsage>;
-
-  /**
-   * The reason the model stopped generating.
-   *
-   * Resolves after the stream completes. Common values: `"stop"`,
-   * `"length"`, `"content-filter"`, `"tool-calls"`, `"error"`, `"other"`.
-   */
-  finishReason: Promise<string>;
-
-  /**
-   * The full stream of typed events.
-   *
-   * Emits `StreamPart` events (a discriminated union from the AI SDK)
-   * including `text-delta`, `tool-call`, `tool-result`, `finish`,
-   * `error`, and more. Use `part.type` to discriminate.
-   *
-   * Supports both `for await (const part of fullStream)` and
-   * `fullStream.getReader()`.
-   */
-  fullStream: AsyncIterableStream<StreamPart>;
-
-  /**
-   * Creates a plain text stream HTTP response.
-   *
-   * Each text delta is encoded as UTF-8 and sent as a separate chunk.
-   * Non-text events are ignored. Useful for API endpoints (Hono,
-   * Express, Bun) that return plain streamed text.
-   *
-   * Note: this reads from the underlying AI SDK stream, not from
-   * `fullStream`. Do not consume both simultaneously.
-   *
-   * @param init - Optional response headers, status code, and status text.
-   * @returns A web standard `Response` with streamed text content.
-   *
-   * @example
-   * ```typescript
-   * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream({ prompt: 'Hello' });
-   *   if (!result.ok) return c.text('Error', 500);
-   *   return result.toTextStreamResponse();
-   * });
-   * ```
-   */
-  toTextStreamResponse(init?: ResponseInit): Response;
-
-  /**
-   * Creates a UI message stream HTTP response.
-   *
-   * Returns a `Response` suitable for the Vercel AI SDK's `useChat`
-   * hook on the client. Includes tool calls, tool results, reasoning,
-   * sources, and other structured events.
-   *
-   * Note: this reads from the underlying AI SDK stream, not from
-   * `fullStream`. Do not consume both simultaneously.
-   *
-   * @param options - Optional response init and UI message stream options.
-   * @returns A web standard `Response` with a UI message stream body.
-   *
-   * @example
-   * ```typescript
-   * app.post('/chat', async (c) => {
-   *   const result = await myAgent.stream({ prompt: 'Hello' });
-   *   if (!result.ok) return c.text('Error', 500);
-   *   return result.toUIMessageStreamResponse();
-   * });
-   * ```
-   */
-  toUIMessageStreamResponse<UI_MESSAGE extends UIMessage = UIMessage>(
-    options?: ResponseInit & UIMessageStreamOptions<UI_MESSAGE>,
-  ): Response;
-}
+export interface StreamResult<TOutput = string>
+  extends BaseStreamResult<TOutput>,
+    Omit<
+      StreamTextResult<ToolSet, AIOutput>,
+      "output" | "experimental_output" | "experimental_partialOutputStream"
+    > {}
 
 /**
  * Shared fields for all `.generate()` / `.stream()` param types.
@@ -436,6 +355,39 @@ interface AgentGenerateOverrides<
    * - `z.array(z.object({ ... }))` → auto-wrapped as `Output.array({ element })`
    */
   output?: OutputParam;
+
+  /** Override the tool choice strategy for this call. */
+  toolChoice?: ToolChoice<Record<string, unknown>>;
+
+  /** Override provider-specific options for this call. */
+  providerOptions?: Record<string, Record<string, unknown>>;
+
+  /** Override active tools for this call. */
+  activeTools?: string[];
+
+  /** Override prepareStep for this call. */
+  prepareStep?: PrepareStepFunction;
+
+  /** Override repairToolCall for this call. */
+  repairToolCall?: ToolCallRepairFunction<ToolSet>;
+
+  /** Override HTTP headers for this call. */
+  headers?: Record<string, string | undefined>;
+
+  /** Override include settings for this call. */
+  experimental_include?: { requestBody?: boolean; responseBody?: boolean };
+
+  /** Override context for this call. */
+  experimental_context?: unknown;
+
+  /** Override download function for this call. */
+  experimental_download?: Experimental_DownloadFunction | undefined;
+
+  /** Override onToolCallStart for this call. */
+  onToolCallStart?: (event: OnToolCallStartEvent) => void | Promise<void>;
+
+  /** Override onToolCallFinish for this call. */
+  onToolCallFinish?: (event: OnToolCallFinishEvent) => void | Promise<void>;
 }
 
 /**
@@ -448,7 +400,7 @@ interface AgentGenerateOverrides<
  */
 type InputUnion<TInput> =
   | { prompt: string; messages?: undefined; input?: undefined }
-  | { messages: Message[]; prompt?: undefined; input?: undefined }
+  | { messages: ModelMessage[]; prompt?: undefined; input?: undefined }
   | { input: TInput; prompt?: undefined; messages?: undefined };
 
 /**
@@ -497,9 +449,9 @@ export type GenerateParams<
  * | Config | `.generate()` first param | How prompt is built |
  * |---|---|---|
  * | `input` + `prompt` provided | Typed `TInput` | `prompt({ input })` renders it |
- * | Both omitted | `string \| Message[]` | Passed directly to the model |
+ * | Both omitted | `string \| ModelMessage[]` | Passed directly to the model |
  *
- * @typeParam TInput - Agent input type (default: `string | Message[]`).
+ * @typeParam TInput - Agent input type (default: `string | ModelMessage[]`).
  * @typeParam TOutput - Agent output type (default: `string`).
  * @typeParam TTools - Record of tools available to this agent.
  * @typeParam TSubAgents - Record of subagents available to this agent.
@@ -536,7 +488,7 @@ export interface AgentConfig<
    * When provided alongside `prompt`, `.generate()` accepts `TInput`
    * as its first param and validates it against this schema.
    *
-   * When omitted, `.generate()` accepts a raw `string` or `Message[]`
+   * When omitted, `.generate()` accepts a raw `string` or `ModelMessage[]`
    * instead (simple mode).
    */
   input?: ZodType<TInput>;
@@ -552,7 +504,7 @@ export interface AgentConfig<
    * @param params.input - The validated input value.
    * @returns The prompt string or message array to send to the model.
    */
-  prompt?: (params: { input: TInput }) => string | Message[] | Promise<string | Message[]>;
+  prompt?: (params: { input: TInput }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
 
   /**
    * System prompt.
@@ -649,6 +601,71 @@ export interface AgentConfig<
    * @default true
    */
   toolInputExamples?: boolean;
+
+  /**
+   * The tool choice strategy. Default: 'auto'.
+   *
+   * Passed through to the AI SDK's `generateText`/`streamText`.
+   */
+  toolChoice?: ToolChoice<Record<string, unknown>>;
+
+  /**
+   * Additional provider-specific options.
+   *
+   * Passed through to the AI SDK and enable provider-specific
+   * functionality.
+   */
+  providerOptions?: Record<string, Record<string, unknown>>;
+
+  /**
+   * Limits the tools available for the model to call without
+   * changing the tool call and result types.
+   */
+  activeTools?: string[];
+
+  /**
+   * Function to provide per-step overrides (model, tools, messages).
+   *
+   * Called before each step in the tool loop.
+   */
+  prepareStep?: PrepareStepFunction;
+
+  /**
+   * Function that attempts to repair a tool call that failed to parse.
+   */
+  repairToolCall?: ToolCallRepairFunction<ToolSet>;
+
+  /**
+   * Additional HTTP headers sent with the request.
+   *
+   * Only applicable for HTTP-based providers.
+   */
+  headers?: Record<string, string | undefined>;
+
+  /**
+   * Include settings for request/response bodies in step results.
+   */
+  experimental_include?: { requestBody?: boolean; responseBody?: boolean };
+
+  /**
+   * User-defined context object that flows through the generation lifecycle.
+   */
+  experimental_context?: unknown;
+
+  /**
+   * Custom download function for URLs.
+   */
+  experimental_download?: Experimental_DownloadFunction | undefined;
+
+  /**
+   * Callback invoked before each tool execution begins.
+   */
+  onToolCallStart?: (event: OnToolCallStartEvent) => void | Promise<void>;
+
+  /**
+   * Callback invoked after each tool execution completes.
+   */
+  onToolCallFinish?: (event: OnToolCallFinishEvent) => void | Promise<void>;
 
   /**
    * Pino-compatible logger.
@@ -760,7 +777,7 @@ export type AgentOverrides<
  * @typeParam TSubAgents - Record of subagents.
  */
 export interface Agent<
-  TInput = string | Message[],
+  TInput = string | ModelMessage[],
   TOutput = string,
   TTools extends Record<string, Tool> = Record<string, Tool>,
   TSubAgents extends SubAgents = Record<string, never>,
