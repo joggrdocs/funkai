@@ -489,7 +489,7 @@ interface AgentGenerateOverrides<
    * Combined with the internal `stepCountIs(maxSteps)` condition —
    * `maxSteps` always acts as a ceiling.
    */
-  stopWhen?: StopCondition<ToolSet>[];
+  stopWhen?: StopCondition<ToolSet> | StopCondition<ToolSet>[];
 
   /**
    * Callback for individual stream chunks.

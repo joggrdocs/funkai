@@ -181,7 +181,7 @@ export function agent<
     readonly onStepStart: ((event: unknown) => Promise<void>) | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK passthrough params
     readonly aiSdkParams: Record<string, any>;
-    readonly stopConditions: StopCondition<ToolSet>[] | undefined;
+    readonly stopConditions: StopCondition<ToolSet> | StopCondition<ToolSet>[] | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK stream-only params
     readonly streamOnlyParams: Record<string, any>;
   }
@@ -813,12 +813,18 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
  */
 function buildStopConditions(
   maxSteps: number,
-  userConditions: StopCondition<ToolSet>[] | undefined,
+  userConditions: StopCondition<ToolSet> | StopCondition<ToolSet>[] | undefined,
 ): StopCondition<ToolSet> | StopCondition<ToolSet>[] {
-  if (isNil(userConditions) || userConditions.length === 0) {
+  if (isNil(userConditions)) {
     return stepCountIs(maxSteps);
   }
-  return [...userConditions, stepCountIs(maxSteps)];
+  if (Array.isArray(userConditions)) {
+    if (userConditions.length === 0) {
+      return stepCountIs(maxSteps);
+    }
+    return [...userConditions, stepCountIs(maxSteps)];
+  }
+  return [userConditions, stepCountIs(maxSteps)];
 }
 
 /**
