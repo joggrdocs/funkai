@@ -10,11 +10,10 @@ import type { ModelPricing } from "@/catalog/types.js";
  * extracting nested detail fields for cache and reasoning tokens.
  * Optional pricing fields (cache, reasoning) default to `0` when absent.
  *
- * **Reasoning token semantics**: `outputTokenDetails.reasoningTokens` are
- * expected to be **exclusive** of `outputTokens` — they are billed separately.
- * If your provider includes reasoning tokens _within_ the `outputTokens` count,
- * you must deduct them before passing usage to this function to avoid
- * double-counting output costs.
+ * When `inputTokenDetails.noCacheTokens` is available, it is used as the base
+ * input cost (excludes cached tokens). When `outputTokenDetails.textTokens` is
+ * available, it is used as the base output cost (excludes reasoning tokens).
+ * Falls back to `inputTokens`/`outputTokens` when detail fields are absent.
  *
  * @param usage - Token counts from a model invocation (AI SDK `LanguageModelUsage`).
  * @param pricing - Per-token pricing rates for the model.
@@ -40,8 +39,10 @@ import type { ModelPricing } from "@/catalog/types.js";
  * ```
  */
 export function calculateCost(usage: LanguageModelUsage, pricing: ModelPricing): UsageCost {
-  const input = (usage.inputTokens ?? 0) * pricing.input;
-  const output = (usage.outputTokens ?? 0) * pricing.output;
+  const input =
+    (usage.inputTokenDetails?.noCacheTokens ?? usage.inputTokens ?? 0) * pricing.input;
+  const output =
+    (usage.outputTokenDetails?.textTokens ?? usage.outputTokens ?? 0) * pricing.output;
   const cacheRead = (usage.inputTokenDetails?.cacheReadTokens ?? 0) * (pricing.cacheRead ?? 0);
   const cacheWrite = (usage.inputTokenDetails?.cacheWriteTokens ?? 0) * (pricing.cacheWrite ?? 0);
   const reasoning = (usage.outputTokenDetails?.reasoningTokens ?? 0) * (pricing.reasoning ?? 0);

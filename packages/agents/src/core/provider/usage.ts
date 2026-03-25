@@ -50,7 +50,7 @@ export interface ModelTokenUsage extends LanguageModelUsage {
  * // { inputTokens: 350, outputTokens: 175, ... }
  * ```
  */
-export function usage(records: TokenUsageRecord[]): LanguageModelUsage {
+export function usage(records: readonly LanguageModelUsage[]): LanguageModelUsage {
   return aggregateTokens(records);
 }
 
@@ -125,8 +125,8 @@ export function usageByModel(records: TokenUsageRecord[]): readonly ModelTokenUs
  *
  * @private
  */
-function aggregateTokens(usages: TokenUsageRecord[]): LanguageModelUsage {
-  const sumOptional = (fn: (u: TokenUsageRecord) => number | undefined): number | undefined => {
+function aggregateTokens(usages: readonly LanguageModelUsage[]): LanguageModelUsage {
+  const sumOptional = (fn: (u: LanguageModelUsage) => number | undefined): number | undefined => {
     const total = usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
     if (total > 0) {
       return total;

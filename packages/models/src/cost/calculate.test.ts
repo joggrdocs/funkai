@@ -9,13 +9,13 @@ const ZERO_USAGE: LanguageModelUsage = {
   outputTokens: 0,
   totalTokens: 0,
   inputTokenDetails: {
-    noCacheTokens: 0,
-    cacheReadTokens: 0,
-    cacheWriteTokens: 0,
+    noCacheTokens: undefined,
+    cacheReadTokens: undefined,
+    cacheWriteTokens: undefined,
   },
   outputTokenDetails: {
-    textTokens: 0,
-    reasoningTokens: 0,
+    textTokens: undefined,
+    reasoningTokens: undefined,
   },
 };
 
@@ -89,7 +89,7 @@ describe("calculateCost()", () => {
     expect(result.cacheRead).toBe(0);
     expect(result.cacheWrite).toBe(0);
     expect(result.reasoning).toBe(0);
-    expect(result.total).toBeCloseTo(0.006);
+    expect(result.total).toBeCloseTo(0.005);
   });
 
   it("calculates full cost breakdown with all pricing fields", () => {
@@ -111,11 +111,11 @@ describe("calculateCost()", () => {
 
     const result = calculateCost(usage, FULL_PRICING);
 
-    expect(result.input).toBeCloseTo(0.002);
-    expect(result.output).toBeCloseTo(0.004);
+    expect(result.input).toBeCloseTo(0.0014);
+    expect(result.output).toBeCloseTo(0.0016);
     expect(result.cacheRead).toBeCloseTo(0.0001);
     expect(result.cacheWrite).toBeCloseTo(0.0001);
-    expect(result.total).toBeCloseTo(0.0062);
+    expect(result.total).toBeCloseTo(0.0032);
   });
 
   it("calculates reasoning token costs when pricing is provided", () => {
