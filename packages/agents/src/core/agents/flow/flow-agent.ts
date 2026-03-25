@@ -9,7 +9,6 @@ import {
 } from "@/core/agents/flow/messages.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-
 import type {
   FlowAgent,
   FlowAgentConfig,
@@ -21,9 +20,9 @@ import type {
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
 import type { BaseStreamResult, GenerateParams } from "@/core/agents/types.js";
-import type { Tool } from "@/core/tool.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
+import type { Tool } from "@/core/tool.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
@@ -216,7 +215,12 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  type FlowGenerateParams = GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>;
+  type FlowGenerateParams = GenerateParams<
+    TInput,
+    Record<string, Tool>,
+    Record<string, never>,
+    TOutput
+  >;
 
   /**
    * Resolve the handler output into a final value, validating against

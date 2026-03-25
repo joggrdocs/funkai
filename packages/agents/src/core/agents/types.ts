@@ -167,8 +167,10 @@ export type BaseGenerateResult<TOutput = string> = Pick<
  *   - `T[]` for `Output.array({ element })`.
  *   - `T` for `Output.choice({ options })`.
  */
-export interface GenerateResult<TOutput = string>
-  extends Omit<GenerateTextResult<ToolSet, AIOutput>, "output" | "experimental_output"> {
+export interface GenerateResult<TOutput = string> extends Omit<
+  GenerateTextResult<ToolSet, AIOutput>,
+  "output" | "experimental_output"
+> {
   /** The generation output. */
   readonly output: TOutput;
 }
@@ -199,11 +201,10 @@ export type BaseStreamResult<TOutput = string> = Pick<
  *
  * @typeParam TOutput - The output type (available after stream completes).
  */
-export interface StreamResult<TOutput = string>
-  extends Omit<
-    StreamTextResult<ToolSet, AIOutput>,
-    "output" | "experimental_output" | "experimental_partialOutputStream"
-  > {
+export interface StreamResult<TOutput = string> extends Omit<
+  StreamTextResult<ToolSet, AIOutput>,
+  "output" | "experimental_output" | "experimental_partialOutputStream"
+> {
   /** Resolves after the stream completes with the generation output. */
   readonly output: PromiseLike<TOutput>;
 }
@@ -522,7 +523,9 @@ export interface AgentConfig<
    * @param params.input - The validated input value.
    * @returns The prompt string or message array to send to the model.
    */
-  prompt?: (params: { input: TInput }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
+  prompt?: (params: {
+    input: TInput;
+  }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
 
   /**
    * System prompt.

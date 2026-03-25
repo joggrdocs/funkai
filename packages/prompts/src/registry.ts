@@ -1,4 +1,5 @@
 import { isPlainObject } from "es-toolkit";
+
 import type { PromptModule, PromptNamespace, PromptRegistry } from "./types.js";
 
 /**

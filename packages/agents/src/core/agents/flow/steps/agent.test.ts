@@ -10,9 +10,15 @@ const MOCK_USAGE = {
   inputTokens: 100,
   outputTokens: 50,
   totalTokens: 150,
-  cacheReadTokens: 0,
-  cacheWriteTokens: 0,
-  reasoningTokens: 0,
+  inputTokenDetails: {
+    noCacheTokens: 100,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  },
+  outputTokenDetails: {
+    textTokens: 50,
+    reasoningTokens: 0,
+  },
 };
 
 function mockAgent(result: Result<Pick<BaseGenerateResult, "output">>): Agent<string> {

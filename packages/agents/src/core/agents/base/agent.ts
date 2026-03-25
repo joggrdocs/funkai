@@ -536,8 +536,10 @@ export function agent<
 
         // Build a GenerateResult for the onFinish hook by awaiting remaining fields
         const steps = await aiResult.steps;
-        // Steps always has at least one entry after stream completes
-        const lastStep = steps.at(-1) as (typeof steps)[number];
+        const lastStep = steps.at(-1);
+        if (!lastStep) {
+          throw new Error("No steps returned from stream");
+        }
         const generateResult = formatGenerateResult<TOutput>(
           {
             ...lastStep,
@@ -731,4 +733,3 @@ function buildMergedHook<E>(
     await fireHooks(log, wrapHook(configHook, event), wrapHook(callHook, event));
   };
 }
-

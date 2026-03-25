@@ -1,6 +1,6 @@
+import type { ModelMessage } from "ai";
 import { isString } from "es-toolkit";
 
-import type { ModelMessage } from "ai";
 import { safeStringify } from "@/utils/error.js";
 
 /**

@@ -1,5 +1,5 @@
-import type { LanguageModelUsage } from "ai";
 import type { ModelId } from "@funkai/models";
+import type { LanguageModelUsage } from "ai";
 
 export type { LanguageModel } from "@funkai/models";
 

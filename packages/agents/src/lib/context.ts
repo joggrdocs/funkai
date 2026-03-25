@@ -1,4 +1,5 @@
 import type { ModelMessage } from "ai";
+
 import type { Logger } from "@/core/logger.js";
 import type { TraceEntry } from "@/lib/trace.js";
 

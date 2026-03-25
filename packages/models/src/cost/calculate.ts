@@ -44,8 +44,7 @@ export function calculateCost(usage: LanguageModelUsage, pricing: ModelPricing):
   const output = (usage.outputTokens ?? 0) * pricing.output;
   const cacheRead = (usage.inputTokenDetails?.cacheReadTokens ?? 0) * (pricing.cacheRead ?? 0);
   const cacheWrite = (usage.inputTokenDetails?.cacheWriteTokens ?? 0) * (pricing.cacheWrite ?? 0);
-  const reasoning =
-    (usage.outputTokenDetails?.reasoningTokens ?? 0) * (pricing.reasoning ?? 0);
+  const reasoning = (usage.outputTokenDetails?.reasoningTokens ?? 0) * (pricing.reasoning ?? 0);
   const total = input + output + cacheRead + cacheWrite + reasoning;
 
   return { input, output, cacheRead, cacheWrite, reasoning, total };

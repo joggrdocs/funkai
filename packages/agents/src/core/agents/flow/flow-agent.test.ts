@@ -148,7 +148,6 @@ describe("generate() with steps", () => {
     }
     expect(result.output).toEqual({ y: 14 });
   });
-
 });
 
 describe("generate() input validation", () => {
@@ -612,7 +611,6 @@ describe("stream() success", () => {
         break;
       }
     }
-
   });
 
   it("usage promise resolves with zero-valued fields when no sub-agents", async () => {
@@ -1203,4 +1201,3 @@ describe("stream() unhandled rejection safety", () => {
     }
   });
 });
-

@@ -1,3 +1,4 @@
+import type { ModelMessage } from "ai";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
@@ -7,7 +8,6 @@ import {
   resolveValue,
   resolveOptionalValue,
 } from "@/core/agents/base/utils.js";
-import type { ModelMessage } from "ai";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
 describe(resolveValue, () => {

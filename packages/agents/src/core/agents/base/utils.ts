@@ -1,12 +1,12 @@
 import { privateField } from "@funkai/utils";
 import { tool } from "ai";
+import type { ModelMessage } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
 import { match } from "ts-pattern";
 import type { ZodType } from "zod";
 import { z } from "zod";
 
 import type { Agent, Resolver } from "@/core/agents/types.js";
-import type { ModelMessage } from "ai";
 import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent } from "@/core/types.js";
@@ -170,7 +170,9 @@ export async function buildPrompt<TInput>(
   input: TInput,
   config: {
     input?: ZodType<TInput>;
-    prompt?: (params: { input: TInput }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
+    prompt?: (params: {
+      input: TInput;
+    }) => string | ModelMessage[] | Promise<string | ModelMessage[]>;
   },
 ): Promise<{ prompt: string } | { messages: ModelMessage[] }> {
   const hasInput = Boolean(config.input);

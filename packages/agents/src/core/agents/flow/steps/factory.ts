@@ -1,3 +1,4 @@
+import type { LanguageModelUsage } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
 import { P, match } from "ts-pattern";
@@ -24,7 +25,6 @@ import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { BaseGenerateResult, StreamResult } from "@/core/agents/types.js";
-import type { LanguageModelUsage } from "ai";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
