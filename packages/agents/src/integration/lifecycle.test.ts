@@ -1623,7 +1623,7 @@ describe("Agent subagent hook forwarding (integration)", () => {
 
     // Sub-flow's step fires both config and per-call onStepStart from parent
     const subSteps = stepEvents.filter((e) => e.includes("work"));
-    expect(subSteps.length).toBeGreaterThan(0);
+    expect(subSteps.length).toBeGreaterThanOrEqual(2);
 
     // Config hook fires before per-call hook
     const subConfigIdx = stepEvents.findIndex((e) => e.startsWith("config:") && e.includes("work"));
