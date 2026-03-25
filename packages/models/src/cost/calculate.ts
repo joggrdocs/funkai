@@ -39,10 +39,8 @@ import type { ModelPricing } from "@/catalog/types.js";
  * ```
  */
 export function calculateCost(usage: LanguageModelUsage, pricing: ModelPricing): UsageCost {
-  const input =
-    (usage.inputTokenDetails?.noCacheTokens ?? usage.inputTokens ?? 0) * pricing.input;
-  const output =
-    (usage.outputTokenDetails?.textTokens ?? usage.outputTokens ?? 0) * pricing.output;
+  const input = (usage.inputTokenDetails?.noCacheTokens ?? usage.inputTokens ?? 0) * pricing.input;
+  const output = (usage.outputTokenDetails?.textTokens ?? usage.outputTokens ?? 0) * pricing.output;
   const cacheRead = (usage.inputTokenDetails?.cacheReadTokens ?? 0) * (pricing.cacheRead ?? 0);
   const cacheWrite = (usage.inputTokenDetails?.cacheWriteTokens ?? 0) * (pricing.cacheWrite ?? 0);
   const reasoning = (usage.outputTokenDetails?.reasoningTokens ?? 0) * (pricing.reasoning ?? 0);

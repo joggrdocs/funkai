@@ -216,11 +216,10 @@ export function agent<
       toolInputExamples: config.toolInputExamples,
     });
 
-    const resolvedTools =
-      (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
-    const mergedTools = { ...resolvedTools, ...params.tools } as Record<string, Tool>;
-    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? ({} as SubAgents);
-    const mergedAgents = { ...resolvedAgents, ...params.agents } as SubAgents;
+    const resolvedTools = (await resolveOptionalValue(config.tools, input)) ?? {};
+    const mergedTools = { ...resolvedTools, ...params.tools };
+    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? {};
+    const mergedAgents = { ...resolvedAgents, ...params.agents };
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
@@ -505,7 +504,8 @@ export function agent<
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 
       // Capture log for async closures — guaranteed set at this point
-      const streamLog = log as Logger;
+      // log is guaranteed set — validated.input resolved above
+      const streamLog = log!;
 
       /**
        * @private
