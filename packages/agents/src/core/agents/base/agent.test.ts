@@ -5,6 +5,7 @@ import { agent } from "@/core/agents/base/agent.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
+import { suppressRejection } from "@/utils/promise.js";
 
 const mockGenerateText = vi.fn();
 const mockStreamText = vi.fn();
@@ -1408,12 +1409,9 @@ describe("stream() async error during consumption", () => {
     }
 
     // Suppress derived promise rejections
-    // oxlint-disable-next-line -- PromiseLike has no .catch(); .then(undefined, noop) is the equivalent
-    result.output.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.output);
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream — writer.abort() errors the readable side, so
     // Reader.read() will reject once the error propagates.
@@ -1454,12 +1452,9 @@ describe("stream() async error during consumption", () => {
       return;
     }
 
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.output.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.output);
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream to trigger the error — reader.read() rejects
     // Once the writer aborts the transform stream.

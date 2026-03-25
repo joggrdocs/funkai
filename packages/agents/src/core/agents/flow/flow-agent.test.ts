@@ -5,6 +5,7 @@ import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
+import { suppressRejection } from "@/utils/promise.js";
 
 const Input = z.object({ x: z.number() });
 const Output = z.object({ y: z.number() });
@@ -755,10 +756,8 @@ describe("stream() error handling", () => {
     }
 
     // Suppress all derived promise rejections to avoid unhandled rejection noise
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream (should close after error)
     const reader = result.fullStream.getReader();
@@ -785,10 +784,8 @@ describe("stream() error handling", () => {
     }
 
     // Suppress derived promise rejections
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream and collect events
     const parts: Record<string, unknown>[] = [];
@@ -830,10 +827,8 @@ describe("stream() output validation", () => {
     }
 
     // Suppress derived promise rejections
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream
     const reader = result.fullStream.getReader();
@@ -937,10 +932,8 @@ describe("stream() hooks", () => {
     }
 
     // Suppress all derived promise rejections
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.usage.then(undefined, () => {});
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    result.finishReason.then(undefined, () => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain
     const reader = result.fullStream.getReader();
@@ -952,8 +945,7 @@ describe("stream() hooks", () => {
     }
 
     // Wait for the error to settle
-    // oxlint-disable-next-line -- PromiseLike has no .catch()
-    await result.output.then(undefined, () => {});
+    await Promise.resolve(result.output).catch(() => {});
 
     expect(onError).toHaveBeenCalledTimes(1);
   });

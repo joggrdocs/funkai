@@ -42,6 +42,7 @@ import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
+import { gatePromise, suppressRejection } from "@/utils/promise.js";
 import type { Result } from "@/utils/result.js";
 
 /**
@@ -590,6 +591,20 @@ export function agent<
 
       const streamResult: StreamResult<TOutput> = {
         ...aiResult,
+        // Rebind promise fields through the done gate to ensure they only
+        // resolve after processStream() has fully consumed the AI SDK stream.
+        // Without this, consumers could race with stream consumption.
+        text: gatePromise(done, aiResult.text),
+        reasoning: gatePromise(done, aiResult.reasoning),
+        sources: gatePromise(done, aiResult.sources),
+        files: gatePromise(done, aiResult.files),
+        toolCalls: gatePromise(done, aiResult.toolCalls),
+        toolResults: gatePromise(done, aiResult.toolResults),
+        finishReason: gatePromise(done, aiResult.finishReason),
+        usage: gatePromise(done, aiResult.usage),
+        totalUsage: gatePromise(done, aiResult.totalUsage),
+        steps: gatePromise(done, aiResult.steps),
+        response: gatePromise(done, aiResult.response),
         output: done.then((r) => r.output),
         fullStream: readable as AsyncIterableStream<StreamPart>,
         // NOTE: toTextStreamResponse and toUIMessageStreamResponse delegate directly to
@@ -600,8 +615,21 @@ export function agent<
         toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
 
-      // Prevent unhandled rejection warnings when consumers don't await all promises
-      (streamResult.output as Promise<TOutput>).catch(() => {});
+      // Prevent unhandled rejection warnings when consumers don't await all promises.
+      // Each gated promise rejects when `done` rejects (stream error), so every
+      // promise field needs a no-op rejection handler attached.
+      suppressRejection(streamResult.output);
+      suppressRejection(streamResult.text);
+      suppressRejection(streamResult.reasoning);
+      suppressRejection(streamResult.sources);
+      suppressRejection(streamResult.files);
+      suppressRejection(streamResult.toolCalls);
+      suppressRejection(streamResult.toolResults);
+      suppressRejection(streamResult.finishReason);
+      suppressRejection(streamResult.usage);
+      suppressRejection(streamResult.totalUsage);
+      suppressRejection(streamResult.steps);
+      suppressRejection(streamResult.response);
 
       return { ok: true, ...streamResult };
     } catch (caughtError) {
