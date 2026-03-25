@@ -19,8 +19,8 @@ describe("reduce()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(10);
-    expect(result.step.type).toBe("reduce");
+    expect(result.output).toBe(10);
+    expect(result.stepOperation).toBe("reduce");
   });
 
   it("uses initial value when input is empty", async () => {
@@ -38,7 +38,7 @@ describe("reduce()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(42);
+    expect(result.output).toBe(42);
   });
 
   it("handles single-item input", async () => {
@@ -56,7 +56,7 @@ describe("reduce()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(15);
+    expect(result.output).toBe(15);
   });
 
   it("processes items in order", async () => {
@@ -78,7 +78,7 @@ describe("reduce()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("abc");
+    expect(result.output).toBe("abc");
     expect(order).toEqual(["a", "b", "c"]);
   });
 
@@ -187,7 +187,7 @@ describe("reduce()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual({ a: 1, b: 2 });
+    expect(result.output).toEqual({ a: 1, b: 2 });
   });
 
   it("fires onStart and onFinish hooks", async () => {
@@ -297,7 +297,7 @@ describe("reduce()", () => {
         if (!inner.ok) {
           throw new Error("inner failed");
         }
-        return inner.value;
+        return inner.output;
       },
     });
 

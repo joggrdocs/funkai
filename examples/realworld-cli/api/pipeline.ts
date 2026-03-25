@@ -42,12 +42,12 @@ export const createPipeline = (
         targetDir: z.string().describe("The directory path being scanned"),
       }),
       output: pipelineOutputSchema,
-      onStepStart: ({ step }) => {
-        emit({ type: "step:start", stepId: step.id, stepType: step.type });
+      onStepStart: ({ stepId, stepOperation }) => {
+        emit({ type: "step:start", stepId, stepType: stepOperation });
       },
-      onStepFinish: ({ step, duration }) => {
-        if (step && duration !== undefined) {
-          emit({ type: "step:finish", stepId: step.id, duration });
+      onStepFinish: ({ stepId, duration }) => {
+        if (duration !== undefined) {
+          emit({ type: "step:finish", stepId, duration });
         }
       },
     },
@@ -71,7 +71,7 @@ export const createPipeline = (
         throw new Error(`Scanner failed: ${scanResult.error.message}`);
       }
 
-      const scanOutput = scanResult.value.output as string;
+      const scanOutput = scanResult.output as string;
       const testFilePaths = extractTestFilePaths(scanOutput);
 
       emit({ type: "scan-complete", files: testFilePaths });
@@ -110,7 +110,7 @@ export const createPipeline = (
           });
 
           const summary = analysisResult.ok
-            ? (analysisResult.value.output as string)
+            ? (analysisResult.output as string)
             : `Analysis failed: ${analysisResult.error.message}`;
 
           analyses.push({ filePath: testFilePath, summary });

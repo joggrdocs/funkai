@@ -258,6 +258,7 @@ export function agent<
       const event: StepFinishEvent = {
         ...step,
         stepId,
+        stepOperation: "agent",
         agentChain: currentChain,
       };
       await fireHooks(

@@ -32,7 +32,7 @@ function flowAgent<TInput>(
 | `logger`       | `Resolver<TInput, Logger>`                                          | No       | default | Pino-compatible logger                     |
 | `onStart`      | `(event: { input: TInput }) => void \| Promise<void>`               | No       | —       | Fires when flow starts                     |
 | `onError`      | `(event: { input: TInput; error: Error }) => void \| Promise<void>` | No       | —       | Fires on error                             |
-| `onStepStart`  | `(event: { step: StepInfo }) => void \| Promise<void>`              | No       | —       | Fires when a `$` step starts               |
+| `onStepStart`  | `(event: StepStartEvent) => void \| Promise<void>`                  | No       | —       | Fires when a `$` step starts               |
 | `onStepFinish` | `(event: StepFinishEvent) => void \| Promise<void>`                 | No       | —       | Fires when a `$` step finishes             |
 
 ### With output (`FlowAgentConfigWithOutput`)
@@ -98,16 +98,16 @@ interface FlowAgent<TInput, TOutput> {
 
 The `$` object provides tracked operations. Every call appears in the execution trace. `$` is passed into nested callbacks so operations can be composed.
 
-| Method     | Signature                                                                  | Returns                      | Description                                |
-| ---------- | -------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------ |
-| `$.step`   | `(config: StepConfig<T>) => Promise<StepResult<T>>`                        | `StepResult<T>`              | Single unit of work                        |
-| `$.agent`  | `(config: AgentStepConfig<TInput>) => Promise<StepResult<GenerateResult>>` | `StepResult<GenerateResult>` | Agent call as tracked step                 |
-| `$.map`    | `(config: MapConfig<T, R>) => Promise<StepResult<R[]>>`                    | `StepResult<R[]>`            | Parallel map with optional concurrency     |
-| `$.each`   | `(config: EachConfig<T>) => Promise<StepResult<void>>`                     | `StepResult<void>`           | Sequential side effects                    |
-| `$.reduce` | `(config: ReduceConfig<T, R>) => Promise<StepResult<R>>`                   | `StepResult<R>`              | Sequential accumulation                    |
-| `$.while`  | `(config: WhileConfig<T>) => Promise<StepResult<T \| undefined>>`          | `StepResult<T \| undefined>` | Conditional loop                           |
-| `$.all`    | `(config: AllConfig) => Promise<StepResult<unknown[]>>`                    | `StepResult<unknown[]>`      | Concurrent heterogeneous ops (Promise.all) |
-| `$.race`   | `(config: RaceConfig) => Promise<StepResult<unknown>>`                     | `StepResult<unknown>`        | First-to-finish wins (Promise.race)        |
+| Method     | Signature                                                                           | Returns                           | Description                                |
+| ---------- | ----------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------ |
+| `$.step`   | `(config: StepConfig<T>) => Promise<FlowStepResult<T>>`                             | `FlowStepResult<T>`               | Single unit of work                        |
+| `$.agent`  | `(config: AgentStepConfig<TInput>) => Promise<FlowAgentStepResult>`                 | `FlowAgentStepResult`             | Agent call as tracked step                 |
+| `$.map`    | `(config: MapConfig<T, R>) => Promise<FlowStepResult<R[]>>`                         | `FlowStepResult<R[]>`             | Parallel map with optional concurrency     |
+| `$.each`   | `(config: EachConfig<T>) => Promise<FlowStepResult<void>>`                          | `FlowStepResult<void>`            | Sequential side effects                    |
+| `$.reduce` | `(config: ReduceConfig<T, R>) => Promise<FlowStepResult<R>>`                        | `FlowStepResult<R>`               | Sequential accumulation                    |
+| `$.while`  | `(config: WhileConfig<T>) => Promise<FlowStepResult<T \| undefined>>`               | `FlowStepResult<T \| undefined>`  | Conditional loop                           |
+| `$.all`    | `(config: AllConfig) => Promise<FlowStepResult<unknown[]>>`                         | `FlowStepResult<unknown[]>`       | Concurrent heterogeneous ops (Promise.all) |
+| `$.race`   | `(config: RaceConfig) => Promise<FlowStepResult<unknown>>`                          | `FlowStepResult<unknown>`         | First-to-finish wins (Promise.race)        |
 
 ### StepConfig
 
@@ -220,12 +220,12 @@ interface RaceConfig {
 }
 ```
 
-## StepResult
+## FlowStepResult
 
 ```typescript
-type StepResult<T> =
-  | { ok: true; value: T; step: StepInfo; duration: number }
-  | { ok: false; error: StepError; step: StepInfo; duration: number };
+type FlowStepResult<T> =
+  | { ok: true; output: T; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number }
+  | { ok: false; error: StepError; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number };
 
 interface StepError extends ResultError {
   stepId: string; // the id from the failed step config
@@ -254,13 +254,13 @@ interface TraceEntry {
 type OperationType = "step" | "agent" | "map" | "each" | "reduce" | "while" | "all" | "race";
 ```
 
-## StepInfo
+## StepStartEvent
 
 ```typescript
-interface StepInfo {
-  id: string;
-  index: number; // auto-incrementing, starts at 0
-  type: OperationType;
+interface StepStartEvent {
+  stepId: string;        // from the $ config's `id` field
+  stepOperation: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
+  agentChain?: AgentChainEntry[];
 }
 ```
 
@@ -268,22 +268,22 @@ interface StepInfo {
 
 Emitted by `onStepFinish`. For agent tool-loop steps, the event is a full superset of the Vercel AI SDK's `StepResult<ToolSet>` — all SDK fields are passed through unchanged, plus funkai-specific additions. Flow orchestration steps populate the flow-specific fields instead.
 
-| Field            | Type                        | Present on               | Description                                   |
-| ---------------- | --------------------------- | ------------------------ | --------------------------------------------- |
-| `stepId`         | `string`                    | Agent tool-loop steps    | funkai addition: e.g. `"myAgent:0"`           |
-| `agentChain`     | `AgentChainEntry[]`         | Both                     | funkai addition: agent ancestry chain         |
-| `stepNumber`     | `number`                    | Agent tool-loop steps    | AI SDK: zero-based step index                 |
-| `text`           | `string`                    | Agent tool-loop steps    | AI SDK: generated text                        |
+| Field            | Type                        | Present on               | Description                                    |
+| ---------------- | --------------------------- | ------------------------ | ---------------------------------------------- |
+| `stepId`         | `string`                    | Both                     | funkai addition: the `$` config `id`           |
+| `stepOperation`  | `OperationType`             | Both                     | funkai addition: operation type                |
+| `agentChain`     | `AgentChainEntry[]`         | Both                     | funkai addition: agent ancestry chain          |
+| `stepNumber`     | `number`                    | Agent tool-loop steps    | AI SDK: zero-based step index                  |
+| `text`           | `string`                    | Agent tool-loop steps    | AI SDK: generated text                         |
 | `toolCalls`      | `TypedToolCall<ToolSet>[]`  | Agent tool-loop steps    | AI SDK: full tool call objects with `input`    |
 | `toolResults`    | `TypedToolResult<ToolSet>[]`| Agent tool-loop steps    | AI SDK: full tool result objects with `output` |
-| `finishReason`   | `FinishReason`              | Agent tool-loop steps    | AI SDK: why the step ended                    |
-| `usage`          | `LanguageModelUsage`        | Agent tool-loop steps    | AI SDK: token usage                           |
-| `reasoning`      | `ReasoningPart[]`           | Agent tool-loop steps    | AI SDK: reasoning content                     |
-| `sources`        | `Source[]`                  | Agent tool-loop steps    | AI SDK: cited sources                         |
+| `finishReason`   | `FinishReason`              | Agent tool-loop steps    | AI SDK: why the step ended                     |
+| `usage`          | `LanguageModelUsage`        | Agent tool-loop steps    | AI SDK: token usage                            |
+| `reasoning`      | `ReasoningPart[]`           | Agent tool-loop steps    | AI SDK: reasoning content                      |
+| `sources`        | `Source[]`                  | Agent tool-loop steps    | AI SDK: cited sources                          |
 | `response`       | `LanguageModelResponseMetadata & { messages }` | Agent tool-loop steps | AI SDK: response metadata |
-| `step`           | `StepInfo`                  | Flow orchestration steps | Flow step info (id, index, type)              |
-| `result`         | `unknown`                   | Flow orchestration steps | Flow step result value                        |
-| `duration`       | `number`                    | Flow orchestration steps | Flow step duration in ms                      |
+| `output`         | `unknown`                   | Flow orchestration steps | Flow step output value                         |
+| `duration`       | `number`                    | Flow orchestration steps | Flow step duration in ms                       |
 
 ## FlowAgentOverrides
 
@@ -313,7 +313,7 @@ function createFlowEngine<TCustomSteps extends CustomStepDefinitions>(
 | `onStart`      | `(event: { input: unknown }) => void \| Promise<void>`                                    | Default start hook for all flow agents        |
 | `onFinish`     | `(event: { input: unknown; result: unknown; duration: number }) => void \| Promise<void>` | Default finish hook                           |
 | `onError`      | `(event: { input: unknown; error: Error }) => void \| Promise<void>`                      | Default error hook                            |
-| `onStepStart`  | `(event: { step: StepInfo }) => void \| Promise<void>`                                    | Default step-start hook                       |
+| `onStepStart`  | `(event: StepStartEvent) => void \| Promise<void>`                                        | Default step-start hook                       |
 | `onStepFinish` | `(event: StepFinishEvent) => void \| Promise<void>`                                       | Default step-finish hook                      |
 
 ### CustomStepFactory

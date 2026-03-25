@@ -25,8 +25,8 @@ describe("race()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("fast");
-    expect(result.step.type).toBe("race");
+    expect(result.output).toBe("fast");
+    expect(result.stepOperation).toBe("race");
   });
 
   it("cancels losing entries via abort signal", async () => {
@@ -53,7 +53,7 @@ describe("race()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("winner");
+    expect(result.output).toBe("winner");
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
@@ -144,7 +144,7 @@ describe("race()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("only");
+    expect(result.output).toBe("only");
   });
 
   it("fires onStart and onFinish hooks", async () => {
@@ -239,7 +239,7 @@ describe("race()", () => {
           if (!inner.ok) {
             throw new Error("inner failed");
           }
-          return inner.value;
+          return inner.output;
         },
       ],
     });
@@ -312,6 +312,6 @@ describe("race()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("instant");
+    expect(result.output).toBe("instant");
   });
 });

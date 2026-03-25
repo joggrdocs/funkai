@@ -1,6 +1,6 @@
 # Core Types
 
-Reference for the core types used across `@funkai/agents`: `Message`, `Result<T>`, `GenerateResult`, `StreamResult`, `StepResult`, and related interfaces.
+Reference for the core types used across `@funkai/agents`: `Message`, `Result<T>`, `GenerateResult`, `StreamResult`, `FlowStepResult`, and related interfaces.
 
 ## Result\<T\>
 
@@ -138,24 +138,37 @@ Discriminated union of all stream event types. Re-exported from the AI SDK as `T
 | `"error"`       | An error occurred          |
 | `"step-finish"` | A tool-loop step completed |
 
-## StepResult\<T\>
+## FlowStepResult\<T\>
 
-Discriminated union for flow agent step operation results. Includes `step` metadata and `duration` alongside the success/failure branches.
+Discriminated union for flow agent step operation results. Includes flat step metadata and `duration` alongside the success/failure branches.
 
 ```ts
-type StepResult<T> =
-  | { ok: true; value: T; step: StepInfo; duration: number }
-  | { ok: false; error: StepError; step: StepInfo; duration: number };
+type FlowStepResult<T> =
+  | { ok: true; output: T; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number }
+  | { ok: false; error: StepError; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number };
 ```
 
-### StepInfo
+### StepStartEvent
 
 ```ts
-interface StepInfo {
-  id: string; // from the $ config
-  index: number; // auto-incrementing within the flow execution
-  type: OperationType; // what kind of $ call produced this step
+interface StepStartEvent {
+  stepId: string; // from the $ config's `id` field
+  stepOperation: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
+  agentChain?: AgentChainEntry[]; // agent ancestry chain
 }
+```
+
+### FlowAgentStepResult
+
+Returned by `$.agent()`. Agent output fields are flat on the result -- no double-wrapping.
+
+```ts
+type FlowAgentStepResult = FlowStepResult<GenerateResult> & {
+  output: string; // the agent's output (flat, no double-wrapping)
+  messages: Message[];
+  usage: TokenUsage;
+  finishReason: string;
+};
 ```
 
 ### StepError
@@ -168,7 +181,7 @@ interface StepError extends ResultError {
 }
 ```
 
-### Pattern Matching on StepResult
+### Pattern Matching on FlowStepResult
 
 ```ts
 import { match } from "ts-pattern";
@@ -179,7 +192,7 @@ const step = await $.step({
 });
 
 const data = match(step)
-  .with({ ok: true }, (s) => s.value)
+  .with({ ok: true }, (s) => s.output)
   .with({ ok: false }, (s) => {
     console.error(`Step ${s.error.stepId} failed: ${s.error.code}`);
     return fallbackData;

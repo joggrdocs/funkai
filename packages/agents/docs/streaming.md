@@ -169,7 +169,7 @@ const pipeline = flowAgent(
 
     if (!research.ok) throw new Error("Research failed");
 
-    return { article: research.value.output };
+    return { article: research.output };
   },
 );
 

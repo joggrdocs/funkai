@@ -6,13 +6,13 @@ Patterns for building resilient agents and flow agents that recover gracefully f
 
 - `@funkai/agents` installed
 - Familiarity with `flowAgent()`, `$.step`, `$.while`, `$.map`, and hooks
-- Understanding of `StepResult` and `Result` types
+- Understanding of `FlowStepResult` and `Result` types
 
 ## Steps
 
 ### 1. Use fallback values on step failure
 
-Every `$` method returns `StepResult<T>` with an `ok` field. Check it before accessing `.value` and provide a fallback when the step fails.
+Every `$` method returns `FlowStepResult<T>` with an `ok` field. Check it before accessing `.output` and provide a fallback when the step fails.
 
 ```ts
 import { flowAgent } from "@funkai/agents";
@@ -35,7 +35,7 @@ const resilient = flowAgent(
     });
 
     if (primary.ok) {
-      return { body: primary.value, source: "primary" };
+      return { body: primary.output, source: "primary" };
     }
 
     // Fallback to a cached or default value
@@ -48,7 +48,7 @@ const resilient = flowAgent(
     });
 
     return {
-      body: fallback.ok ? fallback.value : "Service unavailable",
+      body: fallback.ok ? fallback.output : "Service unavailable",
       source: fallback.ok ? "fallback" : "default",
     };
   },
@@ -88,7 +88,7 @@ const retryable = flowAgent(
       },
     });
 
-    const last = result.ok ? result.value : undefined;
+    const last = result.ok ? result.output : undefined;
     return {
       body: last?.ok ? last.body : "All retries failed",
       attempts: last?.attempt ?? 0,
@@ -134,7 +134,7 @@ const batchSummarizer = flowAgent(
         });
         return {
           index,
-          summary: result.ok ? result.value.output : "Failed to summarize",
+          summary: result.ok ? result.output : "Failed to summarize",
           ok: result.ok,
         };
       },
@@ -142,7 +142,7 @@ const batchSummarizer = flowAgent(
 
     return {
       results: summaries.ok
-        ? summaries.value
+        ? summaries.output
         : input.texts.map((_, index) => ({
             index,
             summary: "Batch processing failed",
@@ -201,8 +201,8 @@ const circuitBreaker = flowAgent(
     });
 
     return {
-      results: state.ok ? [...state.value.results] : [],
-      tripped: state.ok ? state.value.tripped : true,
+      results: state.ok ? [...state.output.results] : [],
+      tripped: state.ok ? state.output.tripped : true,
     };
   },
 );
@@ -224,9 +224,9 @@ const observed = flowAgent(
     onError: ({ input, error }) => {
       console.error(`Flow agent failed for input: ${JSON.stringify(input)}`, error.message);
     },
-    onStepFinish: ({ step, result, duration }) => {
-      if (result === undefined) {
-        console.warn(`Step ${step.id} failed after ${duration}ms`);
+    onStepFinish: ({ stepId, stepOperation, output, duration }) => {
+      if (output === undefined) {
+        console.warn(`Step ${stepId} failed after ${duration}ms`);
       }
     },
   },
@@ -239,7 +239,7 @@ const observed = flowAgent(
       execute: async () => input.data.toUpperCase(),
     });
 
-    return { result: processed.ok ? processed.value : "fallback" };
+    return { result: processed.ok ? processed.output : "fallback" };
   },
 );
 ```
@@ -265,9 +265,9 @@ const robust = flowAgent(
     name: "robust-analysis",
     input: z.object({ url: z.string() }),
     output: z.object({ analysis: z.string(), source: z.string() }),
-    onStepFinish: ({ step, result, duration }) => {
-      const status = result !== undefined ? "ok" : "error";
-      console.log(`[${step.id}] ${status} (${duration}ms)`);
+    onStepFinish: ({ stepId, stepOperation, output, duration }) => {
+      const status = output !== undefined ? "ok" : "error";
+      console.log(`[${stepId}] ${status} (${duration}ms)`);
     },
   },
   async ({ input, $ }) => {
@@ -288,7 +288,7 @@ const robust = flowAgent(
       },
     });
 
-    const fetchedBody = content.ok && content.value?.ok ? content.value.body : undefined;
+    const fetchedBody = content.ok && content.output?.ok ? content.output.body : undefined;
 
     if (!fetchedBody) {
       return { analysis: "Unable to fetch content", source: "none" };
@@ -301,7 +301,7 @@ const robust = flowAgent(
     });
 
     return {
-      analysis: result.ok ? result.value.output : "Analysis unavailable",
+      analysis: result.ok ? result.output : "Analysis unavailable",
       source: result.ok ? "agent" : "fallback",
     };
   },
@@ -310,7 +310,7 @@ const robust = flowAgent(
 
 ## Verification
 
-- Failing steps return `StepResult` with `ok: false` instead of throwing
+- Failing steps return `FlowStepResult` with `ok: false` instead of throwing
 - Retry loops terminate within the configured bounds
 - Partial success flow agents return results for both succeeded and failed items
 - Hook errors are caught, logged, and discarded — they never mask the original step error
@@ -328,7 +328,7 @@ const robust = flowAgent(
 
 **Issue:** Expected error information is missing.
 
-**Fix:** Hook errors are caught and discarded by design (via `attemptEachAsync`) so they never mask step errors. The original step error is always preserved in the `StepResult`. Check your logger output for hook error details.
+**Fix:** Hook errors are caught and discarded by design (via `attemptEachAsync`) so they never mask step errors. The original step error is always preserved in the `FlowStepResult`. Check your logger output for hook error details.
 
 ### `$.map` fails on first error
 

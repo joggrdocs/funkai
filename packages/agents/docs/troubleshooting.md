@@ -20,9 +20,9 @@
 
 **Fix:** Use `tryModel()` for safe lookup, or add the model to `models.config.json` and run `pnpm --filter=@funkai/agents generate:models`.
 
-## StepResult access
+## FlowStepResult access
 
-**Fix:** Use `.value` on success, not direct property access. Always check `.ok` first.
+**Fix:** Use `.output` on success, not direct property access. Always check `.ok` first.
 
 ## StreamResult output and messages are promises
 

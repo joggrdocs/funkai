@@ -526,6 +526,7 @@ describe("generate() hooks", () => {
 
     // funkai additions
     expect(event.stepId).toBe("test-agent:0");
+    expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);
 
     // AI SDK fields passed through unchanged
@@ -1128,6 +1129,7 @@ describe("stream() hooks", () => {
 
     // funkai additions
     expect(event.stepId).toBe("test-agent:0");
+    expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);
 
     // AI SDK fields passed through

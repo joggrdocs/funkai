@@ -15,7 +15,7 @@ import { z } from "zod";
 
 import { agent } from "@/core/agents/base/agent.js";
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
-import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import { createMockLogger } from "@/testing/index.js";
 
 // ---------------------------------------------------------------------------
@@ -90,11 +90,11 @@ function createLifecycleTracker() {
     onError: vi.fn((_event: { input: unknown; error: Error }) => {
       events.push({ type: "onError" });
     }),
-    onStepStart: vi.fn((event: { step: StepInfo }) => {
-      events.push({ type: "onStepStart", detail: event.step.id });
+    onStepStart: vi.fn((event: StepStartEvent) => {
+      events.push({ type: "onStepStart", detail: event.stepId });
     }),
     onStepFinish: vi.fn((event: StepFinishEvent) => {
-      const id = event.step?.id ?? event.stepId ?? "unknown";
+      const id = event.stepId;
       events.push({ type: "onStepFinish", detail: id });
     }),
   };
@@ -327,7 +327,7 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
               execute: async () => item * input.x,
             });
             if (r.ok) {
-              return r.value;
+              return r.output;
             }
             return 0;
           },
@@ -410,7 +410,7 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
           execute: async ({ item, accumulator }) => accumulator + item * input.x,
         });
         if (r.ok) {
-          return { y: r.value };
+          return { y: r.output };
         }
         return { y: 0 };
       },
@@ -468,9 +468,9 @@ describe("FlowAgent lifecycle — direct steps (integration)", () => {
       { type: "onStepFinish", detail: "fail-step" },
     ]);
 
-    // Verify the onStepFinish event has result: undefined on error
+    // Verify the onStepFinish event has output: undefined on error
     const finishEvent = tracker.onStepFinish.mock.calls[0]?.[0] as StepFinishEvent;
-    expect(finishEvent.result).toBeUndefined();
+    expect(finishEvent.output).toBeUndefined();
   });
 });
 
@@ -514,7 +514,7 @@ describe("FlowAgent with $.agent() (integration)", () => {
         });
 
         if (r.ok) {
-          return { summary: String(r.value.output) };
+          return { summary: String(r.output) };
         }
         return { summary: "failed" };
       },
@@ -571,7 +571,7 @@ describe("FlowAgent with $.agent() (integration)", () => {
 
         let researchInput = "";
         if (research.ok) {
-          researchInput = String(research.value.output);
+          researchInput = String(research.output);
         }
         const article = await $.agent({
           id: "write",
@@ -580,7 +580,7 @@ describe("FlowAgent with $.agent() (integration)", () => {
         });
 
         if (article.ok) {
-          return { summary: String(article.value.output) };
+          return { summary: String(article.output) };
         }
         return { summary: "failed" };
       },
@@ -628,7 +628,7 @@ describe("FlowAgent with $.agent() (integration)", () => {
               input: item,
             });
             if (r.ok) {
-              return String(r.value.output);
+              return String(r.output);
             }
             return "";
           },
@@ -691,7 +691,7 @@ describe("FlowAgent agents dependency lifecycle (integration)", () => {
           input: input.text,
         });
         if (r.ok) {
-          return { result: String(r.value.output) };
+          return { result: String(r.output) };
         }
         return { result: "failed" };
       },
@@ -760,20 +760,20 @@ describe("Deep nesting lifecycle (integration)", () => {
                   input: item,
                 });
                 if (agentResult.ok) {
-                  return String(agentResult.value.output);
+                  return String(agentResult.output);
                 }
                 return "";
               },
             });
             if (mapResult.ok) {
-              return mapResult.value;
+              return mapResult.output;
             }
             return [];
           },
         });
 
         if (r.ok) {
-          return { results: r.value };
+          return { results: r.output };
         }
         return { results: [] };
       },
@@ -1088,11 +1088,11 @@ describe("FlowAgent per-call hook merging (integration)", () => {
         onFinish: () => {
           order.push("config:onFinish");
         },
-        onStepStart: ({ step }) => {
-          order.push(`config:onStepStart:${step.id}`);
+        onStepStart: ({ stepId }) => {
+          order.push(`config:onStepStart:${stepId}`);
         },
-        onStepFinish: ({ step }) => {
-          order.push(`config:onStepFinish:${step?.id}`);
+        onStepFinish: ({ stepId }) => {
+          order.push(`config:onStepFinish:${stepId}`);
         },
       },
       async ({ input, $ }) => {
@@ -1109,11 +1109,11 @@ describe("FlowAgent per-call hook merging (integration)", () => {
       onFinish: () => {
         order.push("call:onFinish");
       },
-      onStepStart: ({ step }) => {
-        order.push(`call:onStepStart:${step.id}`);
+      onStepStart: ({ stepId }) => {
+        order.push(`call:onStepStart:${stepId}`);
       },
-      onStepFinish: ({ step }) => {
-        order.push(`call:onStepFinish:${step?.id}`);
+      onStepFinish: ({ stepId }) => {
+        order.push(`call:onStepFinish:${stepId}`);
       },
     });
 
@@ -1339,7 +1339,7 @@ describe("Value forwarding (integration)", () => {
           config: { model: overrideModel },
         });
         if (r.ok) {
-          return { result: String(r.value.output) };
+          return { result: String(r.output) };
         }
         return { result: "failed" };
       },
@@ -1686,8 +1686,8 @@ describe("Step index uniqueness (integration)", () => {
   const Input = z.object({ n: z.number() });
   const Output = z.object({ count: z.number() });
 
-  it("step indices are globally unique across nested operations", async () => {
-    const indices: number[] = [];
+  it("step IDs are globally unique across nested operations", async () => {
+    const stepIds: string[] = [];
 
     const fa = flowAgent<{ n: number }, { count: number }>(
       {
@@ -1695,8 +1695,8 @@ describe("Step index uniqueness (integration)", () => {
         input: Input,
         output: Output,
         logger: createMockLogger(),
-        onStepStart: ({ step }) => {
-          indices.push(step.index);
+        onStepStart: ({ stepId }) => {
+          stepIds.push(stepId);
         },
       },
       async ({ input, $: $outer }) => {
@@ -1715,12 +1715,12 @@ describe("Step index uniqueness (integration)", () => {
 
     await fa.generate({ input: { n: 4 } });
 
-    // All indices should be unique
-    const uniqueIndices = new Set(indices);
-    expect(uniqueIndices.size).toBe(indices.length);
+    // All step IDs should be unique
+    const uniqueIds = new Set(stepIds);
+    expect(uniqueIds.size).toBe(stepIds.length);
 
-    // Should be sequential: 0, 1, 2, 3
-    expect(indices).toEqual([0, 1, 2, 3]);
+    // Should match the step IDs in execution order
+    expect(stepIds).toEqual(["a", "b", "c", "d"]);
   });
 });
 
@@ -1777,7 +1777,7 @@ describe("Agent chain propagation (integration)", () => {
         output: Output,
         logger: createMockLogger(),
         onStepFinish: (event) => {
-          const id = event.step?.id ?? event.stepId ?? "unknown";
+          const id = event.stepId;
           stepIds.push(id);
           chains.push(event.agentChain);
         },
@@ -1789,7 +1789,7 @@ describe("Agent chain propagation (integration)", () => {
           input: `Write about ${input.topic}`,
         });
         if (r.ok) {
-          return { summary: String(r.value.output) };
+          return { summary: String(r.output) };
         }
         return { summary: "failed" };
       },
@@ -1801,9 +1801,9 @@ describe("Agent chain propagation (integration)", () => {
     expect(stepIds[0]).toBe("writer:0");
     expect(chains[0]).toEqual([{ id: "pipeline" }, { id: "writer" }]);
 
-    // Flow-level $.agent() step carries flow chain
+    // Flow-level $.agent() step carries the full chain (enriched from last AI step)
     expect(stepIds[1]).toBe("write");
-    expect(chains[1]).toEqual([{ id: "pipeline" }]);
+    expect(chains[1]).toEqual([{ id: "pipeline" }, { id: "writer" }]);
   });
 
   it("base agent step events carry agentChain", async () => {

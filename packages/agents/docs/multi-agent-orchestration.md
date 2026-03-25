@@ -58,17 +58,17 @@ const pipeline = flowAgent(
     const draft = await $.agent({
       id: "write",
       agent: writer,
-      input: { research: research.value.output, topic: input.topic },
+      input: { research: research.output, topic: input.topic },
     });
     if (!draft.ok) return { article: "Writing failed" };
 
     const edited = await $.agent({
       id: "edit",
       agent: editor,
-      input: { draft: draft.value.output },
+      input: { draft: draft.output },
     });
 
-    return { article: edited.ok ? edited.value.output : draft.value.output };
+    return { article: edited.ok ? edited.output : draft.output };
   },
 );
 ```
@@ -110,12 +110,12 @@ const batchTranslate = flowAgent(
         });
         return {
           language,
-          text: result.ok ? result.value.output : `Translation to ${language} failed`,
+          text: result.ok ? result.output : `Translation to ${language} failed`,
         };
       },
     });
 
-    return { translations: results.ok ? results.value : [] };
+    return { translations: results.ok ? results.output : [] };
   },
 );
 ```
@@ -162,7 +162,7 @@ const analyze = flowAgent(
       return { sentiment: "unknown", summary: "unavailable" };
     }
 
-    const [sentiment, summary] = results.value as readonly [
+    const [sentiment, summary] = results.output as readonly [
       Awaited<ReturnType<typeof sentimentAgent.generate>>,
       Awaited<ReturnType<typeof summaryAgent.generate>>,
     ];
@@ -259,11 +259,11 @@ const voter = flowAgent(
           agent: classifier,
           input: { text: input.text },
         });
-        return result.ok ? result.value.output : { category: "unknown" as const, confidence: 0 };
+        return result.ok ? result.output : { category: "unknown" as const, confidence: 0 };
       },
     });
 
-    const votes = results.ok ? results.value : [];
+    const votes = results.ok ? results.output : [];
     const validVotes = votes.filter((v) => v.category !== "unknown");
 
     const counts = new Map<string, number>();
@@ -330,7 +330,7 @@ const racingFlowAgent = flowAgent(
       return { answer: "No response available", winner: "none" };
     }
 
-    const winner = result.value as { ok: boolean; output: string; model: string };
+    const winner = result.output as { ok: boolean; output: string; model: string };
     return {
       answer: winner.ok ? winner.output : "Response failed",
       winner: winner.model,
@@ -376,7 +376,7 @@ const project = flowAgent(
     });
 
     return {
-      findings: research.ok ? research.value.output : "Research unavailable",
+      findings: research.ok ? research.output : "Research unavailable",
     };
   },
 );
@@ -401,7 +401,7 @@ const project = flowAgent(
 
 ### `$.all` returns wrong types
 
-**Issue:** The `results.value` array has `unknown[]` type.
+**Issue:** The `results.output` array has `unknown[]` type.
 
 **Fix:** Cast the destructured values to the expected types.
 

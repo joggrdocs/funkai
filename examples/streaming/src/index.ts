@@ -118,13 +118,11 @@ const researchFlow = flowAgent(
     }),
 
     // Observe each $ step in real time
-    onStepStart: ({ step }) => {
-      console.log(`[step:start] ${step.id} (type: ${step.type}, index: ${step.index})`);
+    onStepStart: ({ stepId, stepOperation }) => {
+      console.log(`[step:start] ${stepId} (type: ${stepOperation})`);
     },
-    onStepFinish: ({ step, duration }) => {
-      if (step) {
-        console.log(`[step:finish] ${step.id} (${duration}ms)`);
-      }
+    onStepFinish: ({ stepId, duration }) => {
+      console.log(`[step:finish] ${stepId} (${duration}ms)`);
     },
   },
   async ({ input, $ }) => {
@@ -145,7 +143,7 @@ const researchFlow = flowAgent(
           return { topic: item, answer: `Error: ${result.error.message}` };
         }
 
-        return { topic: item, answer: String(result.value.output) };
+        return { topic: item, answer: String(result.output) };
       },
     });
 
@@ -153,7 +151,7 @@ const researchFlow = flowAgent(
       throw new Error(`Research failed: ${mapResult.error.message}`);
     }
 
-    return { findings: mapResult.value };
+    return { findings: mapResult.output };
   },
 );
 

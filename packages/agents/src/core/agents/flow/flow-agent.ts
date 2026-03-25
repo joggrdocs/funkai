@@ -24,7 +24,7 @@ import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/co
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { FLOW_AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -39,7 +39,7 @@ import type { Result } from "@/utils/result.js";
  *
  * @private
  */
-type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
+type StepStartHook = (event: StepStartEvent) => void | Promise<void>;
 type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
 /**

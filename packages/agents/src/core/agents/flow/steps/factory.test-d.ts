@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from "vitest";
 
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
+import type { FlowStepResult, StepError } from "@/core/agents/flow/steps/result.js";
 import type { ResultError } from "@/utils/result.js";
 
 describe("stepError extends ResultError", () => {
@@ -15,30 +15,30 @@ describe("stepError extends ResultError", () => {
   });
 });
 
-describe("stepResult<T>", () => {
+describe("FlowStepResult<T>", () => {
   it("success branch has ok: true", () => {
-    type Success = Extract<StepResult<{ value: number }>, { ok: true }>;
+    type Success = Extract<FlowStepResult<{ value: number }>, { ok: true }>;
     expectTypeOf<Success["ok"]>().toEqualTypeOf<true>();
   });
 
-  it("success branch has value: T field", () => {
-    type Success = Extract<StepResult<{ value: number }>, { ok: true }>;
-    expectTypeOf<Success["value"]>().toEqualTypeOf<{ value: number }>();
+  it("success branch has output: T field", () => {
+    type Success = Extract<FlowStepResult<{ value: number }>, { ok: true }>;
+    expectTypeOf<Success["output"]>().toEqualTypeOf<{ value: number }>();
   });
 
-  it("success branch has step and duration", () => {
-    type Success = Extract<StepResult<{ value: number }>, { ok: true }>;
-    expectTypeOf<Success["step"]>().toHaveProperty("id");
+  it("success branch has stepId and duration", () => {
+    type Success = Extract<FlowStepResult<{ value: number }>, { ok: true }>;
+    expectTypeOf<Success["stepId"]>().toBeString();
     expectTypeOf<Success["duration"]>().toBeNumber();
   });
 
   it("failure branch has ok: false", () => {
-    type Failure = Extract<StepResult<{ value: number }>, { ok: false }>;
+    type Failure = Extract<FlowStepResult<{ value: number }>, { ok: false }>;
     expectTypeOf<Failure["ok"]>().toEqualTypeOf<false>();
   });
 
   it("failure branch has StepError", () => {
-    type Failure = Extract<StepResult<{ value: number }>, { ok: false }>;
+    type Failure = Extract<FlowStepResult<{ value: number }>, { ok: false }>;
     expectTypeOf<Failure["error"]>().toExtend<StepError>();
   });
 });

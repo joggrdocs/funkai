@@ -21,10 +21,9 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual({ greeting: "hello" });
-    expect(result.step.id).toBe("greet");
-    expect(result.step.type).toBe("step");
-    expect(result.step.index).toBe(0);
+    expect(result.output).toEqual({ greeting: "hello" });
+    expect(result.stepId).toBe("greet");
+    expect(result.stepOperation).toBe("step");
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
@@ -47,7 +46,7 @@ describe("step()", () => {
     expect(result.error.message).toBe("boom");
     expect(result.error.stepId).toBe("fail");
     expect(result.error.cause).toBeInstanceOf(Error);
-    expect(result.step.id).toBe("fail");
+    expect(result.stepId).toBe("fail");
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
@@ -150,8 +149,8 @@ describe("step()", () => {
     expect(parentFinish).toHaveBeenCalledTimes(1);
     expect(parentFinish).toHaveBeenCalledWith(
       expect.objectContaining({
-        step: expect.objectContaining({ id: "parent-finish-on-error" }),
-        result: undefined,
+        stepId: "parent-finish-on-error",
+        output: undefined,
       }),
     );
   });
@@ -172,7 +171,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual({ value: 42 });
+    expect(result.output).toEqual({ value: 42 });
     expect(ctx.log.warn).toHaveBeenCalledWith("hook error", { error: "hook boom" });
   });
 
@@ -218,19 +217,6 @@ describe("step()", () => {
     expect(traceEntry.error.message).toBe("trace-boom");
   });
 
-  it("increments step index across calls (shared ref)", async () => {
-    const ctx = createMockCtx();
-    const $ = createStepBuilder({ ctx });
-
-    const r1 = await $.step({ id: "a", execute: async () => ({}) });
-    const r2 = await $.step({ id: "b", execute: async () => ({}) });
-    const r3 = await $.step({ id: "c", execute: async () => ({}) });
-
-    expect(r1.step.index).toBe(0);
-    expect(r2.step.index).toBe(1);
-    expect(r3.step.index).toBe(2);
-  });
-
   it("provides child $ for nested operations", async () => {
     const ctx = createMockCtx();
     const $$ = createStepBuilder({ ctx });
@@ -272,7 +258,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("hello");
+    expect(result.output).toBe("hello");
   });
 
   it("handles primitive number return via value field", async () => {
@@ -288,7 +274,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(42);
+    expect(result.output).toBe(42);
   });
 });
 
@@ -328,11 +314,11 @@ describe("agent()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value.output).toBe("hello");
-    expect(result.value.messages).toEqual([]);
-    expect(result.value.usage).toEqual(MOCK_USAGE);
-    expect(result.value.finishReason).toBe("stop");
-    expect(result.step.type).toBe("agent");
+    expect(result.output).toBe("hello");
+    expect(result.messages).toEqual([]);
+    expect(result.usage).toEqual(MOCK_USAGE);
+    expect(result.finishReason).toBe("stop");
+    expect(result.stepOperation).toBe("agent");
   });
 
   it("converts agent error result into StepError", async () => {
@@ -466,7 +452,7 @@ describe("map()", () => {
     // StepResult<R[]> spreads the array — it's on the result as the value
     // Since T = { doubled: number }[], the spread puts the array properties on result
     // Actually, for array types, `T & { ok: true, ... }` means array methods are available
-    expect(result.step.type).toBe("map");
+    expect(result.stepOperation).toBe("map");
   });
 
   it("respects concurrency limit", async () => {
@@ -538,7 +524,7 @@ describe("each()", () => {
 
     expect(result.ok).toBeTruthy();
     expect(order).toEqual([1, 2, 3]);
-    expect(result.step.type).toBe("each");
+    expect(result.stepOperation).toBe("each");
   });
 
   it("propagates errors from execute", async () => {
@@ -587,7 +573,7 @@ describe("reduce()", () => {
       throw new Error("Expected trace entry");
     }
     expect(traceEntry.output).toBe(10);
-    expect(result.step.type).toBe("reduce");
+    expect(result.stepOperation).toBe("reduce");
   });
 
   it("uses initial value when input is empty", async () => {
@@ -622,7 +608,7 @@ describe("while()", () => {
     });
 
     expect(result.ok).toBeTruthy();
-    expect(result.step.type).toBe("while");
+    expect(result.stepOperation).toBe("while");
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
@@ -670,7 +656,7 @@ describe("all()", () => {
     }
     const output = traceEntry.output as string[];
     expect(output).toEqual(["a", "b", "c"]);
-    expect(result.step.type).toBe("all");
+    expect(result.stepOperation).toBe("all");
   });
 
   it("fails fast on first error", async () => {
@@ -745,7 +731,7 @@ describe("race()", () => {
       throw new Error("Expected trace entry");
     }
     expect(traceEntry.output).toBe("fast");
-    expect(result.step.type).toBe("race");
+    expect(result.stepOperation).toBe("race");
   });
 
   it("cancels losing entries via abort signal", async () => {
@@ -772,7 +758,7 @@ describe("race()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("winner");
+    expect(result.output).toBe("winner");
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
@@ -867,11 +853,11 @@ describe("agent() streaming with writer", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.step.type).toBe("agent");
-    expect(result.value.output).toBe("hello world");
-    expect(result.value.messages).toEqual([]);
-    expect(result.value.usage).toEqual(MOCK_USAGE);
-    expect(result.value.finishReason).toBe("stop");
+    expect(result.stepOperation).toBe("agent");
+    expect(result.output).toBe("hello world");
+    expect(result.messages).toEqual([]);
+    expect(result.usage).toEqual(MOCK_USAGE);
+    expect(result.finishReason).toBe("stop");
     expect(agent.stream).toHaveBeenCalled();
     expect(agent.generate).not.toHaveBeenCalled();
 

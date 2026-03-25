@@ -10,12 +10,12 @@ import type {
 } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
-import type { StepFinishEvent, StepInfo } from "@/core/types.js";
+import type { StepFinishEvent, StepStartEvent } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import type { TraceEntry } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
 
-export type { StepInfo } from "@/core/types.js";
+export type { StepStartEvent } from "@/core/types.js";
 
 /**
  * Record of named agent dependencies for a flow agent.
@@ -144,7 +144,7 @@ export interface FlowAgentConfigBase<TInput> {
    *
    * @param event - Event containing step info.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+  onStepStart?: (event: StepStartEvent) => void | Promise<void>;
 
   /**
    * Hook: fires when any tracked `$` step finishes.

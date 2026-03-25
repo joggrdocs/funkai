@@ -13,7 +13,7 @@ import type {
 } from "@/core/agents/flow/types.js";
 import type { Logger } from "@/core/logger.js";
 import { createDefaultLogger } from "@/core/logger.js";
-import type { StepFinishEvent, StepInfo } from "@/core/types.js";
+import type { StepFinishEvent, StepStartEvent } from "@/core/types.js";
 import type { ExecutionContext } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 
@@ -90,7 +90,7 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
   /**
    * Default hook: fires when any step starts.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+  onStepStart?: (event: StepStartEvent) => void | Promise<void>;
 
   /**
    * Default hook: fires when any step finishes.
@@ -392,7 +392,7 @@ export function createFlowEngine<
                 if (!result.ok) {
                   throw result.error;
                 }
-                return result.value;
+                return result.output;
               },
             ]),
           );

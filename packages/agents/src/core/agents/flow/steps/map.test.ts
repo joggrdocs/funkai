@@ -18,8 +18,8 @@ describe("map()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual([2, 4, 6]);
-    expect(result.step.type).toBe("map");
+    expect(result.output).toEqual([2, 4, 6]);
+    expect(result.stepOperation).toBe("map");
   });
 
   it("respects concurrency limit", async () => {
@@ -65,7 +65,7 @@ describe("map()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual([30, 10, 20]);
+    expect(result.output).toEqual([30, 10, 20]);
   });
 
   it("handles empty input array", async () => {
@@ -82,7 +82,7 @@ describe("map()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual([]);
+    expect(result.output).toEqual([]);
   });
 
   it("handles single-item input", async () => {
@@ -99,7 +99,7 @@ describe("map()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual(["ONLY"]);
+    expect(result.output).toEqual(["ONLY"]);
   });
 
   it("passes index to execute callback", async () => {
@@ -245,7 +245,7 @@ describe("map()", () => {
         if (!inner.ok) {
           throw new Error("inner step failed");
         }
-        return inner.value;
+        return inner.output;
       },
     });
 

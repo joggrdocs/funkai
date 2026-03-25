@@ -186,7 +186,7 @@ const pipeline = flowAgent(
 
     if (!stats.ok) throw new Error(stats.error.message);
 
-    return stats.value;
+    return stats.output;
   },
 );
 
@@ -234,7 +234,7 @@ const failingFlowAgent = flowAgent(
       },
     });
 
-    return { status: result.ok ? result.value : "failed" };
+    return { status: result.ok ? result.output : "failed" };
   },
 );
 
@@ -308,11 +308,11 @@ describe("flow agent hooks", () => {
         onStart: () => {
           events.push("flow:start");
         },
-        onStepStart: ({ step }) => {
-          events.push(`step:start:${step.id}`);
+        onStepStart: ({ stepId }) => {
+          events.push(`step:start:${stepId}`);
         },
-        onStepFinish: ({ step }) => {
-          events.push(`step:finish:${step.id}`);
+        onStepFinish: ({ stepId }) => {
+          events.push(`step:finish:${stepId}`);
         },
         onFinish: () => {
           events.push("flow:finish");

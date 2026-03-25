@@ -185,16 +185,16 @@ const pipeline = flowAgent(
           input: { text: item },
         });
         return {
-          analysis: result.ok ? result.value.output : "Analysis failed",
-          tokens: result.ok ? result.value.usage.totalTokens : 0,
+          analysis: result.ok ? result.output : "Analysis failed",
+          tokens: result.ok ? result.usage.totalTokens : 0,
         };
       },
     });
 
-    const totalTokens = results.ok ? results.value.reduce((sum, r) => sum + r.tokens, 0) : 0;
+    const totalTokens = results.ok ? results.output.reduce((sum, r) => sum + r.tokens, 0) : 0;
 
     return {
-      analyses: results.ok ? results.value.map((r) => r.analysis) : [],
+      analyses: results.ok ? results.output.map((r) => r.analysis) : [],
       totalTokens,
     };
   },
@@ -240,11 +240,11 @@ const traced = flowAgent(
     name: "cost-traced",
     input: z.object({ topics: z.array(z.string()) }),
     output: z.object({ articles: z.array(z.string()) }),
-    onStepFinish: ({ step, result, duration }) => {
-      if (result !== undefined && "usage" in result && result.usage) {
-        const cost = calculateCost(result.usage, modelDef.pricing);
+    onStepFinish: ({ stepId, output, duration }) => {
+      if (output !== undefined && "usage" in output && output.usage) {
+        const cost = calculateCost(output.usage, modelDef.pricing);
         console.log(
-          `[${step.id}] ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}, ${duration}ms`,
+          `[${stepId}] ${output.usage.totalTokens} tokens, $${cost.total.toFixed(6)}, ${duration}ms`,
         );
       }
     },
@@ -260,11 +260,11 @@ const traced = flowAgent(
           agent: writer,
           input: { topic: item },
         });
-        return result.ok ? result.value.output : "";
+        return result.ok ? result.output : "";
       },
     });
 
-    return { articles: articles.ok ? articles.value : [] };
+    return { articles: articles.ok ? articles.output : [] };
   },
 );
 ```

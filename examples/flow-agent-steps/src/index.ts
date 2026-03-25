@@ -44,7 +44,7 @@ const stepsDemo = flowAgent(
       throw new Error(`Validation failed: ${stepResult.error.message}`);
     }
 
-    log.info({ count: stepResult.value.count }, "Input validated");
+    log.info({ count: stepResult.output.count }, "Input validated");
 
     // -----------------------------------------------------------------------
     // $.map — parallel map over items
@@ -64,7 +64,7 @@ const stepsDemo = flowAgent(
       throw new Error(`Map failed: ${mapResult.error.message}`);
     }
 
-    const doubled = mapResult.value;
+    const doubled = mapResult.output;
 
     // -----------------------------------------------------------------------
     // $.each — sequential side effects (returns void)
@@ -84,7 +84,7 @@ const stepsDemo = flowAgent(
       id: "sum-numbers",
       input: doubled,
       initial: 0,
-      execute: async ({ item, accumulator }) => {
+      execute: async ({ item, accumulator }: { item: number; accumulator: number }) => {
         return accumulator + item;
       },
     });
@@ -153,11 +153,11 @@ const stepsDemo = flowAgent(
 
     return {
       doubled,
-      sum: reduceResult.value,
+      sum: reduceResult.output,
       logged: eachResult.ok,
-      countdown: whileResult.ok ? (whileResult.value ?? 0) : 0,
-      parallel: allResult.value,
-      fastest: raceResult.value,
+      countdown: whileResult.ok ? (whileResult.output ?? 0) : 0,
+      parallel: allResult.output,
+      fastest: raceResult.output,
     };
   },
 );

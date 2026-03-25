@@ -56,7 +56,7 @@ const counter = flowAgent(
         input: input.prompt,
       });
       if (result.ok) {
-        answer = result.value.output;
+        answer = result.output;
       }
       attempts += 1;
     }
@@ -112,7 +112,7 @@ const pipeline = flowAgent(
     // Untraced -- plain function call, not in trace
     let analysisText;
     if (analysis.ok) {
-      analysisText = analysis.value.output;
+      analysisText = analysis.output;
     } else {
       analysisText = input.text;
     }
@@ -122,7 +122,7 @@ const pipeline = flowAgent(
     const final = await $.step({ id: "format", execute: () => formatOutput(cleaned) });
 
     if (final.ok) {
-      return { result: final.value };
+      return { result: final.output };
     }
     return { result: cleaned };
   },

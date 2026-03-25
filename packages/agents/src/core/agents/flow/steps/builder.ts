@@ -4,10 +4,9 @@ import type { EachConfig } from "@/core/agents/flow/steps/each.js";
 import type { MapConfig } from "@/core/agents/flow/steps/map.js";
 import type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
-import type { StepResult } from "@/core/agents/flow/steps/result.js";
+import type { FlowAgentStepResult, FlowStepResult } from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
-import type { GenerateResult } from "@/core/agents/types.js";
 
 /**
  * The `$` object — composable step utilities.
@@ -26,10 +25,10 @@ export interface StepBuilder {
    * @typeParam T - The return type of the step.
    * @param config - Step configuration with id, execute function,
    *   and optional hooks.
-   * @returns A `StepResult` with `.value` containing the step's
+   * @returns A `FlowStepResult` with `.output` containing the step's
    *   return value on success, or a `StepError` on failure.
    */
-  step<T>(config: StepConfig<T>): Promise<StepResult<T>>;
+  step<T>(config: StepConfig<T>): Promise<FlowStepResult<T>>;
 
   /**
    * Execute an agent call as a tracked operation.
@@ -37,14 +36,15 @@ export interface StepBuilder {
    * The framework records the agent name, input, and output in the
    * trace. Calls `agent.generate()` internally and unwraps the result —
    * agent errors become `StepError`, agent success becomes
-   * `StepResult<GenerateResult>`.
+   * `FlowAgentStepResult` with `GenerateResult` fields flat on the result.
    *
    * @typeParam TInput - The agent's input type.
    * @param config - Agent step configuration with id, agent, input,
    *   optional overrides, and optional hooks.
-   * @returns A `StepResult` wrapping the agent's `GenerateResult`.
+   * @returns A `FlowAgentStepResult` with `output`, `messages`, `usage`,
+   *   `finishReason` flat on the result (no double-wrapping).
    */
-  agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>;
+  agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult>;
 
   /**
    * Parallel map — each item is a tracked operation.
@@ -56,9 +56,9 @@ export interface StepBuilder {
    * @typeParam R - Output item type.
    * @param config - Map configuration with id, input array, execute
    *   function, optional concurrency, and optional hooks.
-   * @returns A `StepResult` wrapping the array of results in input order.
+   * @returns A `FlowStepResult` wrapping the array of results in input order.
    */
-  map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>;
+  map<T, R>(config: MapConfig<T, R>): Promise<FlowStepResult<R[]>>;
 
   /**
    * Sequential side effects — runs one item at a time.
@@ -68,9 +68,9 @@ export interface StepBuilder {
    * @typeParam T - Input item type.
    * @param config - Each configuration with id, input array, execute
    *   function, and optional hooks.
-   * @returns A `StepResult` wrapping void when all items are processed.
+   * @returns A `FlowStepResult` wrapping void when all items are processed.
    */
-  each<T>(config: EachConfig<T>): Promise<StepResult<void>>;
+  each<T>(config: EachConfig<T>): Promise<FlowStepResult<void>>;
 
   /**
    * Sequential accumulation — each step depends on the previous result.
@@ -79,9 +79,9 @@ export interface StepBuilder {
    * @typeParam R - Accumulator/result type.
    * @param config - Reduce configuration with id, input array, initial
    *   value, execute function, and optional hooks.
-   * @returns A `StepResult` wrapping the final accumulated value.
+   * @returns A `FlowStepResult` wrapping the final accumulated value.
    */
-  reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>;
+  reduce<T, R>(config: ReduceConfig<T, R>): Promise<FlowStepResult<R>>;
 
   /**
    * Conditional loop — runs while a condition holds.
@@ -92,9 +92,9 @@ export interface StepBuilder {
    * @typeParam T - The value type produced by each iteration.
    * @param config - While configuration with id, condition, execute
    *   function, and optional hooks.
-   * @returns A `StepResult` wrapping the last iteration's value, or `undefined`.
+   * @returns A `FlowStepResult` wrapping the last iteration's value, or `undefined`.
    */
-  while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>;
+  while<T>(config: WhileConfig<T>): Promise<FlowStepResult<T | undefined>>;
 
   /**
    * Run heterogeneous operations concurrently — like `Promise.all`.
@@ -105,9 +105,9 @@ export interface StepBuilder {
    *
    * @param config - All configuration with id, entry factories,
    *   and optional hooks.
-   * @returns A `StepResult` wrapping the array of results in entry order.
+   * @returns A `FlowStepResult` wrapping the array of results in entry order.
    */
-  all(config: AllConfig): Promise<StepResult<unknown[]>>;
+  all(config: AllConfig): Promise<FlowStepResult<unknown[]>>;
 
   /**
    * Run operations concurrently — first to finish wins.
@@ -118,7 +118,7 @@ export interface StepBuilder {
    *
    * @param config - Race configuration with id, entry factories,
    *   and optional hooks.
-   * @returns A `StepResult` wrapping the first resolved value.
+   * @returns A `FlowStepResult` wrapping the first resolved value.
    */
-  race(config: RaceConfig): Promise<StepResult<unknown>>;
+  race(config: RaceConfig): Promise<FlowStepResult<unknown>>;
 }

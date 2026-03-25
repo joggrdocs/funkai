@@ -17,10 +17,9 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual({ greeting: "hello" });
-    expect(result.step.id).toBe("greet");
-    expect(result.step.type).toBe("step");
-    expect(result.step.index).toBe(0);
+    expect(result.output).toEqual({ greeting: "hello" });
+    expect(result.stepId).toBe("greet");
+    expect(result.stepOperation).toBe("step");
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
@@ -43,7 +42,7 @@ describe("step()", () => {
     expect(result.error.message).toBe("boom");
     expect(result.error.stepId).toBe("fail");
     expect(result.error.cause).toBeInstanceOf(Error);
-    expect(result.step.id).toBe("fail");
+    expect(result.stepId).toBe("fail");
     expect(result.duration).toBeGreaterThanOrEqual(0);
   });
 
@@ -184,8 +183,8 @@ describe("step()", () => {
     expect(parentFinish).toHaveBeenCalledTimes(1);
     expect(parentFinish).toHaveBeenCalledWith(
       expect.objectContaining({
-        step: expect.objectContaining({ id: "parent-finish-on-error" }),
-        result: undefined,
+        stepId: "parent-finish-on-error",
+        output: undefined,
       }),
     );
   });
@@ -206,7 +205,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual({ value: 42 });
+    expect(result.output).toEqual({ value: 42 });
     expect(ctx.log.warn).toHaveBeenCalledWith("hook error", { error: "hook boom" });
   });
 
@@ -252,19 +251,6 @@ describe("step()", () => {
     expect(traceEntry.error.message).toBe("trace-boom");
   });
 
-  it("increments step index across calls", async () => {
-    const ctx = createMockCtx();
-    const $ = createStepBuilder({ ctx });
-
-    const r1 = await $.step({ id: "a", execute: async () => ({}) });
-    const r2 = await $.step({ id: "b", execute: async () => ({}) });
-    const r3 = await $.step({ id: "c", execute: async () => ({}) });
-
-    expect(r1.step.index).toBe(0);
-    expect(r2.step.index).toBe(1);
-    expect(r3.step.index).toBe(2);
-  });
-
   it("provides child $ for nested operations", async () => {
     const ctx = createMockCtx();
     const $$ = createStepBuilder({ ctx });
@@ -306,7 +292,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("hello");
+    expect(result.output).toBe("hello");
   });
 
   it("handles primitive number return", async () => {
@@ -322,7 +308,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(42);
+    expect(result.output).toBe(42);
   });
 
   it("onFinish receives the result and duration", async () => {
@@ -381,7 +367,7 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBeNull();
+    expect(result.output).toBeNull();
   });
 
   it("handles undefined return value", async () => {
@@ -397,6 +383,6 @@ describe("step()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBeUndefined();
+    expect(result.output).toBeUndefined();
   });
 });

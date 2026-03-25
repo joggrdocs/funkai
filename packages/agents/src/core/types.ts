@@ -81,35 +81,27 @@ export interface AgentChainEntry {
 }
 
 /**
- * Information about a step in execution.
+ * Event emitted when a step starts execution.
  *
- * Passed to step-level hooks (`onStepStart`, `onStepFinish`)
- * and included in step events. Used by both flow agent orchestration
- * steps and agent tool-loop steps.
+ * Passed to `onStepStart` hooks. Used by both flow agent orchestration
+ * steps and agent tool-loop steps. All fields from the former `StepInfo`
+ * are inlined here.
  */
-export interface StepInfo {
+export interface StepStartEvent {
   /**
    * The step identifier.
    *
    * For flow agents, matches the `id` field on the step config.
    * For agents, auto-generated as `agentName:stepIndex`.
    */
-  readonly id: string;
-
-  /**
-   * Auto-incrementing index within the execution.
-   *
-   * Starts at `0` for the first step and increments for each
-   * subsequent tracked operation.
-   */
-  readonly index: number;
+  readonly stepId: string;
 
   /**
    * What kind of operation produced this step.
    *
    * Discriminant for filtering or grouping step events.
    */
-  readonly type: OperationType;
+  readonly stepOperation: OperationType;
 
   /**
    * Agent ancestry chain from root to the agent that owns this step.
@@ -120,7 +112,7 @@ export interface StepInfo {
    * @example
    * ```typescript
    * // Step inside a sub-agent called by a flow agent:
-   * event.step.agentChain
+   * event.agentChain
    * // → [{ id: 'pipeline' }, { id: 'writer' }]
    * ```
    */
@@ -133,40 +125,43 @@ export interface StepInfo {
  * For **agent tool-loop steps**, this is a full superset of the Vercel
  * AI SDK's `StepResult<ToolSet>` — every field from the SDK is passed
  * through unchanged, plus funkai-specific additions (`stepId`,
- * `agentChain`).
+ * `stepOperation`, `agentChain`).
  *
- * For **flow orchestration steps**, the AI SDK fields are absent
- * (they are LLM-specific) and the flow fields (`step`, `result`,
- * `duration`) are populated instead.
+ * For **flow orchestration steps**, the AI SDK fields are populated
+ * from the last agent step (for `$.agent()` steps) or absent (for
+ * non-agent steps like `$.step()`, `$.map()`, etc.). Flow-specific
+ * fields (`output`, `duration`) are always present.
  *
  * Fields not relevant to the step type are `undefined`.
  */
 export type StepFinishEvent = Partial<AIStepResult> & {
   /**
-   * Agent tool-loop step ID (e.g. `"myAgent:0"`).
+   * Step ID — always present.
    *
-   * Present on agent tool-loop steps. `undefined` on flow steps.
+   * For agent tool-loop steps: e.g. `"myAgent:0"`.
+   * For flow steps: matches the `id` from the step config.
    */
-  readonly stepId?: string;
+  readonly stepId: string;
 
   /**
-   * Flow step info (id, index, type).
+   * What kind of operation produced this step.
    *
-   * Present on flow orchestration steps. `undefined` on agent steps.
+   * Discriminant for filtering or grouping step events.
+   * e.g. `"agent"`, `"step"`, `"map"`, `"each"`, `"reduce"`, etc.
    */
-  readonly step?: StepInfo;
+  readonly stepOperation: OperationType;
 
   /**
-   * Flow step result value.
+   * Flow step output value.
    *
-   * Present on flow orchestration steps. `undefined` on agent steps.
+   * Present on flow orchestration steps. `undefined` on agent tool-loop steps.
    */
-  readonly result?: unknown;
+  readonly output?: unknown;
 
   /**
    * Flow step duration in milliseconds.
    *
-   * Present on flow orchestration steps. `undefined` on agent steps.
+   * Present on flow orchestration steps. `undefined` on agent tool-loop steps.
    */
   readonly duration?: number;
 

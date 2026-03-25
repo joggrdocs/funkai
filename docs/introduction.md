@@ -53,14 +53,14 @@ const pipeline = flowAgent(
       execute: async ({ item, $ }) => {
         const result = await $.agent({ id: "write", agent: writer, input: item });
         if (result.ok) {
-          return result.value.output;
+          return result.output;
         }
         return "";
       },
       concurrency: 3,
     });
     if (docs.ok) {
-      return { docs: docs.value };
+      return { docs: docs.output };
     }
     return { docs: [] };
   },
