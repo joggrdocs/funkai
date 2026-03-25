@@ -21,6 +21,7 @@ import type {
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
 import type { BaseStreamResult, GenerateParams } from "@/core/agents/types.js";
+import type { Tool } from "@/core/tool.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
@@ -40,6 +41,21 @@ import type { Result } from "@/utils/result.js";
  */
 type StepStartHook = (event: StepStartEvent) => void | Promise<void>;
 type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
+
+/**
+ * Unified onFinish hook shape used inside the flow agent implementation.
+ *
+ * The config is a discriminated union (`WithOutput | WithoutOutput`) whose
+ * `onFinish` callbacks have different `result` types. In the implementation
+ * `TOutput = any`, so we unify them under a single function type.
+ *
+ * @private
+ */
+type OnFinishHook<TInput, TOutput> = (event: {
+  input: TInput;
+  result: FlowAgentGenerateResult<TOutput>;
+  duration: number;
+}) => void | Promise<void>;
 
 /**
  * Build a merged `onStepFinish` parent hook that fires both the config-level
@@ -195,6 +211,14 @@ export function flowAgent<TInput, TOutput = any>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
 ): FlowAgent<TInput, any> {
   /**
+   * Shorthand for the `GenerateParams` type used by flow agent generate/stream.
+   * Carries `TOutput` so `onFinish` sees `BaseGenerateResult<TOutput>`.
+   *
+   * @private
+   */
+  type FlowGenerateParams = GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>;
+
+  /**
    * Resolve the handler output into a final value, validating against
    * the output schema when present. Also pushes the assistant message.
    *
@@ -260,7 +284,7 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function extractInput(params: GenerateParams<TInput>): unknown {
+  function extractInput(params: FlowGenerateParams): unknown {
     if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt;
     }
@@ -280,7 +304,7 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function resolveSignal(params: GenerateParams<TInput>): AbortSignal {
+  function resolveSignal(params: FlowGenerateParams): AbortSignal {
     const { timeout, signal } = params;
     if (signal && isNotNil(timeout)) {
       return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
@@ -295,7 +319,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function prepareFlowAgent(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     writer?: WritableStreamDefaultWriter<StreamPart>,
   ): Promise<
     { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
@@ -372,7 +396,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function generate(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<FlowAgentGenerateResult<any>>> {
     const prepared = await prepareFlowAgent(params);
@@ -408,32 +432,21 @@ export function flowAgent<TInput, TOutput = any>(
       const usage = sumTokenUsages(collectUsages(trace));
       const frozenTrace = snapshotTrace(trace);
 
-      const result: FlowAgentGenerateResult<unknown> = {
-        output: resolvedOutput,
+      const result: FlowAgentGenerateResult<TOutput> = {
+        output: resolvedOutput as TOutput,
         usage,
         finishReason: "stop",
         trace: frozenTrace,
         duration,
       };
 
+      // config.onFinish is a union from the discriminated config type — cast to the unified hook shape
+      const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
+
       await fireHooks(
         log,
-        wrapHook(
-          config.onFinish as
-            | ((event: {
-                input: TInput;
-                result: FlowAgentGenerateResult<unknown>;
-                duration: number;
-              }) => void | Promise<void>)
-            | undefined,
-          { input: parsedInput, result, duration },
-        ),
-        // oxlint-disable-next-line -- FlowAgentGenerateResult satisfies BaseGenerateResult but not full GenerateResult; cast required for shared hook type
-        wrapHook(params.onFinish, {
-          input: parsedInput,
-          result: result as unknown as Parameters<NonNullable<typeof params.onFinish>>[0]["result"],
-          duration,
-        }),
+        wrapHook(configOnFinish, { input: parsedInput, result, duration }),
+        wrapHook(params.onFinish, { input: parsedInput, result, duration }),
       );
 
       log.debug("flowAgent.generate finish", { name: config.name, duration });
@@ -463,7 +476,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function stream(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<BaseStreamResult<any>>> {
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
@@ -501,32 +514,21 @@ export function flowAgent<TInput, TOutput = any>(
 
         const usage = sumTokenUsages(collectUsages(trace));
 
-        const result: FlowAgentGenerateResult<unknown> = {
-          output: resolvedOutput,
+        const result: FlowAgentGenerateResult<TOutput> = {
+          output: resolvedOutput as TOutput,
           usage,
           finishReason: "stop",
           trace: snapshotTrace(trace),
           duration,
         };
 
+        // config.onFinish is a union from the discriminated config type — cast to the unified hook shape
+        const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
+
         await fireHooks(
           log,
-          wrapHook(
-            config.onFinish as
-              | ((event: {
-                  input: TInput;
-                  result: FlowAgentGenerateResult<unknown>;
-                  duration: number;
-                }) => void | Promise<void>)
-              | undefined,
-            { input: parsedInput, result, duration },
-          ),
-          // oxlint-disable-next-line -- FlowAgentGenerateResult satisfies BaseGenerateResult but not full GenerateResult; cast required for shared hook type
-          wrapHook(params.onFinish, {
-            input: parsedInput,
-            result: result as unknown as Parameters<NonNullable<typeof params.onFinish>>[0]["result"],
-            duration,
-          }),
+          wrapHook(configOnFinish, { input: parsedInput, result, duration }),
+          wrapHook(params.onFinish, { input: parsedInput, result, duration }),
         );
 
         log.debug("flowAgent.stream finish", { name: config.name, duration });

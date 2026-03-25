@@ -1,10 +1,7 @@
 import type {
-  AsyncIterableStream,
   Experimental_DownloadFunction,
-  FinishReason,
   GenerateTextResult,
   LanguageModelMiddleware,
-  LanguageModelUsage,
   ModelMessage,
   OnToolCallFinishEvent,
   OnToolCallStartEvent,
@@ -145,21 +142,19 @@ export type SubAgents = Record<string, Agent<any, any, any, any, any>>;
 /**
  * Minimal shared contract for generation results.
  *
- * Both `GenerateResult` (full AI SDK passthrough) and
- * `FlowAgentGenerateResult` (flow-specific) extend this.
+ * Picks `usage` and `finishReason` from the AI SDK's `GenerateTextResult`
+ * and adds a typed `output`. Both `GenerateResult` (full AI SDK passthrough)
+ * and `FlowAgentGenerateResult` (flow-specific) extend this.
  *
  * @typeParam TOutput - The output type.
  */
-export interface BaseGenerateResult<TOutput = string> {
+export type BaseGenerateResult<TOutput = string> = Pick<
+  GenerateTextResult<ToolSet, AIOutput>,
+  "usage" | "finishReason"
+> & {
   /** The generation output. */
   readonly output: TOutput;
-
-  /** Aggregated token usage across all tool-loop steps. */
-  readonly usage: LanguageModelUsage;
-
-  /** The reason the model stopped generating. */
-  readonly finishReason: FinishReason;
-}
+};
 
 /**
  * Result of a completed agent generation.
@@ -175,30 +170,27 @@ export interface BaseGenerateResult<TOutput = string> {
  *   - `T` for `Output.choice({ options })`.
  */
 export interface GenerateResult<TOutput = string>
-  extends BaseGenerateResult<TOutput>,
-    Omit<GenerateTextResult<ToolSet, AIOutput>, "output" | "experimental_output"> {}
+  extends Omit<GenerateTextResult<ToolSet, AIOutput>, "output" | "experimental_output"> {
+  /** The generation output. */
+  readonly output: TOutput;
+}
 
 /**
  * Minimal shared contract for streaming results.
  *
- * Both `StreamResult` (full AI SDK passthrough) and flow agent
- * stream results extend this.
+ * Picks `usage`, `finishReason`, and `fullStream` from the AI SDK's
+ * `StreamTextResult` and adds a typed `output`. Both `StreamResult`
+ * (full AI SDK passthrough) and flow agent stream results extend this.
  *
  * @typeParam TOutput - The output type (available after stream completes).
  */
-export interface BaseStreamResult<TOutput = string> {
+export type BaseStreamResult<TOutput = string> = Pick<
+  StreamTextResult<ToolSet, AIOutput>,
+  "usage" | "finishReason" | "fullStream"
+> & {
   /** Resolves after the stream completes with the generation output. */
   readonly output: PromiseLike<TOutput>;
-
-  /** Aggregated token usage. Resolves after the stream completes. */
-  readonly usage: PromiseLike<LanguageModelUsage>;
-
-  /** The reason the model stopped generating. Resolves after the stream completes. */
-  readonly finishReason: PromiseLike<FinishReason>;
-
-  /** The full stream of typed events. */
-  readonly fullStream: AsyncIterableStream<StreamPart>;
-}
+};
 
 /**
  * Result of a streaming agent generation.
@@ -210,11 +202,13 @@ export interface BaseStreamResult<TOutput = string> {
  * @typeParam TOutput - The output type (available after stream completes).
  */
 export interface StreamResult<TOutput = string>
-  extends BaseStreamResult<TOutput>,
-    Omit<
-      StreamTextResult<ToolSet, AIOutput>,
-      "output" | "experimental_output" | "experimental_partialOutputStream"
-    > {}
+  extends Omit<
+    StreamTextResult<ToolSet, AIOutput>,
+    "output" | "experimental_output" | "experimental_partialOutputStream"
+  > {
+  /** Resolves after the stream completes with the generation output. */
+  readonly output: PromiseLike<TOutput>;
+}
 
 /**
  * Shared fields for all `.generate()` / `.stream()` param types.
@@ -270,7 +264,7 @@ export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
    */
   onFinish?: (event: {
     input: TInput;
-    result: GenerateResult<TOutput>;
+    result: BaseGenerateResult<TOutput>;
     duration: number;
   }) => void | Promise<void>;
 
