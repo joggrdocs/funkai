@@ -87,7 +87,7 @@ export type {
   UnattributedSource,
 } from "@/core/provider/usage.js";
 
-export type { Output, StopCondition, TelemetrySettings } from "ai";
+export type { Output } from "ai";
 
 export type { ExecutionContext } from "@/lib/context.js";
 export type { OperationType, TraceEntry } from "@/lib/trace.js";

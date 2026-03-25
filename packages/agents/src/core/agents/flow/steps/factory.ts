@@ -26,6 +26,7 @@ import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { BaseGenerateResult } from "@/core/agents/types.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
+import { stepFinishEventFromFlow } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -233,14 +234,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const extras = match(buildFinishEventExtras)
         .with(P.not(P.nullish), (fn) => fn(value))
         .otherwise(() => ({}));
-      const finishEvent: StepFinishEvent = {
-        stepId: id,
-        stepOperation: type,
-        output: value,
-        duration,
-        agentChain,
-        ...extras,
-      };
+      const finishEvent = stepFinishEventFromFlow(
+        { stepId: id, stepOperation: type, output: value, duration, agentChain },
+        extras,
+      );
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
         fn(finishEvent),
       );
@@ -301,13 +298,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       }
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }));
-      const errorFinishEvent: StepFinishEvent = {
+      const errorFinishEvent = stepFinishEventFromFlow({
         stepId: id,
         stepOperation: type,
         output: undefined,
         duration,
         agentChain,
-      };
+      });
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
         fn(errorFinishEvent),
       );

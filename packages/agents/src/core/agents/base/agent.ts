@@ -1,11 +1,5 @@
 import { generateText, streamText, stepCountIs } from "ai";
-import type {
-  AsyncIterableStream,
-  GenerateTextResult,
-  ModelMessage,
-  StopCondition,
-  ToolSet,
-} from "ai";
+import type { AsyncIterableStream, GenerateTextResult, ModelMessage, ToolSet } from "ai";
 
 // See types.ts for why `any` is needed here — AI SDK's `Output` is a merged namespace + interface.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,10 +33,10 @@ import type {
   AIStepResult,
   AgentChainEntry,
   Model,
-  StepFinishEvent,
   StepStartEvent,
   StreamPart,
 } from "@/core/types.js";
+import { stepFinishEventFromAIStep } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -176,47 +170,28 @@ export function agent<
     readonly output: OutputSpec | undefined;
     readonly maxSteps: number;
     readonly signal: AbortSignal | undefined;
-    readonly timeout: Record<string, number> | undefined;
     readonly onStepFinish: (step: AIStepResult) => Promise<void>;
     readonly onStepStart: ((event: unknown) => Promise<void>) | undefined;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK passthrough params
     readonly aiSdkParams: Record<string, any>;
-    readonly stopConditions: StopCondition<ToolSet> | StopCondition<ToolSet>[] | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK stream-only params
-    readonly streamOnlyParams: Record<string, any>;
   }
 
   /**
-   * Resolve the abort signal and timeout from params.
-   *
-   * When `timeout` is a number, creates an `AbortSignal.timeout()`.
-   * When `timeout` is an object, it's forwarded as the AI SDK `timeout`
-   * param and signal is used as-is.
+   * Resolve the abort signal from params, combining `signal` and `timeout`.
    *
    * @private
    */
-  function resolveSignalAndTimeout(params: GenerateParams<TInput, TTools, TSubAgents, TOutput>): {
-    signal: AbortSignal | undefined;
-    timeout: Record<string, number> | undefined;
-  } {
+  function resolveSignal(
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
+  ): AbortSignal | undefined {
     const { timeout, signal } = params;
-
-    // Object timeout — forward to AI SDK directly
-    if (isNotNil(timeout) && typeof timeout === "object") {
-      return { signal, timeout: timeout as Record<string, number> };
-    }
-
-    // Number timeout — convert to AbortSignal
     if (signal && isNotNil(timeout)) {
-      return {
-        signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]),
-        timeout: undefined,
-      };
+      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
     if (isNotNil(timeout)) {
-      return { signal: AbortSignal.timeout(timeout), timeout: undefined };
+      return AbortSignal.timeout(timeout);
     }
-    return { signal, timeout: undefined };
+    return signal;
   }
 
   /**
@@ -285,19 +260,18 @@ export function agent<
 
     const resolvedMaxSteps = await resolveOptionalValue(config.maxSteps, input);
     const maxSteps = params.maxSteps ?? resolvedMaxSteps ?? 20;
-    const { signal, timeout } = resolveSignalAndTimeout(params);
+    const signal = resolveSignal(params);
 
     await fireHooks(log, wrapHook(config.onStart, { input }), wrapHook(params.onStart, { input }));
 
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: AIStepResult) => {
       const stepId = `${config.name}:${stepCounter.value++}`;
-      const event: StepFinishEvent = {
-        ...step,
+      const event = stepFinishEventFromAIStep(step, {
         stepId,
         stepOperation: "agent",
         agentChain: currentChain,
-      };
+      });
       await fireHooks(
         log,
         wrapHook(config.onStepFinish, event),
@@ -335,28 +309,6 @@ export function agent<
         experimental_download: params.experimental_download ?? config.experimental_download,
         experimental_onToolCallStart: params.onToolCallStart ?? config.onToolCallStart,
         experimental_onToolCallFinish: params.onToolCallFinish ?? config.onToolCallFinish,
-        // CallSettings
-        maxOutputTokens: params.maxOutputTokens ?? config.maxOutputTokens,
-        temperature: params.temperature ?? config.temperature,
-        topP: params.topP ?? config.topP,
-        topK: params.topK ?? config.topK,
-        presencePenalty: params.presencePenalty ?? config.presencePenalty,
-        frequencyPenalty: params.frequencyPenalty ?? config.frequencyPenalty,
-        stopSequences: params.stopSequences ?? config.stopSequences,
-        seed: params.seed ?? config.seed,
-        maxRetries: params.maxRetries ?? config.maxRetries,
-        // Telemetry
-        experimental_telemetry: params.experimental_telemetry ?? config.experimental_telemetry,
-      },
-      isNotNil,
-    );
-
-    // Stream-only params (onChunk, onError, onAbort) — forwarded only in stream()
-    const streamOnlyParams = pickBy(
-      {
-        onChunk: params.onChunk,
-        onError: params.onStreamError,
-        onAbort: params.onAbort,
       },
       isNotNil,
     );
@@ -370,12 +322,9 @@ export function agent<
       output,
       maxSteps,
       signal,
-      timeout,
       onStepFinish,
       onStepStart,
       aiSdkParams,
-      stopConditions: params.stopWhen,
-      streamOnlyParams,
     };
   }
 
@@ -410,11 +359,9 @@ export function agent<
         output,
         maxSteps,
         signal,
-        timeout: resolvedTimeout,
         onStepFinish,
         onStepStart,
         aiSdkParams,
-        stopConditions,
       } = prepared;
 
       log.debug("agent.generate start", { name: config.name });
@@ -424,7 +371,7 @@ export function agent<
         model,
         ...promptParams,
         ...aiSdkParams,
-        stopWhen: buildStopConditions(maxSteps, stopConditions),
+        stopWhen: stepCountIs(maxSteps),
         onStepFinish,
       };
       if (system !== undefined) {
@@ -438,9 +385,6 @@ export function agent<
       }
       if (signal !== undefined) {
         generateParams.abortSignal = signal;
-      }
-      if (resolvedTimeout !== undefined) {
-        generateParams.timeout = resolvedTimeout;
       }
       if (onStepStart !== undefined) {
         generateParams.experimental_onStepStart = onStepStart;
@@ -525,12 +469,9 @@ export function agent<
         output,
         maxSteps,
         signal,
-        timeout: resolvedTimeout,
         onStepFinish,
         onStepStart,
         aiSdkParams,
-        stopConditions,
-        streamOnlyParams,
       } = prepared;
 
       log.debug("agent.stream start", { name: config.name });
@@ -540,8 +481,7 @@ export function agent<
         model,
         ...promptParams,
         ...aiSdkParams,
-        ...streamOnlyParams,
-        stopWhen: buildStopConditions(maxSteps, stopConditions),
+        stopWhen: stepCountIs(maxSteps),
         onStepFinish,
       };
       if (system !== undefined) {
@@ -555,9 +495,6 @@ export function agent<
       }
       if (signal !== undefined) {
         streamParams.abortSignal = signal;
-      }
-      if (resolvedTimeout !== undefined) {
-        streamParams.timeout = resolvedTimeout;
       }
       if (onStepStart !== undefined) {
         streamParams.experimental_onStepStart = onStepStart;
@@ -801,30 +738,6 @@ function pickByOutput<T>(output: unknown, ifOutput: T, ifText: T): T {
     return ifOutput;
   }
   return ifText;
-}
-
-/**
- * Build the combined stop conditions array.
- *
- * Always includes `stepCountIs(maxSteps)` as a safety ceiling.
- * User-provided conditions are prepended so they can trigger first.
- *
- * @private
- */
-function buildStopConditions(
-  maxSteps: number,
-  userConditions: StopCondition<ToolSet> | StopCondition<ToolSet>[] | undefined,
-): StopCondition<ToolSet> | StopCondition<ToolSet>[] {
-  if (isNil(userConditions)) {
-    return stepCountIs(maxSteps);
-  }
-  if (Array.isArray(userConditions)) {
-    if (userConditions.length === 0) {
-      return stepCountIs(maxSteps);
-    }
-    return [...userConditions, stepCountIs(maxSteps)];
-  }
-  return [userConditions, stepCountIs(maxSteps)];
 }
 
 /**

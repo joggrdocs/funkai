@@ -295,20 +295,11 @@ export function flowAgent<TInput, TOutput = any>(
    */
   function resolveSignal(params: FlowGenerateParams): AbortSignal {
     const { timeout, signal } = params;
-
-    // Extract the numeric timeout value for the flow-level abort signal
-    let timeoutMs: number | undefined;
-    if (typeof timeout === "number") {
-      timeoutMs = timeout;
-    } else if (typeof timeout === "object" && isNotNil(timeout)) {
-      timeoutMs = timeout.totalMs;
+    if (signal && isNotNil(timeout)) {
+      return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
     }
-
-    if (signal && isNotNil(timeoutMs)) {
-      return AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]);
-    }
-    if (isNotNil(timeoutMs)) {
-      return AbortSignal.timeout(timeoutMs);
+    if (isNotNil(timeout)) {
+      return AbortSignal.timeout(timeout);
     }
     if (signal) {
       return signal;
