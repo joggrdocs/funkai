@@ -1,5 +1,6 @@
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
+import { P, match } from "ts-pattern";
 
 import { _agentChainField } from "@/core/agents/base/utils.js";
 import {
@@ -235,7 +236,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         fn({ id, result: value as T, duration }),
       );
 
-      const extras = buildFinishEventExtras ? buildFinishEventExtras(value) : {};
+      const extras = match(buildFinishEventExtras)
+        .with(P.not(P.nullish), (fn) => fn(value))
+        .otherwise(() => ({}));
       const finishEvent: StepFinishEvent = {
         stepId: id,
         stepOperation: type,
@@ -397,13 +400,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           };
         }
 
-        const result = await config.agent.generate(agentParams);
-        if (!result.ok) {
-          throw result.error.cause ?? new Error(result.error.message);
+        const generateResult = await config.agent.generate(agentParams);
+        if (!generateResult.ok) {
+          throw generateResult.error.cause ?? new Error(generateResult.error.message);
         }
         // Runnable.generate() types only { output }, but Agent.generate()
         // Returns full GenerateResult at runtime including messages, usage, finishReason.
-        const full = result as unknown as GenerateResult & {
+        const full = generateResult as unknown as GenerateResult & {
           ok: true;
         };
         return {
