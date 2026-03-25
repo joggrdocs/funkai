@@ -1,4 +1,4 @@
-import type { AsyncIterableStream, ModelMessage } from "ai";
+import type { AsyncIterableStream, LanguageModelUsage, ModelMessage } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 
 import { extractAgentChain, resolveOptionalValue } from "@/core/agents/base/utils.js";
@@ -20,10 +20,9 @@ import type {
   FlowSubAgents,
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
-import type { BaseGenerateResult, BaseStreamResult, GenerateParams } from "@/core/agents/types.js";
+import type { BaseStreamResult, GenerateParams } from "@/core/agents/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
-import type { LanguageModelUsage } from "ai";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
@@ -628,7 +627,10 @@ function sumTokenUsages(usages: LanguageModelUsage[]): LanguageModelUsage {
     usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
   const sumOptional = (fn: (u: LanguageModelUsage) => number | undefined): number | undefined => {
     const total = usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
-    return total > 0 ? total : undefined;
+    if (total > 0) {
+      return total;
+    }
+    return undefined;
   };
   return {
     inputTokens: sum((u) => u.inputTokens),

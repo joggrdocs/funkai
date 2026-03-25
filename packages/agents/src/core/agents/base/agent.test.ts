@@ -57,6 +57,7 @@ function createMockGenerateResult(overrides?: {
   output?: unknown;
   response?: { messages: unknown[] };
   totalUsage?: typeof MOCK_TOTAL_USAGE;
+  usage?: typeof MOCK_TOTAL_USAGE;
   finishReason?: string;
 }) {
   const defaults = {
@@ -64,6 +65,7 @@ function createMockGenerateResult(overrides?: {
     output: undefined,
     response: { messages: [{ role: "assistant", content: "mock" }] },
     totalUsage: MOCK_TOTAL_USAGE,
+    usage: MOCK_TOTAL_USAGE,
     finishReason: "stop",
   };
   return { ...defaults, ...overrides };
@@ -75,6 +77,7 @@ function createMockStreamResult(overrides?: {
   response?: { messages: unknown[] };
   chunks?: string[];
   totalUsage?: typeof MOCK_TOTAL_USAGE;
+  usage?: typeof MOCK_TOTAL_USAGE;
   finishReason?: string;
 }) {
   const defaults = {
@@ -82,6 +85,7 @@ function createMockStreamResult(overrides?: {
     output: undefined as unknown,
     response: undefined as { messages: unknown[] } | undefined,
     totalUsage: MOCK_TOTAL_USAGE,
+    usage: MOCK_TOTAL_USAGE,
     finishReason: "stop",
   };
   const merged = { ...defaults, ...overrides };
@@ -94,6 +98,14 @@ function createMockStreamResult(overrides?: {
     }
   }
 
+  const mockStep = {
+    text: textValue,
+    output: merged.output,
+    usage: merged.usage,
+    finishReason: merged.finishReason,
+    response: merged.response ?? { messages: [{ role: "assistant", content: textValue }] },
+  };
+
   return {
     fullStream: makeFullStream(),
     text: Promise.resolve(textValue),
@@ -102,6 +114,8 @@ function createMockStreamResult(overrides?: {
       merged.response ?? { messages: [{ role: "assistant", content: textValue }] },
     ),
     totalUsage: Promise.resolve(merged.totalUsage),
+    usage: Promise.resolve(merged.usage),
+    steps: Promise.resolve([mockStep]),
     finishReason: Promise.resolve(merged.finishReason),
     toTextStreamResponse: vi.fn(() => new Response("mock text stream")),
     toUIMessageStreamResponse: vi.fn(() => new Response("mock ui stream")),
@@ -176,14 +190,7 @@ describe("generate() success", () => {
       return;
     }
     expect(result.output).toBe("mock response text");
-    expect(result.usage).toEqual({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      cacheReadTokens: 10,
-      cacheWriteTokens: 5,
-      reasoningTokens: 3,
-    });
+    expect(result.usage).toEqual(MOCK_TOTAL_USAGE);
     expect(result.finishReason).toBe("stop");
   });
 
@@ -418,7 +425,7 @@ describe("generate() hooks", () => {
     const [event] = firstCall;
     expect(event.input).toBe("hello");
     expect(event.result).toHaveProperty("output");
-    expect(event.result).toHaveProperty("messages");
+    expect(event.result).toHaveProperty("response");
     expect(event.result).toHaveProperty("usage");
     expect(event.result).toHaveProperty("finishReason");
     expect(event.duration).toBeGreaterThanOrEqual(0);
@@ -914,32 +921,6 @@ describe("stream() success", () => {
     expect(output).toBe("full text");
   });
 
-  it("messages promise resolves after stream completes", async () => {
-    const expectedMessages = [{ role: "assistant", content: "msg" }];
-    mockStreamText.mockReturnValue(
-      createMockStreamResult({ response: { messages: expectedMessages } }),
-    );
-
-    const a = createSimpleAgent();
-    const result = await a.stream({ prompt: "hello" });
-
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    // Drain the stream to complete
-    const reader = result.fullStream.getReader();
-    for (;;) {
-      // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
-      const { done } = await reader.read();
-      if (done) {
-        break;
-      }
-    }
-
-  });
-
   it("usage and finishReason promises resolve after stream completes", async () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
@@ -960,14 +941,7 @@ describe("stream() success", () => {
     }
 
     const usage = await result.usage;
-    expect(usage).toEqual({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      cacheReadTokens: 10,
-      cacheWriteTokens: 5,
-      reasoningTokens: 3,
-    });
+    expect(usage).toEqual(MOCK_TOTAL_USAGE);
 
     const finishReason = await result.finishReason;
     expect(finishReason).toBe("stop");
@@ -1413,6 +1387,7 @@ function createErrorStreamResult(error: Error) {
     fullStream: makeFullStream(),
     text: makeSuppressedRejection<string>(error),
     output: makeSuppressedRejection<unknown>(error),
+    usage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(error),
     response: makeSuppressedRejection<{ messages: unknown[] }>(error),
     totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(error),
     finishReason: makeSuppressedRejection<string>(error),
@@ -1527,6 +1502,7 @@ describe("stream() unhandled rejection safety", () => {
       fullStream: makeFullStream(),
       text: makeSuppressedRejection<string>(streamError),
       output: makeSuppressedRejection<unknown>(streamError),
+      usage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
       response: makeSuppressedRejection<{ messages: unknown[] }>(streamError),
       totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
       finishReason: makeSuppressedRejection<string>(streamError),

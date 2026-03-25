@@ -126,18 +126,25 @@ export function usageByModel(records: TokenUsageRecord[]): readonly ModelTokenUs
  * @private
  */
 function aggregateTokens(usages: TokenUsageRecord[]): LanguageModelUsage {
+  const sumOptional = (fn: (u: TokenUsageRecord) => number | undefined): number | undefined => {
+    const total = usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
+    if (total > 0) {
+      return total;
+    }
+    return undefined;
+  };
   return {
     inputTokens: sumBy(usages, (u) => u.inputTokens ?? 0),
     outputTokens: sumBy(usages, (u) => u.outputTokens ?? 0),
     totalTokens: sumBy(usages, (u) => u.totalTokens ?? 0),
     inputTokenDetails: {
-      noCacheTokens: sumBy(usages, (u) => u.inputTokenDetails?.noCacheTokens ?? 0),
-      cacheReadTokens: sumBy(usages, (u) => u.inputTokenDetails?.cacheReadTokens ?? 0),
-      cacheWriteTokens: sumBy(usages, (u) => u.inputTokenDetails?.cacheWriteTokens ?? 0),
+      noCacheTokens: sumOptional((u) => u.inputTokenDetails?.noCacheTokens),
+      cacheReadTokens: sumOptional((u) => u.inputTokenDetails?.cacheReadTokens),
+      cacheWriteTokens: sumOptional((u) => u.inputTokenDetails?.cacheWriteTokens),
     },
     outputTokenDetails: {
-      textTokens: sumBy(usages, (u) => u.outputTokenDetails?.textTokens ?? 0),
-      reasoningTokens: sumBy(usages, (u) => u.outputTokenDetails?.reasoningTokens ?? 0),
+      textTokens: sumOptional((u) => u.outputTokenDetails?.textTokens),
+      reasoningTokens: sumOptional((u) => u.outputTokenDetails?.reasoningTokens),
     },
   };
 }

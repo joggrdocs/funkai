@@ -2,7 +2,7 @@ import { match } from "ts-pattern";
 import { describe, expect, it, vi } from "vitest";
 
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-import type { Agent, GenerateResult } from "@/core/agents/types.js";
+import type { Agent, BaseGenerateResult, GenerateResult } from "@/core/agents/types.js";
 import type { StreamPart } from "@/core/types.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";
@@ -288,10 +288,10 @@ describe("agent()", () => {
     reasoningTokens: 0,
   };
 
-  function mockAgent(result: Result<Pick<GenerateResult, "output" | "messages">>): Agent<string> {
+  function mockAgent(result: Result<Pick<BaseGenerateResult, "output">>): Agent<string> {
     const resolved: Result<GenerateResult> = match(result)
       .with({ ok: true }, (r) => ({ ...r, usage: MOCK_USAGE, finishReason: "stop" as const }))
-      .otherwise((r) => r);
+      .otherwise((r) => r) as Result<GenerateResult>;
     return {
       generate: vi.fn(async () => resolved),
       stream: vi.fn(),
@@ -305,7 +305,6 @@ describe("agent()", () => {
     const agent = mockAgent({
       ok: true,
       output: "hello",
-      messages: [],
     });
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
@@ -315,7 +314,6 @@ describe("agent()", () => {
       return;
     }
     expect(result.output).toBe("hello");
-    expect(result.messages).toEqual([]);
     expect(result.usage).toEqual(MOCK_USAGE);
     expect(result.finishReason).toBe("stop");
     expect(result.stepOperation).toBe("agent");
@@ -342,7 +340,7 @@ describe("agent()", () => {
   it("calls agent.generate with input and config", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
     const config = { signal: new AbortController().signal };
 
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
@@ -360,7 +358,7 @@ describe("agent()", () => {
     const controller = new AbortController();
     const ctx = createMockCtx({ signal: controller.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-ctx-signal", agent, input: "test" });
 
@@ -374,7 +372,7 @@ describe("agent()", () => {
     const userController = new AbortController();
     const ctx = createMockCtx({ signal: ctxController.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({
       id: "ag-user-signal",
@@ -391,7 +389,7 @@ describe("agent()", () => {
   it("records input in trace", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-trace", agent, input: "my-input" });
 
@@ -405,7 +403,7 @@ describe("agent()", () => {
   it("records usage on trace entry for successful agent step", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-usage-trace", agent, input: "test" });
 
@@ -830,7 +828,6 @@ describe("agent() streaming with writer", () => {
     const mockStreamResult = {
       ok: true as const,
       output: Promise.resolve("hello world"),
-      messages: Promise.resolve([]),
       usage: Promise.resolve(MOCK_USAGE),
       finishReason: Promise.resolve("stop"),
       fullStream: createMockFullStream(parts),
@@ -855,7 +852,6 @@ describe("agent() streaming with writer", () => {
     }
     expect(result.stepOperation).toBe("agent");
     expect(result.output).toBe("hello world");
-    expect(result.messages).toEqual([]);
     expect(result.usage).toEqual(MOCK_USAGE);
     expect(result.finishReason).toBe("stop");
     expect(agent.stream).toHaveBeenCalled();
@@ -944,7 +940,6 @@ describe("agent() streaming with writer", () => {
     const mockStreamResult = {
       ok: true as const,
       output: Promise.resolve("hi"),
-      messages: Promise.resolve([]),
       usage: Promise.resolve(MOCK_USAGE),
       finishReason: Promise.resolve("stop"),
       fullStream: createMockFullStream(parts),

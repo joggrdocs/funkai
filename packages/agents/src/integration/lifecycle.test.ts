@@ -531,7 +531,9 @@ describe("FlowAgent with $.agent() (integration)", () => {
     expect(tracker.events).toEqual([
       { type: "onStart" },
       { type: "onStepStart", detail: "write" },
-      // Sub-agent internal tool-loop step (forwarded via hook propagation)
+      // Sub-agent internal tool-loop step start (forwarded via hook propagation)
+      { type: "onStepStart", detail: "writer:0" },
+      // Sub-agent internal tool-loop step finish (forwarded via hook propagation)
       { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
       { type: "onFinish" },
@@ -591,9 +593,11 @@ describe("FlowAgent with $.agent() (integration)", () => {
     expect(result.ok).toBe(true);
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "research" },
+      { type: "onStepStart", detail: "researcher:0" },
       { type: "onStepFinish", detail: "researcher:0" },
       { type: "onStepFinish", detail: "research" },
       { type: "onStepStart", detail: "write" },
+      { type: "onStepStart", detail: "writer:0" },
       { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
     ]);
@@ -707,6 +711,7 @@ describe("FlowAgent agents dependency lifecycle (integration)", () => {
 
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "run-core" },
+      { type: "onStepStart", detail: "core:0" },
       { type: "onStepFinish", detail: "core:0" },
       { type: "onStepFinish", detail: "run-core" },
     ]);
@@ -970,6 +975,7 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
 
     expect(tracker.events).toEqual([
       { type: "onStepStart", detail: "write" },
+      { type: "onStepStart", detail: "writer:0" },
       { type: "onStepFinish", detail: "writer:0" },
       { type: "onStepFinish", detail: "write" },
     ]);
@@ -1044,16 +1050,15 @@ describe("FlowAgent streaming lifecycle (integration)", () => {
       return;
     }
 
-    // Suppress derived promise rejections
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // Suppress derived promise rejections (PromiseLike lacks .catch, wrap with Promise.resolve)
+    Promise.resolve(result.usage).catch(() => {});
+    Promise.resolve(result.finishReason).catch(() => {});
 
     for await (const _part of result.fullStream) {
       /* Drain */
     }
 
-    await result.output.catch(() => {});
+    await Promise.resolve(result.output).catch(() => {});
 
     expect(tracker.onStart).toHaveBeenCalledTimes(1);
     expect(tracker.onError).toHaveBeenCalledTimes(1);

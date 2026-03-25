@@ -281,7 +281,6 @@ describe("generate() hooks", () => {
     const [event] = firstCall;
     expect(event.input).toEqual({ x: 3 });
     expect(event.result).toHaveProperty("output");
-    expect(event.result).toHaveProperty("messages");
     expect(event.result).toHaveProperty("usage");
     expect(event.duration).toBeGreaterThanOrEqual(0);
   });
@@ -639,9 +638,15 @@ describe("stream() success", () => {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: undefined,
+        cacheReadTokens: undefined,
+        cacheWriteTokens: undefined,
+      },
+      outputTokenDetails: {
+        textTokens: undefined,
+        reasoningTokens: undefined,
+      },
     });
   });
 
