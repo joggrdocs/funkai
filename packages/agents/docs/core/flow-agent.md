@@ -92,12 +92,12 @@ Subscribe to `stream` for real-time step progress events.
 
 Events emitted on the flow agent stream:
 
-| Type          | Fields                                          | Description               |
-| ------------- | ----------------------------------------------- | ------------------------- |
-| `step:start`  | `stepId`, `stepOperation`, `agentChain?`        | A `$` operation started   |
-| `step:finish` | `StepFinishEvent`                                | A `$` operation completed; `$.agent()` steps also include AI SDK `StepResult` fields |
-| `step:error`  | `stepId`, `stepOperation`, `error`              | A `$` operation failed    |
-| `flow:finish` | `output`, `duration`                            | The flow agent completed  |
+| Type          | Fields                                   | Description                                                                          |
+| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| `step:start`  | `stepId`, `stepOperation`, `agentChain?` | A `$` operation started                                                              |
+| `step:finish` | `StepFinishEvent`                        | A `$` operation completed; `$.agent()` steps also include AI SDK `StepResult` fields |
+| `step:error`  | `stepId`, `stepOperation`, `error`       | A `$` operation failed                                                               |
+| `flow:finish` | `output`, `duration`                     | The flow agent completed                                                             |
 
 ### fn()
 

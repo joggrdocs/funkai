@@ -17,13 +17,13 @@ Set on `AgentConfig`:
 
 Set on `FlowAgentConfig`:
 
-| Hook           | Event fields                                                      | When                                                  |
-| -------------- | ----------------------------------------------------------------- | ----------------------------------------------------- |
-| `onStart`      | `{ input }`                                                       | After input validation, before handler runs           |
-| `onFinish`     | `{ input, result, duration }`                                     | After successful completion                           |
-| `onError`      | `{ input, error }`                                                | On error, before Result is returned                   |
-| `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`)       | Before any `$` operation executes                     |
-| `onStepFinish` | `StepFinishEvent`                                                 | After any `$` operation completes (success AND error) |
+| Hook           | Event fields                                                | When                                                  |
+| -------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| `onStart`      | `{ input }`                                                 | After input validation, before handler runs           |
+| `onFinish`     | `{ input, result, duration }`                               | After successful completion                           |
+| `onError`      | `{ input, error }`                                          | On error, before Result is returned                   |
+| `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`) | Before any `$` operation executes                     |
+| `onStepFinish` | `StepFinishEvent`                                           | After any `$` operation completes (success AND error) |
 
 `onStepFinish` fires on both success and error. On error, `output` is `undefined`. `stepId` is always required (never optional). For `$.agent()` steps, `StepFinishEvent` also includes all AI SDK `StepResult` fields (`usage`, `toolCalls`, `toolResults`, `text`, `finishReason`, etc.).
 
