@@ -43,7 +43,7 @@ function extractName(content: string): string | undefined {
   }
 
   try {
-    const fmContent = fmMatch[1];
+    const [, fmContent] = fmMatch;
     if (fmContent === undefined) {
       return undefined;
     }

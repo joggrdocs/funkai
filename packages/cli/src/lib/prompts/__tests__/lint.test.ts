@@ -16,7 +16,7 @@ describe(lintPrompt, () => {
   it("errors on undefined template variable", () => {
     const result = lintPrompt("test", "test.prompt", [], ["scope"]);
     expect(result.diagnostics).toHaveLength(1);
-    const diag0 = result.diagnostics[0];
+    const [diag0] = result.diagnostics;
     expect(diag0?.level).toBe("error");
     expect(diag0?.message).toContain('Undefined variable "scope"');
   });
@@ -29,7 +29,7 @@ describe(lintPrompt, () => {
       [],
     );
     expect(result.diagnostics).toHaveLength(1);
-    const diag0 = result.diagnostics[0];
+    const [diag0] = result.diagnostics;
     expect(diag0?.level).toBe("warn");
     expect(diag0?.message).toContain('Unused variable "scope"');
   });

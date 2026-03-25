@@ -76,7 +76,7 @@ export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams):
     throw new Error(`No frontmatter found in ${filePath}`);
   }
 
-  const fmContent = fmMatch[1];
+  const [, fmContent] = fmMatch;
   if (fmContent === undefined) {
     throw new Error(`No frontmatter content found in ${filePath}`);
   }
@@ -103,12 +103,19 @@ export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams):
 
   const schema = parseSchemaBlock(parsed["schema"], filePath);
 
-  return {
-    name,
-    schema,
-    ...(group !== undefined ? { group } : {}),
-    ...(version !== undefined ? { version } : {}),
-  };
+  const result: {
+    name: string;
+    schema: readonly SchemaVariable[];
+    group?: string;
+    version?: string;
+  } = { name, schema };
+  if (group !== undefined) {
+    result.group = group;
+  }
+  if (version !== undefined) {
+    result.version = version;
+  }
+  return result;
 }
 
 // ---------------------------------------------------------------------------

@@ -10,6 +10,7 @@ import type { ParsedPrompt } from "./codegen.js";
 import { extractVariables } from "./extract-variables.js";
 import { flattenPartials } from "./flatten.js";
 import { parseFrontmatter } from "./frontmatter.js";
+import type { SchemaVariable } from "./frontmatter.js";
 import { lintPrompt } from "./lint.js";
 import type { LintResult } from "./lint.js";
 import { discoverPrompts } from "./paths.js";
@@ -101,10 +102,14 @@ export interface LintPipelineResult {
  * @returns Lint results for all discovered prompts.
  */
 export function runLintPipeline(options: LintPipelineOptions): LintPipelineResult {
-  const discovered = discoverPrompts({
-    includes: [...options.includes],
-    ...(options.excludes ? { excludes: [...options.excludes] } : {}),
-  });
+  const discoverLintOptions: {
+    includes: string[];
+    excludes?: string[];
+  } = { includes: [...options.includes] };
+  if (options.excludes !== undefined) {
+    discoverLintOptions.excludes = [...options.excludes];
+  }
+  const discovered = discoverPrompts(discoverLintOptions);
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   const partialsDirs = resolvePartialsDirs(customPartialsDir);
 
@@ -149,10 +154,14 @@ export interface GeneratePipelineResult {
  * @returns Parsed prompts ready for code generation, along with lint results.
  */
 export function runGeneratePipeline(options: GeneratePipelineOptions): GeneratePipelineResult {
-  const discovered = discoverPrompts({
-    includes: [...options.includes],
-    ...(options.excludes ? { excludes: [...options.excludes] } : {}),
-  });
+  const discoverGenerateOptions: {
+    includes: string[];
+    excludes?: string[];
+  } = { includes: [...options.includes] };
+  if (options.excludes !== undefined) {
+    discoverGenerateOptions.excludes = [...options.excludes];
+  }
+  const discovered = discoverPrompts(discoverGenerateOptions);
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   const partialsDirs = resolvePartialsDirs(customPartialsDir);
   const configGroups = options.groups ?? [];
@@ -167,15 +176,24 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
     // Frontmatter group wins; fall back to config-defined group patterns
     const group = frontmatter.group ?? resolveGroupFromConfig(d.filePath, configGroups);
 
+    const promptObj: {
+      name: string;
+      schema: readonly SchemaVariable[];
+      template: string;
+      sourcePath: string;
+      group?: string;
+    } = {
+      name: frontmatter.name,
+      schema: frontmatter.schema,
+      template,
+      sourcePath: d.filePath,
+    };
+    if (group !== undefined) {
+      promptObj.group = group;
+    }
     return {
       lintResult: lintPrompt(frontmatter.name, d.filePath, frontmatter.schema, templateVars),
-      prompt: {
-        name: frontmatter.name,
-        ...(group !== undefined ? { group } : {}),
-        schema: frontmatter.schema,
-        template,
-        sourcePath: d.filePath,
-      } satisfies ParsedPrompt,
+      prompt: promptObj satisfies ParsedPrompt,
     };
   });
 

@@ -15,13 +15,23 @@ export default command({
       ctx.logger.info("Running prompts code generation...");
     }
 
+    const generateHandleArgs: {
+      silent: boolean;
+      out?: string;
+      includes?: readonly string[];
+      partials?: string;
+    } = { silent: ctx.args.silent };
+    if (ctx.args.out !== undefined) {
+      generateHandleArgs.out = ctx.args.out;
+    }
+    if (ctx.args.includes !== undefined) {
+      generateHandleArgs.includes = ctx.args.includes;
+    }
+    if (ctx.args.partials !== undefined) {
+      generateHandleArgs.partials = ctx.args.partials;
+    }
     handleGenerate({
-      args: {
-        silent: ctx.args.silent,
-        ...(ctx.args.out !== undefined ? { out: ctx.args.out } : {}),
-        ...(ctx.args.includes !== undefined ? { includes: ctx.args.includes } : {}),
-        ...(ctx.args.partials !== undefined ? { partials: ctx.args.partials } : {}),
-      },
+      args: generateHandleArgs,
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,

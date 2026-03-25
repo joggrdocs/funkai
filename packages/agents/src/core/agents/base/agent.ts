@@ -335,17 +335,26 @@ export function agent<
 
       log.debug("agent.generate start", { name: config.name });
 
-      const aiResult = await generateText({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+      const generateParams: any = {
         model,
-        ...(system !== undefined ? { system } : {}),
         ...promptParams,
-        ...(aiTools !== undefined ? { tools: aiTools } : {}),
-        ...(output !== undefined ? { output } : {}),
         stopWhen: stepCountIs(maxSteps),
-        ...(signal !== undefined ? { abortSignal: signal } : {}),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
-        onStepFinish: onStepFinish as any,
-      });
+        onStepFinish,
+      };
+      if (system !== undefined) {
+        generateParams.system = system;
+      }
+      if (aiTools !== undefined) {
+        generateParams.tools = aiTools;
+      }
+      if (output !== undefined) {
+        generateParams.output = output;
+      }
+      if (signal !== undefined) {
+        generateParams.abortSignal = signal;
+      }
+      const aiResult = await generateText(generateParams);
 
       const duration = Date.now() - startedAt;
 
@@ -435,17 +444,26 @@ export function agent<
 
       log.debug("agent.stream start", { name: config.name });
 
-      const aiResult = streamText({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+      const streamParams: any = {
         model,
-        ...(system !== undefined ? { system } : {}),
         ...promptParams,
-        ...(aiTools !== undefined ? { tools: aiTools } : {}),
-        ...(output !== undefined ? { output } : {}),
         stopWhen: stepCountIs(maxSteps),
-        ...(signal !== undefined ? { abortSignal: signal } : {}),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
-        onStepFinish: onStepFinish as any,
-      });
+        onStepFinish,
+      };
+      if (system !== undefined) {
+        streamParams.system = system;
+      }
+      if (aiTools !== undefined) {
+        streamParams.tools = aiTools;
+      }
+      if (output !== undefined) {
+        streamParams.output = output;
+      }
+      if (signal !== undefined) {
+        streamParams.abortSignal = signal;
+      }
+      const aiResult = streamText(streamParams);
 
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 

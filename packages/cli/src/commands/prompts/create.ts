@@ -32,7 +32,7 @@ export default command({
       .with({ includes: P.array(P.string).select() }, (includes) => {
         if (includes.length > 0) {
           // Extract the static base directory from the first include pattern
-          const pattern = includes[0];
+          const [pattern] = includes;
           if (pattern === undefined) {
             return undefined;
           }

@@ -15,12 +15,19 @@ export default command({
       ctx.logger.info("Running prompts validation...");
     }
 
+    const lintHandleArgs: {
+      silent: boolean;
+      includes?: readonly string[];
+      partials?: string;
+    } = { silent: ctx.args.silent };
+    if (ctx.args.includes !== undefined) {
+      lintHandleArgs.includes = ctx.args.includes;
+    }
+    if (ctx.args.partials !== undefined) {
+      lintHandleArgs.partials = ctx.args.partials;
+    }
     handleLint({
-      args: {
-        silent: ctx.args.silent,
-        ...(ctx.args.includes !== undefined ? { includes: ctx.args.includes } : {}),
-        ...(ctx.args.partials !== undefined ? { partials: ctx.args.partials } : {}),
-      },
+      args: lintHandleArgs,
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,
