@@ -81,10 +81,14 @@ function renderPartial(engine: Liquid, tag: RenderTag): string {
  */
 function parseRenderTags(template: string): RenderTag[] {
   return [...template.matchAll(RENDER_TAG_RE)].map((m) => {
+    const partialName = m[1];
+    if (partialName === undefined) {
+      throw new Error("Malformed render tag: missing partial name");
+    }
     const rawParams: string = (m[2] ?? "").trim();
-    const params = parseParamsOrEmpty(rawParams, m[1]);
+    const params = parseParamsOrEmpty(rawParams, partialName);
 
-    return { fullMatch: m[0], partialName: m[1], params };
+    return { fullMatch: m[0], partialName, params };
   });
 }
 

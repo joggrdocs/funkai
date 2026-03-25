@@ -17,7 +17,6 @@
   },
   "devDependencies": {
     "@funkai/cli": "workspace:*",
-    "@pkg/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

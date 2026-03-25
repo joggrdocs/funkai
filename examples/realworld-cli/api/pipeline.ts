@@ -141,7 +141,7 @@ const extractTestFilePaths = (output: string): string[] => {
   return [
     ...new Set(
       matches.map(([, p]) => {
-        const trimmed = p.trim();
+        const trimmed = p!.trim();
         return trimmed.startsWith("./") ? trimmed : `./${trimmed}`;
       }),
     ),

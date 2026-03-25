@@ -132,7 +132,7 @@ app.post("/analyze", async (c) => {
   });
 });
 
-const port = Number(process.env.PORT ?? 4321);
+const port = Number(process.env["PORT"] ?? 4321);
 
 const { serve } = await import("@hono/node-server");
 

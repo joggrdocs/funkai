@@ -101,13 +101,9 @@ export interface LintPipelineResult {
  * @returns Lint results for all discovered prompts.
  */
 export function runLintPipeline(options: LintPipelineOptions): LintPipelineResult {
-  let excludes: string[] | undefined;
-  if (options.excludes) {
-    excludes = [...options.excludes];
-  }
   const discovered = discoverPrompts({
     includes: [...options.includes],
-    excludes,
+    ...(options.excludes ? { excludes: [...options.excludes] } : {}),
   });
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
   const partialsDirs = resolvePartialsDirs(customPartialsDir);
@@ -153,13 +149,9 @@ export interface GeneratePipelineResult {
  * @returns Parsed prompts ready for code generation, along with lint results.
  */
 export function runGeneratePipeline(options: GeneratePipelineOptions): GeneratePipelineResult {
-  let excludes: string[] | undefined;
-  if (options.excludes) {
-    excludes = [...options.excludes];
-  }
   const discovered = discoverPrompts({
     includes: [...options.includes],
-    excludes,
+    ...(options.excludes ? { excludes: [...options.excludes] } : {}),
   });
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
   const partialsDirs = resolvePartialsDirs(customPartialsDir);
@@ -179,7 +171,7 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
       lintResult: lintPrompt(frontmatter.name, d.filePath, frontmatter.schema, templateVars),
       prompt: {
         name: frontmatter.name,
-        group,
+        ...(group !== undefined ? { group } : {}),
         schema: frontmatter.schema,
         template,
         sourcePath: d.filePath,

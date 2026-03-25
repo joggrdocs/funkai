@@ -93,8 +93,8 @@ describe(withModelMiddleware, () => {
   });
 
   it("respects devtools=false even in development", async () => {
-    const original = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    const original = process.env["NODE_ENV"];
+    process.env["NODE_ENV"] = "development";
 
     const model = createStubModel();
 
@@ -106,7 +106,7 @@ describe(withModelMiddleware, () => {
 
     expect(result).toBe(model);
 
-    process.env.NODE_ENV = original;
+    process.env["NODE_ENV"] = original;
   });
 
   it("respects toolInputExamples=false", async () => {
@@ -122,8 +122,8 @@ describe(withModelMiddleware, () => {
   });
 
   it("enables devtools automatically when NODE_ENV is development and devtools is not set", async () => {
-    const original = process.env.NODE_ENV;
-    process.env.NODE_ENV = "development";
+    const original = process.env["NODE_ENV"];
+    process.env["NODE_ENV"] = "development";
 
     const model = createStubModel();
 
@@ -135,6 +135,6 @@ describe(withModelMiddleware, () => {
     expect(result).not.toBe(model);
     expect(result.modelId).toBe("test-model");
 
-    process.env.NODE_ENV = original;
+    process.env["NODE_ENV"] = original;
   });
 });

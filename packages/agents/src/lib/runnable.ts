@@ -45,7 +45,7 @@ export const FLOW_AGENT_CONFIG: unique symbol = Symbol.for("agent-sdk:flow-agent
  */
 export interface RunnableMeta {
   name: string;
-  inputSchema?: ZodType;
+  inputSchema?: ZodType | undefined;
 }
 
 /**

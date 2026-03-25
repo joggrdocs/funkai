@@ -11,8 +11,8 @@ type ToolExecutor = (input: Record<string, unknown>) => Promise<unknown>;
  */
 export const createLocalTools = (baseDir: string): Readonly<Record<string, ToolExecutor>> => ({
   ls: async (input) => {
-    const path = input.path as string;
-    const recursive = (input.recursive as boolean) ?? false;
+    const path = input["path"] as string;
+    const recursive = (input["recursive"] as boolean) ?? false;
     const targetPath = resolve(baseDir, path);
     const entries = await readdir(targetPath, {
       withFileTypes: true,
@@ -31,8 +31,8 @@ export const createLocalTools = (baseDir: string): Readonly<Record<string, ToolE
   },
 
   grep: async (input) => {
-    const filePath = input.filePath as string;
-    const pattern = input.pattern as string;
+    const filePath = input["filePath"] as string;
+    const pattern = input["pattern"] as string;
     const fullPath = resolve(baseDir, filePath);
     const content = await readFile(fullPath, "utf-8");
     const regex = new RegExp(pattern, "gi");
@@ -49,7 +49,7 @@ export const createLocalTools = (baseDir: string): Readonly<Record<string, ToolE
   },
 
   "read-file": async (input) => {
-    const filePath = input.filePath as string;
+    const filePath = input["filePath"] as string;
     const fullPath = resolve(baseDir, filePath);
     const content = await readFile(fullPath, "utf-8");
     return {

@@ -58,14 +58,14 @@ describe(createToolResultMessage, () => {
     const msg = createToolResultMessage("call-1", "step", "failed", true);
 
     const [part] = msg.content as Record<string, unknown>[];
-    expect(part?.isError).toBeTruthy();
+    expect(part?.["isError"]).toBeTruthy();
   });
 
   it("omits isError when falsy", () => {
     const msg = createToolResultMessage("call-1", "step", "ok");
 
     const [part] = msg.content as Record<string, unknown>[];
-    expect(part?.isError).toBeUndefined();
+    expect(part?.["isError"]).toBeUndefined();
   });
 
   it("defaults output to empty object when undefined", () => {
@@ -93,7 +93,7 @@ describe(createUserMessage, () => {
 
   it("does not throw for non-serializable input", () => {
     const circular: Record<string, unknown> = {};
-    circular.self = circular;
+    circular["self"] = circular;
 
     expect(() => createUserMessage(circular)).not.toThrow();
     expect(createUserMessage(circular).role).toBe("user");
@@ -124,7 +124,7 @@ describe(createAssistantMessage, () => {
 
   it("does not throw for non-serializable output", () => {
     const circular: Record<string, unknown> = {};
-    circular.self = circular;
+    circular["self"] = circular;
 
     expect(() => createAssistantMessage(circular)).not.toThrow();
     expect(createAssistantMessage(circular).role).toBe("assistant");

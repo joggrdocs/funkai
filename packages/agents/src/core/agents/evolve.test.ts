@@ -119,7 +119,7 @@ describe("evolve() with Agent", () => {
 
     const config = readAgentConfig(evolved);
     expect(config).toBeDefined();
-    expect(config?.name).toBe("evolved-agent");
+    expect(config?.["name"]).toBe("evolved-agent");
   });
 
   it("preserves base config fields not overridden", () => {
@@ -127,8 +127,8 @@ describe("evolve() with Agent", () => {
     const evolved = evolve(base, { name: "evolved-agent" });
 
     const config = readAgentConfig(evolved);
-    expect(config?.system).toBe("You are a test agent.");
-    expect(config?.model).toBe(mockModel);
+    expect(config?.["system"]).toBe("You are a test agent.");
+    expect(config?.["model"]).toBe(mockModel);
   });
 
   it("overrides scalar config fields", () => {
@@ -139,8 +139,8 @@ describe("evolve() with Agent", () => {
     });
 
     const config = readAgentConfig(evolved);
-    expect(config?.model).toBe(mockModelAlt);
-    expect(config?.system).toBe("New system prompt.");
+    expect(config?.["model"]).toBe(mockModelAlt);
+    expect(config?.["system"]).toBe("New system prompt.");
   });
 
   it("shallow merges tools — overriding an existing key", () => {
@@ -160,10 +160,10 @@ describe("evolve() with Agent", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
     const evolved = evolve(base as any, { tools: { b: toolBReplacement } });
     const config = readAgentConfig(evolved);
-    const tools = config?.tools as Record<string, unknown>;
+    const tools = config?.["tools"] as Record<string, unknown>;
 
-    expect(tools.a).toBe(toolA);
-    expect(tools.b).toBe(toolBReplacement);
+    expect(tools["a"]).toBe(toolA);
+    expect(tools["b"]).toBe(toolBReplacement);
   });
 
   it("shallow merges agents — overriding an existing subagent", () => {
@@ -185,10 +185,10 @@ describe("evolve() with Agent", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
     const evolved = evolve(base as any, { agents: { b: subBReplacement } });
     const config = readAgentConfig(evolved);
-    const agents = config?.agents as Record<string, unknown>;
+    const agents = config?.["agents"] as Record<string, unknown>;
 
-    expect(agents.a).toBe(subA);
-    expect(agents.b).toBe(subBReplacement);
+    expect(agents["a"]).toBe(subA);
+    expect(agents["b"]).toBe(subBReplacement);
   });
 
   it("does not mutate the base agent", () => {
@@ -198,8 +198,8 @@ describe("evolve() with Agent", () => {
     evolve(base, { name: "evolved", system: "Changed." });
 
     const baseCfgAfter = readAgentConfig(base);
-    expect(baseCfgAfter?.name).toBe("base-agent");
-    expect(baseCfgAfter?.system).toBe("You are a test agent.");
+    expect(baseCfgAfter?.["name"]).toBe("base-agent");
+    expect(baseCfgAfter?.["system"]).toBe("You are a test agent.");
     expect(baseCfgAfter).toEqual(baseCfg);
   });
 
@@ -224,9 +224,9 @@ describe("evolve() with Agent", () => {
 
     const evolved = evolve(base, { name: "renamed" });
     const config = readAgentConfig(evolved);
-    const tools = config?.tools as Record<string, unknown>;
+    const tools = config?.["tools"] as Record<string, unknown>;
 
-    expect(tools.a).toBe(toolA);
+    expect(tools["a"]).toBe(toolA);
   });
 });
 
@@ -237,7 +237,7 @@ describe("evolve() with FlowAgent", () => {
 
     const stored = readFlowConfig(evolved);
     expect(stored).toBeDefined();
-    expect(stored?.config.name).toBe("evolved-flow");
+    expect(stored?.config["name"]).toBe("evolved-flow");
   });
 
   it("preserves base config fields not overridden", () => {
@@ -245,8 +245,8 @@ describe("evolve() with FlowAgent", () => {
     const evolved = evolve(base, { name: "evolved-flow" });
 
     const stored = readFlowConfig(evolved);
-    expect(stored?.config.input).toBe(Input);
-    expect(stored?.config.output).toBe(Output);
+    expect(stored?.config["input"]).toBe(Input);
+    expect(stored?.config["output"]).toBe(Output);
   });
 
   it("overrides scalar config fields", () => {
@@ -255,7 +255,7 @@ describe("evolve() with FlowAgent", () => {
     const evolved = evolve(base, { logger: newLogger });
 
     const stored = readFlowConfig(evolved);
-    expect(stored?.config.logger).toBe(newLogger);
+    expect(stored?.config["logger"]).toBe(newLogger);
   });
 
   it("does not mutate the base flow agent", () => {
@@ -265,7 +265,7 @@ describe("evolve() with FlowAgent", () => {
     evolve(base, { name: "evolved-flow" });
 
     const baseCfgAfter = readFlowConfig(base);
-    expect(baseCfgAfter?.config.name).toBe("base-flow");
+    expect(baseCfgAfter?.config["name"]).toBe("base-flow");
     expect(baseCfgAfter).toEqual(baseCfg);
   });
 
@@ -309,7 +309,7 @@ describe("evolve() with FlowAgent", () => {
     expect(typeof evolved.generate).toBe("function");
 
     const stored = readFlowConfig(evolved);
-    expect(stored?.config.name).toBe("evolved-void");
+    expect(stored?.config["name"]).toBe("evolved-void");
   });
 
   it("overrides hooks on flow agent", () => {
@@ -318,7 +318,7 @@ describe("evolve() with FlowAgent", () => {
     const evolved = evolve(base, { onStart });
 
     const stored = readFlowConfig(evolved);
-    expect(stored?.config.onStart).toBe(onStart);
+    expect(stored?.config["onStart"]).toBe(onStart);
   });
 
   it("shallow merges agents — overriding an existing agent dependency", () => {
@@ -344,10 +344,10 @@ describe("evolve() with FlowAgent", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- testing runtime merge behavior
     const evolved = evolve(base as any, { agents: { b: subBReplacement } });
     const stored = readFlowConfig(evolved);
-    const agents = stored?.config.agents as Record<string, unknown>;
+    const agents = stored?.config["agents"] as Record<string, unknown>;
 
-    expect(agents.a).toBe(subA);
-    expect(agents.b).toBe(subBReplacement);
+    expect(agents["a"]).toBe(subA);
+    expect(agents["b"]).toBe(subBReplacement);
   });
 
   it("preserves agents when override has no agents field", () => {
@@ -366,9 +366,9 @@ describe("evolve() with FlowAgent", () => {
 
     const evolved = evolve(base, { name: "renamed-flow" });
     const stored = readFlowConfig(evolved);
-    const agents = stored?.config.agents as Record<string, unknown>;
+    const agents = stored?.config["agents"] as Record<string, unknown>;
 
-    expect(agents.a).toBe(subA);
+    expect(agents["a"]).toBe(subA);
   });
 
   it("handler receives evolved agents at runtime", async () => {
@@ -401,8 +401,8 @@ describe("evolve() with FlowAgent", () => {
     await evolved.generate({ input: { text: "hello" } });
 
     expect(receivedAgents).toBeDefined();
-    expect(receivedAgents?.a).toBe(subA);
-    expect(receivedAgents?.b).toBe(subBReplacement);
+    expect(receivedAgents?.["a"]).toBe(subA);
+    expect(receivedAgents?.["b"]).toBe(subBReplacement);
   });
 });
 
@@ -414,7 +414,7 @@ describe("evolve() with Agent mapper function", () => {
     }));
 
     const config = readAgentConfig(evolved);
-    expect(config?.name).toBe("base-agent-evolved");
+    expect(config?.["name"]).toBe("base-agent-evolved");
   });
 
   it("can override model via mapper", () => {
@@ -424,7 +424,7 @@ describe("evolve() with Agent mapper function", () => {
     }));
 
     const config = readAgentConfig(evolved);
-    expect(config?.model).toBe(mockModelAlt);
+    expect(config?.["model"]).toBe(mockModelAlt);
   });
 
   it("preserves base config fields not in mapper return", () => {
@@ -434,10 +434,10 @@ describe("evolve() with Agent mapper function", () => {
     }));
 
     const config = readAgentConfig(evolved);
-    expect(config?.system).toBe("You are a test agent.");
-    expect(config?.model).toBe(mockModel);
-    expect(config?.input).toBe(Input);
-    expect(config?.output).toBe(Output);
+    expect(config?.["system"]).toBe("You are a test agent.");
+    expect(config?.["model"]).toBe(mockModel);
+    expect(config?.["input"]).toBe(Input);
+    expect(config?.["output"]).toBe(Output);
   });
 });
 
@@ -449,7 +449,7 @@ describe("evolve() with FlowAgent mapper function", () => {
     }));
 
     const stored = readFlowConfig(evolved);
-    expect(stored?.config.name).toBe("base-flow-evolved");
+    expect(stored?.config["name"]).toBe("base-flow-evolved");
   });
 
   it("preserves handler when using mapper form", async () => {
@@ -489,8 +489,8 @@ describe("evolve() with FlowAgent mapper function", () => {
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
     const stored = readFlowConfig(evolved);
-    const agents = stored?.config.agents as Record<string, unknown>;
-    expect(agents.a).toBe(subAReplacement);
+    const agents = stored?.config["agents"] as Record<string, unknown>;
+    expect(agents["a"]).toBe(subAReplacement);
   });
 
   it("replaces handler when provided with mapper form", async () => {

@@ -14,7 +14,7 @@ interface WrapModelOptions {
    * Additional middleware to apply before defaults (outermost).
    * Middleware runs in array order — first entry wraps outermost.
    */
-  middleware?: LanguageModelMiddleware[];
+  middleware?: LanguageModelMiddleware[] | undefined;
 
   /**
    * Whether to include the AI SDK devtools middleware.
@@ -22,7 +22,7 @@ interface WrapModelOptions {
    * Defaults to `true` when `NODE_ENV === 'development'`.
    * Set to `false` to disable in development, or `true` to force-enable.
    */
-  devtools?: boolean;
+  devtools?: boolean | undefined;
 
   /**
    * Whether to include the `addToolInputExamplesMiddleware`.
@@ -33,7 +33,7 @@ interface WrapModelOptions {
    *
    * @default true
    */
-  toolInputExamples?: boolean;
+  toolInputExamples?: boolean | undefined;
 }
 
 /**
@@ -49,7 +49,7 @@ interface WrapModelOptions {
 export async function withModelMiddleware(options: WrapModelOptions): Promise<LanguageModel> {
   const useDevtools =
     options.devtools === true ||
-    (options.devtools !== false && process.env.NODE_ENV === "development");
+    (options.devtools !== false && process.env["NODE_ENV"] === "development");
   const useToolInputExamples = options.toolInputExamples !== false;
 
   const defaultMiddleware: LanguageModelMiddleware[] = [];

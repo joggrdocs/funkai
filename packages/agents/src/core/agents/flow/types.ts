@@ -111,7 +111,7 @@ export interface FlowAgentConfigBase<TInput> {
    *
    * @see {@link FlowSubAgents}
    */
-  agents?: FlowSubAgents;
+  agents?: FlowSubAgents | undefined;
 
   /**
    * Pino-compatible logger.

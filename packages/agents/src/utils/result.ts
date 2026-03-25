@@ -103,7 +103,7 @@ export function err(
   message: string,
   cause?: Error,
 ): { ok: false; error: ResultError } {
-  return { ok: false as const, error: { code, message, cause } };
+  return { ok: false as const, error: { code, message, ...(cause ? { cause } : {}) } };
 }
 
 /**

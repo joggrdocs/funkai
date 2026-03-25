@@ -57,7 +57,12 @@ function resolveLintArgs(
   const excludes = (config && config.excludes) ?? [];
   const partials = args.partials ?? (config && config.partials);
 
-  return { includes, excludes, partials, silent: args.silent };
+  return {
+    includes,
+    excludes,
+    silent: args.silent,
+    ...(partials !== undefined ? { partials } : {}),
+  };
 }
 
 /**
@@ -68,7 +73,11 @@ function resolveLintArgs(
 export function handleLint({ args, config, logger, fail }: HandleLintParams): void {
   const { includes, excludes, partials, silent } = resolveLintArgs(args, config, fail);
 
-  const { discovered, results } = runLintPipeline({ includes, excludes, partials });
+  const { discovered, results } = runLintPipeline({
+    includes,
+    excludes,
+    ...(partials !== undefined ? { partials } : {}),
+  });
 
   if (!silent) {
     logger.info(`Linting ${discovered} prompt(s)...`);
@@ -110,7 +119,11 @@ export default command({
   handler(ctx) {
     const config = getConfig(ctx);
     handleLint({
-      args: ctx.args,
+      args: {
+        silent: ctx.args.silent,
+        ...(ctx.args.includes !== undefined ? { includes: ctx.args.includes } : {}),
+        ...(ctx.args.partials !== undefined ? { partials: ctx.args.partials } : {}),
+      },
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,

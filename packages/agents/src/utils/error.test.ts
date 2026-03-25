@@ -57,7 +57,7 @@ describe(toError, () => {
 
   it("handles circular references without throwing", () => {
     const thrown: Record<string, unknown> = { name: "circular" };
-    thrown.self = thrown;
+    thrown["self"] = thrown;
     const result = toError(thrown);
     expect(result).toBeInstanceOf(Error);
     // Falls back to String() when JSON.stringify throws on circular refs
@@ -129,7 +129,7 @@ describe(safeStringify, () => {
 
   it("falls back to String() for circular references", () => {
     const circular: Record<string, unknown> = { name: "loop" };
-    circular.self = circular;
+    circular["self"] = circular;
     expect(safeStringify(circular)).toBe("[object Object]");
   });
 });
@@ -165,7 +165,7 @@ describe(safeStringifyJSON, () => {
 
   it("returns empty string for circular references", () => {
     const circular: Record<string, unknown> = { name: "loop" };
-    circular.self = circular;
+    circular["self"] = circular;
     expect(safeStringifyJSON(circular)).toBe("");
   });
 

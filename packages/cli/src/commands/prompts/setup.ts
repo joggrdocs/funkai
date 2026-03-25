@@ -56,7 +56,7 @@ export async function setupPrompts(ctx: Pick<Context, "prompts" | "logger">): Pr
     const extensionsPath = resolve(vscodeDir, EXTENSIONS_FILE);
     const extensions = readJsonFile(extensionsPath);
 
-    const currentRecs = (extensions.recommendations ?? []) as string[];
+    const currentRecs = (extensions["recommendations"] ?? []) as string[];
     const extensionId = "sissel.shopify-liquid";
 
     const recommendations = ensureRecommendation(currentRecs, extensionId);
@@ -97,8 +97,8 @@ export async function setupPrompts(ctx: Pick<Context, "prompts" | "logger">): Pr
     const tsconfigPath = resolve(TSCONFIG_FILE);
     const tsconfig = readJsonFile(tsconfigPath);
 
-    const compilerOptions = (tsconfig.compilerOptions ?? {}) as Record<string, unknown>;
-    const existingPaths = (compilerOptions.paths ?? {}) as Record<string, string[]>;
+    const compilerOptions = (tsconfig["compilerOptions"] ?? {}) as Record<string, unknown>;
+    const existingPaths = (compilerOptions["paths"] ?? {}) as Record<string, string[]>;
 
     // oxlint-disable-next-line security/detect-object-injection -- safe: PROMPTS_ALIAS is a known constant string
     if (existingPaths[PROMPTS_ALIAS]) {

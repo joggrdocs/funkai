@@ -16,7 +16,11 @@ export default command({
     }
 
     handleLint({
-      args: ctx.args,
+      args: {
+        silent: ctx.args.silent,
+        ...(ctx.args.includes !== undefined ? { includes: ctx.args.includes } : {}),
+        ...(ctx.args.partials !== undefined ? { partials: ctx.args.partials } : {}),
+      },
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,

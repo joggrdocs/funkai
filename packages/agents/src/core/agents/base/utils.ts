@@ -54,28 +54,28 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  */
 export interface ParentAgentContext {
   /** Parent logger — sub-agent creates `.child({ agentId })` from it. */
-  log?: Logger;
+  log?: Logger | undefined;
 
   /**
    * Fires when a sub-agent step starts.
    *
    * Uses `StepInfo` — a fixed (non-generic) type, safe to forward.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+  onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
 
   /**
    * Fires when a sub-agent step finishes.
    *
    * Uses `StepFinishEvent` — a fixed (non-generic) type, safe to forward.
    */
-  onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+  onStepFinish?: ((event: StepFinishEvent) => void | Promise<void>) | undefined;
 
   /**
    * Agent ancestry chain from root to the current agent.
    *
    * @internal Framework-only — not exposed on public `GenerateParams`.
    */
-  agentChain?: readonly AgentChainEntry[];
+  agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**

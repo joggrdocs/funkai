@@ -337,13 +337,14 @@ export function agent<
 
       const aiResult = await generateText({
         model,
-        system,
+        ...(system !== undefined ? { system } : {}),
         ...promptParams,
-        tools: aiTools,
-        output,
+        ...(aiTools !== undefined ? { tools: aiTools } : {}),
+        ...(output !== undefined ? { output } : {}),
         stopWhen: stepCountIs(maxSteps),
-        abortSignal: signal,
-        onStepFinish,
+        ...(signal !== undefined ? { abortSignal: signal } : {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+        onStepFinish: onStepFinish as any,
       });
 
       const duration = Date.now() - startedAt;
@@ -436,13 +437,14 @@ export function agent<
 
       const aiResult = streamText({
         model,
-        system,
+        ...(system !== undefined ? { system } : {}),
         ...promptParams,
-        tools: aiTools,
-        output,
+        ...(aiTools !== undefined ? { tools: aiTools } : {}),
+        ...(output !== undefined ? { output } : {}),
         stopWhen: stepCountIs(maxSteps),
-        abortSignal: signal,
-        onStepFinish,
+        ...(signal !== undefined ? { abortSignal: signal } : {}),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK usage fields differ under exactOptionalPropertyTypes
+        onStepFinish: onStepFinish as any,
       });
 
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();

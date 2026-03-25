@@ -44,9 +44,9 @@ export interface StepBuilderOptions {
    * visibility into every `$` call.
    */
   parentHooks?: {
-    onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
-    onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
-  };
+    onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
+    onStepFinish?: ((event: StepFinishEvent) => void | Promise<void>) | undefined;
+  } | undefined;
 
   /**
    * Stream writer for emitting typed `StreamPart` events.
@@ -55,7 +55,7 @@ export interface StepBuilderOptions {
    * AI SDK stream events. Used by `flowAgent.stream()` to pipe
    * step events through the readable stream.
    */
-  writer?: WritableStreamDefaultWriter<StreamPart>;
+  writer?: WritableStreamDefaultWriter<StreamPart> | undefined;
 
   /**
    * Agent ancestry chain from root to the current flow agent.
@@ -66,7 +66,7 @@ export interface StepBuilderOptions {
    *
    * @internal Framework-only — not exposed to users.
    */
-  agentChain?: readonly AgentChainEntry[];
+  agentChain?: readonly AgentChainEntry[] | undefined;
 }
 
 /**
@@ -125,10 +125,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     id: string;
     type: OperationType;
     execute: (args: { $: StepBuilder }) => Promise<T>;
-    input?: unknown;
-    onStart?: (event: { id: string }) => void | Promise<void>;
-    onFinish?: (event: { id: string; result: unknown; duration: number }) => void | Promise<void>;
-    onError?: (event: { id: string; error: Error }) => void | Promise<void>;
+    input?: unknown | undefined;
+    onStart?: ((event: { id: string }) => void | Promise<void>) | undefined;
+    onFinish?: ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>) | undefined;
+    onError?: ((event: { id: string; error: Error }) => void | Promise<void>) | undefined;
   }): Promise<StepResult<T>> {
     const { id, type, execute, input, onStart, onFinish, onError } = params;
 
@@ -635,32 +635,32 @@ function mergeStepHooks(
   let childStart: StepStartHook | undefined;
   let childFinish: StepFinishHook | undefined;
   if (isNotNil(childConfig)) {
-    childStart = childConfig.onStepStart as StepStartHook | undefined;
-    childFinish = childConfig.onStepFinish as StepFinishHook | undefined;
+    childStart = childConfig["onStepStart"] as StepStartHook | undefined;
+    childFinish = childConfig["onStepFinish"] as StepFinishHook | undefined;
   }
 
   const result: Record<string, unknown> = {};
 
   if (isNotNil(parentStart) && isNotNil(childStart)) {
-    result.onStepStart = async (event: { step: StepInfo }) => {
+    result["onStepStart"] = async (event: { step: StepInfo }) => {
       await childStart(event);
       await parentStart(event);
     };
   } else if (isNotNil(parentStart)) {
-    result.onStepStart = parentStart;
+    result["onStepStart"] = parentStart;
   } else if (isNotNil(childStart)) {
-    result.onStepStart = childStart;
+    result["onStepStart"] = childStart;
   }
 
   if (isNotNil(parentFinish) && isNotNil(childFinish)) {
-    result.onStepFinish = async (event: StepFinishEvent) => {
+    result["onStepFinish"] = async (event: StepFinishEvent) => {
       await childFinish(event);
       await parentFinish(event);
     };
   } else if (isNotNil(parentFinish)) {
-    result.onStepFinish = parentFinish;
+    result["onStepFinish"] = parentFinish;
   } else if (isNotNil(childFinish)) {
-    result.onStepFinish = childFinish;
+    result["onStepFinish"] = childFinish;
   }
 
   return result;

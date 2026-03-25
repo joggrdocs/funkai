@@ -76,7 +76,11 @@ export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams):
     throw new Error(`No frontmatter found in ${filePath}`);
   }
 
-  const parsed = parseYamlContent(fmMatch[1], filePath);
+  const fmContent = fmMatch[1];
+  if (fmContent === undefined) {
+    throw new Error(`No frontmatter content found in ${filePath}`);
+  }
+  const parsed = parseYamlContent(fmContent, filePath);
 
   if (!parsed || typeof parsed !== "object") {
     throw new Error(`Frontmatter is not a valid object in ${filePath}`);
@@ -94,12 +98,17 @@ export function parseFrontmatter({ content, filePath }: ParseFrontmatterParams):
     );
   }
 
-  const group = parseGroup(parsed.group, filePath);
-  const version = parseVersion(parsed.version);
+  const group = parseGroup(parsed["group"], filePath);
+  const version = parseVersion(parsed["version"]);
 
-  const schema = parseSchemaBlock(parsed.schema, filePath);
+  const schema = parseSchemaBlock(parsed["schema"], filePath);
 
-  return { name, group, version, schema };
+  return {
+    name,
+    schema,
+    ...(group !== undefined ? { group } : {}),
+    ...(version !== undefined ? { version } : {}),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -180,9 +189,9 @@ function parseSchemaBlock(raw: unknown, filePath: string): readonly SchemaVariab
               typeof v === "object" && v !== null && !Array.isArray(v),
           ),
           (def) => {
-            const type = stringOrDefault(def.type, "string");
-            const required = def.required !== false;
-            const description = stringOrUndefined(def.description);
+            const type = stringOrDefault(def["type"], "string");
+            const required = def["required"] !== false;
+            const description = stringOrUndefined(def["description"]);
             return { name: varName, type, required, description };
           },
         )

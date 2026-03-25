@@ -71,7 +71,13 @@ function resolveGenerateArgs(
     fail("Missing --out flag. Provide it via CLI or set prompts.out in funkai.config.ts.");
   }
 
-  return { out, includes, excludes, partials, silent: args.silent };
+  return {
+    out,
+    includes,
+    excludes,
+    silent: args.silent,
+    ...(partials !== undefined ? { partials } : {}),
+  };
 }
 
 /**
@@ -82,12 +88,13 @@ function resolveGenerateArgs(
 export function handleGenerate({ args, config, logger, fail }: HandleGenerateParams): void {
   const { out, includes, excludes, partials, silent } = resolveGenerateArgs(args, config, fail);
 
+  const configGroups = config && config.groups;
   const { discovered, lintResults, prompts } = runGeneratePipeline({
     includes,
     excludes,
     out,
-    partials,
-    groups: config && config.groups,
+    ...(partials !== undefined ? { partials } : {}),
+    ...(configGroups !== undefined ? { groups: configGroups } : {}),
   });
 
   if (!silent) {
@@ -150,7 +157,12 @@ export default command({
   handler(ctx) {
     const config = getConfig(ctx);
     handleGenerate({
-      args: ctx.args,
+      args: {
+        silent: ctx.args.silent,
+        ...(ctx.args.out !== undefined ? { out: ctx.args.out } : {}),
+        ...(ctx.args.includes !== undefined ? { includes: ctx.args.includes } : {}),
+        ...(ctx.args.partials !== undefined ? { partials: ctx.args.partials } : {}),
+      },
       config: config.prompts,
       logger: ctx.logger,
       fail: ctx.fail,
