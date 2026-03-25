@@ -618,14 +618,22 @@ function mergeStepHooks(
   parentHooks: StepBuilderOptions["parentHooks"],
   childConfig: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-  const parentStart = isNil(parentHooks) ? undefined : parentHooks.onStepStart;
-  const parentFinish = isNil(parentHooks) ? undefined : parentHooks.onStepFinish;
-  const childStart = isNil(childConfig)
-    ? undefined
-    : (childConfig.onStepStart as typeof parentStart);
-  const childFinish = isNil(childConfig)
-    ? undefined
-    : (childConfig.onStepFinish as typeof parentFinish);
+  type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
+  type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
+
+  let parentStart: StepStartHook | undefined;
+  let parentFinish: StepFinishHook | undefined;
+  if (isNotNil(parentHooks)) {
+    parentStart = parentHooks.onStepStart;
+    parentFinish = parentHooks.onStepFinish;
+  }
+
+  let childStart: StepStartHook | undefined;
+  let childFinish: StepFinishHook | undefined;
+  if (isNotNil(childConfig)) {
+    childStart = childConfig.onStepStart as StepStartHook | undefined;
+    childFinish = childConfig.onStepFinish as StepFinishHook | undefined;
+  }
 
   const result: Record<string, unknown> = {};
 
