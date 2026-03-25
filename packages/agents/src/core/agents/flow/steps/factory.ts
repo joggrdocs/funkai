@@ -370,14 +370,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message);
           }
-          // Safe after the `!streamResult.ok` guard above — the Result union
-          // Doesn't spread StreamResult props at the type level, so we cast.
-          const full = streamResult as unknown as StreamResult & {
-            ok: true;
-          };
 
           // Forward text-delta events from sub-agent to parent stream
-          for await (const part of full.fullStream) {
+          for await (const part of streamResult.fullStream) {
             if (part.type === "text-delta") {
               await writer.write(part);
             }
@@ -385,9 +380,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
           // Await the final results
           return {
-            output: await full.output,
-            usage: await full.usage,
-            finishReason: await full.finishReason,
+            output: await streamResult.output,
+            usage: await streamResult.usage,
+            finishReason: await streamResult.finishReason,
           };
         }
 
@@ -395,15 +390,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         if (!generateResult.ok) {
           throw generateResult.error.cause ?? new Error(generateResult.error.message);
         }
-        // Runnable.generate() types only { output }, but Agent.generate()
-        // Returns full GenerateResult at runtime including usage, finishReason.
-        const full = generateResult as unknown as BaseGenerateResult & {
-          ok: true;
-        };
         return {
-          output: full.output,
-          usage: full.usage,
-          finishReason: full.finishReason,
+          output: generateResult.output,
+          usage: generateResult.usage,
+          finishReason: generateResult.finishReason,
         };
       },
       onStart: config.onStart,

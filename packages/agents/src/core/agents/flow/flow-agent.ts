@@ -42,21 +42,6 @@ type StepStartHook = (event: StepStartEvent) => void | Promise<void>;
 type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
 /**
- * Unified onFinish hook shape used inside the flow agent implementation.
- *
- * The config is a discriminated union (`WithOutput | WithoutOutput`) whose
- * `onFinish` callbacks have different `result` types. In the implementation
- * `TOutput = any`, so we unify them under a single function type.
- *
- * @private
- */
-type OnFinishHook<TInput, TOutput> = (event: {
-  input: TInput;
-  result: FlowAgentGenerateResult<TOutput>;
-  duration: number;
-}) => void | Promise<void>;
-
-/**
  * Build a merged `onStepFinish` parent hook that fires both the config-level
  * and per-call override hooks sequentially (config first, then override).
  *
@@ -444,8 +429,18 @@ export function flowAgent<TInput, TOutput = any>(
         duration,
       };
 
-      // Config.onFinish is a union from the discriminated config type — cast to the unified hook shape
-      const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
+      // config.onFinish is a union (WithOutput | WithoutOutput) whose parameter
+      // types differ by TOutput vs string. TS can't call a union of contravariant
+      // functions — even discriminant narrowing doesn't help because `result` stays
+      // typed as FlowAgentGenerateResult<TOutput>. The cast is safe: the implementation
+      // signature uses TOutput = any, so both variants accept the event at runtime.
+      const configOnFinish = config.onFinish as
+        | ((event: {
+            input: TInput;
+            result: FlowAgentGenerateResult<TOutput>;
+            duration: number;
+          }) => void | Promise<void>)
+        | undefined;
 
       await fireHooks(
         log,
@@ -526,8 +521,14 @@ export function flowAgent<TInput, TOutput = any>(
           duration,
         };
 
-        // Config.onFinish is a union from the discriminated config type — cast to the unified hook shape
-        const configOnFinish = config.onFinish as OnFinishHook<TInput, TOutput> | undefined;
+        // See generate() for why this cast is needed (union of contravariant functions)
+        const configOnFinish = config.onFinish as
+          | ((event: {
+              input: TInput;
+              result: FlowAgentGenerateResult<TOutput>;
+              duration: number;
+            }) => void | Promise<void>)
+          | undefined;
 
         await fireHooks(
           log,
@@ -592,9 +593,14 @@ export function flowAgent<TInput, TOutput = any>(
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
-    streamResult.output.catch(() => {});
-    streamResult.usage.catch(() => {});
-    streamResult.finishReason.catch(() => {});
+    // PromiseLike doesn't have .catch(), so use .then(undefined, noop)
+    const noop = () => {};
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    streamResult.output.then(undefined, noop);
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    streamResult.usage.then(undefined, noop);
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    streamResult.finishReason.then(undefined, noop);
 
     return { ok: true, ...streamResult };
   }

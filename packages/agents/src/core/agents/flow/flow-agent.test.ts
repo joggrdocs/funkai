@@ -755,8 +755,10 @@ describe("stream() error handling", () => {
     }
 
     // Suppress all derived promise rejections to avoid unhandled rejection noise
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream (should close after error)
     const reader = result.fullStream.getReader();
@@ -783,8 +785,10 @@ describe("stream() error handling", () => {
     }
 
     // Suppress derived promise rejections
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream and collect events
     const parts: Record<string, unknown>[] = [];
@@ -826,8 +830,10 @@ describe("stream() output validation", () => {
     }
 
     // Suppress derived promise rejections
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream
     const reader = result.fullStream.getReader();
@@ -931,8 +937,10 @@ describe("stream() hooks", () => {
     }
 
     // Suppress all derived promise rejections
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain
     const reader = result.fullStream.getReader();
@@ -944,7 +952,8 @@ describe("stream() hooks", () => {
     }
 
     // Wait for the error to settle
-    await result.output.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    await result.output.then(undefined, () => {});
 
     expect(onError).toHaveBeenCalledTimes(1);
   });

@@ -1408,9 +1408,12 @@ describe("stream() async error during consumption", () => {
     }
 
     // Suppress derived promise rejections
-    result.output.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch(); .then(undefined, noop) is the equivalent
+    result.output.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream — writer.abort() errors the readable side, so
     // Reader.read() will reject once the error propagates.
@@ -1451,9 +1454,12 @@ describe("stream() async error during consumption", () => {
       return;
     }
 
-    result.output.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.output.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.usage.then(undefined, () => {});
+    // oxlint-disable-next-line -- PromiseLike has no .catch()
+    result.finishReason.then(undefined, () => {});
 
     // Drain the stream to trigger the error — reader.read() rejects
     // Once the writer aborts the transform stream.
