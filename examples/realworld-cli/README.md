@@ -1,27 +1,28 @@
-# realworld-cli
+# Real-World CLI
 
-A realistic CLI example that uses an AI agent pipeline to scan a codebase for poorly written unit tests.
+A realistic CLI application that uses an AI agent pipeline to scan a codebase for poorly written unit tests. Demonstrates a client/server architecture where the AI runs remotely but tools execute locally.
 
-## Architecture
+## What You'll Learn
 
-```
-                          POST /analyze
-CLI (@clack/prompts) ──────────────────────→ Hono API (agents + LLM)
-                     ←── SSE: tool-execute ──┘
-                     ──→ POST /tool-result ──→  (resumes agent)
-                     ←── SSE: text-delta ────┘
-                     ←── SSE: analysis ──────┘
-                     ←── SSE: done ──────────┘
-```
+- Building a multi-agent pipeline with `flowAgent` (scanner + analyzer)
+- Server-Sent Events (SSE) for real-time streaming between API and CLI
+- Remote agent execution with local tool execution (tools run on the client's filesystem)
+- Using `.prompt` files with codegen for agent system prompts
+- Writing markdown reports from agent output
 
-- **API server** (`api/`) — Hosts the agent pipeline (scanner + analyzer) and makes LLM calls via OpenRouter. When an agent decides to call a tool (`ls`, `grep`, `read-file`), the API sends a `tool-execute` SSE event to the CLI and **waits** for the result.
-- **CLI client** (`cli/`) — Owns the filesystem. Receives `tool-execute` events, runs the tool locally against the user's codebase, and POSTs the result back to `/tool-result`. Streams all agent activity (tool calls, text output, step progress) to the terminal using `@clack/prompts`. Writes a markdown report to `./reports/` when complete.
-- **Fixtures** (`fixtures/`) — Sample source code and intentionally bad tests so the demo works out of the box.
-- **Shared** (`shared/`) — SSE event types and tool result payload shared between API and CLI.
+## Packages Used
 
-This pattern mirrors real-world deployments where the AI server is remote but tools execute locally.
+- `@funkai/agents` — `agent`, `flowAgent`, `tool`
+- `@funkai/prompts` — Prompt runtime (LiquidJS rendering, Zod validation)
+- `@funkai/cli` — `funkai prompts generate` codegen command
+- `@ai-sdk/openai` — OpenAI provider
+- `zod` — Input/output validation
+- `hono` — API server
+- `@clack/prompts` — CLI interface
 
-## Setup
+## Prerequisites
+
+Set your OpenAI API key (or configure OpenRouter):
 
 ```bash
 # From the monorepo root
@@ -58,11 +59,26 @@ pnpm cli --filter=@funkai/example-realworld-cli
 
 The CLI prompts for a directory to scan. Enter `./fixtures` (default) to analyze the included bad tests, or any other path relative to your current working directory.
 
-## Reports
+## How It Works
 
-After analysis completes, the CLI writes a markdown report to `./reports/<timestamp>.md` containing each file's analysis summary, issue counts, and the full scan metadata.
+### Architecture
 
-## SSE event flow
+```
+                          POST /analyze
+CLI (@clack/prompts) ──────────────────────→ Hono API (agents + LLM)
+                     ←── SSE: tool-execute ──┘
+                     ──→ POST /tool-result ──→  (resumes agent)
+                     ←── SSE: text-delta ────┘
+                     ←── SSE: analysis ──────┘
+                     ←── SSE: done ──────────┘
+```
+
+- **API server** (`api/`) — Hosts the agent pipeline (scanner + analyzer) and makes LLM calls via OpenRouter. When an agent decides to call a tool (`ls`, `grep`, `read-file`), the API sends a `tool-execute` SSE event to the CLI and waits for the result.
+- **CLI client** (`cli/`) — Owns the filesystem. Receives `tool-execute` events, runs the tool locally against the user's codebase, and POSTs the result back to `/tool-result`. Streams all agent activity to the terminal using `@clack/prompts`. Writes a markdown report to `./reports/` when complete.
+- **Fixtures** (`fixtures/`) — Sample source code and intentionally bad tests so the demo works out of the box.
+- **Shared** (`shared/`) — SSE event types and tool result payload shared between API and CLI.
+
+### SSE event flow
 
 | Event           | Direction | Description                                |
 | --------------- | --------- | ------------------------------------------ |
@@ -77,19 +93,7 @@ After analysis completes, the CLI writes a markdown report to `./reports/<timest
 | `done`          | API → CLI | Pipeline finished with totals              |
 | `error`         | API → CLI | Error occurred                             |
 
-## Turbo pipeline
-
-The package-level `turbo.json` wires up the build dependencies:
-
-```
-^build (agents, prompts, cli) → prompts:generate → build / typecheck / dev
-```
-
-- `prompts:generate` runs automatically before build, typecheck, and dev
-- `dev` is persistent and uncached (nodemon watches for changes)
-- `cli` depends on `build` so the dist is always fresh
-
-## What the agents find
+### What the agents find
 
 The fixture tests contain these intentional issues:
 

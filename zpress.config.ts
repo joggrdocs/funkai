@@ -295,6 +295,36 @@ export default defineConfig({
       icon: "mdi:file-document-outline",
       items: [
         {
+          title: "Basic Agent",
+          path: "/examples/basic-agent",
+          include: "examples/basic-agent/README.md",
+        },
+        {
+          title: "Flow Agent",
+          path: "/examples/flow-agent",
+          include: "examples/flow-agent/README.md",
+        },
+        {
+          title: "Flow Agent Steps",
+          path: "/examples/flow-agent-steps",
+          include: "examples/flow-agent-steps/README.md",
+        },
+        {
+          title: "Streaming",
+          path: "/examples/streaming",
+          include: "examples/streaming/README.md",
+        },
+        {
+          title: "Prompts Basic",
+          path: "/examples/prompts-basic",
+          include: "examples/prompts-basic/README.md",
+        },
+        {
+          title: "Prompts with Sub-Agents",
+          path: "/examples/prompts-subagents",
+          include: "examples/prompts-subagents/README.md",
+        },
+        {
           title: "Real-World CLI",
           path: "/examples/realworld-cli",
           include: "examples/realworld-cli/README.md",
