@@ -1,6 +1,7 @@
+import type { LanguageModelUsage } from "ai";
 import { groupBy, isNotNil, isString, sumBy } from "es-toolkit";
 
-import type { TokenUsage, TokenUsageRecord } from "@/core/provider/types.js";
+import type { TokenUsageRecord } from "@/core/provider/types.js";
 
 /**
  * Source identifying a specific agent.
@@ -20,27 +21,31 @@ export interface UnattributedSource {
 /**
  * Per-agent usage — token counts with agent source identity.
  */
-export interface AgentTokenUsage extends TokenUsage {
-  /** Which agent (or unattributed source) produced this usage. */
+export interface AgentTokenUsage extends LanguageModelUsage {
+  /**
+   * Which agent (or unattributed source) produced this usage.
+   */
   readonly source: AgentSource | UnattributedSource;
 }
 
 /**
  * Per-model usage — token counts with model identity.
  */
-export interface ModelTokenUsage extends TokenUsage {
-  /** The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`). */
+export interface ModelTokenUsage extends LanguageModelUsage {
+  /**
+   * The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`).
+   */
   readonly modelId: string;
 }
 
 /**
- * Sum all token usage records into a single flat {@link TokenUsage}.
+ * Sum all token usage records into a single {@link LanguageModelUsage}.
  *
  * Treats `undefined` fields as `0`. Returns zero-valued usage for
  * an empty array.
  *
  * @param records - Raw tracking records from agent execution(s).
- * @returns A single `TokenUsage` with each field summed.
+ * @returns A single `LanguageModelUsage` with each field summed.
  *
  * @example
  * ```typescript
@@ -49,7 +54,7 @@ export interface ModelTokenUsage extends TokenUsage {
  * // { inputTokens: 350, outputTokens: 175, ... }
  * ```
  */
-export function usage(records: TokenUsageRecord[]): TokenUsage {
+export function usage(records: readonly LanguageModelUsage[]): LanguageModelUsage {
   return aggregateTokens(records);
 }
 
@@ -120,18 +125,31 @@ export function usageByModel(records: TokenUsageRecord[]): readonly ModelTokenUs
 /**
  * Aggregate token counts across multiple raw tracking records.
  *
- * Sums each field, treating `undefined` as `0`.
+ * Sums each field (including nested details), treating `undefined` as `0`.
  *
  * @private
  */
-function aggregateTokens(usages: TokenUsageRecord[]): TokenUsage {
+function aggregateTokens(usages: readonly LanguageModelUsage[]): LanguageModelUsage {
+  const sumOptional = (fn: (u: LanguageModelUsage) => number | undefined): number | undefined => {
+    const total = usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
+    if (total > 0) {
+      return total;
+    }
+    return undefined;
+  };
   return {
     inputTokens: sumBy(usages, (u) => u.inputTokens ?? 0),
     outputTokens: sumBy(usages, (u) => u.outputTokens ?? 0),
     totalTokens: sumBy(usages, (u) => u.totalTokens ?? 0),
-    cacheReadTokens: sumBy(usages, (u) => u.cacheReadTokens ?? 0),
-    cacheWriteTokens: sumBy(usages, (u) => u.cacheWriteTokens ?? 0),
-    reasoningTokens: sumBy(usages, (u) => u.reasoningTokens ?? 0),
+    inputTokenDetails: {
+      noCacheTokens: sumOptional((u) => u.inputTokenDetails?.noCacheTokens),
+      cacheReadTokens: sumOptional((u) => u.inputTokenDetails?.cacheReadTokens),
+      cacheWriteTokens: sumOptional((u) => u.inputTokenDetails?.cacheWriteTokens),
+    },
+    outputTokenDetails: {
+      textTokens: sumOptional((u) => u.outputTokenDetails?.textTokens),
+      reasoningTokens: sumOptional((u) => u.outputTokenDetails?.reasoningTokens),
+    },
   };
 }
 

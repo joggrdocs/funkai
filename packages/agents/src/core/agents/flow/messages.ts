@@ -1,6 +1,6 @@
+import type { ModelMessage } from "ai";
 import { isString } from "es-toolkit";
 
-import type { Message } from "@/core/agents/types.js";
 import { safeStringify } from "@/utils/error.js";
 
 /**
@@ -26,13 +26,13 @@ export function buildToolCallId(stepId: string, index: number): string {
  * @param toolCallId - Unique tool call identifier.
  * @param toolName - The step id used as the tool name.
  * @param args - The step's input snapshot.
- * @returns A `Message` with role `assistant` and a `tool-call` content part.
+ * @returns A `ModelMessage` with role `assistant` and a `tool-call` content part.
  */
 export function createToolCallMessage(
   toolCallId: string,
   toolName: string,
   args: unknown,
-): Message {
+): ModelMessage {
   return {
     role: "assistant",
     content: [
@@ -57,14 +57,14 @@ export function createToolCallMessage(
  * @param toolName - The step id used as the tool name.
  * @param result - The step's output snapshot.
  * @param isError - Whether this result represents an error.
- * @returns A `Message` with role `tool` and a `tool-result` content part.
+ * @returns A `ModelMessage` with role `tool` and a `tool-result` content part.
  */
 export function createToolResultMessage(
   toolCallId: string,
   toolName: string,
   result: unknown,
   isError?: boolean,
-): Message {
+): ModelMessage {
   // Synthetic tool-result for flow step tracking — not consumed by the AI SDK
   return {
     role: "tool",
@@ -77,7 +77,7 @@ export function createToolResultMessage(
         ...(isError && { isError: true as const }),
       },
     ],
-  } as Message;
+  } as ModelMessage;
 }
 
 /**
@@ -87,9 +87,9 @@ export function createToolResultMessage(
  * the input passed to `flowAgent.generate()` or `flowAgent.stream()`.
  *
  * @param input - The flow agent input.
- * @returns A `Message` with role `user`.
+ * @returns A `ModelMessage` with role `user`.
  */
-export function createUserMessage(input: unknown): Message {
+export function createUserMessage(input: unknown): ModelMessage {
   return { role: "user", content: serializeMessageContent(input) };
 }
 
@@ -100,9 +100,9 @@ export function createUserMessage(input: unknown): Message {
  * the validated output returned by the handler.
  *
  * @param output - The flow agent output.
- * @returns A `Message` with role `assistant`.
+ * @returns A `ModelMessage` with role `assistant`.
  */
-export function createAssistantMessage(output: unknown): Message {
+export function createAssistantMessage(output: unknown): ModelMessage {
   return { role: "assistant", content: serializeMessageContent(output) };
 }
 
@@ -117,7 +117,7 @@ export function createAssistantMessage(output: unknown): Message {
  * @param messages - The flow's message array.
  * @returns The concatenated assistant text, trimmed.
  */
-export function collectTextFromMessages(messages: readonly Message[]): string {
+export function collectTextFromMessages(messages: readonly ModelMessage[]): string {
   return messages
     .filter((m) => m.role === "assistant" && typeof m.content === "string")
     .map((m) => m.content as string)

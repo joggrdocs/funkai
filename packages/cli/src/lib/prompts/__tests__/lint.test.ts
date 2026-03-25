@@ -65,7 +65,7 @@ describe(lintPrompt, () => {
 describe(hasLintErrors, () => {
   it("returns false when no errors", () => {
     const results = [{ name: "test", filePath: "test.prompt", diagnostics: [] }];
-    expect(hasLintErrors(results)).toBeFalsy();
+    expect(hasLintErrors(results)).toBe(false);
   });
 
   it("returns true when errors exist", () => {
@@ -76,7 +76,7 @@ describe(hasLintErrors, () => {
         diagnostics: [{ level: "error" as const, message: "oops" }],
       },
     ];
-    expect(hasLintErrors(results)).toBeTruthy();
+    expect(hasLintErrors(results)).toBe(true);
   });
 
   it("returns false when only warnings", () => {
@@ -87,6 +87,6 @@ describe(hasLintErrors, () => {
         diagnostics: [{ level: "warn" as const, message: "hmm" }],
       },
     ];
-    expect(hasLintErrors(results)).toBeFalsy();
+    expect(hasLintErrors(results)).toBe(false);
   });
 });

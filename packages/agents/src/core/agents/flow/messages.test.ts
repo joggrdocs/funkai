@@ -58,7 +58,7 @@ describe(createToolResultMessage, () => {
     const msg = createToolResultMessage("call-1", "step", "failed", true);
 
     const [part] = msg.content as Record<string, unknown>[];
-    expect(part?.["isError"]).toBeTruthy();
+    expect(part?.["isError"]).toBe(true);
   });
 
   it("omits isError when falsy", () => {

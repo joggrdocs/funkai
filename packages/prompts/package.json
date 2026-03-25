@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "es-toolkit": "catalog:",
-    "liquidjs": "^10.25.1",
+    "liquidjs": "^10.25.2",
     "zod": "catalog:"
   },
   "devDependencies": {

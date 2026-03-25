@@ -1,4 +1,4 @@
-import type { AsyncIterableStream } from "ai";
+import type { AsyncIterableStream, LanguageModelUsage, ModelMessage } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 
 import { extractAgentChain, resolveOptionalValue } from "@/core/agents/base/utils.js";
@@ -9,7 +9,6 @@ import {
 } from "@/core/agents/flow/messages.js";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-import { buildStreamResponseMethods } from "@/core/agents/flow/stream-response.js";
 import type {
   FlowAgent,
   FlowAgentConfig,
@@ -20,10 +19,10 @@ import type {
   FlowSubAgents,
   InternalFlowAgentOptions,
 } from "@/core/agents/flow/types.js";
-import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/core/agents/types.js";
+import type { BaseStreamResult, GenerateParams } from "@/core/agents/types.js";
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
-import type { TokenUsage } from "@/core/provider/types.js";
+import type { Tool } from "@/core/tool.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
@@ -113,9 +112,9 @@ function augmentStepBuilder(
  * API surface as a regular `agent`.
  *
  * To consumers, a `FlowAgent` IS an `Agent`. Same `.generate()`, same
- * `.stream()`, same `.fn()`. Same `GenerateResult` return type. Same
- * `messages` array. The only difference is internal: an `agent` runs
- * an LLM tool loop, a `flowAgent` runs your handler function.
+ * `.stream()`, same `.fn()`. Same `BaseGenerateResult` contract. The
+ * only difference is internal: an `agent` runs an LLM tool loop, a
+ * `flowAgent` runs your handler function.
  *
  * Each `$` step is modeled as a synthetic tool call in the message history.
  *
@@ -196,6 +195,19 @@ export function flowAgent<TInput, TOutput = any>(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened return to satisfy both overloads
 ): FlowAgent<TInput, any> {
   /**
+   * Shorthand for the `GenerateParams` type used by flow agent generate/stream.
+   * Carries `TOutput` so `onFinish` sees `BaseGenerateResult<TOutput>`.
+   *
+   * @private
+   */
+  type FlowGenerateParams = GenerateParams<
+    TInput,
+    Record<string, Tool>,
+    Record<string, never>,
+    TOutput
+  >;
+
+  /**
    * Resolve the handler output into a final value, validating against
    * the output schema when present. Also pushes the assistant message.
    *
@@ -206,8 +218,8 @@ export function flowAgent<TInput, TOutput = any>(
    */
   function resolveFlowOutput(
     output: unknown,
-    messages: readonly Message[],
-  ): { ok: true; value: unknown; message: Message } | { ok: false; message: string } {
+    messages: readonly ModelMessage[],
+  ): { ok: true; value: unknown; message: ModelMessage } | { ok: false; message: string } {
     if (isNotNil(config.output)) {
       const outputParsed = config.output.safeParse(output);
       if (!outputParsed.success) {
@@ -237,7 +249,7 @@ export function flowAgent<TInput, TOutput = any>(
     readonly log: Logger;
     readonly $: StepBuilder;
     readonly trace: TraceEntry[];
-    readonly messages: Message[];
+    readonly messages: ModelMessage[];
     readonly agents: Readonly<FlowSubAgents>;
   }
 
@@ -261,7 +273,7 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function extractInput(params: GenerateParams<TInput>): unknown {
+  function extractInput(params: FlowGenerateParams): unknown {
     if (Object.hasOwn(params, "prompt") && !isNil(params.prompt)) {
       return params.prompt;
     }
@@ -281,7 +293,7 @@ export function flowAgent<TInput, TOutput = any>(
    *
    * @private
    */
-  function resolveSignal(params: GenerateParams<TInput>): AbortSignal {
+  function resolveSignal(params: FlowGenerateParams): AbortSignal {
     const { timeout, signal } = params;
     if (signal && isNotNil(timeout)) {
       return AbortSignal.any([signal, AbortSignal.timeout(timeout)]);
@@ -296,7 +308,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function prepareFlowAgent(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     writer?: WritableStreamDefaultWriter<StreamPart>,
   ): Promise<
     { ok: false; error: { code: string; message: string } } | ({ ok: true } & PreparedFlowAgent)
@@ -323,7 +335,7 @@ export function flowAgent<TInput, TOutput = any>(
 
     const signal = resolveSignal(params);
     const trace: TraceEntry[] = [];
-    const messages: Message[] = [];
+    const messages: ModelMessage[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
     // Build agent chain: extend incoming chain with this flow agent's identity
@@ -373,7 +385,7 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function generate(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
   ): Promise<Result<FlowAgentGenerateResult<any>>> {
     const prepared = await prepareFlowAgent(params);
@@ -403,39 +415,37 @@ export function flowAgent<TInput, TOutput = any>(
         };
       }
       const resolvedOutput = outputResult.value;
-      const finalMessages = [...messages, outputResult.message];
 
       const duration = Date.now() - startedAt;
 
       const usage = sumTokenUsages(collectUsages(trace));
       const frozenTrace = snapshotTrace(trace);
 
-      const result: FlowAgentGenerateResult<unknown> = {
-        output: resolvedOutput,
-        messages: finalMessages,
+      const result: FlowAgentGenerateResult<TOutput> = {
+        output: resolvedOutput as TOutput,
         usage,
         finishReason: "stop",
         trace: frozenTrace,
         duration,
       };
 
+      // Config.onFinish is a union (WithOutput | WithoutOutput) whose parameter
+      // Types differ by TOutput vs string. TS can't call a union of contravariant
+      // Functions — even discriminant narrowing doesn't help because `result` stays
+      // Typed as FlowAgentGenerateResult<TOutput>. The cast is safe: the implementation
+      // Signature uses TOutput = any, so both variants accept the event at runtime.
+      const configOnFinish = config.onFinish as
+        | ((event: {
+            input: TInput;
+            result: FlowAgentGenerateResult<TOutput>;
+            duration: number;
+          }) => void | Promise<void>)
+        | undefined;
+
       await fireHooks(
         log,
-        wrapHook(
-          config.onFinish as
-            | ((event: {
-                input: TInput;
-                result: FlowAgentGenerateResult<unknown>;
-                duration: number;
-              }) => void | Promise<void>)
-            | undefined,
-          { input: parsedInput, result, duration },
-        ),
-        wrapHook(params.onFinish, {
-          input: parsedInput,
-          result: result as GenerateResult,
-          duration,
-        }),
+        wrapHook(configOnFinish, { input: parsedInput, result, duration }),
+        wrapHook(params.onFinish, { input: parsedInput, result, duration }),
       );
 
       log.debug("flowAgent.generate finish", { name: config.name, duration });
@@ -465,9 +475,9 @@ export function flowAgent<TInput, TOutput = any>(
   }
 
   async function stream(
-    params: GenerateParams<TInput>,
+    params: FlowGenerateParams,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-  ): Promise<Result<StreamResult<any>>> {
+  ): Promise<Result<BaseStreamResult<any>>> {
     const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
     const writer = writable.getWriter();
 
@@ -498,38 +508,32 @@ export function flowAgent<TInput, TOutput = any>(
           throw new Error(outputResult.message);
         }
         const resolvedOutput = outputResult.value;
-        const finalMessages = [...messages, outputResult.message];
 
         const duration = Date.now() - startedAt;
 
         const usage = sumTokenUsages(collectUsages(trace));
 
-        const result: FlowAgentGenerateResult<unknown> = {
-          output: resolvedOutput,
-          messages: finalMessages,
+        const result: FlowAgentGenerateResult<TOutput> = {
+          output: resolvedOutput as TOutput,
           usage,
           finishReason: "stop",
           trace: snapshotTrace(trace),
           duration,
         };
 
+        // See generate() for why this cast is needed (union of contravariant functions)
+        const configOnFinish = config.onFinish as
+          | ((event: {
+              input: TInput;
+              result: FlowAgentGenerateResult<TOutput>;
+              duration: number;
+            }) => void | Promise<void>)
+          | undefined;
+
         await fireHooks(
           log,
-          wrapHook(
-            config.onFinish as
-              | ((event: {
-                  input: TInput;
-                  result: FlowAgentGenerateResult<unknown>;
-                  duration: number;
-                }) => void | Promise<void>)
-              | undefined,
-            { input: parsedInput, result, duration },
-          ),
-          wrapHook(params.onFinish, {
-            input: parsedInput,
-            result: result as GenerateResult,
-            duration,
-          }),
+          wrapHook(configOnFinish, { input: parsedInput, result, duration }),
+          wrapHook(params.onFinish, { input: parsedInput, result, duration }),
         );
 
         log.debug("flowAgent.stream finish", { name: config.name, duration });
@@ -580,24 +584,23 @@ export function flowAgent<TInput, TOutput = any>(
     // Catch stream errors to prevent unhandled rejections
     done.catch(() => {});
 
-    const responseMethods = buildStreamResponseMethods(() => readable);
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- widened to satisfy both overloads
-    const streamResult: StreamResult<any> = {
+    const streamResult: BaseStreamResult<any> = {
       output: done.then((r) => r.output),
-      messages: done.then((r) => r.messages),
       usage: done.then((r) => r.usage),
       finishReason: done.then((r) => r.finishReason),
       fullStream: readable as AsyncIterableStream<StreamPart>,
-      toTextStreamResponse: (init) => responseMethods.toTextStreamResponse(init),
-      toUIMessageStreamResponse: (options) => responseMethods.toUIMessageStreamResponse(options),
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
-    streamResult.output.catch(() => {});
-    streamResult.messages.catch(() => {});
-    streamResult.usage.catch(() => {});
-    streamResult.finishReason.catch(() => {});
+    // PromiseLike doesn't have .catch(), so use .then(undefined, noop)
+    const noop = () => {};
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
+    streamResult.output.then(undefined, noop);
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
+    streamResult.usage.then(undefined, noop);
+    // oxlint-disable-next-line eslint-plugin-promise(prefer-catch) -- PromiseLike has no .catch()
+    streamResult.finishReason.then(undefined, noop);
 
     return { ok: true, ...streamResult };
   }
@@ -625,18 +628,32 @@ export function flowAgent<TInput, TOutput = any>(
 // ---------------------------------------------------------------------------
 
 /**
- * Sum multiple {@link TokenUsage} objects field-by-field.
+ * Sum multiple {@link LanguageModelUsage} objects field-by-field.
  *
  * @private
  */
-function sumTokenUsages(usages: TokenUsage[]): TokenUsage {
-  const sum = (fn: (u: TokenUsage) => number): number => usages.reduce((acc, u) => acc + fn(u), 0);
+function sumTokenUsages(usages: LanguageModelUsage[]): LanguageModelUsage {
+  const sum = (fn: (u: LanguageModelUsage) => number | undefined): number =>
+    usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
+  const sumOptional = (fn: (u: LanguageModelUsage) => number | undefined): number | undefined => {
+    const total = usages.reduce((acc, u) => acc + (fn(u) ?? 0), 0);
+    if (total > 0) {
+      return total;
+    }
+    return undefined;
+  };
   return {
     inputTokens: sum((u) => u.inputTokens),
     outputTokens: sum((u) => u.outputTokens),
     totalTokens: sum((u) => u.totalTokens),
-    cacheReadTokens: sum((u) => u.cacheReadTokens),
-    cacheWriteTokens: sum((u) => u.cacheWriteTokens),
-    reasoningTokens: sum((u) => u.reasoningTokens),
+    inputTokenDetails: {
+      noCacheTokens: sumOptional((u) => u.inputTokenDetails?.noCacheTokens),
+      cacheReadTokens: sumOptional((u) => u.inputTokenDetails?.cacheReadTokens),
+      cacheWriteTokens: sumOptional((u) => u.inputTokenDetails?.cacheWriteTokens),
+    },
+    outputTokenDetails: {
+      textTokens: sumOptional((u) => u.outputTokenDetails?.textTokens),
+      reasoningTokens: sumOptional((u) => u.outputTokenDetails?.reasoningTokens),
+    },
   };
 }

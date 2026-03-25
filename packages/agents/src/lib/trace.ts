@@ -1,7 +1,6 @@
+import type { LanguageModelUsage } from "ai";
 import { isNotNil } from "es-toolkit";
 import { match, P } from "ts-pattern";
-
-import type { TokenUsage } from "@/core/provider/types.js";
 
 /**
  * Known trace operation types.
@@ -84,7 +83,7 @@ export interface TraceEntry {
    * Populated for `agent` type entries that complete successfully.
    * `undefined` for non-agent steps or failed operations.
    */
-  usage?: TokenUsage;
+  usage?: LanguageModelUsage;
 
   /**
    * Nested trace entries for child operations.
@@ -97,17 +96,17 @@ export interface TraceEntry {
 }
 
 /**
- * Recursively collect all {@link TokenUsage} values from a trace tree.
+ * Recursively collect all {@link LanguageModelUsage} values from a trace tree.
  *
  * Walks every entry (including nested children) and returns a flat
  * array of usage objects. Entries without usage are skipped.
  *
  * @param trace - The trace array to collect from.
- * @returns Flat array of {@link TokenUsage} values found in the tree.
+ * @returns Flat array of {@link LanguageModelUsage} values found in the tree.
  */
-export function collectUsages(trace: readonly TraceEntry[]): TokenUsage[] {
+export function collectUsages(trace: readonly TraceEntry[]): LanguageModelUsage[] {
   return trace.flatMap((entry) => {
-    const usages: TokenUsage[] = match(entry.usage)
+    const usages: LanguageModelUsage[] = match(entry.usage)
       .with(P.nonNullable, (u) => [u])
       .otherwise(() => []);
     if (isNotNil(entry.children) && entry.children.length > 0) {

@@ -5,6 +5,7 @@ import { agent } from "@/core/agents/base/agent.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
+import { suppressRejection } from "@/utils/promise.js";
 
 const mockGenerateText = vi.fn();
 const mockStreamText = vi.fn();
@@ -57,6 +58,7 @@ function createMockGenerateResult(overrides?: {
   output?: unknown;
   response?: { messages: unknown[] };
   totalUsage?: typeof MOCK_TOTAL_USAGE;
+  usage?: typeof MOCK_TOTAL_USAGE;
   finishReason?: string;
 }) {
   const defaults = {
@@ -64,6 +66,7 @@ function createMockGenerateResult(overrides?: {
     output: undefined,
     response: { messages: [{ role: "assistant", content: "mock" }] },
     totalUsage: MOCK_TOTAL_USAGE,
+    usage: MOCK_TOTAL_USAGE,
     finishReason: "stop",
   };
   return { ...defaults, ...overrides };
@@ -75,6 +78,7 @@ function createMockStreamResult(overrides?: {
   response?: { messages: unknown[] };
   chunks?: string[];
   totalUsage?: typeof MOCK_TOTAL_USAGE;
+  usage?: typeof MOCK_TOTAL_USAGE;
   finishReason?: string;
 }) {
   const defaults = {
@@ -82,6 +86,7 @@ function createMockStreamResult(overrides?: {
     output: undefined as unknown,
     response: undefined as { messages: unknown[] } | undefined,
     totalUsage: MOCK_TOTAL_USAGE,
+    usage: MOCK_TOTAL_USAGE,
     finishReason: "stop",
   };
   const merged = { ...defaults, ...overrides };
@@ -94,6 +99,14 @@ function createMockStreamResult(overrides?: {
     }
   }
 
+  const mockStep = {
+    text: textValue,
+    output: merged.output,
+    usage: merged.usage,
+    finishReason: merged.finishReason,
+    response: merged.response ?? { messages: [{ role: "assistant", content: textValue }] },
+  };
+
   return {
     fullStream: makeFullStream(),
     text: Promise.resolve(textValue),
@@ -102,6 +115,8 @@ function createMockStreamResult(overrides?: {
       merged.response ?? { messages: [{ role: "assistant", content: textValue }] },
     ),
     totalUsage: Promise.resolve(merged.totalUsage),
+    usage: Promise.resolve(merged.usage),
+    steps: Promise.resolve([mockStep]),
     finishReason: Promise.resolve(merged.finishReason),
     toTextStreamResponse: vi.fn(() => new Response("mock text stream")),
     toUIMessageStreamResponse: vi.fn(() => new Response("mock ui stream")),
@@ -171,20 +186,12 @@ describe("generate() success", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.output).toBe("mock response text");
-    expect(result.messages).toBeInstanceOf(Array);
-    expect(result.usage).toEqual({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      cacheReadTokens: 10,
-      cacheWriteTokens: 5,
-      reasoningTokens: 3,
-    });
+    expect(result.usage).toEqual(MOCK_TOTAL_USAGE);
     expect(result.finishReason).toBe("stop");
   });
 
@@ -192,7 +199,7 @@ describe("generate() success", () => {
     const a = createTypedAgent();
     const result = await a.generate({ input: { topic: "TypeScript" } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -274,7 +281,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.generate({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -288,7 +295,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally missing field
     const result = await a.generate({ input: {} });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -308,7 +315,7 @@ describe("generate() input validation", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "anything" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 });
 
@@ -319,7 +326,7 @@ describe("generate() output resolution", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -336,7 +343,7 @@ describe("generate() output resolution", () => {
     });
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -419,7 +426,7 @@ describe("generate() hooks", () => {
     const [event] = firstCall;
     expect(event.input).toBe("hello");
     expect(event.result).toHaveProperty("output");
-    expect(event.result).toHaveProperty("messages");
+    expect(event.result).toHaveProperty("response");
     expect(event.result).toHaveProperty("usage");
     expect(event.result).toHaveProperty("finishReason");
     expect(event.duration).toBeGreaterThanOrEqual(0);
@@ -526,9 +533,9 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
-    // funkai additions
+    // Funkai additions
     expect(event.stepId).toBe("test-agent:0");
     expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);
@@ -602,7 +609,7 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
     // Full tool call objects preserved (not stripped to toolName + argsTextLength)
     expect(event.toolCalls).toEqual(mockStepData.toolCalls);
@@ -617,7 +624,7 @@ describe("generate() hooks", () => {
     // Usage passed through as-is
     expect(event.usage).toEqual(mockStepData.usage);
 
-    // finishReason passed through (not as stepId)
+    // FinishReason passed through (not as stepId)
     expect(event.finishReason).toBe("tool-calls");
   });
 
@@ -675,7 +682,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -690,7 +697,7 @@ describe("generate() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -759,7 +766,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -775,7 +782,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -793,7 +800,7 @@ describe("generate() hook resilience", () => {
 
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -852,15 +859,14 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.fullStream).toBeInstanceOf(ReadableStream);
-    expect(result.output).toBeInstanceOf(Promise);
-    expect(result.messages).toBeInstanceOf(Promise);
-    expect(result.usage).toBeInstanceOf(Promise);
-    expect(result.finishReason).toBeInstanceOf(Promise);
+    expect(result.output).toBeDefined();
+    expect(result.usage).toBeDefined();
+    expect(result.finishReason).toBeDefined();
   });
 
   it("fullStream emits typed StreamPart events", async () => {
@@ -869,7 +875,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -897,7 +903,7 @@ describe("stream() success", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -916,39 +922,11 @@ describe("stream() success", () => {
     expect(output).toBe("full text");
   });
 
-  it("messages promise resolves after stream completes", async () => {
-    const expectedMessages = [{ role: "assistant", content: "msg" }];
-    mockStreamText.mockReturnValue(
-      createMockStreamResult({ response: { messages: expectedMessages } }),
-    );
-
-    const a = createSimpleAgent();
-    const result = await a.stream({ prompt: "hello" });
-
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    // Drain the stream to complete
-    const reader = result.fullStream.getReader();
-    for (;;) {
-      // eslint-disable-next-line no-await-in-loop -- Sequential stream consumption requires awaiting each read
-      const { done } = await reader.read();
-      if (done) {
-        break;
-      }
-    }
-
-    const messages = await result.messages;
-    expect(messages).toEqual(expectedMessages);
-  });
-
   it("usage and finishReason promises resolve after stream completes", async () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -964,14 +942,7 @@ describe("stream() success", () => {
     }
 
     const usage = await result.usage;
-    expect(usage).toEqual({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      cacheReadTokens: 10,
-      cacheWriteTokens: 5,
-      reasoningTokens: 3,
-    });
+    expect(usage).toEqual(MOCK_TOTAL_USAGE);
 
     const finishReason = await result.finishReason;
     expect(finishReason).toBe("stop");
@@ -985,7 +956,7 @@ describe("stream() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await a.stream({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1022,7 +993,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onFinish });
     const result = await a.stream({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1071,7 +1042,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1123,7 +1094,7 @@ describe("stream() hooks", () => {
     const a = createSimpleAgent({ onStepFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1148,9 +1119,9 @@ describe("stream() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    const event = firstCall[0];
+    const [event] = firstCall;
 
-    // funkai additions
+    // Funkai additions
     expect(event.stepId).toBe("test-agent:0");
     expect(event.stepOperation).toBe("agent");
     expect(event.agentChain).toEqual([{ id: "test-agent" }]);
@@ -1174,7 +1145,7 @@ describe("stream() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1209,7 +1180,7 @@ describe("stream() error handling", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1273,7 +1244,7 @@ describe("fn()", () => {
 
     const result = await fn({ prompt: "hello" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1287,8 +1258,8 @@ describe("fn()", () => {
     const resultGenerate = await a.generate({ prompt: "test" });
     const resultFn = await fn({ prompt: "test" });
 
-    expect(resultGenerate.ok).toBeTruthy();
-    expect(resultFn.ok).toBeTruthy();
+    expect(resultGenerate.ok).toBe(true);
+    expect(resultFn.ok).toBe(true);
     if (!resultGenerate.ok || !resultFn.ok) {
       return;
     }
@@ -1312,7 +1283,7 @@ describe("fn()", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fn({ input: { topic: 123 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1373,14 +1344,14 @@ describe("edge cases", () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("handles empty string input for simple agent", async () => {
     const a = createSimpleAgent();
     const result = await a.generate({ prompt: "" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses default logger when none provided", async () => {
@@ -1392,7 +1363,7 @@ describe("edge cases", () => {
 
     // Should not throw when no logger is provided
     const result = await a.generate({ prompt: "test" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 });
 
@@ -1417,6 +1388,7 @@ function createErrorStreamResult(error: Error) {
     fullStream: makeFullStream(),
     text: makeSuppressedRejection<string>(error),
     output: makeSuppressedRejection<unknown>(error),
+    usage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(error),
     response: makeSuppressedRejection<{ messages: unknown[] }>(error),
     totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(error),
     finishReason: makeSuppressedRejection<string>(error),
@@ -1431,16 +1403,15 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
     // Suppress derived promise rejections
-    result.output.catch(() => {});
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.output);
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream — writer.abort() errors the readable side, so
     // Reader.read() will reject once the error propagates.
@@ -1464,7 +1435,7 @@ describe("stream() async error during consumption", () => {
     // Should have received the partial chunk before error closed the stream
     expect(parts.length).toBeGreaterThanOrEqual(1);
     expect(parts[0]).toEqual({ type: "text-delta", textDelta: "partial" });
-    expect(streamErrored).toBeTruthy();
+    expect(streamErrored).toBe(true);
   });
 
   it("fires onError hook when fullStream throws during iteration", async () => {
@@ -1476,15 +1447,14 @@ describe("stream() async error during consumption", () => {
     const a = createSimpleAgent({ onError, onFinish });
     const result = await a.stream({ prompt: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
-    result.output.catch(() => {});
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.output);
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream to trigger the error — reader.read() rejects
     // Once the writer aborts the transform stream.
@@ -1533,6 +1503,7 @@ describe("stream() unhandled rejection safety", () => {
       fullStream: makeFullStream(),
       text: makeSuppressedRejection<string>(streamError),
       output: makeSuppressedRejection<unknown>(streamError),
+      usage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
       response: makeSuppressedRejection<{ messages: unknown[] }>(streamError),
       totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
       finishReason: makeSuppressedRejection<string>(streamError),
@@ -1550,7 +1521,7 @@ describe("stream() unhandled rejection safety", () => {
       const a = createSimpleAgent();
       const result = await a.stream({ prompt: "test" });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -1599,7 +1570,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1620,7 +1591,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1640,7 +1611,7 @@ describe("stream() response methods", () => {
 
     const a = createSimpleAgent();
     const result = await a.stream({ prompt: "hello" });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }

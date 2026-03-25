@@ -38,32 +38,32 @@ describe(toJsonSchema, () => {
 
 describe(isZodObject, () => {
   it("returns true for object schemas", () => {
-    expect(isZodObject(z.object({ x: z.number() }))).toBeTruthy();
+    expect(isZodObject(z.object({ x: z.number() }))).toBe(true);
   });
 
   it("returns false for array schemas", () => {
-    expect(isZodObject(z.array(z.string()))).toBeFalsy();
+    expect(isZodObject(z.array(z.string()))).toBe(false);
   });
 
   it("returns false for primitive schemas", () => {
-    expect(isZodObject(z.string())).toBeFalsy();
-    expect(isZodObject(z.number())).toBeFalsy();
-    expect(isZodObject(z.boolean())).toBeFalsy();
+    expect(isZodObject(z.string())).toBe(false);
+    expect(isZodObject(z.number())).toBe(false);
+    expect(isZodObject(z.boolean())).toBe(false);
   });
 });
 
 describe(isZodArray, () => {
   it("returns true for array schemas", () => {
-    expect(isZodArray(z.array(z.string()))).toBeTruthy();
+    expect(isZodArray(z.array(z.string()))).toBe(true);
   });
 
   it("returns false for object schemas", () => {
-    expect(isZodArray(z.object({ x: z.number() }))).toBeFalsy();
+    expect(isZodArray(z.object({ x: z.number() }))).toBe(false);
   });
 
   it("returns false for primitive schemas", () => {
-    expect(isZodArray(z.string())).toBeFalsy();
-    expect(isZodArray(z.number())).toBeFalsy();
-    expect(isZodArray(z.boolean())).toBeFalsy();
+    expect(isZodArray(z.string())).toBe(false);
+    expect(isZodArray(z.number())).toBe(false);
+    expect(isZodArray(z.boolean())).toBe(false);
   });
 });

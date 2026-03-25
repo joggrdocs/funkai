@@ -1,6 +1,5 @@
 import { openai } from "@ai-sdk/openai";
 import { agent, flowAgent, tool } from "@funkai/agents";
-import type { Message } from "@funkai/agents";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -193,11 +192,6 @@ if (flowResult.ok) {
 
   const output = await flowResult.output;
   console.log("\nFindings:", JSON.stringify(output, null, 2));
-
-  const messages: Message[] = await flowResult.messages;
-  console.log(
-    `\nFlow produced ${messages.length} messages (including synthetic tool-call/result pairs for each step)`,
-  );
 } else {
   console.error("Error:", flowResult.error);
 }

@@ -76,56 +76,56 @@ describe("FLOW_AGENT_CONFIG symbol", () => {
 describe(isAgent, () => {
   it("returns true for an object with AGENT_CONFIG", () => {
     const obj = { [AGENT_CONFIG]: { name: "test" } };
-    expect(isAgent(obj)).toBeTruthy();
+    expect(isAgent(obj)).toBe(true);
   });
 
   it("returns false for an object without AGENT_CONFIG", () => {
-    expect(isAgent({ name: "test" })).toBeFalsy();
+    expect(isAgent({ name: "test" })).toBe(false);
   });
 
   it("returns false for an object with FLOW_AGENT_CONFIG", () => {
     const obj = { [FLOW_AGENT_CONFIG]: { config: {}, handler: () => {} } };
-    expect(isAgent(obj)).toBeFalsy();
+    expect(isAgent(obj)).toBe(false);
   });
 
   it("returns false for null", () => {
-    expect(isAgent(null)).toBeFalsy();
+    expect(isAgent(null)).toBe(false);
   });
 
   it("returns false for undefined", () => {
-    expect(isAgent(undefined)).toBeFalsy();
+    expect(isAgent(undefined)).toBe(false);
   });
 
   it("returns false for a string", () => {
-    expect(isAgent("not-an-agent")).toBeFalsy();
+    expect(isAgent("not-an-agent")).toBe(false);
   });
 
   it("returns false for a number", () => {
-    expect(isAgent(42)).toBeFalsy();
+    expect(isAgent(42)).toBe(false);
   });
 });
 
 describe(isFlowAgent, () => {
   it("returns true for an object with FLOW_AGENT_CONFIG", () => {
     const obj = { [FLOW_AGENT_CONFIG]: { config: {}, handler: () => {} } };
-    expect(isFlowAgent(obj)).toBeTruthy();
+    expect(isFlowAgent(obj)).toBe(true);
   });
 
   it("returns false for an object without FLOW_AGENT_CONFIG", () => {
-    expect(isFlowAgent({ name: "test" })).toBeFalsy();
+    expect(isFlowAgent({ name: "test" })).toBe(false);
   });
 
   it("returns false for an object with only AGENT_CONFIG", () => {
     const obj = { [AGENT_CONFIG]: { name: "test" } };
-    expect(isFlowAgent(obj)).toBeFalsy();
+    expect(isFlowAgent(obj)).toBe(false);
   });
 
   it("returns false for null", () => {
-    expect(isFlowAgent(null)).toBeFalsy();
+    expect(isFlowAgent(null)).toBe(false);
   });
 
   it("returns false for undefined", () => {
-    expect(isFlowAgent(undefined)).toBeFalsy();
+    expect(isFlowAgent(undefined)).toBe(false);
   });
 });
 

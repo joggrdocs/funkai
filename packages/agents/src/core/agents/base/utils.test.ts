@@ -1,3 +1,4 @@
+import type { ModelMessage } from "ai";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
@@ -6,9 +7,7 @@ import {
   buildPrompt,
   resolveValue,
   resolveOptionalValue,
-  toTokenUsage,
 } from "@/core/agents/base/utils.js";
-import type { Message } from "@/core/agents/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 
 describe(resolveValue, () => {
@@ -65,7 +64,7 @@ describe(buildPrompt, () => {
   });
 
   it("returns { messages } for a non-string input without typed config", async () => {
-    const messages: Message[] = [{ role: "user", content: "hi" }];
+    const messages: ModelMessage[] = [{ role: "user", content: "hi" }];
     const result = await buildPrompt(messages, {});
     expect(result).toEqual({ messages });
   });
@@ -82,7 +81,7 @@ describe(buildPrompt, () => {
   });
 
   it("returns { messages } for typed mode returning messages array", async () => {
-    const messages: Message[] = [{ role: "user", content: "hello" }];
+    const messages: ModelMessage[] = [{ role: "user", content: "hello" }];
     const result = await buildPrompt(
       { topic: "AI" },
       {
@@ -114,147 +113,6 @@ describe(buildPrompt, () => {
     await expect(buildPrompt("test", { prompt: ({ input }) => `${input}` })).rejects.toThrow(
       "Agent has `prompt` function but no `input` schema",
     );
-  });
-});
-
-describe(toTokenUsage, () => {
-  it("converts a fully populated LanguageModelUsage to TokenUsage", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: {
-        noCacheTokens: 85,
-        cacheReadTokens: 10,
-        cacheWriteTokens: 5,
-      },
-      outputTokenDetails: {
-        textTokens: 47,
-        reasoningTokens: 3,
-      },
-    });
-
-    expect(result).toEqual({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      cacheReadTokens: 10,
-      cacheWriteTokens: 5,
-      reasoningTokens: 3,
-    });
-  });
-
-  it("defaults undefined top-level fields to 0", () => {
-    const result = toTokenUsage({
-      inputTokens: undefined,
-      outputTokens: undefined,
-      totalTokens: undefined,
-      inputTokenDetails: {
-        noCacheTokens: undefined,
-        cacheReadTokens: undefined,
-        cacheWriteTokens: undefined,
-      },
-      outputTokenDetails: {
-        textTokens: undefined,
-        reasoningTokens: undefined,
-      },
-    });
-
-    expect(result.inputTokens).toBe(0);
-    expect(result.outputTokens).toBe(0);
-    expect(result.totalTokens).toBe(0);
-  });
-
-  it("defaults undefined detail fields to 0", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: {
-        noCacheTokens: undefined,
-        cacheReadTokens: undefined,
-        cacheWriteTokens: undefined,
-      },
-      outputTokenDetails: {
-        textTokens: undefined,
-        reasoningTokens: undefined,
-      },
-    });
-
-    expect(result.cacheReadTokens).toBe(0);
-    expect(result.cacheWriteTokens).toBe(0);
-    expect(result.reasoningTokens).toBe(0);
-  });
-
-  it("extracts cache tokens from inputTokenDetails", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: {
-        noCacheTokens: 90,
-        cacheReadTokens: 10,
-        cacheWriteTokens: undefined,
-      },
-      outputTokenDetails: {
-        textTokens: 50,
-        reasoningTokens: undefined,
-      },
-    });
-
-    expect(result.cacheReadTokens).toBe(10);
-    expect(result.cacheWriteTokens).toBe(0);
-  });
-
-  it("extracts reasoning tokens from outputTokenDetails", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: {
-        noCacheTokens: 100,
-        cacheReadTokens: undefined,
-        cacheWriteTokens: undefined,
-      },
-      outputTokenDetails: {
-        textTokens: 42,
-        reasoningTokens: 8,
-      },
-    });
-
-    expect(result.reasoningTokens).toBe(8);
-  });
-
-  it("defaults cache tokens to 0 when inputTokenDetails is undefined", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: undefined as never,
-      outputTokenDetails: {
-        textTokens: 50,
-        reasoningTokens: 0,
-      },
-    });
-
-    expect(result.cacheReadTokens).toBe(0);
-    expect(result.cacheWriteTokens).toBe(0);
-  });
-
-  it("defaults reasoning tokens to 0 when outputTokenDetails is undefined", () => {
-    const result = toTokenUsage({
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
-      inputTokenDetails: {
-        noCacheTokens: 100,
-        cacheReadTokens: 0,
-        cacheWriteTokens: 0,
-      },
-      outputTokenDetails: undefined as never,
-    });
-
-    expect(result.reasoningTokens).toBe(0);
   });
 });
 

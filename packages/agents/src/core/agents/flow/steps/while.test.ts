@@ -14,7 +14,7 @@ describe("while()", () => {
       execute: async ({ index }) => index,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -32,7 +32,7 @@ describe("while()", () => {
       execute: async () => "should not run",
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -67,7 +67,7 @@ describe("while()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -107,7 +107,7 @@ describe("while()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -148,7 +148,7 @@ describe("while()", () => {
       execute: async ({ index }) => index,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

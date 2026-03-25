@@ -15,7 +15,7 @@ describe("stepError extends ResultError", () => {
   });
 });
 
-describe("FlowStepResult<T>", () => {
+describe("flowStepResult<T>", () => {
   it("success branch has ok: true", () => {
     type Success = Extract<FlowStepResult<{ value: number }>, { ok: true }>;
     expectTypeOf<Success["ok"]>().toEqualTypeOf<true>();

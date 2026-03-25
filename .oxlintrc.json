@@ -57,6 +57,7 @@
     "functional/no-throw-statements": "off",
     "functional/no-try-statements": "off",
     "functional/no-loop-statements": "off",
+    "unicorn/prefer-ternary": "off",
     "unicorn/no-null": "off",
     "unicorn/no-useless-undefined": "off",
     "unicorn/no-array-callback-reference": "off",
@@ -83,14 +84,9 @@
     "vitest/prefer-called-times": "off",
     "vitest/prefer-called-once": "off",
     "vitest/prefer-expect-type-of": "off",
-    "oxc/no-optional-chaining": [
-      "error",
-      {
-        "message": "Use explicit null checks (if/else or ts-pattern match) instead of optional chaining."
-      }
-    ],
+    "oxc/no-optional-chaining": "off",
     "jsdoc-js/multiline-blocks": [
-      "error",
+      "warn",
       {
         "noSingleLineBlocks": true
       }
@@ -103,7 +99,6 @@
         "no-unused-vars": "off",
         "functional/no-classes": "off",
         "typescript/no-non-null-assertion": "off",
-        "oxc/no-optional-chaining": "off",
         "vitest/prefer-to-be-truthy": "off",
         "vitest/prefer-to-be-falsy": "off"
       }

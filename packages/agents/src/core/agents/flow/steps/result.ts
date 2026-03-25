@@ -1,4 +1,4 @@
-import type { GenerateResult } from "@/core/agents/types.js";
+import type { BaseGenerateResult } from "@/core/agents/types.js";
 import type { AgentChainEntry } from "@/core/types.js";
 import type { OperationType } from "@/lib/trace.js";
 import type { ResultError } from "@/utils/result.js";
@@ -47,14 +47,14 @@ export type FlowStepResult<T> =
 /**
  * Flat result type for `$.agent()` flow steps.
  *
- * On success, the `GenerateResult` fields (`output`, `messages`, `usage`,
+ * On success, the `BaseGenerateResult` fields (`output`, `usage`,
  * `finishReason`) are spread directly onto the result — no double-wrapping.
  * `result.output` is the agent's output directly.
  *
  * @typeParam TOutput - The agent's output type (default: `string`).
  */
 export type FlowAgentStepResult<TOutput = string> =
-  | (GenerateResult<TOutput> & {
+  | (BaseGenerateResult<TOutput> & {
       readonly ok: true;
       readonly stepId: string;
       readonly stepOperation: "agent";

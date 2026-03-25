@@ -1,6 +1,10 @@
 import { generateText, streamText, stepCountIs } from "ai";
-import type { AsyncIterableStream } from "ai";
-import { isNil, isNotNil } from "es-toolkit";
+import type { AsyncIterableStream, GenerateTextResult, ModelMessage, ToolSet } from "ai";
+
+// See types.ts for why `any` is needed here — AI SDK's `Output` is a merged namespace + interface.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AIOutput = any;
+import { isNil, isNotNil, pickBy } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -10,7 +14,6 @@ import {
   resolveValue,
   resolveOptionalValue,
   buildPrompt,
-  toTokenUsage,
 } from "@/core/agents/base/utils.js";
 import type { ParentAgentContext } from "@/core/agents/base/utils.js";
 import type {
@@ -18,7 +21,6 @@ import type {
   AgentConfig,
   GenerateParams,
   GenerateResult,
-  Message,
   Resolver,
   StreamResult,
   SubAgents,
@@ -32,6 +34,7 @@ import type {
   AgentChainEntry,
   Model,
   StepFinishEvent,
+  StepStartEvent,
   StreamPart,
 } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
@@ -39,6 +42,7 @@ import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { toError } from "@/utils/error.js";
+import { gatePromise, suppressRejection } from "@/utils/promise.js";
 import type { Result } from "@/utils/result.js";
 
 /**
@@ -54,7 +58,7 @@ import type { Result } from "@/utils/result.js";
  * - **Hooks** for observability.
  * - **Result return type** that never throws.
  *
- * @typeParam TInput - Agent input type (default: `string | Message[]`).
+ * @typeParam TInput - Agent input type (default: `string | ModelMessage[]`).
  * @typeParam TOutput - Agent output type (default: `string`).
  * @typeParam TTools - Record of tools.
  * @typeParam TSubAgents - Record of subagents.
@@ -88,7 +92,7 @@ import type { Result } from "@/utils/result.js";
  * ```
  */
 export function agent<
-  TInput = string | Message[],
+  TInput = string | ModelMessage[],
   TOutput = string,
   // oxlint-disable-next-line typescript-eslint/ban-types -- {} is intentional: allows unconstrained tool/subagent defaults
   TTools extends Record<string, Tool> = {},
@@ -162,11 +166,14 @@ export function agent<
     readonly model: LanguageModel;
     readonly aiTools: ReturnType<typeof buildAITools>;
     readonly system: string | undefined;
-    readonly promptParams: { prompt: string } | { messages: Message[] };
+    readonly promptParams: { prompt: string } | { messages: ModelMessage[] };
     readonly output: OutputSpec | undefined;
     readonly maxSteps: number;
     readonly signal: AbortSignal | undefined;
     readonly onStepFinish: (step: AIStepResult) => Promise<void>;
+    readonly onStepStart: ((event: unknown) => Promise<void>) | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI SDK passthrough params
+    readonly aiSdkParams: Record<string, any>;
   }
 
   /**
@@ -210,11 +217,10 @@ export function agent<
       toolInputExamples: config.toolInputExamples,
     });
 
-    const resolvedTools =
-      (await resolveOptionalValue(config.tools, input)) ?? ({} as Record<string, Tool>);
-    const mergedTools = { ...resolvedTools, ...params.tools } as Record<string, Tool>;
-    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? ({} as SubAgents);
-    const mergedAgents = { ...resolvedAgents, ...params.agents } as SubAgents;
+    const resolvedTools = (await resolveOptionalValue(config.tools, input)) ?? {};
+    const mergedTools = { ...resolvedTools, ...params.tools };
+    const resolvedAgents = (await resolveOptionalValue(config.agents, input)) ?? {};
+    const mergedAgents = { ...resolvedAgents, ...params.agents };
     const hasTools = Object.keys(mergedTools).length > 0;
     const hasAgents = Object.keys(mergedAgents).length > 0;
 
@@ -274,6 +280,40 @@ export function agent<
       );
     };
 
+    // Build onStepStart handler that fires config + per-call hooks
+    const stepStartCounter = { value: 0 };
+    const mergedOnStepStart = buildMergedHook(log, config.onStepStart, params.onStepStart);
+    let onStepStart: ((event: unknown) => Promise<void>) | undefined;
+    if (isNotNil(mergedOnStepStart)) {
+      onStepStart = async (_aiEvent: unknown) => {
+        const stepId = `${config.name}:${stepStartCounter.value++}`;
+        const event: StepStartEvent = {
+          stepId,
+          stepOperation: "agent",
+          agentChain: currentChain,
+        };
+        await mergedOnStepStart(event);
+      };
+    }
+
+    // Collect AI SDK passthrough params (per-call overrides config)
+    const aiSdkParams = pickBy(
+      {
+        toolChoice: params.toolChoice ?? config.toolChoice,
+        providerOptions: params.providerOptions ?? config.providerOptions,
+        activeTools: params.activeTools ?? config.activeTools,
+        prepareStep: params.prepareStep ?? config.prepareStep,
+        experimental_repairToolCall: params.repairToolCall ?? config.repairToolCall,
+        headers: params.headers ?? config.headers,
+        experimental_include: params.experimental_include ?? config.experimental_include,
+        experimental_context: params.experimental_context ?? config.experimental_context,
+        experimental_download: params.experimental_download ?? config.experimental_download,
+        experimental_onToolCallStart: params.onToolCallStart ?? config.onToolCallStart,
+        experimental_onToolCallFinish: params.onToolCallFinish ?? config.onToolCallFinish,
+      },
+      isNotNil,
+    );
+
     return {
       input,
       model,
@@ -284,6 +324,8 @@ export function agent<
       maxSteps,
       signal,
       onStepFinish,
+      onStepStart,
+      aiSdkParams,
     };
   }
 
@@ -319,6 +361,8 @@ export function agent<
         maxSteps,
         signal,
         onStepFinish,
+        onStepStart,
+        aiSdkParams,
       } = prepared;
 
       log.debug("agent.generate start", { name: config.name });
@@ -327,6 +371,7 @@ export function agent<
       const generateParams: any = {
         model,
         ...promptParams,
+        ...aiSdkParams,
         stopWhen: stepCountIs(maxSteps),
         onStepFinish,
       };
@@ -342,16 +387,14 @@ export function agent<
       if (signal !== undefined) {
         generateParams.abortSignal = signal;
       }
+      if (onStepStart !== undefined) {
+        generateParams.experimental_onStepStart = onStepStart;
+      }
       const aiResult = await generateText(generateParams);
 
       const duration = Date.now() - startedAt;
 
-      const generateResult: GenerateResult<TOutput> = {
-        output: pickByOutput(output, aiResult.output, aiResult.text) as TOutput,
-        messages: aiResult.response.messages as Message[],
-        usage: toTokenUsage(aiResult.totalUsage),
-        finishReason: aiResult.finishReason,
-      };
+      const generateResult = formatGenerateResult<TOutput>(aiResult, output);
 
       await fireHooks(
         log,
@@ -428,6 +471,8 @@ export function agent<
         maxSteps,
         signal,
         onStepFinish,
+        onStepStart,
+        aiSdkParams,
       } = prepared;
 
       log.debug("agent.stream start", { name: config.name });
@@ -436,6 +481,7 @@ export function agent<
       const streamParams: any = {
         model,
         ...promptParams,
+        ...aiSdkParams,
         stopWhen: stepCountIs(maxSteps),
         onStepFinish,
       };
@@ -451,11 +497,15 @@ export function agent<
       if (signal !== undefined) {
         streamParams.abortSignal = signal;
       }
+      if (onStepStart !== undefined) {
+        streamParams.experimental_onStepStart = onStepStart;
+      }
       const aiResult = streamText(streamParams);
 
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 
       // Capture log for async closures — guaranteed set at this point
+      // Log is guaranteed set — validated.input resolved above
       const streamLog = log as Logger;
 
       /**
@@ -463,8 +513,6 @@ export function agent<
        */
       const processStream = async (): Promise<{
         output: TOutput;
-        messages: Message[];
-        usage: ReturnType<typeof toTokenUsage>;
         finishReason: string;
       }> => {
         const writer = writable.getWriter();
@@ -483,19 +531,26 @@ export function agent<
           await aiResult.output,
           await aiResult.text,
         ) as TOutput;
-        const response = await aiResult.response;
-        const finalMessages = response.messages as Message[];
-        const finalUsage = toTokenUsage(await aiResult.totalUsage);
         const finalFinishReason = await aiResult.finishReason;
 
         const duration = Date.now() - startedAt;
 
-        const generateResult: GenerateResult<TOutput> = {
-          output: finalOutput,
-          messages: finalMessages,
-          usage: finalUsage,
-          finishReason: finalFinishReason,
-        };
+        // Build a GenerateResult for the onFinish hook by awaiting remaining fields
+        const steps = await aiResult.steps;
+        const lastStep = steps.at(-1);
+        if (!lastStep) {
+          throw new Error("No steps returned from stream");
+        }
+        const generateResult = formatGenerateResult<TOutput>(
+          {
+            ...lastStep,
+            totalUsage: await aiResult.totalUsage,
+            steps,
+            output: await aiResult.output,
+            experimental_output: await aiResult.output,
+          },
+          output,
+        );
         await fireHooks(
           streamLog,
           wrapHook(config.onFinish, { input, result: generateResult, duration }),
@@ -510,8 +565,6 @@ export function agent<
 
         return {
           output: finalOutput,
-          messages: finalMessages,
-          usage: finalUsage,
           finishReason: finalFinishReason,
         };
       };
@@ -537,24 +590,46 @@ export function agent<
       });
 
       const streamResult: StreamResult<TOutput> = {
+        ...aiResult,
+        // Rebind promise fields through the done gate to ensure they only
+        // Resolve after processStream() has fully consumed the AI SDK stream.
+        // Without this, consumers could race with stream consumption.
+        text: gatePromise(done, aiResult.text),
+        reasoning: gatePromise(done, aiResult.reasoning),
+        sources: gatePromise(done, aiResult.sources),
+        files: gatePromise(done, aiResult.files),
+        toolCalls: gatePromise(done, aiResult.toolCalls),
+        toolResults: gatePromise(done, aiResult.toolResults),
+        finishReason: gatePromise(done, aiResult.finishReason),
+        usage: gatePromise(done, aiResult.usage),
+        totalUsage: gatePromise(done, aiResult.totalUsage),
+        steps: gatePromise(done, aiResult.steps),
+        response: gatePromise(done, aiResult.response),
         output: done.then((r) => r.output),
-        messages: done.then((r) => r.messages),
-        usage: done.then((r) => r.usage),
-        finishReason: done.then((r) => r.finishReason),
         fullStream: readable as AsyncIterableStream<StreamPart>,
         // NOTE: toTextStreamResponse and toUIMessageStreamResponse delegate directly to
         // The underlying AI SDK stream, NOT from the TransformStream above.
         // Do NOT consume fullStream concurrently with these methods —
         // They share the same underlying stream source.
-        toTextStreamResponse: (init) => aiResult.toTextStreamResponse(init),
+        toTextStreamResponse: (init?: ResponseInit) => aiResult.toTextStreamResponse(init),
         toUIMessageStreamResponse: (options) => aiResult.toUIMessageStreamResponse(options),
       };
 
-      // Prevent unhandled rejection warnings when consumers don't await all promises
-      streamResult.output.catch(() => {});
-      streamResult.messages.catch(() => {});
-      streamResult.usage.catch(() => {});
-      streamResult.finishReason.catch(() => {});
+      // Prevent unhandled rejection warnings when consumers don't await all promises.
+      // Each gated promise rejects when `done` rejects (stream error), so every
+      // Promise field needs a no-op rejection handler attached.
+      suppressRejection(streamResult.output);
+      suppressRejection(streamResult.text);
+      suppressRejection(streamResult.reasoning);
+      suppressRejection(streamResult.sources);
+      suppressRejection(streamResult.files);
+      suppressRejection(streamResult.toolCalls);
+      suppressRejection(streamResult.toolResults);
+      suppressRejection(streamResult.finishReason);
+      suppressRejection(streamResult.usage);
+      suppressRejection(streamResult.totalUsage);
+      suppressRejection(streamResult.steps);
+      suppressRejection(streamResult.response);
 
       return { ok: true, ...streamResult };
     } catch (caughtError) {
@@ -611,6 +686,21 @@ export function agent<
 // ---------------------------------------------------------------------------
 // Private
 // ---------------------------------------------------------------------------
+
+/**
+ * Spread the AI SDK result and only override `output` via `pickByOutput`.
+ *
+ * @private
+ */
+function formatGenerateResult<TOutput>(
+  aiResult: GenerateTextResult<ToolSet, AIOutput>,
+  output: OutputSpec | undefined,
+): GenerateResult<TOutput> {
+  return {
+    ...aiResult,
+    output: pickByOutput(output, aiResult.output, aiResult.text) as TOutput,
+  };
+}
 
 /**
  * Return the value if the predicate is true, otherwise undefined.

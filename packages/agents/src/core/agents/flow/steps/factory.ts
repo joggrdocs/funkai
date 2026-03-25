@@ -1,3 +1,4 @@
+import type { LanguageModelUsage } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
 import { P, match } from "ts-pattern";
@@ -23,8 +24,7 @@ import type {
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
-import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
-import type { TokenUsage } from "@/core/provider/types.js";
+import type { BaseGenerateResult } from "@/core/agents/types.js";
 import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
@@ -192,7 +192,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const finishedAt = Date.now();
       const duration = finishedAt - startedAt;
 
-      const usage: TokenUsage | undefined = extractStepUsage(type, value);
+      const usage: LanguageModelUsage | undefined = extractStepUsage(type, value);
 
       const traceRecord: TraceEntry = {
         id,
@@ -326,12 +326,12 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }
 
   async function agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult> {
-    const onFinishHandler = buildOnFinishHandler<GenerateResult>(config.onFinish);
+    const onFinishHandler = buildOnFinishHandler<BaseGenerateResult>(config.onFinish);
 
     // Capture the last AI SDK step result from the sub-agent's tool loop
     const lastAIStep: { current: StepFinishEvent | undefined } = { current: undefined };
 
-    const result = await executeStep<GenerateResult>({
+    const result = await executeStep<BaseGenerateResult>({
       id: config.id,
       type: "agent",
       input: config.input,
@@ -370,14 +370,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           if (!streamResult.ok) {
             throw streamResult.error.cause ?? new Error(streamResult.error.message);
           }
-          // Safe after the `!streamResult.ok` guard above — the Result union
-          // Doesn't spread StreamResult props at the type level, so we cast.
-          const full = streamResult as unknown as StreamResult & {
-            ok: true;
-          };
 
           // Forward text-delta events from sub-agent to parent stream
-          for await (const part of full.fullStream) {
+          for await (const part of streamResult.fullStream) {
             if (part.type === "text-delta") {
               await writer.write(part);
             }
@@ -385,10 +380,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
           // Await the final results
           return {
-            output: await full.output,
-            messages: await full.messages,
-            usage: await full.usage,
-            finishReason: await full.finishReason,
+            output: await streamResult.output,
+            usage: await streamResult.usage,
+            finishReason: await streamResult.finishReason,
           };
         }
 
@@ -396,16 +390,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         if (!generateResult.ok) {
           throw generateResult.error.cause ?? new Error(generateResult.error.message);
         }
-        // Runnable.generate() types only { output }, but Agent.generate()
-        // Returns full GenerateResult at runtime including messages, usage, finishReason.
-        const full = generateResult as unknown as GenerateResult & {
-          ok: true;
-        };
         return {
-          output: full.output,
-          messages: full.messages,
-          usage: full.usage,
-          finishReason: full.finishReason,
+          output: generateResult.output,
+          usage: generateResult.usage,
+          finishReason: generateResult.finishReason,
         };
       },
       onStart: config.onStart,
@@ -421,12 +409,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       },
     });
 
-    // Re-shape the FlowStepResult<GenerateResult> into FlowAgentStepResult
+    // Re-shape the FlowStepResult<BaseGenerateResult> into FlowAgentStepResult
     if (result.ok) {
       return {
         ok: true,
         output: result.output.output,
-        messages: result.output.messages,
         usage: result.output.usage,
         finishReason: result.output.finishReason,
         stepId: result.stepId,
@@ -601,9 +588,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
  *
  * @private
  */
-function extractStepUsage(type: OperationType, value: unknown): TokenUsage | undefined {
+function extractStepUsage(type: OperationType, value: unknown): LanguageModelUsage | undefined {
   if (type === "agent" && isObject(value) && Object.hasOwn(value, "usage")) {
-    return (value as unknown as { usage: TokenUsage }).usage;
+    return (value as unknown as { usage: LanguageModelUsage }).usage;
   }
   return undefined;
 }

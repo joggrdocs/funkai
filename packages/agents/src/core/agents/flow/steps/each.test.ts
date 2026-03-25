@@ -17,7 +17,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(order).toEqual([1, 2, 3]);
     expect(result.stepOperation).toBe("each");
   });
@@ -32,7 +32,7 @@ describe("each()", () => {
       execute: async () => {},
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -53,7 +53,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -91,7 +91,7 @@ describe("each()", () => {
       execute: executeSpy,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(executeSpy).not.toHaveBeenCalled();
   });
 
@@ -108,7 +108,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(processed).toEqual(["only"]);
   });
 
@@ -144,7 +144,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

@@ -2,7 +2,7 @@ import { match } from "ts-pattern";
 import { describe, expect, it, vi } from "vitest";
 
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-import type { Agent, GenerateResult } from "@/core/agents/types.js";
+import type { Agent, BaseGenerateResult, GenerateResult } from "@/core/agents/types.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";
 
@@ -10,15 +10,21 @@ const MOCK_USAGE = {
   inputTokens: 100,
   outputTokens: 50,
   totalTokens: 150,
-  cacheReadTokens: 0,
-  cacheWriteTokens: 0,
-  reasoningTokens: 0,
+  inputTokenDetails: {
+    noCacheTokens: 100,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+  },
+  outputTokenDetails: {
+    textTokens: 50,
+    reasoningTokens: 0,
+  },
 };
 
-function mockAgent(result: Result<Pick<GenerateResult, "output" | "messages">>): Agent<string> {
+function mockAgent(result: Result<Pick<BaseGenerateResult, "output">>): Agent<string> {
   const resolved: Result<GenerateResult> = match(result)
     .with({ ok: true }, (r) => ({ ...r, usage: MOCK_USAGE, finishReason: "stop" as const }))
-    .otherwise((r) => r);
+    .otherwise((r) => r) as Result<GenerateResult>;
   return {
     generate: vi.fn(async () => resolved),
     stream: vi.fn(),
@@ -33,17 +39,15 @@ describe("agent()", () => {
     const agent = mockAgent({
       ok: true,
       output: "hello",
-      messages: [],
     });
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.output).toBe("hello");
-    expect(result.messages).toEqual([]);
     expect(result.usage).toEqual(MOCK_USAGE);
     expect(result.finishReason).toBe("stop");
     expect(result.stepOperation).toBe("agent");
@@ -59,7 +63,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -78,7 +82,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-cause", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -95,7 +99,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-no-cause", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -105,7 +109,7 @@ describe("agent()", () => {
   it("calls agent.generate with input and config", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
     const config = { signal: new AbortController().signal };
 
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
@@ -123,7 +127,7 @@ describe("agent()", () => {
     const controller = new AbortController();
     const ctx = createMockCtx({ signal: controller.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-ctx-signal", agent, input: "test" });
 
@@ -137,7 +141,7 @@ describe("agent()", () => {
     const userController = new AbortController();
     const ctx = createMockCtx({ signal: ctxController.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({
       id: "ag-user-signal",
@@ -154,7 +158,7 @@ describe("agent()", () => {
   it("records input in trace", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-trace", agent, input: "my-input" });
 
@@ -170,7 +174,7 @@ describe("agent()", () => {
     const order: string[] = [];
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "done", messages: [] });
+    const agent = mockAgent({ ok: true, output: "done" });
 
     await $.agent({
       id: "ag-hooks",
@@ -216,7 +220,7 @@ describe("agent()", () => {
     const onFinish = vi.fn();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "result-text", messages: [] });
+    const agent = mockAgent({ ok: true, output: "result-text" });
 
     await $.agent({
       id: "ag-finish-result",
@@ -230,7 +234,6 @@ describe("agent()", () => {
         id: "ag-finish-result",
         result: expect.objectContaining({
           output: "result-text",
-          messages: [],
         }),
         duration: expect.any(Number),
       }),
@@ -240,7 +243,7 @@ describe("agent()", () => {
   it("passes scoped logger to agent.generate", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-logger", agent, input: "test" });
 
@@ -250,24 +253,10 @@ describe("agent()", () => {
     expect(ctx.log.child).toHaveBeenCalledWith({ stepId: "ag-logger" });
   });
 
-  it("handles agent returning empty messages array", async () => {
-    const ctx = createMockCtx();
-    const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "text", messages: [] });
-
-    const result = await $.agent({ id: "ag-empty-msgs", agent, input: "test" });
-
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-    expect(result.messages).toEqual([]);
-  });
-
   it("records usage on trace entry", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-trace-usage", agent, input: "test" });
 

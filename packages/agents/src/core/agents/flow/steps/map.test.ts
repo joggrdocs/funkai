@@ -14,7 +14,7 @@ describe("map()", () => {
       execute: async ({ item }) => item * 2,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -61,7 +61,7 @@ describe("map()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -78,7 +78,7 @@ describe("map()", () => {
       execute: async () => "should not be called",
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -95,7 +95,7 @@ describe("map()", () => {
       execute: async ({ item }) => item.toUpperCase(),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -136,7 +136,7 @@ describe("map()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

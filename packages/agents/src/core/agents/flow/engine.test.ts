@@ -25,7 +25,7 @@ describe(createFlowEngine, () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -53,7 +53,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 7 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -123,7 +123,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 4 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -153,7 +153,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 42 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -217,7 +217,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 1 } });
 
-      expect(result.ok).toBeFalsy();
+      expect(result.ok).toBe(false);
       expect(order).toEqual(["engine:onError", "flow:onError"]);
     });
 
@@ -339,7 +339,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 3 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -368,7 +368,7 @@ describe(createFlowEngine, () => {
         input: { x: "not-a-number" } as unknown as { x: number },
       });
 
-      expect(result.ok).toBeFalsy();
+      expect(result.ok).toBe(false);
       if (result.ok) {
         return;
       }
@@ -385,7 +385,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 10 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -401,7 +401,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 1 } });
 
-      expect(result.ok).toBeFalsy();
+      expect(result.ok).toBe(false);
       if (result.ok) {
         return;
       }
@@ -429,8 +429,8 @@ describe(createFlowEngine, () => {
         fa2.generate({ input: { x: 5 } }),
       ]);
 
-      expect(r1.ok).toBeTruthy();
-      expect(r2.ok).toBeTruthy();
+      expect(r1.ok).toBe(true);
+      expect(r2.ok).toBe(true);
       if (!r1.ok || !r2.ok) {
         return;
       }
@@ -454,7 +454,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 5 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -481,7 +481,7 @@ describe(createFlowEngine, () => {
 
       const result = await fa.generate({ input: { x: 3 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       expect(sideEffects).toEqual([30]);
     });
 

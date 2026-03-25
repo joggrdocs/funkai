@@ -2,7 +2,7 @@ import { match } from "ts-pattern";
 import { describe, expect, it, vi } from "vitest";
 
 import { createStepBuilder } from "@/core/agents/flow/steps/factory.js";
-import type { Agent, GenerateResult } from "@/core/agents/types.js";
+import type { Agent, BaseGenerateResult, GenerateResult } from "@/core/agents/types.js";
 import type { StreamPart } from "@/core/types.js";
 import { createMockCtx } from "@/testing/index.js";
 import type { Result } from "@/utils/result.js";
@@ -17,7 +17,7 @@ describe("step()", () => {
       execute: async () => ({ greeting: "hello" }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -38,7 +38,7 @@ describe("step()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -167,7 +167,7 @@ describe("step()", () => {
       execute: async () => ({ value: 42 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -254,7 +254,7 @@ describe("step()", () => {
       execute: async () => "hello",
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -270,7 +270,7 @@ describe("step()", () => {
       execute: async () => 42,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -288,10 +288,10 @@ describe("agent()", () => {
     reasoningTokens: 0,
   };
 
-  function mockAgent(result: Result<Pick<GenerateResult, "output" | "messages">>): Agent<string> {
+  function mockAgent(result: Result<Pick<BaseGenerateResult, "output">>): Agent<string> {
     const resolved: Result<GenerateResult> = match(result)
       .with({ ok: true }, (r) => ({ ...r, usage: MOCK_USAGE, finishReason: "stop" as const }))
-      .otherwise((r) => r);
+      .otherwise((r) => r) as Result<GenerateResult>;
     return {
       generate: vi.fn(async () => resolved),
       stream: vi.fn(),
@@ -305,17 +305,15 @@ describe("agent()", () => {
     const agent = mockAgent({
       ok: true,
       output: "hello",
-      messages: [],
     });
 
     const result = await $.agent({ id: "ag", agent, input: "test" });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.output).toBe("hello");
-    expect(result.messages).toEqual([]);
     expect(result.usage).toEqual(MOCK_USAGE);
     expect(result.finishReason).toBe("stop");
     expect(result.stepOperation).toBe("agent");
@@ -331,7 +329,7 @@ describe("agent()", () => {
 
     const result = await $.agent({ id: "ag-err", agent, input: "test" });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -342,7 +340,7 @@ describe("agent()", () => {
   it("calls agent.generate with input and config", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
     const config = { signal: new AbortController().signal };
 
     await $.agent({ id: "ag-cfg", agent, input: "hello", config });
@@ -360,7 +358,7 @@ describe("agent()", () => {
     const controller = new AbortController();
     const ctx = createMockCtx({ signal: controller.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-ctx-signal", agent, input: "test" });
 
@@ -374,7 +372,7 @@ describe("agent()", () => {
     const userController = new AbortController();
     const ctx = createMockCtx({ signal: ctxController.signal });
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({
       id: "ag-user-signal",
@@ -391,7 +389,7 @@ describe("agent()", () => {
   it("records input in trace", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-trace", agent, input: "my-input" });
 
@@ -405,7 +403,7 @@ describe("agent()", () => {
   it("records usage on trace entry for successful agent step", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const agent = mockAgent({ ok: true, output: "hi", messages: [] });
+    const agent = mockAgent({ ok: true, output: "hi" });
 
     await $.agent({ id: "ag-usage-trace", agent, input: "test" });
 
@@ -445,7 +443,7 @@ describe("map()", () => {
       execute: async ({ item }) => ({ doubled: item * 2 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -494,7 +492,7 @@ describe("map()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -522,7 +520,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(order).toEqual([1, 2, 3]);
     expect(result.stepOperation).toBe("each");
   });
@@ -541,7 +539,7 @@ describe("each()", () => {
       },
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -561,7 +559,7 @@ describe("reduce()", () => {
       execute: async ({ item, accumulator }) => accumulator + item,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -587,7 +585,7 @@ describe("reduce()", () => {
       execute: async ({ accumulator }) => accumulator,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
@@ -607,7 +605,7 @@ describe("while()", () => {
       execute: async ({ index }) => ({ count: index }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     expect(result.stepOperation).toBe("while");
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
@@ -627,7 +625,7 @@ describe("while()", () => {
       execute: async () => ({ v: 1 }),
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     const [traceEntry] = ctx.trace;
     if (traceEntry === undefined) {
       throw new Error("Expected trace entry");
@@ -646,7 +644,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve("a"), () => Promise.resolve("b"), () => Promise.resolve("c")],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -672,7 +670,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -722,7 +720,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -754,7 +752,7 @@ describe("race()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -762,7 +760,7 @@ describe("race()", () => {
     if (signals.loser === undefined) {
       throw new Error("Expected loser signal");
     }
-    expect(signals.loser.aborted).toBeTruthy();
+    expect(signals.loser.aborted).toBe(true);
   });
 });
 
@@ -830,7 +828,6 @@ describe("agent() streaming with writer", () => {
     const mockStreamResult = {
       ok: true as const,
       output: Promise.resolve("hello world"),
-      messages: Promise.resolve([]),
       usage: Promise.resolve(MOCK_USAGE),
       finishReason: Promise.resolve("stop"),
       fullStream: createMockFullStream(parts),
@@ -849,13 +846,12 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.stepOperation).toBe("agent");
     expect(result.output).toBe("hello world");
-    expect(result.messages).toEqual([]);
     expect(result.usage).toEqual(MOCK_USAGE);
     expect(result.finishReason).toBe("stop");
     expect(agent.stream).toHaveBeenCalled();
@@ -887,7 +883,7 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -916,7 +912,7 @@ describe("agent() streaming with writer", () => {
       stream: true,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -944,7 +940,6 @@ describe("agent() streaming with writer", () => {
     const mockStreamResult = {
       ok: true as const,
       output: Promise.resolve("hi"),
-      messages: Promise.resolve([]),
       usage: Promise.resolve(MOCK_USAGE),
       finishReason: Promise.resolve("stop"),
       fullStream: createMockFullStream(parts),
@@ -984,7 +979,7 @@ describe("map() with aborted signal", () => {
       execute: async ({ item }) => item * 2,
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }

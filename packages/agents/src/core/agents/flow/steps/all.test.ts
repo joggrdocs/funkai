@@ -13,7 +13,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve("a"), () => Promise.resolve("b"), () => Promise.resolve("c")],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -34,7 +34,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -89,7 +89,7 @@ describe("all()", () => {
     if (signals.entry === undefined) {
       throw new Error("Expected entry signal");
     }
-    expect(signals.entry.aborted).toBeTruthy();
+    expect(signals.entry.aborted).toBe(true);
   });
 
   it("handles empty entries array", async () => {
@@ -101,7 +101,7 @@ describe("all()", () => {
       entries: [],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -117,7 +117,7 @@ describe("all()", () => {
       entries: [() => Promise.resolve(42)],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -147,7 +147,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -172,11 +172,11 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (signals.entry === undefined) {
       throw new Error("Expected entry signal");
     }
-    expect(signals.entry.aborted).toBeTruthy();
+    expect(signals.entry.aborted).toBe(true);
   });
 
   it("fires onStart and onFinish hooks", async () => {
@@ -305,7 +305,7 @@ describe("all()", () => {
       ],
     });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }

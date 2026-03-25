@@ -3,10 +3,10 @@ import type { ZodType } from "zod";
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 import type {
   Agent,
+  BaseGenerateResult,
+  BaseStreamResult,
   GenerateParams,
-  GenerateResult,
   Resolver,
-  StreamResult,
 } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
 import type { Tool } from "@/core/tool.js";
@@ -48,14 +48,14 @@ export type FlowSubAgents = Record<string, Agent<any, any, any, any, any> | Flow
 /**
  * Result of a completed flow agent generation.
  *
- * Extends `GenerateResult` with flow-specific fields (`trace`, `duration`).
+ * Extends `BaseGenerateResult` with flow-specific fields (`trace`, `duration`).
  * Consumers who only care about the `Runnable` / `Agent` contract see
- * `{ output, messages, usage, finishReason }`. Consumers who know they
+ * `{ output, usage, finishReason }`. Consumers who know they
  * have a `FlowAgent` can access `trace` and `duration`.
  *
  * @typeParam TOutput - The validated output type.
  */
-export interface FlowAgentGenerateResult<TOutput> extends GenerateResult<TOutput> {
+export interface FlowAgentGenerateResult<TOutput> extends BaseGenerateResult<TOutput> {
   /**
    * The full execution trace.
    *
@@ -343,15 +343,15 @@ export interface FlowAgent<TInput, TOutput> {
    * Run the flow agent with streaming step progress.
    *
    * Returns immediately with `fullStream` — an `AsyncIterableStream`
-   * of typed `StreamPart` events for each step. `output`, `messages`,
-   * and `usage` are promises that resolve after the flow completes.
+   * of typed `StreamPart` events for each step. `output` and `usage`
+   * are promises that resolve after the flow completes.
    *
    * @param params - Input and optional per-call overrides.
    * @returns A `Result` wrapping the `StreamResult`.
    */
   stream(
     params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
-  ): Promise<Result<StreamResult<TOutput>>>;
+  ): Promise<Result<BaseStreamResult<TOutput>>>;
 
   /**
    * Returns a plain function that calls `.generate()`.

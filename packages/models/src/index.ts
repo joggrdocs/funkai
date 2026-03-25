@@ -12,7 +12,7 @@ export type {
 // Provider
 export { createProviderRegistry } from "@/provider/registry.js";
 export type { ProviderRegistryConfig, ProviderRegistry } from "@/provider/registry.js";
-export type { LanguageModel, TokenUsage } from "@/provider/types.js";
+export type { LanguageModel } from "@/provider/types.js";
 
 // Cost
 export { calculateCost } from "@/cost/calculate.js";

@@ -5,6 +5,7 @@ import { flowAgent } from "@/core/agents/flow/flow-agent.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
+import { suppressRejection } from "@/utils/promise.js";
 
 const Input = z.object({ x: z.number() });
 const Output = z.object({ y: z.number() });
@@ -53,31 +54,18 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.output).toEqual({ y: 10 });
   });
 
-  it("includes messages array with user and assistant messages", async () => {
-    const fa = createSimpleFlowAgent();
-    const result = await fa.generate({ input: { x: 3 } });
-
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-    expect(result.messages.length).toBeGreaterThanOrEqual(2);
-    expect(result.messages[0]?.role).toBe("user");
-    expect(result.messages.at(-1)?.role).toBe("assistant");
-  });
-
   it("includes usage with zero-valued fields when no sub-agents run", async () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -85,9 +73,15 @@ describe("generate() success", () => {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: undefined,
+        cacheReadTokens: undefined,
+        cacheWriteTokens: undefined,
+      },
+      outputTokenDetails: {
+        textTokens: undefined,
+        reasoningTokens: undefined,
+      },
     });
   });
 
@@ -95,7 +89,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -106,7 +100,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -117,7 +111,7 @@ describe("generate() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -149,56 +143,11 @@ describe("generate() with steps", () => {
 
     const result = await fa.generate({ input: { x: 7 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.output).toEqual({ y: 14 });
-  });
-
-  it("steps produce synthetic tool-call messages in the messages array", async () => {
-    const fa = flowAgent<{ x: number }, { y: number }>(
-      {
-        name: "msg-flow",
-        input: Input,
-        output: Output,
-        logger: createMockLogger(),
-      },
-      async ({ input, $ }) => {
-        await $.step({
-          id: "compute",
-          execute: async () => input.x + 1,
-        });
-
-        return { y: input.x + 1 };
-      },
-    );
-
-    const result = await fa.generate({ input: { x: 5 } });
-
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    // Should have: user msg, tool-call msg, tool-result msg, assistant msg
-    expect(result.messages.length).toBeGreaterThanOrEqual(4);
-
-    const toolCallMsg = result.messages.find(
-      (m) =>
-        m.role === "assistant" &&
-        Array.isArray(m.content) &&
-        (m.content as { type: string }[]).some((p) => p.type === "tool-call"),
-    );
-    expect(toolCallMsg).toBeDefined();
-
-    const toolResultMsg = result.messages.find(
-      (m) =>
-        m.role === "tool" &&
-        Array.isArray(m.content) &&
-        (m.content as { type: string }[]).some((p) => p.type === "tool-result"),
-    );
-    expect(toolResultMsg).toBeDefined();
   });
 });
 
@@ -209,7 +158,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fa.generate({ input: { x: "not-a-number" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -223,7 +172,7 @@ describe("generate() input validation", () => {
     // @ts-expect-error - intentionally missing field
     const result = await fa.generate({ input: {} });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -263,7 +212,7 @@ describe("generate() output validation", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -280,7 +229,7 @@ describe("generate() error handling", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -296,7 +245,7 @@ describe("generate() error handling", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -332,7 +281,6 @@ describe("generate() hooks", () => {
     const [event] = firstCall;
     expect(event.input).toEqual({ x: 3 });
     expect(event.result).toHaveProperty("output");
-    expect(event.result).toHaveProperty("messages");
     expect(event.result).toHaveProperty("usage");
     expect(event.duration).toBeGreaterThanOrEqual(0);
   });
@@ -494,7 +442,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -510,7 +458,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -531,7 +479,7 @@ describe("generate() hook resilience", () => {
 
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -546,7 +494,7 @@ describe("generate() overrides", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 }, signal: controller.signal });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses override logger when provided", async () => {
@@ -576,7 +524,7 @@ describe("generate() void output", () => {
 
     const result = await fa.generate({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -589,22 +537,21 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
     expect(result.fullStream).toBeInstanceOf(ReadableStream);
-    expect(result.output).toBeInstanceOf(Promise);
-    expect(result.messages).toBeInstanceOf(Promise);
-    expect(result.usage).toBeInstanceOf(Promise);
-    expect(result.finishReason).toBeInstanceOf(Promise);
+    expect(result.output).toBeDefined();
+    expect(result.usage).toBeDefined();
+    expect(result.finishReason).toBeDefined();
   });
 
   it("output promise resolves to computed output", async () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 4 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -626,7 +573,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 2 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -652,7 +599,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -665,17 +612,13 @@ describe("stream() success", () => {
         break;
       }
     }
-
-    const messages = await result.messages;
-    expect(messages.length).toBeGreaterThanOrEqual(2);
-    expect(messages[0]?.role).toBe("user");
   });
 
   it("usage promise resolves with zero-valued fields when no sub-agents", async () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -694,9 +637,15 @@ describe("stream() success", () => {
       inputTokens: 0,
       outputTokens: 0,
       totalTokens: 0,
-      cacheReadTokens: 0,
-      cacheWriteTokens: 0,
-      reasoningTokens: 0,
+      inputTokenDetails: {
+        noCacheTokens: undefined,
+        cacheReadTokens: undefined,
+        cacheWriteTokens: undefined,
+      },
+      outputTokenDetails: {
+        textTokens: undefined,
+        reasoningTokens: undefined,
+      },
     });
   });
 
@@ -704,7 +653,7 @@ describe("stream() success", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -744,7 +693,7 @@ describe("stream() with steps", () => {
 
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -784,7 +733,7 @@ describe("stream() input validation", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fa.stream({ input: { x: "not-a-number" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -801,15 +750,14 @@ describe("stream() error handling", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
     // Suppress all derived promise rejections to avoid unhandled rejection noise
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream (should close after error)
     const reader = result.fullStream.getReader();
@@ -830,15 +778,14 @@ describe("stream() error handling", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
     // Suppress derived promise rejections
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream and collect events
     const parts: Record<string, unknown>[] = [];
@@ -874,15 +821,14 @@ describe("stream() output validation", () => {
 
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
     // Suppress derived promise rejections
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain the stream
     const reader = result.fullStream.getReader();
@@ -916,7 +862,7 @@ describe("stream() hooks", () => {
     const fa = createSimpleFlowAgent({ onFinish });
     const result = await fa.stream({ input: { x: 3 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -943,7 +889,7 @@ describe("stream() hooks", () => {
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
     const result = await fa.stream({ input: { x: 7 }, onStart: overrideOnStart });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -980,15 +926,14 @@ describe("stream() hooks", () => {
     });
     const result = await fa.stream({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
 
     // Suppress all derived promise rejections
-    result.messages.catch(() => {});
-    result.usage.catch(() => {});
-    result.finishReason.catch(() => {});
+    suppressRejection(result.usage);
+    suppressRejection(result.finishReason);
 
     // Drain
     const reader = result.fullStream.getReader();
@@ -1000,7 +945,7 @@ describe("stream() hooks", () => {
     }
 
     // Wait for the error to settle
-    await result.output.catch(() => {});
+    await Promise.resolve(result.output).catch(() => {});
 
     expect(onError).toHaveBeenCalledTimes(1);
   });
@@ -1024,7 +969,7 @@ describe("stream() void output", () => {
 
     const result = await fa.stream({ input: { x: 5 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1050,7 +995,7 @@ describe("fn()", () => {
 
     const result = await fn({ input: { x: 6 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1074,7 +1019,7 @@ describe("fn()", () => {
     // @ts-expect-error - intentionally invalid input
     const result = await fn({ input: { x: "bad" } });
 
-    expect(result.ok).toBeFalsy();
+    expect(result.ok).toBe(false);
     if (result.ok) {
       return;
     }
@@ -1150,7 +1095,7 @@ describe("stream() with agents dependency", () => {
     );
 
     const result = await fa.stream({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
     if (!result.ok) {
       return;
     }
@@ -1176,7 +1121,7 @@ describe("edge cases", () => {
     const fa = createSimpleFlowAgent();
     const result = await fa.generate({ input: { x: 1 } });
 
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("uses default logger when none provided", async () => {
@@ -1190,7 +1135,7 @@ describe("edge cases", () => {
     );
 
     const result = await fa.generate({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
+    expect(result.ok).toBe(true);
   });
 
   it("handler receives scoped logger", async () => {
@@ -1229,7 +1174,7 @@ describe("stream() unhandled rejection safety", () => {
     try {
       const result = await fa.stream({ input: { x: 1 } });
 
-      expect(result.ok).toBeTruthy();
+      expect(result.ok).toBe(true);
       if (!result.ok) {
         return;
       }
@@ -1255,96 +1200,5 @@ describe("stream() unhandled rejection safety", () => {
     } finally {
       process.removeListener("unhandledRejection", handler);
     }
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Stream() response methods
-// ---------------------------------------------------------------------------
-
-describe("stream() response methods", () => {
-  it("toTextStreamResponse returns a Response with correct content type", async () => {
-    const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ input: { x: 5 } });
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    const response = result.toTextStreamResponse();
-
-    expect(response).toBeInstanceOf(Response);
-    expect(response.headers.get("Content-Type")).toBe("text/plain; charset=utf-8");
-
-    // Consume the response to verify it's a valid readable stream
-    const reader = response.body!.getReader();
-    for (;;) {
-      const { done } = await reader.read();
-      if (done) {
-        break;
-      }
-    }
-  });
-
-  it("toTextStreamResponse accepts custom init", async () => {
-    const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    const response = result.toTextStreamResponse({
-      status: 201,
-      headers: { "X-Custom": "value" },
-    });
-
-    expect(response.status).toBe(201);
-    expect(response.headers.get("X-Custom")).toBe("value");
-  });
-
-  it("toUIMessageStreamResponse returns a readable Response", async () => {
-    const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ input: { x: 5 } });
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    const response = result.toUIMessageStreamResponse();
-
-    expect(response).toBeInstanceOf(Response);
-    expect(response.body).toBeTruthy();
-
-    // Consume the response to verify it's a valid readable stream
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-    let text = "";
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      text += decoder.decode(value, { stream: true });
-    }
-
-    expect(text.length).toBeGreaterThan(0);
-  });
-
-  it("toUIMessageStreamResponse accepts custom init", async () => {
-    const fa = createSimpleFlowAgent();
-    const result = await fa.stream({ input: { x: 1 } });
-    expect(result.ok).toBeTruthy();
-    if (!result.ok) {
-      return;
-    }
-
-    const response = result.toUIMessageStreamResponse({
-      status: 201,
-      headers: { "X-Custom": "test" },
-    });
-
-    expect(response.status).toBe(201);
-    expect(response.headers.get("X-Custom")).toBe("test");
   });
 });
