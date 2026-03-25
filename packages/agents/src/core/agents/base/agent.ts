@@ -504,8 +504,8 @@ export function agent<
       const { readable, writable } = new TransformStream<StreamPart, StreamPart>();
 
       // Capture log for async closures — guaranteed set at this point
-      // log is guaranteed set — validated.input resolved above
-      const streamLog = log!;
+      // Log is guaranteed set — validated.input resolved above
+      const streamLog = log as Logger;
 
       /**
        * @private

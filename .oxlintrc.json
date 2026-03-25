@@ -57,6 +57,7 @@
     "functional/no-throw-statements": "off",
     "functional/no-try-statements": "off",
     "functional/no-loop-statements": "off",
+    "unicorn/prefer-ternary": "off",
     "unicorn/no-null": "off",
     "unicorn/no-useless-undefined": "off",
     "unicorn/no-array-callback-reference": "off",

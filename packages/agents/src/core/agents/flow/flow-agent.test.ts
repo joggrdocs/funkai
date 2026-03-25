@@ -755,8 +755,8 @@ describe("stream() error handling", () => {
     }
 
     // Suppress all derived promise rejections to avoid unhandled rejection noise
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain the stream (should close after error)
     const reader = result.fullStream.getReader();
@@ -783,8 +783,8 @@ describe("stream() error handling", () => {
     }
 
     // Suppress derived promise rejections
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain the stream and collect events
     const parts: Record<string, unknown>[] = [];
@@ -826,8 +826,8 @@ describe("stream() output validation", () => {
     }
 
     // Suppress derived promise rejections
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain the stream
     const reader = result.fullStream.getReader();
@@ -931,8 +931,8 @@ describe("stream() hooks", () => {
     }
 
     // Suppress all derived promise rejections
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain
     const reader = result.fullStream.getReader();
@@ -944,7 +944,7 @@ describe("stream() hooks", () => {
     }
 
     // Wait for the error to settle
-    await result.output.then(undefined, () => {});
+    await result.output.catch(() => {});
 
     expect(onError).toHaveBeenCalledTimes(1);
   });

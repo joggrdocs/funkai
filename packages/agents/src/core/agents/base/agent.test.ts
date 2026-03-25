@@ -1408,9 +1408,9 @@ describe("stream() async error during consumption", () => {
     }
 
     // Suppress derived promise rejections
-    result.output.then(undefined, () => {});
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.output.catch(() => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain the stream — writer.abort() errors the readable side, so
     // Reader.read() will reject once the error propagates.
@@ -1451,9 +1451,9 @@ describe("stream() async error during consumption", () => {
       return;
     }
 
-    result.output.then(undefined, () => {});
-    result.usage.then(undefined, () => {});
-    result.finishReason.then(undefined, () => {});
+    result.output.catch(() => {});
+    result.usage.catch(() => {});
+    result.finishReason.catch(() => {});
 
     // Drain the stream to trigger the error — reader.read() rejects
     // Once the writer aborts the transform stream.

@@ -592,11 +592,9 @@ export function flowAgent<TInput, TOutput = any>(
     };
 
     // Prevent unhandled rejection warnings when consumers don't await all promises
-    // PromiseLike doesn't have .catch(), so use .then(undefined, noop)
-    const noop = () => {};
-    streamResult.output.then(undefined, noop);
-    streamResult.usage.then(undefined, noop);
-    streamResult.finishReason.then(undefined, noop);
+    streamResult.output.catch(() => {});
+    streamResult.usage.catch(() => {});
+    streamResult.finishReason.catch(() => {});
 
     return { ok: true, ...streamResult };
   }
