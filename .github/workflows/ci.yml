@@ -55,3 +55,16 @@ jobs:
 
       - name: Check for changeset
         run: pnpm changeset status --since=origin/main
+
+      - name: Block major version bumps (pre-1.0)
+        run: |
+          shopt -s nullglob
+          found=0
+          for f in .changeset/*.md; do
+            [ "$f" = ".changeset/README.md" ] && continue
+            if grep -qP '^"@funkai/.+?":\s*major' "$f"; then
+              echo "::error file=$f::Major bump detected — all @funkai/* packages are pre-1.0. Use 'minor' for breaking changes."
+              found=1
+            fi
+          done
+          exit $found
