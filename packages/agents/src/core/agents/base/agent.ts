@@ -1,10 +1,10 @@
 import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream, GenerateTextResult, ModelMessage, ToolSet } from "ai";
 
-// oxlint-disable-next-line -- Output is a dual value/type export from AI SDK; we use `any` for the omitted output type param
+// See types.ts for why `any` is needed here — AI SDK's `Output` is a merged namespace + interface.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AIOutput = any;
-import { isNil, isNotNil } from "es-toolkit";
+import { isNil, isNotNil, pickBy } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -296,19 +296,22 @@ export function agent<
       : undefined;
 
     // Collect AI SDK passthrough params (per-call overrides config)
-    const aiSdkParams = omitNil({
-      toolChoice: params.toolChoice ?? config.toolChoice,
-      providerOptions: params.providerOptions ?? config.providerOptions,
-      activeTools: params.activeTools ?? config.activeTools,
-      prepareStep: params.prepareStep ?? config.prepareStep,
-      experimental_repairToolCall: params.repairToolCall ?? config.repairToolCall,
-      headers: params.headers ?? config.headers,
-      experimental_include: params.experimental_include ?? config.experimental_include,
-      experimental_context: params.experimental_context ?? config.experimental_context,
-      experimental_download: params.experimental_download ?? config.experimental_download,
-      experimental_onToolCallStart: params.onToolCallStart ?? config.onToolCallStart,
-      experimental_onToolCallFinish: params.onToolCallFinish ?? config.onToolCallFinish,
-    });
+    const aiSdkParams = pickBy(
+      {
+        toolChoice: params.toolChoice ?? config.toolChoice,
+        providerOptions: params.providerOptions ?? config.providerOptions,
+        activeTools: params.activeTools ?? config.activeTools,
+        prepareStep: params.prepareStep ?? config.prepareStep,
+        experimental_repairToolCall: params.repairToolCall ?? config.repairToolCall,
+        headers: params.headers ?? config.headers,
+        experimental_include: params.experimental_include ?? config.experimental_include,
+        experimental_context: params.experimental_context ?? config.experimental_context,
+        experimental_download: params.experimental_download ?? config.experimental_download,
+        experimental_onToolCallStart: params.onToolCallStart ?? config.onToolCallStart,
+        experimental_onToolCallFinish: params.onToolCallFinish ?? config.onToolCallFinish,
+      },
+      isNotNil,
+    );
 
     return {
       input,
@@ -726,14 +729,3 @@ function buildMergedHook<E>(
   };
 }
 
-/**
- * Remove nil values from a record.
- *
- * Returns a new object with only defined (non-null, non-undefined) values.
- * Used to build AI SDK passthrough params without overriding defaults.
- *
- * @private
- */
-function omitNil(obj: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => isNotNil(v)));
-}

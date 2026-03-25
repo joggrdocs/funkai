@@ -16,7 +16,11 @@ import type {
   UIMessage,
   UIMessageStreamOptions,
 } from "ai";
-// oxlint-disable-next-line -- Output is a dual value/type export from AI SDK; we use `any` for the omitted output type param
+
+// The AI SDK's `Output` is a merged namespace + interface. TypeScript resolves
+// `import type { Output }` to the namespace, which can't be used as a type param.
+// We only need this for the `Omit`'d fields (`output`, `experimental_output`), so
+// the actual type param is irrelevant — `any` satisfies the `extends Output` constraint.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AIOutput = any;
 import type { CamelCase, SnakeCase } from "type-fest";
