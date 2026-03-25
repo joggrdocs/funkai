@@ -231,7 +231,7 @@ export function agent<
     // See packages/agents/docs/core/hooks.md for the full lifecycle.
     const parentCtx: ParentAgentContext = {
       log,
-      onStepStart: params.onStepStart,
+      onStepStart: buildMergedHook(log, config.onStepStart, params.onStepStart),
       onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
       agentChain: currentChain,
     };

@@ -1561,6 +1561,77 @@ describe("Agent subagent hook forwarding (integration)", () => {
     }
   });
 
+  it("parent config and per-call onStepStart both fire for flow sub-agent steps", async () => {
+    const stepEvents: string[] = [];
+
+    const sub = flowAgent<{ task: string }, string>(
+      {
+        name: "sub-flow",
+        input: z.object({ task: z.string() }),
+        output: z.string(),
+      },
+      async ({ input, $ }) => {
+        await $.step({ id: "work", execute: async () => input.task });
+        return input.task;
+      },
+    );
+
+    const toolCallModel = new MockLanguageModelV3({
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      doGenerate: mockValues(
+        {
+          content: [
+            {
+              type: "tool-call" as const,
+              toolCallId: "tc1",
+              toolName: "agent_sub",
+              input: JSON.stringify({ task: "do it" }),
+            },
+          ],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        {
+          content: [{ type: "text" as const, text: "done" }],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
+      ) as any,
+    });
+
+    const parent = agent({
+      name: "parent-agent",
+      model: toolCallModel,
+      system: "Delegate to agent_sub.",
+      agents: { sub },
+      onStepStart: (event) => {
+        stepEvents.push(`config:${event.stepId}`);
+      },
+    });
+
+    await parent.generate({
+      prompt: "go",
+      logger: createMockLogger(),
+      onStepStart: (event) => {
+        stepEvents.push(`call:${event.stepId}`);
+      },
+    });
+
+    // Sub-flow's step fires both config and per-call onStepStart from parent
+    const subSteps = stepEvents.filter((e) => e.includes("work"));
+    expect(subSteps.length).toBeGreaterThan(0);
+
+    // Config hook fires before per-call hook
+    const subConfigIdx = stepEvents.findIndex((e) => e.startsWith("config:") && e.includes("work"));
+    const subCallIdx = stepEvents.findIndex((e) => e.startsWith("call:") && e.includes("work"));
+    expect(subConfigIdx).not.toBe(-1);
+    expect(subCallIdx).not.toBe(-1);
+    expect(subConfigIdx).toBeLessThan(subCallIdx);
+  });
+
   it("parent onStart does NOT fire for sub-agent events (type safety)", async () => {
     const startEvents: unknown[] = [];
 
