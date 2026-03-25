@@ -111,6 +111,10 @@ const results = await $.map({
     return await processFile(item);
   },
 });
+
+if (results.ok) {
+  console.log(results.output); // R[]
+}
 ```
 
 ## $.each
@@ -131,13 +135,17 @@ $.each<T>(config: EachConfig<T>): Promise<FlowStepResult<void>>
 | `onError`  | No       | hook                                            | Hook: fires on error          |
 
 ```ts
-await $.each({
+const notifications = await $.each({
   id: "notify-users",
   input: users,
   execute: async ({ item }) => {
     await sendNotification(item.email);
   },
 });
+
+if (!notifications.ok) {
+  console.error(notifications.error.message);
+}
 ```
 
 ## $.reduce
@@ -167,6 +175,10 @@ const total = await $.reduce({
     return accumulator + item.score;
   },
 });
+
+if (total.ok) {
+  console.log(total.output); // R
+}
 ```
 
 ## $.while
@@ -197,6 +209,10 @@ const result = await $.while({
     return await checkStatus();
   },
 });
+
+if (result.ok) {
+  console.log(result.output); // T | undefined
+}
 ```
 
 ## $.all
@@ -218,10 +234,14 @@ $.all(config: AllConfig): Promise<FlowStepResult<unknown[]>>
 Where `EntryFactory = (signal: AbortSignal) => Promise<any>`.
 
 ```ts
-const [users, repos] = await $.all({
+const result = await $.all({
   id: "fetch-data",
   entries: [(signal) => fetchUsers(signal), (signal) => fetchRepos(signal)],
 });
+
+if (result.ok) {
+  const [users, repos] = result.output;
+}
 ```
 
 ## $.race

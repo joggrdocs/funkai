@@ -26,7 +26,6 @@ import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type {
-  AIStepResult,
   AgentChainEntry,
   StepFinishEvent,
   StepStartEvent,
@@ -337,7 +336,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     const onFinishHandler = buildOnFinishHandler<GenerateResult>(config.onFinish);
 
     // Capture the last AI SDK step result from the sub-agent's tool loop
-    const lastAIStep: { current: AIStepResult | undefined } = { current: undefined };
+    const lastAIStep: { current: StepFinishEvent | undefined } = { current: undefined };
 
     const result = await executeStep<GenerateResult>({
       id: config.id,
@@ -353,7 +352,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           | ((event: StepFinishEvent) => void | Promise<void>)
           | undefined;
         mergedHooks["onStepFinish"] = async (event: StepFinishEvent) => {
-          lastAIStep.current = event as AIStepResult;
+          lastAIStep.current = event;
           if (isNotNil(originalOnStepFinish)) {
             await originalOnStepFinish(event);
           }
@@ -422,7 +421,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       buildFinishEventExtras: () => {
         // Spread AI SDK fields from the last agent tool-loop step
         if (isNotNil(lastAIStep.current)) {
-          const { stepId: _sid, stepOperation: _sop, ...aiFields } = lastAIStep.current as StepFinishEvent;
+          const { stepId: _sid, stepOperation: _sop, ...aiFields } = lastAIStep.current;
           return aiFields;
         }
         return {};

@@ -160,16 +160,28 @@ interface StepStartEvent {
 
 ### FlowAgentStepResult
 
-Returned by `$.agent()`. Agent output fields are flat on the result -- no double-wrapping.
+Returned by `$.agent()`. A discriminated union where the success branch carries `GenerateResult` fields flat on the result (no double-wrapping), and the failure branch carries `StepError`.
 
 ```ts
-type FlowAgentStepResult = FlowStepResult<GenerateResult> & {
-  output: string; // the agent's output (flat, no double-wrapping)
-  messages: Message[];
-  usage: TokenUsage;
-  finishReason: string;
-};
+type FlowAgentStepResult<TOutput = string> =
+  | (GenerateResult<TOutput> & {
+      ok: true;
+      stepId: string;
+      stepOperation: "agent";
+      duration: number;
+      agentChain?: readonly AgentChainEntry[];
+    })
+  | {
+      ok: false;
+      error: StepError;
+      stepId: string;
+      stepOperation: "agent";
+      duration: number;
+      agentChain?: readonly AgentChainEntry[];
+    };
 ```
+
+On success, `result.output` is the agent's `TOutput` directly, and `result.messages`, `result.usage`, `result.finishReason` are available alongside it.
 
 ### StepError
 
