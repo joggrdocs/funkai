@@ -23,9 +23,9 @@ Set on `FlowAgentConfig`:
 | `onFinish`     | `{ input, output, duration }`                                     | After successful completion                           |
 | `onError`      | `{ input, error }`                                                | On error, before Result is returned                   |
 | `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`)       | Before any `$` operation executes                     |
-| `onStepFinish` | `StepFinishEvent` (`{ stepId, stepOperation, output, duration }`) | After any `$` operation completes (success AND error) |
+| `onStepFinish` | `StepFinishEvent`                                                 | After any `$` operation completes (success AND error) |
 
-`onStepFinish` fires on both success and error. On error, `output` is `undefined`. `stepId` is always required (never optional).
+`onStepFinish` fires on both success and error. On error, `output` is `undefined`. `stepId` is always required (never optional). For `$.agent()` steps, `StepFinishEvent` also includes all AI SDK `StepResult` fields (`usage`, `toolCalls`, `toolResults`, `text`, `finishReason`, etc.).
 
 ## Step-Level Hooks
 

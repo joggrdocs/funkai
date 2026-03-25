@@ -95,7 +95,7 @@ Events emitted on the flow agent stream:
 | Type          | Fields                                          | Description               |
 | ------------- | ----------------------------------------------- | ------------------------- |
 | `step:start`  | `stepId`, `stepOperation`, `agentChain?`        | A `$` operation started   |
-| `step:finish` | `stepId`, `stepOperation`, `output`, `duration` | A `$` operation completed |
+| `step:finish` | `StepFinishEvent`                                | A `$` operation completed; `$.agent()` steps also include AI SDK `StepResult` fields |
 | `step:error`  | `stepId`, `stepOperation`, `error`              | A `$` operation failed    |
 | `flow:finish` | `output`, `duration`                            | The flow agent completed  |
 
