@@ -631,23 +631,19 @@ function mergeStepHooks(
   type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
   type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
-  const parentStart: StepStartHook | undefined = extractHook<StepStartHook>(
-    parentHooks,
-    "onStepStart",
-  );
-  const parentFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(
-    parentHooks,
-    "onStepFinish",
-  );
+  let parentStart: StepStartHook | undefined;
+  let parentFinish: StepFinishHook | undefined;
+  if (isNotNil(parentHooks)) {
+    parentStart = parentHooks.onStepStart;
+    parentFinish = parentHooks.onStepFinish;
+  }
 
-  const childStart: StepStartHook | undefined = extractHook<StepStartHook>(
-    childConfig,
-    "onStepStart",
-  );
-  const childFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(
-    childConfig,
-    "onStepFinish",
-  );
+  let childStart: StepStartHook | undefined;
+  let childFinish: StepFinishHook | undefined;
+  if (isNotNil(childConfig)) {
+    childStart = childConfig["onStepStart"] as StepStartHook | undefined;
+    childFinish = childConfig["onStepFinish"] as StepFinishHook | undefined;
+  }
 
   const result: Record<string, unknown> = {};
 
@@ -756,19 +752,4 @@ async function poolMap<T, R>(
   const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => worker());
   await Promise.all(workers);
   return results;
-}
-
-/**
- * Extract a hook function from a nullable hooks object by key.
- *
- * @private
- */
-function extractHook<T>(
-  hooks: Record<string, unknown> | null | undefined,
-  key: string,
-): T | undefined {
-  if (isNil(hooks)) {
-    return undefined;
-  }
-  return hooks[key] as T | undefined;
 }
