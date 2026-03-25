@@ -259,12 +259,14 @@ export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
    * - `toolMs` — default timeout for all tool executions.
    * - Per-tool timeouts via additional keys (e.g. `{ weatherMs: 5000 }`).
    */
-  timeout?: number | {
-    totalMs?: number;
-    stepMs?: number;
-    toolMs?: number;
-    [toolTimeout: string]: number | undefined;
-  };
+  timeout?:
+    | number
+    | {
+        totalMs?: number;
+        stepMs?: number;
+        toolMs?: number;
+        [toolTimeout: string]: number | undefined;
+      };
 
   /**
    * Per-call hook — fires after base `onStart`.

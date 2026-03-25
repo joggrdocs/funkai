@@ -1,6 +1,11 @@
 import { generateText, streamText, stepCountIs } from "ai";
-import type { AsyncIterableStream, GenerateTextResult, ModelMessage, ToolSet } from "ai";
-import type { StopCondition } from "ai";
+import type {
+  AsyncIterableStream,
+  GenerateTextResult,
+  ModelMessage,
+  StopCondition,
+  ToolSet,
+} from "ai";
 
 // See types.ts for why `any` is needed here — AI SDK's `Output` is a merged namespace + interface.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,9 +195,10 @@ export function agent<
    *
    * @private
    */
-  function resolveSignalAndTimeout(
-    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
-  ): { signal: AbortSignal | undefined; timeout: Record<string, number> | undefined } {
+  function resolveSignalAndTimeout(params: GenerateParams<TInput, TTools, TSubAgents, TOutput>): {
+    signal: AbortSignal | undefined;
+    timeout: Record<string, number> | undefined;
+  } {
     const { timeout, signal } = params;
 
     // Object timeout — forward to AI SDK directly
@@ -202,7 +208,10 @@ export function agent<
 
     // Number timeout — convert to AbortSignal
     if (signal && isNotNil(timeout)) {
-      return { signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]), timeout: undefined };
+      return {
+        signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]),
+        timeout: undefined,
+      };
     }
     if (isNotNil(timeout)) {
       return { signal: AbortSignal.timeout(timeout), timeout: undefined };
