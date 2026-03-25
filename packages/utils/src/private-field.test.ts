@@ -74,18 +74,18 @@ describe("private field accessor", () => {
       expect(typeof _field.symbol).toBe("symbol");
     });
 
-    it("uses Symbol.for so same description yields same Symbol", () => {
+    it("uses unique Symbol so same description yields different Symbols", () => {
       const _a = privateField<string>("test:symbol-shared");
       const _b = privateField<string>("test:symbol-shared");
-      expect(_a.symbol).toBe(_b.symbol);
+      expect(_a.symbol).not.toBe(_b.symbol);
     });
 
-    it("can cross-read between accessors with the same description", () => {
+    it("cannot cross-read between accessors with the same description", () => {
       const _writer = privateField<number>("test:symbol-cross");
       const _reader = privateField<number>("test:symbol-cross");
       const obj = {};
       _writer.set(obj, 99);
-      expect(_reader.get(obj)).toBe(99);
+      expect(_reader.get(obj)).toBeUndefined();
     });
   });
 
