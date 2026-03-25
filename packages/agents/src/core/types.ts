@@ -178,9 +178,9 @@ export interface StepFinishEvent {
    * Each entry identifies one agent in the chain. The first entry is
    * the root agent, the last is the agent that produced this step.
    *
-   * Present on both agent tool-loop steps and flow orchestration steps
-   * when the agent is part of a chain. `undefined` for top-level agents
-   * called directly by the user without a parent.
+   * Present on both agent tool-loop steps and flow orchestration steps.
+   * For direct top-level executions, the chain contains the current
+   * agent as a single entry.
    */
   agentChain?: readonly AgentChainEntry[];
 }

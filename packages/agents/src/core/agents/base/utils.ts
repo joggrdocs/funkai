@@ -438,6 +438,15 @@ const EMPTY_CHAIN: readonly AgentChainEntry[] = [];
  *
  * @param params - The raw generate params object.
  * @returns The agent chain array, or an empty array if absent.
+ *
+ * @example
+ * ```ts
+ * const chain = extractAgentChain({ agentChain: [{ id: "root" }] });
+ * // => [{ id: "root" }]
+ *
+ * const empty = extractAgentChain({});
+ * // => []
+ * ```
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- agentChain is an internal transport field not on the public type; must access via untyped cast
 export function extractAgentChain(params: unknown): readonly AgentChainEntry[] {

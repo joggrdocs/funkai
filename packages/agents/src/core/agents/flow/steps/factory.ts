@@ -288,14 +288,15 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "agent",
       input: config.input,
       execute: async () => {
-        // Forward fixed-type step hooks and agent chain to sub-agent
-        const forwardedHooks = resolveParentHooks(parentHooks);
+        // Forward fixed-type step hooks and agent chain to sub-agent.
+        // Merge parent + child hooks so neither side is clobbered.
+        const mergedHooks = mergeStepHooks(parentHooks, config.config);
         const agentParams = {
           ...config.config,
           input: config.input,
           signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
-          ...forwardedHooks,
+          ...mergedHooks,
           agentChain,
         };
 
@@ -604,25 +605,53 @@ function buildOnFinishHandlerRace(
 }
 
 /**
- * Extract step hooks from the parent hook bag without optional
- * chaining or ternaries (both disallowed by oxlint).
+ * Merge parent flow step hooks with delegated-agent step hooks.
  *
- * Returns an object with `onStepStart` / `onStepFinish` suitable
- * for spreading into sub-agent params. When `parentHooks` is nil,
- * returns an empty object so the spread is a no-op.
+ * When both parent and child define the same hook, the merged callback
+ * fires the child hook first, then the parent hook. Only defined hooks
+ * are included in the result so `undefined` values never clobber
+ * a child-only hook via object spread.
  *
  * @private
  */
-function resolveParentHooks(
+function mergeStepHooks(
   parentHooks: StepBuilderOptions["parentHooks"],
+  childConfig: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-  if (isNil(parentHooks)) {
-    return {};
+  const parentStart = isNil(parentHooks) ? undefined : parentHooks.onStepStart;
+  const parentFinish = isNil(parentHooks) ? undefined : parentHooks.onStepFinish;
+  const childStart = isNil(childConfig)
+    ? undefined
+    : (childConfig.onStepStart as typeof parentStart);
+  const childFinish = isNil(childConfig)
+    ? undefined
+    : (childConfig.onStepFinish as typeof parentFinish);
+
+  const result: Record<string, unknown> = {};
+
+  if (isNotNil(parentStart) && isNotNil(childStart)) {
+    result.onStepStart = async (event: { step: StepInfo }) => {
+      await childStart(event);
+      await parentStart(event);
+    };
+  } else if (isNotNil(parentStart)) {
+    result.onStepStart = parentStart;
+  } else if (isNotNil(childStart)) {
+    result.onStepStart = childStart;
   }
-  return {
-    onStepStart: parentHooks.onStepStart,
-    onStepFinish: parentHooks.onStepFinish,
-  };
+
+  if (isNotNil(parentFinish) && isNotNil(childFinish)) {
+    result.onStepFinish = async (event: StepFinishEvent) => {
+      await childFinish(event);
+      await parentFinish(event);
+    };
+  } else if (isNotNil(parentFinish)) {
+    result.onStepFinish = parentFinish;
+  } else if (isNotNil(childFinish)) {
+    result.onStepFinish = childFinish;
+  }
+
+  return result;
 }
 
 /**
