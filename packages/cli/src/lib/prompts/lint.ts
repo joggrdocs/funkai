@@ -40,6 +40,16 @@ export interface LintPromptParams {
  *
  * @param params - Lint prompt parameters.
  * @returns Lint result with diagnostics.
+ *
+ * @example
+ * ```ts
+ * const result = lintPrompt({
+ *   name: 'greeting',
+ *   filePath: 'prompts/greeting.prompt',
+ *   schemaVars: [{ name: 'name', type: 'string', required: true }],
+ *   templateVars: ['name'],
+ * });
+ * ```
  */
 export function lintPrompt({
   name,

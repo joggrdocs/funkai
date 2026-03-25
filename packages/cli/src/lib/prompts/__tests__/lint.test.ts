@@ -14,7 +14,12 @@ describe(lintPrompt, () => {
   });
 
   it("errors on undefined template variable", () => {
-    const result = lintPrompt({ name: "test", filePath: "test.prompt", schemaVars: [], templateVars: ["scope"] });
+    const result = lintPrompt({
+      name: "test",
+      filePath: "test.prompt",
+      schemaVars: [],
+      templateVars: ["scope"],
+    });
     expect(result.diagnostics).toHaveLength(1);
     const [diag0] = result.diagnostics;
     expect(diag0?.level).toBe("error");
@@ -47,7 +52,12 @@ describe(lintPrompt, () => {
   });
 
   it("returns no diagnostics for prompts with no schema and no vars", () => {
-    const result = lintPrompt({ name: "test", filePath: "test.prompt", schemaVars: [], templateVars: [] });
+    const result = lintPrompt({
+      name: "test",
+      filePath: "test.prompt",
+      schemaVars: [],
+      templateVars: [],
+    });
     expect(result.diagnostics).toEqual([]);
   });
 });

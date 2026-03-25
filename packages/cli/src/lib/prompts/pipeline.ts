@@ -122,7 +122,12 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
     const frontmatter = parseFrontmatter({ content: raw, filePath: d.filePath });
     const template = flattenPartials({ template: clean(raw), partialsDirs });
     const templateVars = extractVariables(template);
-    return lintPrompt({ name: frontmatter.name, filePath: d.filePath, schemaVars: frontmatter.schema, templateVars });
+    return lintPrompt({
+      name: frontmatter.name,
+      filePath: d.filePath,
+      schemaVars: frontmatter.schema,
+      templateVars,
+    });
   });
 
   return { discovered: discovered.length, results };
@@ -195,7 +200,12 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
       promptObj.group = group;
     }
     return {
-      lintResult: lintPrompt({ name: frontmatter.name, filePath: d.filePath, schemaVars: frontmatter.schema, templateVars }),
+      lintResult: lintPrompt({
+        name: frontmatter.name,
+        filePath: d.filePath,
+        schemaVars: frontmatter.schema,
+        templateVars,
+      }),
       prompt: promptObj satisfies ParsedPrompt,
     };
   });

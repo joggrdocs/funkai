@@ -629,11 +629,23 @@ function mergeStepHooks(
   type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
   type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
-  const parentStart: StepStartHook | undefined = extractHook<StepStartHook>(parentHooks, "onStepStart");
-  const parentFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(parentHooks, "onStepFinish");
+  const parentStart: StepStartHook | undefined = extractHook<StepStartHook>(
+    parentHooks,
+    "onStepStart",
+  );
+  const parentFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(
+    parentHooks,
+    "onStepFinish",
+  );
 
-  const childStart: StepStartHook | undefined = extractHook<StepStartHook>(childConfig, "onStepStart");
-  const childFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(childConfig, "onStepFinish");
+  const childStart: StepStartHook | undefined = extractHook<StepStartHook>(
+    childConfig,
+    "onStepStart",
+  );
+  const childFinish: StepFinishHook | undefined = extractHook<StepFinishHook>(
+    childConfig,
+    "onStepFinish",
+  );
 
   const result: Record<string, unknown> = {};
 
@@ -728,7 +740,7 @@ async function poolMap<T, R>(
   const indexRef = { current: 0 };
 
   async function worker(): Promise<void> {
-    // oxlint-ignore-next-line -- while loop required for concurrent worker pool with shared mutable index
+    // oxlint-disable-next-line -- while loop required for concurrent worker pool with shared mutable index
     while (indexRef.current < items.length) {
       if (signal.aborted) {
         throw new Error("Aborted");

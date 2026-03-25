@@ -526,7 +526,7 @@ export function agent<
           usage: finalUsage,
           finishReason: finalFinishReason,
         };
-      }
+      };
 
       const done = processStream();
 

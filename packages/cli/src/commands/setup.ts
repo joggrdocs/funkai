@@ -89,10 +89,7 @@ interface PromptSettings {
  * @param hasPrompts - Whether the prompts domain is selected.
  * @returns The resolved prompt settings.
  */
-async function resolvePromptSettings(
-  ctx: Context,
-  hasPrompts: boolean,
-): Promise<PromptSettings> {
+async function resolvePromptSettings(ctx: Context, hasPrompts: boolean): Promise<PromptSettings> {
   if (!hasPrompts) {
     return { includes: ["src/prompts/**"], out: ".prompts/client" };
   }
