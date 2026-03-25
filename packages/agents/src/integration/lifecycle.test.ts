@@ -1606,7 +1606,8 @@ describe("Agent subagent hook forwarding (integration)", () => {
       name: "parent-agent",
       model: toolCallModel,
       system: "Delegate to agent_sub.",
-      agents: { sub },
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- FlowAgent satisfies Agent at runtime
+      agents: { sub: sub as any },
       onStepStart: (event) => {
         stepEvents.push(`config:${event.stepId}`);
       },
