@@ -19,7 +19,7 @@ describe("each()", () => {
 
     expect(result.ok).toBeTruthy();
     expect(order).toEqual([1, 2, 3]);
-    expect(result.step.type).toBe("each");
+    expect(result.stepOperation).toBe("each");
   });
 
   it("returns ok: true with void value on success", async () => {
@@ -36,7 +36,7 @@ describe("each()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBeUndefined();
+    expect(result.output).toBeUndefined();
   });
 
   it("propagates errors from execute", async () => {

@@ -17,15 +17,15 @@ Set on `AgentConfig`:
 
 Set on `FlowAgentConfig`:
 
-| Hook           | Event fields                           | When                                                  |
-| -------------- | -------------------------------------- | ----------------------------------------------------- |
-| `onStart`      | `{ input }`                            | After input validation, before handler runs           |
-| `onFinish`     | `{ input, output, duration }`          | After successful completion                           |
-| `onError`      | `{ input, error }`                     | On error, before Result is returned                   |
-| `onStepStart`  | `{ step: StepInfo }`                   | Before any `$` operation executes                     |
-| `onStepFinish` | `{ step: StepInfo, result, duration }` | After any `$` operation completes (success AND error) |
+| Hook           | Event fields                                                | When                                                  |
+| -------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| `onStart`      | `{ input }`                                                 | After input validation, before handler runs           |
+| `onFinish`     | `{ input, output, duration }`                               | After successful completion                           |
+| `onError`      | `{ input, error }`                                          | On error, before Result is returned                   |
+| `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`) | Before any `$` operation executes                     |
+| `onStepFinish` | `StepFinishEvent`                                           | After any `$` operation completes (success AND error) |
 
-`onStepFinish` fires on both success and error. On error, `result` is `undefined`.
+`onStepFinish` fires on both success and error. On error, `output` is `undefined`. `stepId` is always required (never optional). For `$.agent()` steps, `StepFinishEvent` also includes all AI SDK `StepResult` fields (`usage`, `toolCalls`, `toolResults`, `text`, `finishReason`, etc.).
 
 ## Step-Level Hooks
 
@@ -87,7 +87,7 @@ When a parent agent has sub-agents (via the `agents` config), those sub-agents a
 
 | Hook           | Event type        | Why safe                               |
 | -------------- | ----------------- | -------------------------------------- |
-| `onStepStart`  | `StepInfo`        | Fixed type, same shape for every agent |
+| `onStepStart`  | `StepStartEvent`  | Fixed type, same shape for every agent |
 | `onStepFinish` | `StepFinishEvent` | Fixed type, same shape for every agent |
 | `logger`       | `Logger`          | No event type, just a logger instance  |
 
@@ -118,7 +118,7 @@ Parent.generate({ input, onStepFinish })
   │     │     │
   │     │     │  Passed into child.generate():
   │     │     │    logger       → parent's logger
-  │     │     │    onStepStart  → parent's onStepStart (StepInfo — fixed type)
+  │     │     │    onStepStart  → parent's onStepStart (StepStartEvent — fixed type)
   │     │     │    onStepFinish → parent's merged onStepFinish (StepFinishEvent — fixed type)
   │     │     │
   │     │     │  NOT passed:

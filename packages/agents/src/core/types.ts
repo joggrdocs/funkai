@@ -1,8 +1,16 @@
-import type { AsyncIterableStream, ModelMessage, TextStreamPart, ToolSet } from "ai";
+import type { AsyncIterableStream, ModelMessage, StepResult, TextStreamPart, ToolSet } from "ai";
 
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { OperationType } from "@/lib/trace.js";
 import type { Result } from "@/utils/result.js";
+
+/**
+ * The AI SDK's step result type, unparameterized (uses `ToolSet`).
+ *
+ * Re-exported so consumers can reference the base shape without
+ * importing `ai` directly.
+ */
+export type AIStepResult = StepResult<ToolSet>;
 
 /**
  * A model reference — an AI SDK `LanguageModel` instance.
@@ -67,35 +75,27 @@ export interface AgentChainEntry {
 }
 
 /**
- * Information about a step in execution.
+ * Event emitted when a step starts execution.
  *
- * Passed to step-level hooks (`onStepStart`, `onStepFinish`)
- * and included in step events. Used by both flow agent orchestration
- * steps and agent tool-loop steps.
+ * Passed to `onStepStart` hooks. Used by both flow agent orchestration
+ * steps and agent tool-loop steps. All fields from the former `StepInfo`
+ * are inlined here.
  */
-export interface StepInfo {
+export interface StepStartEvent {
   /**
    * The step identifier.
    *
    * For flow agents, matches the `id` field on the step config.
    * For agents, auto-generated as `agentName:stepIndex`.
    */
-  readonly id: string;
-
-  /**
-   * Auto-incrementing index within the execution.
-   *
-   * Starts at `0` for the first step and increments for each
-   * subsequent tracked operation.
-   */
-  readonly index: number;
+  readonly stepId: string;
 
   /**
    * What kind of operation produced this step.
    *
    * Discriminant for filtering or grouping step events.
    */
-  readonly type: OperationType;
+  readonly stepOperation: OperationType;
 
   /**
    * Agent ancestry chain from root to the agent that owns this step.
@@ -106,7 +106,7 @@ export interface StepInfo {
    * @example
    * ```typescript
    * // Step inside a sub-agent called by a flow agent:
-   * event.step.agentChain
+   * event.agentChain
    * // → [{ id: 'pipeline' }, { id: 'writer' }]
    * ```
    */
@@ -116,59 +116,46 @@ export interface StepInfo {
 /**
  * Unified event emitted when a step completes.
  *
- * Used by both agents (tool-loop steps) and flow agents (orchestration
- * steps). Agent steps populate the tool-loop fields (`stepId`, `toolCalls`,
- * `toolResults`, `usage`); flow steps populate the orchestration fields
- * (`step`, `result`, `duration`). Fields not relevant to the step type
- * are `undefined`.
+ * For **agent tool-loop steps**, this is a full superset of the Vercel
+ * AI SDK's `StepResult<ToolSet>` — every field from the SDK is passed
+ * through unchanged, plus funkai-specific additions (`stepId`,
+ * `stepOperation`, `agentChain`).
+ *
+ * For **flow orchestration steps**, the AI SDK fields are populated
+ * from the last agent step (for `$.agent()` steps) or absent (for
+ * non-agent steps like `$.step()`, `$.map()`, etc.). Flow-specific
+ * fields (`output`, `duration`) are always present.
+ *
+ * Fields not relevant to the step type are `undefined`.
  */
-export interface StepFinishEvent {
+export type StepFinishEvent = Partial<AIStepResult> & {
   /**
-   * Agent tool-loop step ID (e.g. `"myAgent:0"`).
+   * Step ID — always present.
    *
-   * Present on agent tool-loop steps. `undefined` on flow steps.
+   * For agent tool-loop steps: e.g. `"myAgent:0"`.
+   * For flow steps: matches the `id` from the step config.
    */
-  readonly stepId?: string;
+  readonly stepId: string;
 
   /**
-   * Tool calls made in this step.
+   * What kind of operation produced this step.
    *
-   * Present on agent tool-loop steps. `undefined` on flow steps.
+   * Discriminant for filtering or grouping step events.
+   * e.g. `"agent"`, `"step"`, `"map"`, `"each"`, `"reduce"`, etc.
    */
-  readonly toolCalls?: readonly { toolName: string; argsTextLength: number }[];
+  readonly stepOperation: OperationType;
 
   /**
-   * Tool results returned in this step.
+   * Flow step output value.
    *
-   * Present on agent tool-loop steps. `undefined` on flow steps.
+   * Present on flow orchestration steps. `undefined` on agent tool-loop steps.
    */
-  readonly toolResults?: readonly { toolName: string; resultTextLength: number }[];
-
-  /**
-   * Token usage for this step.
-   *
-   * Present on agent tool-loop steps. `undefined` on flow steps.
-   */
-  readonly usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
-
-  /**
-   * Flow step info (id, index, type).
-   *
-   * Present on flow orchestration steps. `undefined` on agent steps.
-   */
-  readonly step?: StepInfo;
-
-  /**
-   * Flow step result value.
-   *
-   * Present on flow orchestration steps. `undefined` on agent steps.
-   */
-  readonly result?: unknown;
+  readonly output?: unknown;
 
   /**
    * Flow step duration in milliseconds.
    *
-   * Present on flow orchestration steps. `undefined` on agent steps.
+   * Present on flow orchestration steps. `undefined` on agent tool-loop steps.
    */
   readonly duration?: number;
 
@@ -183,7 +170,7 @@ export interface StepFinishEvent {
    * agent as a single entry.
    */
   readonly agentChain?: readonly AgentChainEntry[] | undefined;
-}
+};
 
 /**
  * A value that can be generated against — the shared contract

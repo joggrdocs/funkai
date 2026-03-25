@@ -42,11 +42,11 @@ describe("agent()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value.output).toBe("hello");
-    expect(result.value.messages).toEqual([]);
-    expect(result.value.usage).toEqual(MOCK_USAGE);
-    expect(result.value.finishReason).toBe("stop");
-    expect(result.step.type).toBe("agent");
+    expect(result.output).toBe("hello");
+    expect(result.messages).toEqual([]);
+    expect(result.usage).toEqual(MOCK_USAGE);
+    expect(result.finishReason).toBe("stop");
+    expect(result.stepOperation).toBe("agent");
   });
 
   it("converts agent error result into StepError", async () => {
@@ -261,7 +261,7 @@ describe("agent()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value.messages).toEqual([]);
+    expect(result.messages).toEqual([]);
   });
 
   it("records usage on trace entry", async () => {

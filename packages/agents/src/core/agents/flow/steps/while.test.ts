@@ -18,8 +18,8 @@ describe("while()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe(2);
-    expect(result.step.type).toBe("while");
+    expect(result.output).toBe(2);
+    expect(result.stepOperation).toBe("while");
   });
 
   it("returns undefined when condition is initially false", async () => {
@@ -36,7 +36,7 @@ describe("while()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBeUndefined();
+    expect(result.output).toBeUndefined();
   });
 
   it("does not call execute when condition is initially false", async () => {
@@ -71,7 +71,7 @@ describe("while()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toBe("iter-0");
+    expect(result.output).toBe("iter-0");
     expect(iterations).toEqual([0]);
   });
 

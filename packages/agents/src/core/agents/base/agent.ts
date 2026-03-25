@@ -1,6 +1,6 @@
 import { generateText, streamText, stepCountIs } from "ai";
 import type { AsyncIterableStream } from "ai";
-import { isNil, isNotNil, isString } from "es-toolkit";
+import { isNil, isNotNil } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
@@ -27,7 +27,13 @@ import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { AgentChainEntry, Model, StepFinishEvent, StreamPart } from "@/core/types.js";
+import type {
+  AIStepResult,
+  AgentChainEntry,
+  Model,
+  StepFinishEvent,
+  StreamPart,
+} from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -160,11 +166,7 @@ export function agent<
     readonly output: OutputSpec | undefined;
     readonly maxSteps: number;
     readonly signal: AbortSignal | undefined;
-    readonly onStepFinish: (step: {
-      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
-      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
-      usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
-    }) => Promise<void>;
+    readonly onStepFinish: (step: AIStepResult) => Promise<void>;
   }
 
   /**
@@ -257,26 +259,12 @@ export function agent<
     await fireHooks(log, wrapHook(config.onStart, { input }), wrapHook(params.onStart, { input }));
 
     const stepCounter = { value: 0 };
-    const onStepFinish = async (step: {
-      toolCalls?: readonly ({ toolName: string } & Record<string, unknown>)[];
-      toolResults?: readonly ({ toolName: string } & Record<string, unknown>)[];
-      usage?: { inputTokens?: number; outputTokens?: number; totalTokens?: number };
-    }) => {
+    const onStepFinish = async (step: AIStepResult) => {
       const stepId = `${config.name}:${stepCounter.value++}`;
-      const toolCalls = (step.toolCalls ?? []).map((tc) => {
-        const args = extractProperty(tc, "args");
-        return { toolName: tc.toolName, argsTextLength: safeSerializedLength(args) };
-      });
-      const toolResults = (step.toolResults ?? []).map((tr) => {
-        const result = extractProperty(tr, "result");
-        return { toolName: tr.toolName, resultTextLength: safeSerializedLength(result) };
-      });
-      const usage = extractUsage(step.usage);
       const event: StepFinishEvent = {
+        ...step,
         stepId,
-        toolCalls,
-        toolResults,
-        usage,
+        stepOperation: "agent",
         agentChain: currentChain,
       };
       await fireHooks(
@@ -625,24 +613,6 @@ export function agent<
 // ---------------------------------------------------------------------------
 
 /**
- * Safely compute the JSON-serialized length of a value.
- * Returns 0 if serialization fails (e.g. circular refs, BigInt).
- *
- * @private
- */
-function safeSerializedLength(value: unknown): number {
-  try {
-    const json = JSON.stringify(value);
-    if (isString(json)) {
-      return json.length;
-    }
-    return 0;
-  } catch {
-    return 0;
-  }
-}
-
-/**
  * Return the value if the predicate is true, otherwise undefined.
  * Replaces `predicate ? value : undefined` ternary.
  *
@@ -666,45 +636,6 @@ function resolveOptionalOutput(param: OutputParam | undefined): OutputSpec | und
     return resolveOutput(param);
   }
   return undefined;
-}
-
-/**
- * Safely extract a property from an object, returning `{}` if the
- * property does not exist. Replaces `'key' in obj ? obj[key] : {}` ternary.
- *
- * @private
- */
-function extractProperty(obj: Record<string, unknown>, key: string): unknown {
-  if (Object.hasOwn(obj, key)) {
-    // eslint-disable-next-line security/detect-object-injection -- Key is a controlled function parameter, not user input
-    return obj[key];
-  }
-  return {};
-}
-
-/**
- * Extract token usage from a step's usage object, defaulting to 0
- * when usage is undefined. Replaces optional chaining on `step.usage`.
- *
- * @private
- */
-function extractUsage(
-  usage: { inputTokens?: number; outputTokens?: number; totalTokens?: number } | undefined,
-): {
-  inputTokens: number;
-  outputTokens: number;
-  totalTokens: number;
-} {
-  if (isNotNil(usage)) {
-    const inputTokens = usage.inputTokens ?? 0;
-    const outputTokens = usage.outputTokens ?? 0;
-    return {
-      inputTokens,
-      outputTokens,
-      totalTokens: usage.totalTokens ?? inputTokens + outputTokens,
-    };
-  }
-  return { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
 }
 
 /**

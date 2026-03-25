@@ -29,7 +29,7 @@ const myFlowAgent = flowAgent(
 
     return {
       title: input.url,
-      wordCount: page.value.split(/\s+/).length,
+      wordCount: page.output.split(/\s+/).length,
     };
   },
 );
@@ -45,11 +45,11 @@ if (result.ok) {
 
 ## `$` operations
 
-Every `$` method is registered in the execution trace and returns a `StepResult<T>`. Always check `.ok` before accessing `.value`.
+Every `$` method is registered in the execution trace and returns a `FlowStepResult<T>`. Always check `.ok` before accessing `.output`.
 
 ```ts
 if (result.ok) {
-  console.log(result.value); // the step's return value
+  console.log(result.output); // the step's return value
   console.log(result.duration); // wall-clock time in ms
 } else {
   console.error(result.error.message);
@@ -69,7 +69,7 @@ const result = await $.step({
       id: "sub-task",
       execute: async () => computeResult(),
     });
-    return sub.ok ? sub.value : fallback;
+    return sub.ok ? sub.output : fallback;
   },
 });
 ```
@@ -105,7 +105,7 @@ const pipeline = flowAgent(
 
     if (!result.ok) throw new Error(result.error.message);
 
-    return { analysis: result.value.output };
+    return { analysis: result.output };
   },
 );
 ```
@@ -126,7 +126,7 @@ const pages = await $.map({
 });
 
 if (pages.ok) {
-  console.log(pages.value); // array of results in input order
+  console.log(pages.output); // array of results in input order
 }
 ```
 
@@ -149,7 +149,7 @@ const results = await $.all({
 });
 
 if (results.ok) {
-  const [metadata, content, computed] = results.value;
+  const [metadata, content, computed] = results.output;
 }
 ```
 
@@ -164,7 +164,7 @@ const fastest = await $.race({
 });
 
 if (fastest.ok) {
-  console.log(fastest.value); // result from whichever finished first
+  console.log(fastest.output); // result from whichever finished first
 }
 ```
 
@@ -294,13 +294,13 @@ if (result.ok) {
   for await (const event of result.fullStream) {
     switch (event.type) {
       case "step:start":
-        console.log(`Step started: ${event.step.id}`);
+        console.log(`Step started: ${event.stepId}`);
         break;
       case "step:finish":
-        console.log(`Step finished: ${event.step.id} (${event.duration}ms)`);
+        console.log(`Step finished: ${event.stepId} (${event.duration}ms)`);
         break;
       case "step:error":
-        console.error(`Step failed: ${event.step.id}`, event.error);
+        console.error(`Step failed: ${event.stepId}`, event.error);
         break;
       case "flow:finish":
         console.log(`Flow agent complete (${event.duration}ms)`);
@@ -324,9 +324,9 @@ const wf = flowAgent(
     onStart: ({ input }) => console.log("Flow agent started"),
     onFinish: ({ input, result, duration }) => console.log(`Done in ${duration}ms`),
     onError: ({ input, error }) => console.error("Failed:", error.message),
-    onStepStart: ({ step }) => console.log(`Step ${step.id} started`),
-    onStepFinish: ({ step, result, duration }) =>
-      console.log(`Step ${step.id} done in ${duration}ms`),
+    onStepStart: ({ stepId, stepOperation }) => console.log(`Step ${stepId} started`),
+    onStepFinish: ({ stepId, stepOperation, output, duration }) =>
+      console.log(`Step ${stepId} done in ${duration}ms`),
   },
   handler,
 );
@@ -382,7 +382,7 @@ const pipeline = flowAgent(
     // Summarize each page with the agent
     const summaries = await $.map({
       id: "summarize-pages",
-      input: pages.value,
+      input: pages.output,
       concurrency: 3,
       execute: async ({ item: page, $ }) => {
         const result = await $.agent({
@@ -391,13 +391,13 @@ const pipeline = flowAgent(
           input: { text: page.body },
         });
         if (!result.ok) throw new Error(`Failed to summarize ${page.url}`);
-        return { url: page.url, summary: result.value.output };
+        return { url: page.url, summary: result.output };
       },
     });
 
     if (!summaries.ok) throw new Error("Failed to summarize");
 
-    return { summaries: summaries.value };
+    return { summaries: summaries.output };
   },
 );
 
@@ -434,8 +434,8 @@ function flowAgent<TInput>(
 | `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts                    |
 | `onFinish`     | No       | `(event: { input, result, duration }) => void \| Promise<void>` | Hook: fires on success                                    |
 | `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                                      |
-| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts                      |
-| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes                    |
+| `onStepStart`  | No       | `(event: StepStartEvent) => void \| Promise<void>`              | Hook: fires when any `$` step starts                      |
+| `onStepFinish` | No       | `(event: StepFinishEvent) => void \| Promise<void>`             | Hook: fires when any `$` step finishes                    |
 
 ## Reference: FlowAgentGenerateResult
 
@@ -495,12 +495,12 @@ interface TraceEntry {
 
 Events emitted on the flow agent stream:
 
-| Type          | Fields                       | Description               |
-| ------------- | ---------------------------- | ------------------------- |
-| `step:start`  | `step: StepInfo`             | A `$` operation started   |
-| `step:finish` | `step`, `result`, `duration` | A `$` operation completed |
-| `step:error`  | `step`, `error`              | A `$` operation failed    |
-| `flow:finish` | `output`, `duration`         | The flow agent completed  |
+| Type          | Fields                                          | Description               |
+| ------------- | ----------------------------------------------- | ------------------------- |
+| `step:start`  | `stepId`, `stepOperation`, `agentChain?`        | A `$` operation started   |
+| `step:finish` | `stepId`, `stepOperation`, `output`, `duration` | A `$` operation completed |
+| `step:error`  | `stepId`, `stepOperation`, `error`              | A `$` operation failed    |
+| `flow:finish` | `output`, `duration`                            | The flow agent completed  |
 
 ## Reference: FlowAgentOverrides
 
@@ -524,7 +524,7 @@ Ensure the handler returns an object matching the `output` Zod schema.
 
 ### Step result not checked
 
-All `$` methods return `StepResult` — check `.ok` before accessing `.value`.
+All `$` methods return `FlowStepResult` -- check `.ok` before accessing `.output`.
 
 ### `$.all`/`$.race` type error
 

@@ -148,7 +148,7 @@ describe(createFlowEngine, () => {
         if (!stepResult.ok) {
           return { y: 0 };
         }
-        return { y: stepResult.value.v };
+        return { y: stepResult.output.v };
       });
 
       const result = await fa.generate({ input: { x: 42 } });

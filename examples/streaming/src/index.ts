@@ -39,17 +39,27 @@ const geographyAgent = agent({
     if (toolCalls && toolCalls.length > 0) {
       console.log(`\n[step ${stepId}] Tool calls:`);
       for (const tc of toolCalls) {
-        console.log(`  → ${tc.toolName} (${tc.argsTextLength} chars args)`);
+        console.log(`  → ${tc.toolName} (input: ${JSON.stringify(tc.input)})`);
       }
     }
     if (toolResults && toolResults.length > 0) {
       console.log(`[step ${stepId}] Tool results:`);
       for (const tr of toolResults) {
-        console.log(`  ← ${tr.toolName} (${tr.resultTextLength} chars result)`);
+        console.log(`  ← ${tr.toolName} (output: ${JSON.stringify(tr.output)})`);
       }
     }
-    if (usage && usage.totalTokens > 0) {
-      console.log(`[step ${stepId}] Tokens: ${usage.inputTokens} in / ${usage.outputTokens} out`);
+    if (
+      usage &&
+      ((usage.totalTokens ?? 0) > 0 ||
+        (usage.inputTokens ?? 0) > 0 ||
+        (usage.outputTokens ?? 0) > 0)
+    ) {
+      const inputTokens = usage.inputTokens ?? 0;
+      const outputTokens = usage.outputTokens ?? 0;
+      const totalTokens = usage.totalTokens ?? inputTokens + outputTokens;
+      console.log(
+        `[step ${stepId}] Tokens: ${inputTokens} in / ${outputTokens} out / ${totalTokens} total`,
+      );
     }
   },
 });
@@ -118,13 +128,11 @@ const researchFlow = flowAgent(
     }),
 
     // Observe each $ step in real time
-    onStepStart: ({ step }) => {
-      console.log(`[step:start] ${step.id} (type: ${step.type}, index: ${step.index})`);
+    onStepStart: ({ stepId, stepOperation }) => {
+      console.log(`[step:start] ${stepId} (type: ${stepOperation})`);
     },
-    onStepFinish: ({ step, duration }) => {
-      if (step) {
-        console.log(`[step:finish] ${step.id} (${duration}ms)`);
-      }
+    onStepFinish: ({ stepId, duration }) => {
+      console.log(`[step:finish] ${stepId} (${duration}ms)`);
     },
   },
   async ({ input, $ }) => {
@@ -145,7 +153,7 @@ const researchFlow = flowAgent(
           return { topic: item, answer: `Error: ${result.error.message}` };
         }
 
-        return { topic: item, answer: String(result.value.output) };
+        return { topic: item, answer: String(result.output) };
       },
     });
 
@@ -153,7 +161,7 @@ const researchFlow = flowAgent(
       throw new Error(`Research failed: ${mapResult.error.message}`);
     }
 
-    return { findings: mapResult.value };
+    return { findings: mapResult.output };
   },
 );
 

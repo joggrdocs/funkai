@@ -8,11 +8,12 @@ export { usage, usageByAgent, usageByModel } from "@/core/provider/usage.js";
 export { collectUsages } from "@/lib/trace.js";
 
 export type {
+  AIStepResult,
   Runnable,
   Model,
   AgentChainEntry,
   StepFinishEvent,
-  StepInfo,
+  StepStartEvent,
   StreamPart,
 } from "@/core/types.js";
 export type {
@@ -60,7 +61,11 @@ export type {
   FlowEngineConfig,
   FlowFactory,
 } from "@/core/agents/flow/engine.js";
-export type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
+export type {
+  FlowStepResult,
+  FlowAgentStepResult,
+  StepError,
+} from "@/core/agents/flow/steps/result.js";
 export type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 export type { StepConfig } from "@/core/agents/flow/steps/step.js";
 export type { AgentStepConfig } from "@/core/agents/flow/steps/agent.js";

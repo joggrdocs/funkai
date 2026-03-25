@@ -463,17 +463,56 @@ describe("generate() hooks", () => {
     expect(secondCall[0].stepId).toBe("test-agent:1");
   });
 
-  it("fires onStepFinish with mapped toolCalls and toolResults in generate", async () => {
+  it("passes through all AI SDK StepResult fields in onStepFinish", async () => {
     const onStepFinish = vi.fn();
+
+    const mockStepData = {
+      stepNumber: 0,
+      model: { provider: "openai", modelId: "gpt-4.1" },
+      functionId: undefined,
+      metadata: undefined,
+      experimental_context: undefined,
+      content: [],
+      text: "hello world",
+      reasoning: [],
+      reasoningText: undefined,
+      files: [],
+      sources: [],
+      toolCalls: [
+        { toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" },
+      ],
+      staticToolCalls: [],
+      dynamicToolCalls: [],
+      toolResults: [
+        { toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" },
+      ],
+      staticToolResults: [],
+      dynamicToolResults: [],
+      finishReason: "stop",
+      rawFinishReason: "stop",
+      usage: {
+        inputTokens: 10,
+        outputTokens: 5,
+        totalTokens: 15,
+        inputTokenDetails: { noCacheTokens: 10, cacheReadTokens: 0, cacheWriteTokens: 0 },
+        outputTokenDetails: { textTokens: 5, reasoningTokens: 0 },
+      },
+      warnings: undefined,
+      request: { body: undefined },
+      response: {
+        id: "resp-1",
+        timestamp: new Date(),
+        modelId: "gpt-4.1",
+        headers: {},
+        messages: [{ role: "assistant", content: "hello world" }],
+      },
+      providerMetadata: undefined,
+    };
 
     mockGenerateText.mockImplementation(
       async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
         if (opts.onStepFinish) {
-          await opts.onStepFinish({
-            toolCalls: [{ toolName: "myTool", args: { foo: "bar" } }],
-            toolResults: [{ toolName: "myTool", result: { answer: 42 } }],
-            usage: { inputTokens: 10, outputTokens: 5 },
-          });
+          await opts.onStepFinish(mockStepData);
         }
         return createMockGenerateResult();
       },
@@ -487,21 +526,69 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    expect(firstCall[0].toolCalls).toEqual([{ toolName: "myTool", argsTextLength: 13 }]);
-    expect(firstCall[0].toolResults).toEqual([{ toolName: "myTool", resultTextLength: 13 }]);
+    const event = firstCall[0];
+
+    // funkai additions
+    expect(event.stepId).toBe("test-agent:0");
+    expect(event.stepOperation).toBe("agent");
+    expect(event.agentChain).toEqual([{ id: "test-agent" }]);
+
+    // AI SDK fields passed through unchanged
+    expect(event.stepNumber).toBe(0);
+    expect(event.model).toEqual({ provider: "openai", modelId: "gpt-4.1" });
+    expect(event.text).toBe("hello world");
+    expect(event.finishReason).toBe("stop");
+    expect(event.rawFinishReason).toBe("stop");
+    expect(event.toolCalls).toEqual(mockStepData.toolCalls);
+    expect(event.toolResults).toEqual(mockStepData.toolResults);
+    expect(event.usage).toEqual(mockStepData.usage);
+    expect(event.reasoning).toEqual([]);
+    expect(event.files).toEqual([]);
+    expect(event.sources).toEqual([]);
+    expect(event.content).toEqual([]);
+    expect(event.warnings).toBeUndefined();
+    expect(event.request).toEqual(mockStepData.request);
+    expect(event.response).toEqual(mockStepData.response);
+    expect(event.providerMetadata).toBeUndefined();
   });
 
-  it("handles missing args/result properties in toolCalls/toolResults", async () => {
+  it("preserves tool call args and results without stripping", async () => {
     const onStepFinish = vi.fn();
+
+    const mockStepData = {
+      stepNumber: 0,
+      text: "",
+      toolCalls: [
+        {
+          toolName: "search",
+          input: { query: "typescript", limit: 10 },
+          type: "tool-call",
+          toolCallId: "tc1",
+        },
+        {
+          toolName: "fetch",
+          input: { url: "https://example.com" },
+          type: "tool-call",
+          toolCallId: "tc2",
+        },
+      ],
+      toolResults: [
+        {
+          toolName: "search",
+          output: { items: [1, 2, 3] },
+          type: "tool-result",
+          toolCallId: "tc1",
+        },
+        { toolName: "fetch", output: { body: "<html>" }, type: "tool-result", toolCallId: "tc2" },
+      ],
+      usage: { inputTokens: 50, outputTokens: 25, totalTokens: 75 },
+      finishReason: "tool-calls",
+    };
 
     mockGenerateText.mockImplementation(
       async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
         if (opts.onStepFinish) {
-          await opts.onStepFinish({
-            toolCalls: [{ toolName: "t" }],
-            toolResults: [{ toolName: "t" }],
-            usage: { inputTokens: 0, outputTokens: 0 },
-          });
+          await opts.onStepFinish(mockStepData);
         }
         return createMockGenerateResult();
       },
@@ -515,70 +602,23 @@ describe("generate() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    // ExtractProperty returns {} when key is missing, safeSerializedLength({}) = 2
-    expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 2 }]);
-    expect(firstCall[0].toolResults).toEqual([{ toolName: "t", resultTextLength: 2 }]);
-  });
+    const event = firstCall[0];
 
-  it("handles undefined usage in onStepFinish", async () => {
-    const onStepFinish = vi.fn();
+    // Full tool call objects preserved (not stripped to toolName + argsTextLength)
+    expect(event.toolCalls).toEqual(mockStepData.toolCalls);
+    expect(event.toolCalls[0].input).toEqual({ query: "typescript", limit: 10 });
+    expect(event.toolCalls[1].input).toEqual({ url: "https://example.com" });
 
-    mockGenerateText.mockImplementation(
-      async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
-        if (opts.onStepFinish) {
-          await opts.onStepFinish({
-            toolCalls: [],
-            toolResults: [],
-          });
-        }
-        return createMockGenerateResult();
-      },
-    );
+    // Full tool result objects preserved (not stripped to toolName + resultTextLength)
+    expect(event.toolResults).toEqual(mockStepData.toolResults);
+    expect(event.toolResults[0].output).toEqual({ items: [1, 2, 3] });
+    expect(event.toolResults[1].output).toEqual({ body: "<html>" });
 
-    const a = createSimpleAgent({ onStepFinish });
-    await a.generate({ prompt: "test" });
+    // Usage passed through as-is
+    expect(event.usage).toEqual(mockStepData.usage);
 
-    expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const [firstCall] = onStepFinish.mock.calls;
-    if (!firstCall) {
-      throw new Error("Expected onStepFinish first call");
-    }
-    expect(firstCall[0].usage).toEqual({
-      inputTokens: 0,
-      outputTokens: 0,
-      totalTokens: 0,
-    });
-  });
-
-  it("handles circular reference in tool args gracefully", async () => {
-    const onStepFinish = vi.fn();
-
-    mockGenerateText.mockImplementation(
-      async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- intentional circular ref for test
-        const circular: any = {};
-        circular.self = circular;
-        if (opts.onStepFinish) {
-          await opts.onStepFinish({
-            toolCalls: [{ toolName: "t", args: circular }],
-            toolResults: [],
-            usage: { inputTokens: 0, outputTokens: 0 },
-          });
-        }
-        return createMockGenerateResult();
-      },
-    );
-
-    const a = createSimpleAgent({ onStepFinish });
-    await a.generate({ prompt: "test" });
-
-    expect(onStepFinish).toHaveBeenCalledTimes(1);
-    const [firstCall] = onStepFinish.mock.calls;
-    if (!firstCall) {
-      throw new Error("Expected onStepFinish first call");
-    }
-    // SafeSerializedLength returns 0 for circular references
-    expect(firstCall[0].toolCalls).toEqual([{ toolName: "t", argsTextLength: 0 }]);
+    // finishReason passed through (not as stepId)
+    expect(event.finishReason).toBe("tool-calls");
   });
 
   it("fires both config and override onStart hooks", async () => {
@@ -1054,18 +1094,27 @@ describe("stream() hooks", () => {
     expect(onStepFinish).toHaveBeenCalled();
   });
 
-  it("fires onStepFinish with mapped toolCalls and toolResults", async () => {
+  it("passes through AI SDK StepResult fields in stream onStepFinish", async () => {
     const onStepFinish = vi.fn();
+
+    const mockStepData = {
+      stepNumber: 0,
+      text: "streamed output",
+      toolCalls: [
+        { toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" },
+      ],
+      toolResults: [
+        { toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" },
+      ],
+      usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+      finishReason: "stop",
+    };
 
     const streamResult = createMockStreamResult();
     mockStreamText.mockImplementation(
       (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
         if (opts.onStepFinish) {
-          void opts.onStepFinish({
-            toolCalls: [{ toolName: "myTool", args: { foo: "bar" } }],
-            toolResults: [{ toolName: "myTool", result: { answer: 42 } }],
-            usage: { inputTokens: 10, outputTokens: 5 },
-          });
+          void opts.onStepFinish(mockStepData);
         }
         return streamResult;
       },
@@ -1099,9 +1148,20 @@ describe("stream() hooks", () => {
     if (!firstCall) {
       throw new Error("Expected onStepFinish first call");
     }
-    expect(firstCall[0].stepId).toBe("test-agent:0");
-    expect(firstCall[0].toolCalls).toEqual([{ toolName: "myTool", argsTextLength: 13 }]);
-    expect(firstCall[0].toolResults).toEqual([{ toolName: "myTool", resultTextLength: 13 }]);
+    const event = firstCall[0];
+
+    // funkai additions
+    expect(event.stepId).toBe("test-agent:0");
+    expect(event.stepOperation).toBe("agent");
+    expect(event.agentChain).toEqual([{ id: "test-agent" }]);
+
+    // AI SDK fields passed through
+    expect(event.stepNumber).toBe(0);
+    expect(event.text).toBe("streamed output");
+    expect(event.toolCalls).toEqual(mockStepData.toolCalls);
+    expect(event.toolResults).toEqual(mockStepData.toolResults);
+    expect(event.usage).toEqual(mockStepData.usage);
+    expect(event.finishReason).toBe("stop");
   });
 });
 

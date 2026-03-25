@@ -22,8 +22,8 @@ function flowAgent<TInput, TOutput>(
 | `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts        |
 | `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                        |
 | `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                          |
-| `onStepStart`  | No       | `(event: { step: StepInfo }) => void \| Promise<void>`          | Hook: fires when any `$` step starts          |
-| `onStepFinish` | No       | `(event: { step, result, duration }) => void \| Promise<void>`  | Hook: fires when any `$` step finishes        |
+| `onStepStart`  | No       | `(event: StepStartEvent) => void \| Promise<void>`              | Hook: fires when any `$` step starts          |
+| `onStepFinish` | No       | `(event: StepFinishEvent) => void \| Promise<void>`             | Hook: fires when any `$` step finishes        |
 
 ## FlowAgentHandler
 
@@ -92,12 +92,12 @@ Subscribe to `stream` for real-time step progress events.
 
 Events emitted on the flow agent stream:
 
-| Type          | Fields                       | Description               |
-| ------------- | ---------------------------- | ------------------------- |
-| `step:start`  | `step: StepInfo`             | A `$` operation started   |
-| `step:finish` | `step`, `result`, `duration` | A `$` operation completed |
-| `step:error`  | `step`, `error`              | A `$` operation failed    |
-| `flow:finish` | `output`, `duration`         | The flow agent completed  |
+| Type          | Fields                                   | Description                                                                          |
+| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
+| `step:start`  | `stepId`, `stepOperation`, `agentChain?` | A `$` operation started                                                              |
+| `step:finish` | `StepFinishEvent`                        | A `$` operation completed; `$.agent()` steps also include AI SDK `StepResult` fields |
+| `step:error`  | `stepId`, `stepOperation`, `error`       | A `$` operation failed                                                               |
+| `flow:finish` | `output`, `duration`                     | The flow agent completed                                                             |
 
 ### fn()
 
@@ -224,12 +224,12 @@ const reporter = flowAgent(
     const analysis = await $.agent({
       id: "analyze",
       agent: analyzeAgent,
-      input: { files: files.value },
+      input: { files: files.output },
     });
 
     return {
-      report: analysis.ok ? analysis.value.output : "Analysis failed",
-      fileCount: files.value.length,
+      report: analysis.ok ? analysis.output : "Analysis failed",
+      fileCount: files.output.length,
     };
   },
 );

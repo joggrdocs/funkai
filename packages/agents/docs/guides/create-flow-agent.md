@@ -35,7 +35,7 @@ const myFlowAgent = flowAgent(
 
     return {
       title: input.url,
-      wordCount: page.value.split(/\s+/).length,
+      wordCount: page.output.split(/\s+/).length,
     };
   },
 );
@@ -54,16 +54,16 @@ const result = await $.step({
       id: "sub-task",
       execute: async () => computeResult(),
     });
-    return sub.ok ? sub.value : fallback;
+    return sub.ok ? sub.output : fallback;
   },
 });
 ```
 
-All `$` methods return `StepResult<T>`. Check `.ok` and access `.value` on success.
+All `$` methods return `FlowStepResult<T>`. Check `.ok` and access `.output` on success.
 
 ```ts
 if (result.ok) {
-  console.log(result.value); // the step's return value
+  console.log(result.output); // the step's return value
   console.log(result.duration); // wall-clock time in ms
 } else {
   console.error(result.error.message);
@@ -101,7 +101,7 @@ const wf = flowAgent(
 
     if (!result.ok) throw new Error(result.error.message);
 
-    return { analysis: result.value.output };
+    return { analysis: result.output };
   },
 );
 ```
@@ -122,7 +122,7 @@ const pages = await $.map({
 });
 
 if (pages.ok) {
-  console.log(pages.value); // array of results in input order
+  console.log(pages.output); // array of results in input order
 }
 ```
 
@@ -145,7 +145,7 @@ const results = await $.all({
 });
 
 if (results.ok) {
-  const [metadata, content, computed] = results.value;
+  const [metadata, content, computed] = results.output;
 }
 ```
 
@@ -162,7 +162,7 @@ const fastest = await $.race({
 });
 
 if (fastest.ok) {
-  console.log(fastest.value); // result from whichever finished first
+  console.log(fastest.output); // result from whichever finished first
 }
 ```
 
@@ -219,13 +219,13 @@ if (result.ok) {
 
     switch (event.type) {
       case "step:start":
-        console.log(`Step started: ${event.step.id}`);
+        console.log(`Step started: ${event.stepId}`);
         break;
       case "step:finish":
-        console.log(`Step finished: ${event.step.id} (${event.duration}ms)`);
+        console.log(`Step finished: ${event.stepId} (${event.duration}ms)`);
         break;
       case "step:error":
-        console.error(`Step failed: ${event.step.id}`, event.error);
+        console.error(`Step failed: ${event.stepId}`, event.error);
         break;
       case "flow:finish":
         console.log(`Flow agent complete (${event.duration}ms)`);
@@ -261,9 +261,9 @@ const wf = flowAgent(
     onStart: ({ input }) => console.log("Flow agent started"),
     onFinish: ({ input, output, duration }) => console.log(`Done in ${duration}ms`),
     onError: ({ input, error }) => console.error("Failed:", error.message),
-    onStepStart: ({ step }) => console.log(`Step ${step.id} started`),
-    onStepFinish: ({ step, result, duration }) =>
-      console.log(`Step ${step.id} done in ${duration}ms`),
+    onStepStart: ({ stepId }) => console.log(`Step ${stepId} started`),
+    onStepFinish: ({ stepId, output, duration }) =>
+      console.log(`Step ${stepId} done in ${duration}ms`),
   },
   handler,
 );
@@ -320,7 +320,7 @@ const pipeline = flowAgent(
     // Summarize each page with the agent
     const summaries = await $.map({
       id: "summarize-pages",
-      input: pages.value,
+      input: pages.output,
       concurrency: 3,
       execute: async ({ item: page, $ }) => {
         const result = await $.agent({
@@ -329,13 +329,13 @@ const pipeline = flowAgent(
           input: { text: page.body },
         });
         if (!result.ok) throw new Error(`Failed to summarize ${page.url}`);
-        return { url: page.url, summary: result.value.output };
+        return { url: page.url, summary: result.output };
       },
     });
 
     if (!summaries.ok) throw new Error("Failed to summarize");
 
-    return { summaries: summaries.value };
+    return { summaries: summaries.output };
   },
 );
 
@@ -362,7 +362,7 @@ export const summarizePages = pipeline.fn();
 
 ### Step result not checked
 
-**Fix:** All `$` methods return `StepResult` -- check `.ok` before accessing `.value`.
+**Fix:** All `$` methods return `FlowStepResult` -- check `.ok` before accessing `.output`.
 
 ### `$.all`/`$.race` type error
 

@@ -17,8 +17,8 @@ describe("all()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual(["a", "b", "c"]);
-    expect(result.step.type).toBe("all");
+    expect(result.output).toEqual(["a", "b", "c"]);
+    expect(result.stepOperation).toBe("all");
   });
 
   it("fails fast on first error", async () => {
@@ -105,7 +105,7 @@ describe("all()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual([]);
+    expect(result.output).toEqual([]);
   });
 
   it("handles single entry", async () => {
@@ -121,7 +121,7 @@ describe("all()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual([42]);
+    expect(result.output).toEqual([42]);
   });
 
   it("returns results in entry order", async () => {
@@ -151,7 +151,7 @@ describe("all()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual(["slow", "fast", "medium"]);
+    expect(result.output).toEqual(["slow", "fast", "medium"]);
   });
 
   it("propagates parent abort signal to child abort controller", async () => {
@@ -271,7 +271,7 @@ describe("all()", () => {
           if (!inner.ok) {
             throw new Error("inner failed");
           }
-          return inner.value;
+          return inner.output;
         },
       ],
     });
@@ -309,6 +309,6 @@ describe("all()", () => {
     if (!result.ok) {
       return;
     }
-    expect(result.value).toEqual(["string", 42, { key: "value" }, [1, 2, 3]]);
+    expect(result.output).toEqual(["string", 42, { key: "value" }, [1, 2, 3]]);
   });
 });

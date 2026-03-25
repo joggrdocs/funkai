@@ -31,7 +31,7 @@ const pipeline = flowAgent(
       execute: async () => input.topic.toLowerCase().replace(/\s+/g, "-"),
     });
 
-    // $.agent — tracked agent call, returns StepResult<GenerateResult>
+    // $.agent — tracked agent call, returns FlowAgentStepResult
     const draft = await $.agent({
       id: "write-draft",
       agent: writer,
@@ -42,7 +42,7 @@ const pipeline = flowAgent(
       return { text: "Generation failed." };
     }
 
-    return { text: draft.value.output };
+    return { text: draft.output };
   },
 );
 
@@ -57,7 +57,7 @@ if (result.ok) {
 
 ## The $ step builder
 
-`$` provides operations that are tracked in the execution trace. All return `Promise<StepResult<T>>` — check `.ok` before using `.value`.
+`$` provides operations that are tracked in the execution trace. All return `Promise<FlowStepResult<T>>` — check `.ok` before using `.output`.
 
 | Operation  | Description                                            |
 | ---------- | ------------------------------------------------------ |
@@ -86,7 +86,7 @@ const result = await pipeline.stream({ input: { topic: "closures" } });
 if (result.ok) {
   for await (const event of result.fullStream) {
     if (event.type === "step:finish") {
-      console.log(event.step.id, "done in", event.duration, "ms");
+      console.log(event.stepId, "done in", event.duration, "ms");
     }
   }
 }

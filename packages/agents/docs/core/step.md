@@ -4,25 +4,35 @@ The `$` object is passed into every flow agent handler and step callback. It pro
 
 `$` is passed into every callback, enabling composition and nesting. You can always skip `$` and use plain imperative code -- it just will not appear in the trace.
 
-## StepResult
+## FlowStepResult
 
-All `$` methods return `Promise<StepResult<T>>`:
-
-```ts
-type StepResult<T> =
-  | { ok: true; value: T; step: StepInfo; duration: number }
-  | { ok: false; error: StepError; step: StepInfo; duration: number };
-```
-
-`StepInfo` identifies the step:
+All `$` methods return `Promise<FlowStepResult<T>>`:
 
 ```ts
-interface StepInfo {
-  id: string; // from the $ config's `id` field
-  index: number; // auto-incrementing within the flow agent
-  type: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
-}
+type FlowStepResult<T> =
+  | {
+      ok: true;
+      output: T;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    }
+  | {
+      ok: false;
+      error: StepError;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    };
 ```
+
+Step metadata is flat on the result object:
+
+- `stepId` -- from the `$` config's `id` field
+- `stepOperation` -- `'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'`
+- `agentChain` -- optional agent ancestry chain
 
 `StepError` extends `ResultError` with `stepId: string`.
 
@@ -31,7 +41,7 @@ interface StepInfo {
 Single unit of work.
 
 ```ts
-$.step<T>(config: StepConfig<T>): Promise<StepResult<T>>
+$.step<T>(config: StepConfig<T>): Promise<FlowStepResult<T>>
 ```
 
 | Field      | Required | Type                                                         | Description                  |
@@ -51,16 +61,16 @@ const data = await $.step({
 });
 
 if (data.ok) {
-  console.log(data.value); // T
+  console.log(data.output); // T
 }
 ```
 
 ## $.agent
 
-Agent call as a tracked operation. Calls `agent.generate()` internally and unwraps the result -- agent errors become `StepError`, agent success becomes `StepResult<GenerateResult>`.
+Agent call as a tracked operation. Calls `agent.generate()` internally and unwraps the result -- agent errors become `StepError`, agent success becomes `FlowAgentStepResult`. Agent output fields are flat on the result (no double-wrapping).
 
 ```ts
-$.agent<TInput>(config: AgentStepConfig<TInput>): Promise<StepResult<GenerateResult>>
+$.agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult>
 ```
 
 | Field      | Required | Type               | Description                          |
@@ -83,8 +93,8 @@ const result = await $.agent({
 });
 
 if (result.ok) {
-  console.log(result.value.output); // the agent's output
-  console.log(result.value.messages); // full message history
+  console.log(result.output); // the agent's output
+  console.log(result.messages); // full message history
 }
 ```
 
@@ -93,7 +103,7 @@ if (result.ok) {
 Parallel map with optional concurrency limit. All items run concurrently (up to `concurrency` limit). Returns results in input order.
 
 ```ts
-$.map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>>
+$.map<T, R>(config: MapConfig<T, R>): Promise<FlowStepResult<R[]>>
 ```
 
 | Field         | Required | Type                                         | Description                                 |
@@ -115,6 +125,10 @@ const results = await $.map({
     return await processFile(item);
   },
 });
+
+if (results.ok) {
+  console.log(results.output); // R[]
+}
 ```
 
 ## $.each
@@ -122,7 +136,7 @@ const results = await $.map({
 Sequential side effects. Runs items one at a time in order. Returns `void`. Checks abort signal before each iteration.
 
 ```ts
-$.each<T>(config: EachConfig<T>): Promise<StepResult<void>>
+$.each<T>(config: EachConfig<T>): Promise<FlowStepResult<void>>
 ```
 
 | Field      | Required | Type                                            | Description                   |
@@ -135,13 +149,17 @@ $.each<T>(config: EachConfig<T>): Promise<StepResult<void>>
 | `onError`  | No       | hook                                            | Hook: fires on error          |
 
 ```ts
-await $.each({
+const notifications = await $.each({
   id: "notify-users",
   input: users,
   execute: async ({ item }) => {
     await sendNotification(item.email);
   },
 });
+
+if (!notifications.ok) {
+  console.error(notifications.error.message);
+}
 ```
 
 ## $.reduce
@@ -149,7 +167,7 @@ await $.each({
 Sequential accumulation. Each step depends on the previous result. Checks abort signal before each iteration.
 
 ```ts
-$.reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>>
+$.reduce<T, R>(config: ReduceConfig<T, R>): Promise<FlowStepResult<R>>
 ```
 
 | Field      | Required | Type                                                      | Description                    |
@@ -171,6 +189,10 @@ const total = await $.reduce({
     return accumulator + item.score;
   },
 });
+
+if (total.ok) {
+  console.log(total.output); // R
+}
 ```
 
 ## $.while
@@ -178,7 +200,7 @@ const total = await $.reduce({
 Conditional loop. Runs while a condition holds. Returns the last value, or `undefined` if the condition was false on first check. Checks abort signal before each iteration.
 
 ```ts
-$.while<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>>
+$.while<T>(config: WhileConfig<T>): Promise<FlowStepResult<T | undefined>>
 ```
 
 | Field       | Required | Type                                    | Description                                    |
@@ -201,6 +223,10 @@ const result = await $.while({
     return await checkStatus();
   },
 });
+
+if (result.ok) {
+  console.log(result.output); // T | undefined
+}
 ```
 
 ## $.all
@@ -208,7 +234,7 @@ const result = await $.while({
 Concurrent heterogeneous operations -- like `Promise.all`. Entries are factory functions that receive an `AbortSignal` and return a promise. The framework creates an `AbortController`, links it to the parent signal, and starts all factories at the same time.
 
 ```ts
-$.all(config: AllConfig): Promise<StepResult<unknown[]>>
+$.all(config: AllConfig): Promise<FlowStepResult<unknown[]>>
 ```
 
 | Field      | Required | Type             | Description                           |
@@ -222,10 +248,14 @@ $.all(config: AllConfig): Promise<StepResult<unknown[]>>
 Where `EntryFactory = (signal: AbortSignal) => Promise<any>`.
 
 ```ts
-const [users, repos] = await $.all({
+const result = await $.all({
   id: "fetch-data",
   entries: [(signal) => fetchUsers(signal), (signal) => fetchRepos(signal)],
 });
+
+if (result.ok) {
+  const [users, repos] = result.output;
+}
 ```
 
 ## $.race
@@ -233,7 +263,7 @@ const [users, repos] = await $.all({
 First-to-finish wins. Same `entries: EntryFactory[]` pattern as `$.all`. Losers are cancelled via abort signal when the winner resolves.
 
 ```ts
-$.race(config: RaceConfig): Promise<StepResult<unknown>>
+$.race(config: RaceConfig): Promise<FlowStepResult<unknown>>
 ```
 
 | Field      | Required | Type             | Description                      |
@@ -251,7 +281,7 @@ const result = await $.race({
 });
 
 if (result.ok) {
-  const fastest = result.value;
+  const fastest = result.output;
 }
 ```
 
@@ -267,7 +297,7 @@ const result = await $.step({
       id: "inner",
       execute: async () => "nested value",
     });
-    return inner.ok ? inner.value : "fallback";
+    return inner.ok ? inner.output : "fallback";
   },
 });
 ```

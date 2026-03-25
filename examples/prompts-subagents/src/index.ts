@@ -53,7 +53,7 @@ const pipeline = flowAgent(
     const draft = await $.agent({
       id: "draft",
       agent: writer,
-      input: `Write an article based on these findings:\n${research.value.output}`,
+      input: `Write an article based on these findings:\n${research.output}`,
     });
 
     if (!draft.ok) {
@@ -63,7 +63,7 @@ const pipeline = flowAgent(
     const review = await $.agent({
       id: "review",
       agent: reviewer,
-      input: `Review this article:\n${draft.value.output}`,
+      input: `Review this article:\n${draft.output}`,
     });
 
     if (!review.ok) {
@@ -71,8 +71,8 @@ const pipeline = flowAgent(
     }
 
     return {
-      article: String(draft.value.output),
-      verdict: String(review.value.output),
+      article: String(draft.output),
+      verdict: String(review.output),
     };
   },
 );

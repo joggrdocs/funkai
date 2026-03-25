@@ -150,7 +150,7 @@ const flow = engine(
           input: input.query,
         });
         if (!res.ok) throw new Error(res.error.message);
-        return res.value.output;
+        return res.output;
       },
     });
     return { answer: result };
@@ -194,11 +194,11 @@ const engine = createFlowEngine({
   onError: ({ error }) => {
     errorReporter.capture(error);
   },
-  onStepStart: ({ step }) => {
-    telemetry.trackStepStart(step.id, step.type);
+  onStepStart: ({ stepId, stepOperation }) => {
+    telemetry.trackStepStart(stepId, stepOperation);
   },
-  onStepFinish: ({ step, duration }) => {
-    telemetry.trackStepFinish(step.id, duration);
+  onStepFinish: ({ stepId, duration }) => {
+    telemetry.trackStepFinish(stepId, duration);
   },
 });
 ```

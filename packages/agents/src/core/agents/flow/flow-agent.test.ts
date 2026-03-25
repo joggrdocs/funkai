@@ -141,7 +141,7 @@ describe("generate() with steps", () => {
         });
 
         if (result.ok) {
-          return { y: result.value };
+          return { y: result.output };
         }
         return { y: 0 };
       },
@@ -423,9 +423,11 @@ describe("generate() hooks", () => {
     if (!overrideCall) {
       throw new Error("Expected overrideOnStepFinish first call");
     }
-    expect(configCall[0]).toHaveProperty("step");
+    expect(configCall[0]).toHaveProperty("stepId");
+    expect(configCall[0]).toHaveProperty("stepOperation");
     expect(configCall[0]).toHaveProperty("duration");
-    expect(overrideCall[0]).toHaveProperty("step");
+    expect(overrideCall[0]).toHaveProperty("stepId");
+    expect(overrideCall[0]).toHaveProperty("stepOperation");
     expect(overrideCall[0]).toHaveProperty("duration");
   });
 

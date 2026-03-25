@@ -108,13 +108,13 @@ const pipeline = flowAgent(
     const reviewed = await $.agent({
       id: "review-draft",
       agent: reviewer,
-      input: { draft: draft.value.output },
+      input: { draft: draft.output },
     });
 
     if (reviewed.ok) {
-      return { final: reviewed.value.output };
+      return { final: reviewed.output };
     }
-    return { final: draft.value.output };
+    return { final: draft.output };
   },
 );
 

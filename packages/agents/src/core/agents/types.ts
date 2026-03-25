@@ -12,10 +12,10 @@ import type { OutputParam } from "@/core/agents/base/output.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { Model, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { Model, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
 
-export type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+export type { StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 
 /**
  * A value that can be static or dynamically resolved from the agent's input.
@@ -366,7 +366,7 @@ export interface BaseGenerateParams<TInput = unknown, TOutput = string> {
    * Used by flow agents to receive step-start notifications.
    * Agents accept but ignore this field for type compatibility.
    */
-  onStepStart?: (event: { step: StepInfo }) => void | Promise<void>;
+  onStepStart?: (event: StepStartEvent) => void | Promise<void>;
 
   /**
    * Per-call hook — fires after base `onStepFinish`.

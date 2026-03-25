@@ -10,7 +10,7 @@ import type { Agent, Message, Resolver } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { AgentChainEntry, StepFinishEvent, StepInfo } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepStartEvent } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 
@@ -22,7 +22,7 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  *
  * ## Why only step hooks are forwarded
  *
- * `onStepStart` and `onStepFinish` use fixed event types (`StepInfo`,
+ * `onStepStart` and `onStepFinish` use fixed event types (`StepStartEvent`,
  * `StepFinishEvent`) that are the same for every agent — safe to pass
  * from parent to child with no type mismatch.
  *
@@ -43,7 +43,7 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  * ```
  * Passed into child.generate() — fixed types, safe:
  *   log          → child creates .child({ agentId }) from it
- *   onStepStart  → StepInfo (same shape for all agents)
+ *   onStepStart  → StepStartEvent (same shape for all agents)
  *   onStepFinish → StepFinishEvent (same shape for all agents)
  *
  * NOT passed down — generic types, would break type safety:
@@ -59,9 +59,9 @@ export interface ParentAgentContext {
   /**
    * Fires when a sub-agent step starts.
    *
-   * Uses `StepInfo` — a fixed (non-generic) type, safe to forward.
+   * Uses `StepStartEvent` — a fixed (non-generic) type, safe to forward.
    */
-  onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
+  onStepStart?: ((event: StepStartEvent) => void | Promise<void>) | undefined;
 
   /**
    * Fires when a sub-agent step finishes.

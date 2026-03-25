@@ -1,5 +1,6 @@
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
+import { P, match } from "ts-pattern";
 
 import { _agentChainField } from "@/core/agents/base/utils.js";
 import {
@@ -14,13 +15,17 @@ import type { EachConfig } from "@/core/agents/flow/steps/each.js";
 import type { MapConfig } from "@/core/agents/flow/steps/map.js";
 import type { RaceConfig } from "@/core/agents/flow/steps/race.js";
 import type { ReduceConfig } from "@/core/agents/flow/steps/reduce.js";
-import type { StepResult, StepError } from "@/core/agents/flow/steps/result.js";
+import type {
+  FlowStepResult,
+  FlowAgentStepResult,
+  StepError,
+} from "@/core/agents/flow/steps/result.js";
 import type { StepConfig } from "@/core/agents/flow/steps/step.js";
 import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -45,7 +50,7 @@ export interface StepBuilderOptions {
    */
   parentHooks?:
     | {
-        onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
+        onStepStart?: ((event: StepStartEvent) => void | Promise<void>) | undefined;
         onStepFinish?: ((event: StepFinishEvent) => void | Promise<void>) | undefined;
       }
     | undefined;
@@ -62,7 +67,7 @@ export interface StepBuilderOptions {
   /**
    * Agent ancestry chain from root to the current flow agent.
    *
-   * Attached to every `StepInfo` and `StepFinishEvent` so hook
+   * Attached to every `StepStartEvent` and `StepFinishEvent` so hook
    * consumers can trace which agent produced the event. Also
    * forwarded to sub-agents called via `$.agent()`.
    *
@@ -73,6 +78,7 @@ export interface StepBuilderOptions {
 
 /**
  * Mutable ref for globally unique step indices within a flow agent.
+ * Kept internal — only used for `buildToolCallId`.
  */
 interface IndexRef {
   current: number;
@@ -84,7 +90,7 @@ interface IndexRef {
  * The returned builder is the `$` object passed into every flow agent
  * handler and step callback. It owns the full step lifecycle:
  * trace registration, hook firing, error wrapping,
- * and `StepResult<T>` construction.
+ * and `FlowStepResult<T>` construction.
  *
  * @param options - Factory configuration with context, optional parent
  *   hooks, and optional stream writer.
@@ -107,7 +113,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   /**
    * Core step primitive — every other method delegates here.
    */
-  async function step<T>(config: StepConfig<T>): Promise<StepResult<T>> {
+  async function step<T>(config: StepConfig<T>): Promise<FlowStepResult<T>> {
     const onFinishHandler = buildOnFinishHandler<T>(config.onFinish);
 
     return executeStep<T>({
@@ -133,10 +139,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
       | undefined;
     onError?: ((event: { id: string; error: Error }) => void | Promise<void>) | undefined;
-  }): Promise<StepResult<T>> {
-    const { id, type, execute, input, onStart, onFinish, onError } = params;
+    buildFinishEventExtras?: (value: T) => Partial<StepFinishEvent>;
+  }): Promise<FlowStepResult<T>> {
+    const { id, type, execute, input, onStart, onFinish, onError, buildFinishEventExtras } = params;
 
-    const stepInfo: StepInfo = { id, index: indexRef.current++, type, agentChain };
+    const stepIndex = indexRef.current++;
     const startedAt = Date.now();
 
     const childTrace: TraceEntry[] = [];
@@ -152,7 +159,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     );
 
     // Build synthetic tool-call message and push to context
-    const toolCallId = buildToolCallId(id, stepInfo.index);
+    const toolCallId = buildToolCallId(id, stepIndex);
     ctx.messages.push(createToolCallMessage(toolCallId, id, input));
 
     // Write tool-call event to stream if writer is available
@@ -171,9 +178,11 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       /* V8 ignore stop */
     }
 
+    const startEvent: StepStartEvent = { stepId: id, stepOperation: type, agentChain };
+
     const onStartHook = buildHookCallback(onStart, (fn) => fn({ id }));
     const parentOnStepStartHook = buildParentHookCallback(parentHooks, "onStepStart", (fn) =>
-      fn({ step: stepInfo }),
+      fn(startEvent),
     );
 
     await fireHooks(ctx.log, onStartHook, parentOnStepStartHook);
@@ -220,13 +229,32 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       const onFinishHook = buildHookCallback(onFinish, (fn) =>
         fn({ id, result: value as T, duration }),
       );
+
+      const extras = match(buildFinishEventExtras)
+        .with(P.not(P.nullish), (fn) => fn(value))
+        .otherwise(() => ({}));
+      const finishEvent: StepFinishEvent = {
+        stepId: id,
+        stepOperation: type,
+        output: value,
+        duration,
+        agentChain,
+        ...extras,
+      };
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: value, duration, agentChain }),
+        fn(finishEvent),
       );
 
       await fireHooks(ctx.log, onFinishHook, parentOnStepFinishHook);
 
-      return { ok: true, value, step: stepInfo, duration } as StepResult<T>;
+      return {
+        ok: true,
+        output: value,
+        stepId: id,
+        stepOperation: type,
+        duration,
+        agentChain,
+      } as FlowStepResult<T>;
     } catch (caughtError) {
       const error = toError(caughtError);
       const finishedAt = Date.now();
@@ -273,22 +301,37 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       }
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }));
+      const errorFinishEvent: StepFinishEvent = {
+        stepId: id,
+        stepOperation: type,
+        output: undefined,
+        duration,
+        agentChain,
+      };
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: undefined, duration, agentChain }),
+        fn(errorFinishEvent),
       );
 
       await fireHooks(ctx.log, onErrorHook, parentOnStepFinishHook);
 
-      return { ok: false, error: stepError, step: stepInfo, duration } as StepResult<T>;
+      return {
+        ok: false,
+        error: stepError,
+        stepId: id,
+        stepOperation: type,
+        duration,
+        agentChain,
+      } as FlowStepResult<T>;
     }
   }
 
-  async function agent<TInput>(
-    config: AgentStepConfig<TInput>,
-  ): Promise<StepResult<GenerateResult>> {
+  async function agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult> {
     const onFinishHandler = buildOnFinishHandler<GenerateResult>(config.onFinish);
 
-    return executeStep<GenerateResult>({
+    // Capture the last AI SDK step result from the sub-agent's tool loop
+    const lastAIStep: { current: StepFinishEvent | undefined } = { current: undefined };
+
+    const result = await executeStep<GenerateResult>({
       id: config.id,
       type: "agent",
       input: config.input,
@@ -296,6 +339,18 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         // Forward fixed-type step hooks and agent chain to sub-agent.
         // Merge parent + child hooks so neither side is clobbered.
         const mergedHooks = mergeStepHooks(parentHooks, config.config);
+
+        // Inject a capture hook to store the last AI SDK step event
+        const originalOnStepFinish = mergedHooks["onStepFinish"] as
+          | ((event: StepFinishEvent) => void | Promise<void>)
+          | undefined;
+        mergedHooks["onStepFinish"] = async (event: StepFinishEvent) => {
+          lastAIStep.current = event;
+          if (isNotNil(originalOnStepFinish)) {
+            await originalOnStepFinish(event);
+          }
+        };
+
         const agentParams = {
           ...config.config,
           input: config.input,
@@ -337,13 +392,13 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
           };
         }
 
-        const result = await config.agent.generate(agentParams);
-        if (!result.ok) {
-          throw result.error.cause ?? new Error(result.error.message);
+        const generateResult = await config.agent.generate(agentParams);
+        if (!generateResult.ok) {
+          throw generateResult.error.cause ?? new Error(generateResult.error.message);
         }
         // Runnable.generate() types only { output }, but Agent.generate()
         // Returns full GenerateResult at runtime including messages, usage, finishReason.
-        const full = result as unknown as GenerateResult & {
+        const full = generateResult as unknown as GenerateResult & {
           ok: true;
         };
         return {
@@ -356,10 +411,41 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       onStart: config.onStart,
       onFinish: onFinishHandler,
       onError: config.onError,
+      buildFinishEventExtras: () => {
+        // Spread AI SDK fields from the last agent tool-loop step
+        if (isNotNil(lastAIStep.current)) {
+          const { stepId: _sid, stepOperation: _sop, ...aiFields } = lastAIStep.current;
+          return aiFields;
+        }
+        return {};
+      },
     });
+
+    // Re-shape the FlowStepResult<GenerateResult> into FlowAgentStepResult
+    if (result.ok) {
+      return {
+        ok: true,
+        output: result.output.output,
+        messages: result.output.messages,
+        usage: result.output.usage,
+        finishReason: result.output.finishReason,
+        stepId: result.stepId,
+        stepOperation: "agent",
+        duration: result.duration,
+        agentChain: result.agentChain,
+      };
+    }
+    return {
+      ok: false,
+      error: result.error,
+      stepId: result.stepId,
+      stepOperation: "agent",
+      duration: result.duration,
+      agentChain: result.agentChain,
+    };
   }
 
-  async function map<T, R>(config: MapConfig<T, R>): Promise<StepResult<R[]>> {
+  async function map<T, R>(config: MapConfig<T, R>): Promise<FlowStepResult<R[]>> {
     const onFinishHandler = buildOnFinishHandler<R[]>(config.onFinish);
 
     return executeStep<R[]>({
@@ -381,7 +467,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     });
   }
 
-  async function each<T>(config: EachConfig<T>): Promise<StepResult<void>> {
+  async function each<T>(config: EachConfig<T>): Promise<FlowStepResult<void>> {
     const onFinishHandler = buildOnFinishHandlerVoid(config.onFinish);
 
     return executeStep<void>({
@@ -403,7 +489,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     });
   }
 
-  async function reduce<T, R>(config: ReduceConfig<T, R>): Promise<StepResult<R>> {
+  async function reduce<T, R>(config: ReduceConfig<T, R>): Promise<FlowStepResult<R>> {
     const onFinishHandler = buildOnFinishHandler<R>(config.onFinish);
 
     return executeStep<R>({
@@ -425,7 +511,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     });
   }
 
-  async function whileStep<T>(config: WhileConfig<T>): Promise<StepResult<T | undefined>> {
+  async function whileStep<T>(config: WhileConfig<T>): Promise<FlowStepResult<T | undefined>> {
     const onFinishHandler = buildOnFinishHandler<T | undefined>(config.onFinish);
 
     return executeStep<T | undefined>({
@@ -443,7 +529,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     });
   }
 
-  async function all(config: AllConfig): Promise<StepResult<unknown[]>> {
+  async function all(config: AllConfig): Promise<FlowStepResult<unknown[]>> {
     const onFinishHandler = buildOnFinishHandler<unknown[]>(config.onFinish);
 
     return executeStep<unknown[]>({
@@ -469,7 +555,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     });
   }
 
-  async function race(config: RaceConfig): Promise<StepResult<unknown>> {
+  async function race(config: RaceConfig): Promise<FlowStepResult<unknown>> {
     const onFinishHandler = buildOnFinishHandlerRace(config.onFinish);
 
     return executeStep<unknown>({
@@ -626,7 +712,7 @@ function mergeStepHooks(
   parentHooks: StepBuilderOptions["parentHooks"],
   childConfig: Record<string, unknown> | undefined,
 ): Record<string, unknown> {
-  type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
+  type StepStartHook = (event: StepStartEvent) => void | Promise<void>;
   type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
 
   let parentStart: StepStartHook | undefined;
@@ -646,7 +732,7 @@ function mergeStepHooks(
   const result: Record<string, unknown> = {};
 
   if (isNotNil(parentStart) && isNotNil(childStart)) {
-    result["onStepStart"] = async (event: { step: StepInfo }) => {
+    result["onStepStart"] = async (event: StepStartEvent) => {
       await childStart(event);
       await parentStart(event);
     };

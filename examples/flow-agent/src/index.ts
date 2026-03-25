@@ -29,13 +29,11 @@ const summarizeAndTranslate = flowAgent(
       summary: z.string(),
       translation: z.string(),
     }),
-    onStepStart: ({ step }) => {
-      console.log(`  → step started: ${step.id} (${step.type})`);
+    onStepStart: ({ stepId, stepOperation }) => {
+      console.log(`  → step started: ${stepId} (${stepOperation})`);
     },
-    onStepFinish: ({ step, duration }) => {
-      if (step) {
-        console.log(`  ✓ step finished: ${step.id} (${duration}ms)`);
-      }
+    onStepFinish: ({ stepId, duration }) => {
+      console.log(`  ✓ step finished: ${stepId} (${duration}ms)`);
     },
   },
   async ({ input, $ }) => {
@@ -50,7 +48,7 @@ const summarizeAndTranslate = flowAgent(
       throw new Error(`Summarization failed: ${summaryResult.error.message}`);
     }
 
-    const summary = String(summaryResult.value.output);
+    const summary = String(summaryResult.output);
 
     // Step 2: Translate the summary
     const translationResult = await $.agent({
@@ -65,7 +63,7 @@ const summarizeAndTranslate = flowAgent(
 
     return {
       summary,
-      translation: String(translationResult.value.output),
+      translation: String(translationResult.output),
     };
   },
 );
