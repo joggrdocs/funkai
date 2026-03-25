@@ -495,12 +495,12 @@ interface TraceEntry {
 
 Events emitted on the flow agent stream:
 
-| Type          | Fields                       | Description               |
-| ------------- | ---------------------------- | ------------------------- |
-| `step:start`  | `stepId`, `stepOperation`, `agentChain?` | A `$` operation started   |
+| Type          | Fields                                          | Description               |
+| ------------- | ----------------------------------------------- | ------------------------- |
+| `step:start`  | `stepId`, `stepOperation`, `agentChain?`        | A `$` operation started   |
 | `step:finish` | `stepId`, `stepOperation`, `output`, `duration` | A `$` operation completed |
-| `step:error`  | `stepId`, `stepOperation`, `error`       | A `$` operation failed    |
-| `flow:finish` | `output`, `duration`         | The flow agent completed  |
+| `step:error`  | `stepId`, `stepOperation`, `error`              | A `$` operation failed    |
+| `flow:finish` | `output`, `duration`                            | The flow agent completed  |
 
 ## Reference: FlowAgentOverrides
 

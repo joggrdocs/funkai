@@ -61,7 +61,11 @@ export type {
   FlowEngineConfig,
   FlowFactory,
 } from "@/core/agents/flow/engine.js";
-export type { FlowStepResult, FlowAgentStepResult, StepError } from "@/core/agents/flow/steps/result.js";
+export type {
+  FlowStepResult,
+  FlowAgentStepResult,
+  StepError,
+} from "@/core/agents/flow/steps/result.js";
 export type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
 export type { StepConfig } from "@/core/agents/flow/steps/step.js";
 export type { AgentStepConfig } from "@/core/agents/flow/steps/agent.js";

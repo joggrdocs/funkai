@@ -144,8 +144,22 @@ Discriminated union for flow agent step operation results. Includes flat step me
 
 ```ts
 type FlowStepResult<T> =
-  | { ok: true; output: T; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number }
-  | { ok: false; error: StepError; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number };
+  | {
+      ok: true;
+      output: T;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    }
+  | {
+      ok: false;
+      error: StepError;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    };
 ```
 
 ### StepStartEvent

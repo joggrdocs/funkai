@@ -98,16 +98,16 @@ interface FlowAgent<TInput, TOutput> {
 
 The `$` object provides tracked operations. Every call appears in the execution trace. `$` is passed into nested callbacks so operations can be composed.
 
-| Method     | Signature                                                                           | Returns                           | Description                                |
-| ---------- | ----------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------ |
-| `$.step`   | `(config: StepConfig<T>) => Promise<FlowStepResult<T>>`                             | `FlowStepResult<T>`               | Single unit of work                        |
-| `$.agent`  | `(config: AgentStepConfig<TInput>) => Promise<FlowAgentStepResult>`                 | `FlowAgentStepResult`             | Agent call as tracked step                 |
-| `$.map`    | `(config: MapConfig<T, R>) => Promise<FlowStepResult<R[]>>`                         | `FlowStepResult<R[]>`             | Parallel map with optional concurrency     |
-| `$.each`   | `(config: EachConfig<T>) => Promise<FlowStepResult<void>>`                          | `FlowStepResult<void>`            | Sequential side effects                    |
-| `$.reduce` | `(config: ReduceConfig<T, R>) => Promise<FlowStepResult<R>>`                        | `FlowStepResult<R>`               | Sequential accumulation                    |
-| `$.while`  | `(config: WhileConfig<T>) => Promise<FlowStepResult<T \| undefined>>`               | `FlowStepResult<T \| undefined>`  | Conditional loop                           |
-| `$.all`    | `(config: AllConfig) => Promise<FlowStepResult<unknown[]>>`                         | `FlowStepResult<unknown[]>`       | Concurrent heterogeneous ops (Promise.all) |
-| `$.race`   | `(config: RaceConfig) => Promise<FlowStepResult<unknown>>`                          | `FlowStepResult<unknown>`         | First-to-finish wins (Promise.race)        |
+| Method     | Signature                                                             | Returns                          | Description                                |
+| ---------- | --------------------------------------------------------------------- | -------------------------------- | ------------------------------------------ |
+| `$.step`   | `(config: StepConfig<T>) => Promise<FlowStepResult<T>>`               | `FlowStepResult<T>`              | Single unit of work                        |
+| `$.agent`  | `(config: AgentStepConfig<TInput>) => Promise<FlowAgentStepResult>`   | `FlowAgentStepResult`            | Agent call as tracked step                 |
+| `$.map`    | `(config: MapConfig<T, R>) => Promise<FlowStepResult<R[]>>`           | `FlowStepResult<R[]>`            | Parallel map with optional concurrency     |
+| `$.each`   | `(config: EachConfig<T>) => Promise<FlowStepResult<void>>`            | `FlowStepResult<void>`           | Sequential side effects                    |
+| `$.reduce` | `(config: ReduceConfig<T, R>) => Promise<FlowStepResult<R>>`          | `FlowStepResult<R>`              | Sequential accumulation                    |
+| `$.while`  | `(config: WhileConfig<T>) => Promise<FlowStepResult<T \| undefined>>` | `FlowStepResult<T \| undefined>` | Conditional loop                           |
+| `$.all`    | `(config: AllConfig) => Promise<FlowStepResult<unknown[]>>`           | `FlowStepResult<unknown[]>`      | Concurrent heterogeneous ops (Promise.all) |
+| `$.race`   | `(config: RaceConfig) => Promise<FlowStepResult<unknown>>`            | `FlowStepResult<unknown>`        | First-to-finish wins (Promise.race)        |
 
 ### StepConfig
 
@@ -224,8 +224,22 @@ interface RaceConfig {
 
 ```typescript
 type FlowStepResult<T> =
-  | { ok: true; output: T; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number }
-  | { ok: false; error: StepError; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number };
+  | {
+      ok: true;
+      output: T;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    }
+  | {
+      ok: false;
+      error: StepError;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    };
 
 interface StepError extends ResultError {
   stepId: string; // the id from the failed step config
@@ -258,7 +272,7 @@ type OperationType = "step" | "agent" | "map" | "each" | "reduce" | "while" | "a
 
 ```typescript
 interface StepStartEvent {
-  stepId: string;        // from the $ config's `id` field
+  stepId: string; // from the $ config's `id` field
   stepOperation: OperationType; // 'step' | 'agent' | 'map' | 'each' | 'reduce' | 'while' | 'all' | 'race'
   agentChain?: AgentChainEntry[];
 }
@@ -268,22 +282,22 @@ interface StepStartEvent {
 
 Emitted by `onStepFinish`. For agent tool-loop steps, the event is a full superset of the Vercel AI SDK's `StepResult<ToolSet>` — all SDK fields are passed through unchanged, plus funkai-specific additions. For flow `$.agent()` steps, the event carries both flow fields (`output`, `duration`) and the AI SDK fields from the last tool-loop step. Non-agent flow steps (`$.step()`, `$.map()`, etc.) only have the flow-specific fields.
 
-| Field            | Type                        | Present on                          | Description                                    |
-| ---------------- | --------------------------- | ----------------------------------- | ---------------------------------------------- |
-| `stepId`         | `string`                    | All steps                           | funkai addition: the `$` config `id`           |
-| `stepOperation`  | `OperationType`             | All steps                           | funkai addition: operation type                |
-| `agentChain`     | `AgentChainEntry[]`         | All steps                           | funkai addition: agent ancestry chain          |
-| `stepNumber`     | `number`                    | Agent tool-loop + flow `$.agent()`  | AI SDK: zero-based step index                  |
-| `text`           | `string`                    | Agent tool-loop + flow `$.agent()`  | AI SDK: generated text                         |
-| `toolCalls`      | `TypedToolCall<ToolSet>[]`  | Agent tool-loop + flow `$.agent()`  | AI SDK: full tool call objects with `input`    |
-| `toolResults`    | `TypedToolResult<ToolSet>[]`| Agent tool-loop + flow `$.agent()`  | AI SDK: full tool result objects with `output` |
-| `finishReason`   | `FinishReason`              | Agent tool-loop + flow `$.agent()`  | AI SDK: why the step ended                     |
-| `usage`          | `LanguageModelUsage`        | Agent tool-loop + flow `$.agent()`  | AI SDK: token usage                            |
-| `reasoning`      | `ReasoningPart[]`           | Agent tool-loop + flow `$.agent()`  | AI SDK: reasoning content                      |
-| `sources`        | `Source[]`                  | Agent tool-loop + flow `$.agent()`  | AI SDK: cited sources                          |
-| `response`       | `LanguageModelResponseMetadata & { messages }` | Agent tool-loop + flow `$.agent()` | AI SDK: response metadata |
-| `output`         | `unknown`                   | Flow orchestration steps            | Flow step output value                         |
-| `duration`       | `number`                    | Flow orchestration steps            | Flow step duration in ms                       |
+| Field           | Type                                           | Present on                         | Description                                    |
+| --------------- | ---------------------------------------------- | ---------------------------------- | ---------------------------------------------- |
+| `stepId`        | `string`                                       | All steps                          | funkai addition: the `$` config `id`           |
+| `stepOperation` | `OperationType`                                | All steps                          | funkai addition: operation type                |
+| `agentChain`    | `AgentChainEntry[]`                            | All steps                          | funkai addition: agent ancestry chain          |
+| `stepNumber`    | `number`                                       | Agent tool-loop + flow `$.agent()` | AI SDK: zero-based step index                  |
+| `text`          | `string`                                       | Agent tool-loop + flow `$.agent()` | AI SDK: generated text                         |
+| `toolCalls`     | `TypedToolCall<ToolSet>[]`                     | Agent tool-loop + flow `$.agent()` | AI SDK: full tool call objects with `input`    |
+| `toolResults`   | `TypedToolResult<ToolSet>[]`                   | Agent tool-loop + flow `$.agent()` | AI SDK: full tool result objects with `output` |
+| `finishReason`  | `FinishReason`                                 | Agent tool-loop + flow `$.agent()` | AI SDK: why the step ended                     |
+| `usage`         | `LanguageModelUsage`                           | Agent tool-loop + flow `$.agent()` | AI SDK: token usage                            |
+| `reasoning`     | `ReasoningPart[]`                              | Agent tool-loop + flow `$.agent()` | AI SDK: reasoning content                      |
+| `sources`       | `Source[]`                                     | Agent tool-loop + flow `$.agent()` | AI SDK: cited sources                          |
+| `response`      | `LanguageModelResponseMetadata & { messages }` | Agent tool-loop + flow `$.agent()` | AI SDK: response metadata                      |
+| `output`        | `unknown`                                      | Flow orchestration steps           | Flow step output value                         |
+| `duration`      | `number`                                       | Flow orchestration steps           | Flow step duration in ms                       |
 
 ## FlowAgentOverrides
 

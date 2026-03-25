@@ -25,12 +25,7 @@ import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type {
-  AgentChainEntry,
-  StepFinishEvent,
-  StepStartEvent,
-  StreamPart,
-} from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -330,9 +325,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     }
   }
 
-  async function agent<TInput>(
-    config: AgentStepConfig<TInput>,
-  ): Promise<FlowAgentStepResult> {
+  async function agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult> {
     const onFinishHandler = buildOnFinishHandler<GenerateResult>(config.onFinish);
 
     // Capture the last AI SDK step result from the sub-agent's tool loop

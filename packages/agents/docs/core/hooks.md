@@ -17,12 +17,12 @@ Set on `AgentConfig`:
 
 Set on `FlowAgentConfig`:
 
-| Hook           | Event fields                           | When                                                  |
-| -------------- | -------------------------------------- | ----------------------------------------------------- |
-| `onStart`      | `{ input }`                            | After input validation, before handler runs           |
-| `onFinish`     | `{ input, output, duration }`          | After successful completion                           |
-| `onError`      | `{ input, error }`                     | On error, before Result is returned                   |
-| `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`) | Before any `$` operation executes                     |
+| Hook           | Event fields                                                      | When                                                  |
+| -------------- | ----------------------------------------------------------------- | ----------------------------------------------------- |
+| `onStart`      | `{ input }`                                                       | After input validation, before handler runs           |
+| `onFinish`     | `{ input, output, duration }`                                     | After successful completion                           |
+| `onError`      | `{ input, error }`                                                | On error, before Result is returned                   |
+| `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`)       | Before any `$` operation executes                     |
 | `onStepFinish` | `StepFinishEvent` (`{ stepId, stepOperation, output, duration }`) | After any `$` operation completes (success AND error) |
 
 `onStepFinish` fires on both success and error. On error, `output` is `undefined`. `stepId` is always required (never optional).

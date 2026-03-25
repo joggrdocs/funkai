@@ -478,10 +478,14 @@ describe("generate() hooks", () => {
       reasoningText: undefined,
       files: [],
       sources: [],
-      toolCalls: [{ toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" }],
+      toolCalls: [
+        { toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" },
+      ],
       staticToolCalls: [],
       dynamicToolCalls: [],
-      toolResults: [{ toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" }],
+      toolResults: [
+        { toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" },
+      ],
       staticToolResults: [],
       dynamicToolResults: [],
       finishReason: "stop",
@@ -555,11 +559,26 @@ describe("generate() hooks", () => {
       stepNumber: 0,
       text: "",
       toolCalls: [
-        { toolName: "search", input: { query: "typescript", limit: 10 }, type: "tool-call", toolCallId: "tc1" },
-        { toolName: "fetch", input: { url: "https://example.com" }, type: "tool-call", toolCallId: "tc2" },
+        {
+          toolName: "search",
+          input: { query: "typescript", limit: 10 },
+          type: "tool-call",
+          toolCallId: "tc1",
+        },
+        {
+          toolName: "fetch",
+          input: { url: "https://example.com" },
+          type: "tool-call",
+          toolCallId: "tc2",
+        },
       ],
       toolResults: [
-        { toolName: "search", output: { items: [1, 2, 3] }, type: "tool-result", toolCallId: "tc1" },
+        {
+          toolName: "search",
+          output: { items: [1, 2, 3] },
+          type: "tool-result",
+          toolCallId: "tc1",
+        },
         { toolName: "fetch", output: { body: "<html>" }, type: "tool-result", toolCallId: "tc2" },
       ],
       usage: { inputTokens: 50, outputTokens: 25, totalTokens: 75 },
@@ -1081,8 +1100,12 @@ describe("stream() hooks", () => {
     const mockStepData = {
       stepNumber: 0,
       text: "streamed output",
-      toolCalls: [{ toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" }],
-      toolResults: [{ toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" }],
+      toolCalls: [
+        { toolName: "myTool", input: { foo: "bar" }, type: "tool-call", toolCallId: "tc1" },
+      ],
+      toolResults: [
+        { toolName: "myTool", output: { answer: 42 }, type: "tool-result", toolCallId: "tc1" },
+      ],
       usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
       finishReason: "stop",
     };

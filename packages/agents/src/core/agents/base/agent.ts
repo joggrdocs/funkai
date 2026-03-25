@@ -27,7 +27,13 @@ import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { AIStepResult, AgentChainEntry, Model, StepFinishEvent, StreamPart } from "@/core/types.js";
+import type {
+  AIStepResult,
+  AgentChainEntry,
+  Model,
+  StepFinishEvent,
+  StreamPart,
+} from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";

@@ -10,8 +10,22 @@ All `$` methods return `Promise<FlowStepResult<T>>`:
 
 ```ts
 type FlowStepResult<T> =
-  | { ok: true; output: T; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number }
-  | { ok: false; error: StepError; stepId: string; stepOperation: OperationType; agentChain?: AgentChainEntry[]; duration: number };
+  | {
+      ok: true;
+      output: T;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    }
+  | {
+      ok: false;
+      error: StepError;
+      stepId: string;
+      stepOperation: OperationType;
+      agentChain?: AgentChainEntry[];
+      duration: number;
+    };
 ```
 
 Step metadata is flat on the result object:

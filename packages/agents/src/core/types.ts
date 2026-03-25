@@ -1,10 +1,4 @@
-import type {
-  AsyncIterableStream,
-  ModelMessage,
-  StepResult,
-  TextStreamPart,
-  ToolSet,
-} from "ai";
+import type { AsyncIterableStream, ModelMessage, StepResult, TextStreamPart, ToolSet } from "ai";
 
 import type { LanguageModel } from "@/core/provider/types.js";
 import type { OperationType } from "@/lib/trace.js";
