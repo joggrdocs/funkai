@@ -58,6 +58,7 @@ jobs:
 
       - name: Block major version bumps (pre-1.0)
         run: |
+          shopt -s nullglob
           found=0
           for f in .changeset/*.md; do
             [ "$f" = ".changeset/README.md" ] && continue
