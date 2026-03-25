@@ -22,7 +22,9 @@ export interface UnattributedSource {
  * Per-agent usage — token counts with agent source identity.
  */
 export interface AgentTokenUsage extends LanguageModelUsage {
-  /** Which agent (or unattributed source) produced this usage. */
+  /**
+   * Which agent (or unattributed source) produced this usage.
+   */
   readonly source: AgentSource | UnattributedSource;
 }
 
@@ -30,7 +32,9 @@ export interface AgentTokenUsage extends LanguageModelUsage {
  * Per-model usage — token counts with model identity.
  */
 export interface ModelTokenUsage extends LanguageModelUsage {
-  /** The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`). */
+  /**
+   * The model that produced this usage (e.g. `"openai/gpt-5.2-codex"`).
+   */
   readonly modelId: string;
 }
 

@@ -150,7 +150,9 @@ export type BaseGenerateResult<TOutput = string> = Pick<
   GenerateTextResult<ToolSet, AIOutput>,
   "usage" | "finishReason"
 > & {
-  /** The generation output. */
+  /**
+   * The generation output.
+   */
   readonly output: TOutput;
 };
 
@@ -171,7 +173,9 @@ export interface GenerateResult<TOutput = string> extends Omit<
   GenerateTextResult<ToolSet, AIOutput>,
   "output" | "experimental_output"
 > {
-  /** The generation output. */
+  /**
+   * The generation output.
+   */
   readonly output: TOutput;
 }
 
@@ -188,7 +192,9 @@ export type BaseStreamResult<TOutput = string> = Pick<
   StreamTextResult<ToolSet, AIOutput>,
   "usage" | "finishReason" | "fullStream"
 > & {
-  /** Resolves after the stream completes with the generation output. */
+  /**
+   * Resolves after the stream completes with the generation output.
+   */
   readonly output: PromiseLike<TOutput>;
 };
 
@@ -205,7 +211,9 @@ export interface StreamResult<TOutput = string> extends Omit<
   StreamTextResult<ToolSet, AIOutput>,
   "output" | "experimental_output" | "experimental_partialOutputStream"
 > {
-  /** Resolves after the stream completes with the generation output. */
+  /**
+   * Resolves after the stream completes with the generation output.
+   */
   readonly output: PromiseLike<TOutput>;
 }
 

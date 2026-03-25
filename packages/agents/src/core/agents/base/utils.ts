@@ -52,7 +52,9 @@ import type { RunnableMeta } from "@/lib/runnable.js";
  * ```
  */
 export interface ParentAgentContext {
-  /** Parent logger — sub-agent creates `.child({ agentId })` from it. */
+  /**
+   * Parent logger — sub-agent creates `.child({ agentId })` from it.
+   */
   log?: Logger | undefined;
 
   /**
