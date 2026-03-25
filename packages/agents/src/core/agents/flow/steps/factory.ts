@@ -1,6 +1,7 @@
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
 
+import { _agentChainField } from "@/core/agents/base/utils.js";
 import {
   buildToolCallId,
   createToolCallMessage,
@@ -19,7 +20,7 @@ import type { WhileConfig } from "@/core/agents/flow/steps/while.js";
 /* oxlint-disable import/max-dependencies -- step factory requires many internal modules */
 import type { GenerateResult, StreamResult } from "@/core/agents/types.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks } from "@/lib/hooks.js";
 import type { TraceEntry, OperationType } from "@/lib/trace.js";
@@ -55,6 +56,17 @@ export interface StepBuilderOptions {
    * step events through the readable stream.
    */
   writer?: WritableStreamDefaultWriter<StreamPart>;
+
+  /**
+   * Agent ancestry chain from root to the current flow agent.
+   *
+   * Attached to every `StepInfo` and `StepFinishEvent` so hook
+   * consumers can trace which agent produced the event. Also
+   * forwarded to sub-agents called via `$.agent()`.
+   *
+   * @internal Framework-only — not exposed to users.
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**
@@ -88,7 +100,7 @@ export function createStepBuilder(options: StepBuilderOptions): StepBuilder {
  * the same ref so step indices are globally unique.
  */
 function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexRef): StepBuilder {
-  const { ctx, parentHooks, writer } = options;
+  const { ctx, parentHooks, writer, agentChain } = options;
 
   /**
    * Core step primitive — every other method delegates here.
@@ -120,7 +132,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
   }): Promise<StepResult<T>> {
     const { id, type, execute, input, onStart, onFinish, onError } = params;
 
-    const stepInfo: StepInfo = { id, index: indexRef.current++, type };
+    const stepInfo: StepInfo = { id, index: indexRef.current++, type, agentChain };
     const startedAt = Date.now();
 
     const childTrace: TraceEntry[] = [];
@@ -130,7 +142,10 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       trace: childTrace,
       messages: ctx.messages,
     };
-    const child$ = createStepBuilderInternal({ ctx: childCtx, parentHooks, writer }, indexRef);
+    const child$ = createStepBuilderInternal(
+      { ctx: childCtx, parentHooks, writer, agentChain },
+      indexRef,
+    );
 
     // Build synthetic tool-call message and push to context
     const toolCallId = buildToolCallId(id, stepInfo.index);
@@ -202,7 +217,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         fn({ id, result: value as T, duration }),
       );
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: value, duration }),
+        fn({ step: stepInfo, result: value, duration, agentChain }),
       );
 
       await fireHooks(ctx.log, onFinishHook, parentOnStepFinishHook);
@@ -255,7 +270,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
 
       const onErrorHook = buildHookCallback(onError, (fn) => fn({ id, error }));
       const parentOnStepFinishHook = buildParentHookCallback(parentHooks, "onStepFinish", (fn) =>
-        fn({ step: stepInfo, result: undefined, duration }),
+        fn({ step: stepInfo, result: undefined, duration, agentChain }),
       );
 
       await fireHooks(ctx.log, onErrorHook, parentOnStepFinishHook);
@@ -274,12 +289,20 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       type: "agent",
       input: config.input,
       execute: async () => {
+        // Forward fixed-type step hooks and agent chain to sub-agent.
+        // Merge parent + child hooks so neither side is clobbered.
+        const mergedHooks = mergeStepHooks(parentHooks, config.config);
         const agentParams = {
           ...config.config,
           input: config.input,
           signal: ctx.signal,
           logger: ctx.log.child({ stepId: config.id }),
+          ...mergedHooks,
         };
+        // Stamp after spread — Symbol fields don't survive spread
+        if (isNotNil(agentChain)) {
+          _agentChainField.set(agentParams, agentChain);
+        }
 
         // When stream: true and a writer is available, use agent.stream()
         // To pipe events through the parent flow's stream
@@ -583,6 +606,64 @@ function buildOnFinishHandlerRace(
     return undefined;
   }
   return (event) => onFinish({ id: event.id, result: event.result, duration: event.duration });
+}
+
+/**
+ * Merge parent flow step hooks with delegated-agent step hooks.
+ *
+ * When both parent and child define the same hook, the merged callback
+ * fires the child hook first, then the parent hook. Only defined hooks
+ * are included in the result so `undefined` values never clobber
+ * a child-only hook via object spread.
+ *
+ * @private
+ */
+function mergeStepHooks(
+  parentHooks: StepBuilderOptions["parentHooks"],
+  childConfig: Record<string, unknown> | undefined,
+): Record<string, unknown> {
+  type StepStartHook = (event: { step: StepInfo }) => void | Promise<void>;
+  type StepFinishHook = (event: StepFinishEvent) => void | Promise<void>;
+
+  let parentStart: StepStartHook | undefined;
+  let parentFinish: StepFinishHook | undefined;
+  if (isNotNil(parentHooks)) {
+    parentStart = parentHooks.onStepStart;
+    parentFinish = parentHooks.onStepFinish;
+  }
+
+  let childStart: StepStartHook | undefined;
+  let childFinish: StepFinishHook | undefined;
+  if (isNotNil(childConfig)) {
+    childStart = childConfig.onStepStart as StepStartHook | undefined;
+    childFinish = childConfig.onStepFinish as StepFinishHook | undefined;
+  }
+
+  const result: Record<string, unknown> = {};
+
+  if (isNotNil(parentStart) && isNotNil(childStart)) {
+    result.onStepStart = async (event: { step: StepInfo }) => {
+      await childStart(event);
+      await parentStart(event);
+    };
+  } else if (isNotNil(parentStart)) {
+    result.onStepStart = parentStart;
+  } else if (isNotNil(childStart)) {
+    result.onStepStart = childStart;
+  }
+
+  if (isNotNil(parentFinish) && isNotNil(childFinish)) {
+    result.onStepFinish = async (event: StepFinishEvent) => {
+      await childFinish(event);
+      await parentFinish(event);
+    };
+  } else if (isNotNil(parentFinish)) {
+    result.onStepFinish = parentFinish;
+  } else if (isNotNil(childFinish)) {
+    result.onStepFinish = childFinish;
+  }
+
+  return result;
 }
 
 /**

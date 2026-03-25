@@ -1,7 +1,7 @@
 import type { AsyncIterableStream } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 
-import { resolveOptionalValue } from "@/core/agents/base/utils.js";
+import { extractAgentChain, resolveOptionalValue } from "@/core/agents/base/utils.js";
 import {
   collectTextFromMessages,
   createAssistantMessage,
@@ -24,7 +24,7 @@ import type { GenerateParams, GenerateResult, Message, StreamResult } from "@/co
 import { createDefaultLogger } from "@/core/logger.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
-import type { StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo, StreamPart } from "@/core/types.js";
 import type { Context } from "@/lib/context.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { FLOW_AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -326,6 +326,10 @@ export function flowAgent<TInput, TOutput = any>(
     const messages: Message[] = [];
     const ctx: Context = { signal, log, trace, messages };
 
+    // Build agent chain: extend incoming chain with this flow agent's identity
+    const incomingChain = extractAgentChain(params);
+    const currentChain: readonly AgentChainEntry[] = [...incomingChain, { id: config.name }];
+
     const mergedOnStepStart = buildMergedStepStartHook(log, config.onStepStart, params.onStepStart);
     const mergedOnStepFinish = buildMergedStepFinishHook(
       log,
@@ -340,6 +344,7 @@ export function flowAgent<TInput, TOutput = any>(
         onStepFinish: mergedOnStepFinish,
       },
       writer,
+      agentChain: currentChain,
     });
 
     const $ = augmentStepBuilder(base$, ctx, _internal);

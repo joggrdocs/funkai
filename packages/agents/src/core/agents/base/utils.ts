@@ -1,3 +1,4 @@
+import { privateField } from "@funkai/utils";
 import type { LanguageModelUsage } from "ai";
 import { tool } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
@@ -9,7 +10,7 @@ import type { Agent, Message, Resolver } from "@/core/agents/types.js";
 import type { Logger } from "@/core/logger.js";
 import type { TokenUsage } from "@/core/provider/types.js";
 import type { Tool } from "@/core/tool.js";
-import type { StepFinishEvent, StepInfo } from "@/core/types.js";
+import type { AgentChainEntry, StepFinishEvent, StepInfo } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 
@@ -68,6 +69,13 @@ export interface ParentAgentContext {
    * Uses `StepFinishEvent` — a fixed (non-generic) type, safe to forward.
    */
   onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+
+  /**
+   * Agent ancestry chain from root to the current agent.
+   *
+   * @internal Framework-only — not exposed on public `GenerateParams`.
+   */
+  agentChain?: readonly AgentChainEntry[];
 }
 
 /**
@@ -366,18 +374,27 @@ function buildAgentTool(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ToolSet requires `any` values; `unknown` breaks assignability with AI SDK
 ): ReturnType<typeof tool<any, any>> {
   const parentParams = buildParentParams(parentCtx);
+  let parentChain: readonly AgentChainEntry[] | undefined;
+  if (isNotNil(parentCtx)) {
+    parentChain = parentCtx.agentChain;
+  }
 
   if (isNotNil(meta) && isNotNil(meta.inputSchema)) {
     return tool({
       description: `Delegate to ${toolName}`,
       inputSchema: meta.inputSchema,
       execute: async (input, { abortSignal }) => {
-        const r = await runnable.generate({
+        const generateParams = {
           input,
           signal: abortSignal,
           tools,
           ...parentParams,
-        });
+        };
+        // Stamp after spread — Symbol fields don't survive spread
+        if (isNotNil(parentChain)) {
+          _agentChainField.set(generateParams, parentChain);
+        }
+        const r = await runnable.generate(generateParams);
         if (!r.ok) {
           throw new Error(r.error.message);
         }
@@ -389,18 +406,62 @@ function buildAgentTool(
     description: `Delegate to ${toolName}`,
     inputSchema: z.object({ prompt: z.string().describe("The prompt to send") }),
     execute: async (input: { prompt: string }, { abortSignal }) => {
-      const r = await runnable.generate({
+      const generateParams = {
         prompt: input.prompt,
         signal: abortSignal,
         tools,
         ...parentParams,
-      });
+      };
+      if (isNotNil(parentChain)) {
+        _agentChainField.set(generateParams, parentChain);
+      }
+      const r = await runnable.generate(generateParams);
       if (!r.ok) {
         throw new Error(r.error.message);
       }
       return r.output;
     },
   });
+}
+
+/**
+ * Private field for transporting agent ancestry chain through params.
+ *
+ * Uses a Symbol key so it is invisible to `Object.keys()`,
+ * `JSON.stringify()`, `for...in`, and object spread.
+ *
+ * @internal
+ */
+export const _agentChainField = privateField<readonly AgentChainEntry[]>("funkai:agent-chain");
+
+/**
+ * Shared empty chain — avoids allocating a new `[]` on every
+ * top-level agent call where no parent chain exists.
+ *
+ * @private
+ */
+const EMPTY_CHAIN: readonly AgentChainEntry[] = [];
+
+/**
+ * Extract the internal `agentChain` from raw generate params.
+ *
+ * Reads the agent chain from a Symbol-keyed private field on
+ * the params object. Returns an empty array when absent.
+ *
+ * @param params - The raw generate params object.
+ * @returns The agent chain array, or an empty array if absent.
+ *
+ * @example
+ * ```ts
+ * const chain = extractAgentChain(params);
+ * // => [{ id: "root" }] or []
+ * ```
+ */
+export function extractAgentChain(params: unknown): readonly AgentChainEntry[] {
+  if (typeof params !== "object" || params === null) {
+    return EMPTY_CHAIN;
+  }
+  return _agentChainField.get(params, EMPTY_CHAIN);
 }
 
 /**

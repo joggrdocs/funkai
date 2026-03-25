@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@ai-sdk/devtools": "^0.0.15",
+    "@funkai/utils": "workspace:*",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",
