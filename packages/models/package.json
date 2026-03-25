@@ -1,6 +1,6 @@
 {
   "name": "@funkai/models",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": false,
   "description": "Model catalog, provider resolution, and cost calculations for the funkai AI SDK",
   "keywords": [
