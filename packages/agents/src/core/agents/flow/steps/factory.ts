@@ -43,10 +43,12 @@ export interface StepBuilderOptions {
    * These fire after the step's own hooks, giving the flow agent
    * visibility into every `$` call.
    */
-  parentHooks?: {
-    onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
-    onStepFinish?: ((event: StepFinishEvent) => void | Promise<void>) | undefined;
-  } | undefined;
+  parentHooks?:
+    | {
+        onStepStart?: ((event: { step: StepInfo }) => void | Promise<void>) | undefined;
+        onStepFinish?: ((event: StepFinishEvent) => void | Promise<void>) | undefined;
+      }
+    | undefined;
 
   /**
    * Stream writer for emitting typed `StreamPart` events.
@@ -127,7 +129,9 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
     execute: (args: { $: StepBuilder }) => Promise<T>;
     input?: unknown | undefined;
     onStart?: ((event: { id: string }) => void | Promise<void>) | undefined;
-    onFinish?: ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>) | undefined;
+    onFinish?:
+      | ((event: { id: string; result: unknown; duration: number }) => void | Promise<void>)
+      | undefined;
     onError?: ((event: { id: string; error: Error }) => void | Promise<void>) | undefined;
   }): Promise<StepResult<T>> {
     const { id, type, execute, input, onStart, onFinish, onError } = params;
