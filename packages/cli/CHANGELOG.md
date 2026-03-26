@@ -1,5 +1,19 @@
 # @funkai/cli
 
+## 0.4.0
+
+### Minor Changes
+
+- 6f74088: Support co-located partials via underscore naming convention
+
+  Files matching `_*.prompt` in `--includes` directories are now treated as co-located partials:
+
+  - Skipped during prompt discovery (no TypeScript module generated)
+  - Include base directories are added to the LiquidJS partial search path
+  - Resolvable via path-relative render tags (e.g. `{% render 'instructions/_core' %}`)
+
+  This enables co-locating partial fragments alongside full prompts without a separate `--partials` directory. Same-named partials in different directories are disambiguated by path.
+
 ## 0.3.1
 
 ### Patch Changes
