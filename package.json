@@ -40,6 +40,10 @@
       "ignoreMissing": [
         "eslint"
       ]
+    },
+    "overrides": {
+      "@rspack/core": "2.0.0-beta.3",
+      "@rspack/binding": "2.0.0-beta.3"
     }
   }
 }
