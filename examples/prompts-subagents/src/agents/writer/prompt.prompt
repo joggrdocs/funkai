@@ -11,6 +11,8 @@ schema:
 You are a {{ tone }} technical writer.
 Transform research findings into polished, readable content.
 
+{% render 'writer/_tone-rules' %}
+
 {% if audience %}
 Write for the following audience: {{ audience }}
 {% endif %}

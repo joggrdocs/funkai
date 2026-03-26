@@ -127,6 +127,11 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
       const fullPath = join(dir, entry.name);
 
       if (entry.isFile() && extname(entry.name) === PROMPT_EXT) {
+        // Skip underscore-prefixed files — they are co-located partials
+        if (entry.name.startsWith("_")) {
+          return [];
+        }
+
         // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading prompt file content for name extraction
         const content = readFileSync(fullPath, "utf8");
         const name = extractName(content) ?? deriveNameFromPath(fullPath);
@@ -147,6 +152,29 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
 
       return [];
     });
+}
+
+/**
+ * Extract base directories from include patterns for co-located partial resolution.
+ *
+ * Returns the static directory prefixes derived from include glob patterns.
+ * These are added to the LiquidJS partial search path so `_*.prompt` files
+ * resolve via path-relative render tags (e.g. `{% render 'instructions/_core' %}`).
+ *
+ * @param options - Include patterns (same as prompt discovery).
+ * @returns Deduplicated list of resolved base directories.
+ *
+ * @example
+ * ```ts
+ * const baseDirs = resolveIncludeBaseDirs({
+ *   includes: ["src/agents/**", "src/skills/**"],
+ * });
+ * // => ["/abs/path/src/agents", "/abs/path/src/skills"]
+ * ```
+ */
+export function resolveIncludeBaseDirs(options: DiscoverPromptsOptions): readonly string[] {
+  const { includes } = options;
+  return [...new Set(includes.map((pattern) => resolve(extractBaseDir(pattern))))];
 }
 
 /**
