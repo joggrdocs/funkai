@@ -26,10 +26,7 @@ describe("co-located partials", () => {
   describe(discoverPrompts, () => {
     it("skips underscore-prefixed .prompt files", () => {
       writePrompt("_core.prompt", "This is a partial with no frontmatter");
-      writePrompt(
-        "main.prompt",
-        "---\nname: main\n---\n{% render '_core' %}",
-      );
+      writePrompt("main.prompt", "---\nname: main\n---\n{% render '_core' %}");
 
       const discovered = discoverPrompts({ includes: [`${TMP_DIR_REL}/**`] });
 
@@ -39,22 +36,13 @@ describe("co-located partials", () => {
 
     it("skips underscore-prefixed files in subdirectories", () => {
       writePrompt("instructions/_core.prompt", "Partial content");
-      writePrompt(
-        "instructions/claude.prompt",
-        "---\nname: claude\n---\nContent",
-      );
-      writePrompt(
-        "instructions/cursor.prompt",
-        "---\nname: cursor\n---\nContent",
-      );
+      writePrompt("instructions/claude.prompt", "---\nname: claude\n---\nContent");
+      writePrompt("instructions/cursor.prompt", "---\nname: cursor\n---\nContent");
 
       const discovered = discoverPrompts({ includes: [`${TMP_DIR_REL}/**`] });
 
       expect(discovered).toHaveLength(2);
-      expect(discovered.map((d) => d.name).toSorted()).toEqual([
-        "claude",
-        "cursor",
-      ]);
+      expect(discovered.map((d) => d.name).toSorted()).toEqual(["claude", "cursor"]);
     });
   });
 

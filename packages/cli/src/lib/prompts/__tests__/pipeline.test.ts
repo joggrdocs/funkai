@@ -17,10 +17,7 @@ function writePrompt(relPath: string, content: string): void {
   writeFileSync(fullPath, content, "utf8");
 }
 
-function findPrompt(
-  prompts: readonly ParsedPrompt[],
-  name: string,
-): ParsedPrompt | undefined {
+function findPrompt(prompts: readonly ParsedPrompt[], name: string): ParsedPrompt | undefined {
   return prompts.find((p) => p.name === name);
 }
 
@@ -63,7 +60,8 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.discovered).toBe(1);
-    expect(result.prompts[0]?.name).toBe("main");
+    const [prompt] = result.prompts;
+    expect(prompt?.name).toBe("main");
   });
 
   it("inlines a base-level co-located partial via {% render %}", () => {
@@ -79,7 +77,7 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    const researcher = result.prompts[0];
+    const [researcher] = result.prompts;
     expect(researcher?.template).toContain("You research {{ domain }}.");
     expect(researcher?.template).toContain("Be concise and factual.");
     expect(researcher?.template).not.toContain("{% render");
@@ -98,7 +96,7 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    const writer = result.prompts[0];
+    const [writer] = result.prompts;
     expect(writer?.template).toContain("Write well.");
     expect(writer?.template).toContain("Use active voice.");
     expect(writer?.template).not.toContain("{% render");
@@ -117,7 +115,7 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    const agent = result.prompts[0];
+    const [agent] = result.prompts;
     expect(agent?.template).toContain("<identity>");
     expect(agent?.template).toContain("You are Bot, helper.");
     expect(agent?.template).toContain("Follow the rules.");
@@ -165,7 +163,7 @@ describe("co-located partials — generate pipeline", () => {
       out: OUT_DIR,
     });
 
-    const agent = result.prompts[0];
+    const [agent] = result.prompts;
     expect(agent?.template).toContain("# System Prompt");
     expect(agent?.template).toContain("{{ name }}");
     expect(agent?.schema).toHaveLength(1);
@@ -184,7 +182,7 @@ describe("co-located partials — generate pipeline", () => {
       out: OUT_DIR,
     });
 
-    const agent = result.prompts[0];
+    const [agent] = result.prompts;
     expect(agent?.template).toContain("{% if context %}");
     expect(agent?.template).toContain("{% endif %}");
     expect(agent?.template).toContain("End of prompt.");
@@ -203,13 +201,17 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    expect(result.prompts[0]?.group).toBe("core");
-    expect(result.prompts[0]?.template).toContain("Shared content.");
+    const [prompt] = result.prompts;
+    expect(prompt?.group).toBe("core");
+    expect(prompt?.template).toContain("Shared content.");
   });
 
   it("works with config-defined groups alongside co-located partials", () => {
     writePrompt("agents/_shared.prompt", "Shared agent content.");
-    writePrompt("agents/bot.prompt", "---\nname: bot\n---\nBot prompt.\n\n{% render 'agents/_shared' %}");
+    writePrompt(
+      "agents/bot.prompt",
+      "---\nname: bot\n---\nBot prompt.\n\n{% render 'agents/_shared' %}",
+    );
 
     const result = runGeneratePipeline({
       includes: [`${TMP_DIR_REL}/**`],
@@ -223,15 +225,13 @@ describe("co-located partials — generate pipeline", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    expect(result.prompts[0]?.group).toBe("agents");
-    expect(result.prompts[0]?.template).toContain("Shared agent content.");
+    const [prompt] = result.prompts;
+    expect(prompt?.group).toBe("agents");
+    expect(prompt?.template).toContain("Shared agent content.");
   });
 
   it("throws when a co-located partial references a nonexistent partial", () => {
-    writePrompt(
-      "agent.prompt",
-      "---\nname: agent\n---\n{% render '_does-not-exist' %}",
-    );
+    writePrompt("agent.prompt", "---\nname: agent\n---\n{% render '_does-not-exist' %}");
 
     expect(() =>
       runGeneratePipeline({
@@ -285,7 +285,8 @@ describe("co-located partials — lint pipeline", () => {
     });
 
     expect(hasLintErrors(result.results)).toBe(true);
-    const diag = result.results[0]?.diagnostics[0];
+    const [first] = result.results;
+    const diag = first?.diagnostics[0];
     expect(diag?.level).toBe("error");
     expect(diag?.message).toContain("undeclared_var");
   });
@@ -323,17 +324,15 @@ describe("co-located partials — edge cases", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    expect(result.prompts[0]?.template).toContain("HEADER");
-    expect(result.prompts[0]?.template).toContain("FOOTER");
-    expect(result.prompts[0]?.template).toContain("Body.");
+    const [prompt] = result.prompts;
+    expect(prompt?.template).toContain("HEADER");
+    expect(prompt?.template).toContain("FOOTER");
+    expect(prompt?.template).toContain("Body.");
   });
 
   it("handles deeply nested partial path", () => {
     writePrompt("a/b/c/_deep.prompt", "Deep partial content.");
-    writePrompt(
-      "agent.prompt",
-      "---\nname: agent\n---\n{% render 'a/b/c/_deep' %}",
-    );
+    writePrompt("agent.prompt", "---\nname: agent\n---\n{% render 'a/b/c/_deep' %}");
 
     const result = runGeneratePipeline({
       includes: [`${TMP_DIR_REL}/**`],
@@ -341,7 +340,8 @@ describe("co-located partials — edge cases", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    expect(result.prompts[0]?.template).toContain("Deep partial content.");
+    const [prompt] = result.prompts;
+    expect(prompt?.template).toContain("Deep partial content.");
   });
 
   it("a prompt rendering an SDK partial and two co-located partials", () => {
@@ -367,7 +367,7 @@ describe("co-located partials — edge cases", () => {
     });
 
     expect(result.prompts).toHaveLength(1);
-    const agent = result.prompts[0];
+    const [agent] = result.prompts;
     expect(agent?.template).toContain("<identity>");
     expect(agent?.template).toContain("You are Agent, worker.");
     expect(agent?.template).toContain("Rule set A.");
@@ -377,8 +377,14 @@ describe("co-located partials — edge cases", () => {
 
   it("co-located partial with non-underscore prompt in same dir both work", () => {
     writePrompt("agents/_shared.prompt", "Shared.");
-    writePrompt("agents/alpha.prompt", "---\nname: alpha\n---\nAlpha.\n\n{% render 'agents/_shared' %}");
-    writePrompt("agents/beta.prompt", "---\nname: beta\n---\nBeta.\n\n{% render 'agents/_shared' %}");
+    writePrompt(
+      "agents/alpha.prompt",
+      "---\nname: alpha\n---\nAlpha.\n\n{% render 'agents/_shared' %}",
+    );
+    writePrompt(
+      "agents/beta.prompt",
+      "---\nname: beta\n---\nBeta.\n\n{% render 'agents/_shared' %}",
+    );
 
     const result = runGeneratePipeline({
       includes: [`${TMP_DIR_REL}/**`],
