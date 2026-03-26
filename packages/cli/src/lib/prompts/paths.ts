@@ -163,6 +163,14 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
  *
  * @param options - Include patterns (same as prompt discovery).
  * @returns Deduplicated list of resolved base directories.
+ *
+ * @example
+ * ```ts
+ * const baseDirs = resolveIncludeBaseDirs({
+ *   includes: ["src/agents/**", "src/skills/**"],
+ * });
+ * // => ["/abs/path/src/agents", "/abs/path/src/skills"]
+ * ```
  */
 export function resolveIncludeBaseDirs(options: DiscoverPromptsOptions): readonly string[] {
   const { includes } = options;
