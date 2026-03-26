@@ -155,62 +155,18 @@ function scanDirectory(dir: string, depth: number): DiscoveredPrompt[] {
 }
 
 /**
- * Recursively scan a directory for `_*.prompt` files, returning their parent directories.
+ * Extract base directories from include patterns for co-located partial resolution.
  *
- * @private
- */
-function scanForPartialDirs(dir: string, depth: number): string[] {
-  if (depth > MAX_DEPTH) {
-    return [];
-  }
-  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: directory traversal for partial discovery
-  if (!existsSync(dir)) {
-    return [];
-  }
-
-  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: stat check on traversed directory
-  const stat = lstatSync(dir);
-  if (!stat.isDirectory() || stat.isSymbolicLink()) {
-    return [];
-  }
-
-  // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading entries from traversed directory
-  const entries = readdirSync(dir, { withFileTypes: true });
-
-  const hasPartial = entries.some(
-    (entry) =>
-      entry.isFile() &&
-      !entry.isSymbolicLink() &&
-      extname(entry.name) === PROMPT_EXT &&
-      entry.name.startsWith("_"),
-  );
-
-  const childDirs = entries
-    .filter((entry) => entry.isDirectory() && !entry.isSymbolicLink())
-    .flatMap((entry) => scanForPartialDirs(join(dir, entry.name), depth + 1));
-
-  if (hasPartial) {
-    return [dir, ...childDirs];
-  }
-  return childDirs;
-}
-
-/**
- * Discover directories containing co-located partial files (`_*.prompt`).
- *
- * Scans the same base directories derived from the include patterns,
- * returning unique directories that contain underscore-prefixed `.prompt` files.
- * These directories are added to the LiquidJS partial search path so
- * `{% render '_name' %}` resolves co-located partials.
+ * Returns the static directory prefixes derived from include glob patterns.
+ * These are added to the LiquidJS partial search path so `_*.prompt` files
+ * resolve via path-relative render tags (e.g. `{% render 'instructions/_core' %}`).
  *
  * @param options - Include patterns (same as prompt discovery).
- * @returns Sorted list of unique directories containing co-located partials.
+ * @returns Deduplicated list of resolved base directories.
  */
-export function discoverPartialDirs(options: DiscoverPromptsOptions): readonly string[] {
+export function resolveIncludeBaseDirs(options: DiscoverPromptsOptions): readonly string[] {
   const { includes } = options;
-  const baseDirs = [...new Set(includes.map((pattern) => resolve(extractBaseDir(pattern))))];
-  const dirs = baseDirs.flatMap((dir) => scanForPartialDirs(dir, 0));
-  return [...new Set(dirs)].toSorted();
+  return [...new Set(includes.map((pattern) => resolve(extractBaseDir(pattern))))];
 }
 
 /**

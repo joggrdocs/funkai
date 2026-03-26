@@ -3,7 +3,7 @@ import { join, relative, resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { discoverPartialDirs, discoverPrompts } from "@/lib/prompts/paths.js";
+import { discoverPrompts, resolveIncludeBaseDirs } from "@/lib/prompts/paths.js";
 
 const TMP_DIR = resolve(import.meta.dirname, "__tmp_paths_test__");
 const TMP_DIR_REL = relative(process.cwd(), TMP_DIR).replaceAll("\\", "/");
@@ -58,49 +58,36 @@ describe("co-located partials", () => {
     });
   });
 
-  describe(discoverPartialDirs, () => {
-    it("returns directories containing underscore-prefixed .prompt files", () => {
-      writePrompt("instructions/_core.prompt", "Partial content");
-      writePrompt(
-        "instructions/claude.prompt",
-        "---\nname: claude\n---\nContent",
-      );
-
-      const dirs = discoverPartialDirs({ includes: [`${TMP_DIR_REL}/**`] });
+  describe(resolveIncludeBaseDirs, () => {
+    it("extracts base directories from include patterns", () => {
+      const dirs = resolveIncludeBaseDirs({
+        includes: [`${TMP_DIR_REL}/**`],
+      });
 
       expect(dirs).toHaveLength(1);
-      expect(dirs[0]).toBe(join(TMP_DIR, "instructions"));
+      expect(dirs[0]).toBe(TMP_DIR);
     });
 
-    it("returns multiple directories when partials are co-located in different dirs", () => {
-      writePrompt("instructions/_core.prompt", "Partial");
-      writePrompt("skills/_core.prompt", "Partial");
+    it("deduplicates base directories from multiple patterns", () => {
+      const dirs = resolveIncludeBaseDirs({
+        includes: [`${TMP_DIR_REL}/**/*.prompt`, `${TMP_DIR_REL}/**`],
+      });
 
-      const dirs = discoverPartialDirs({ includes: [`${TMP_DIR_REL}/**`] });
+      expect(dirs).toHaveLength(1);
+      expect(dirs[0]).toBe(TMP_DIR);
+    });
+
+    it("returns multiple base dirs for different pattern roots", () => {
+      const otherDir = resolve(import.meta.dirname, "__tmp_paths_other__");
+      const otherRel = relative(process.cwd(), otherDir).replaceAll("\\", "/");
+
+      const dirs = resolveIncludeBaseDirs({
+        includes: [`${TMP_DIR_REL}/**`, `${otherRel}/**`],
+      });
 
       expect(dirs).toHaveLength(2);
-      expect(dirs).toContain(join(TMP_DIR, "instructions"));
-      expect(dirs).toContain(join(TMP_DIR, "skills"));
-    });
-
-    it("returns empty array when no underscore-prefixed files exist", () => {
-      writePrompt(
-        "main.prompt",
-        "---\nname: main\n---\nContent",
-      );
-
-      const dirs = discoverPartialDirs({ includes: [`${TMP_DIR_REL}/**`] });
-
-      expect(dirs).toHaveLength(0);
-    });
-
-    it("deduplicates directories", () => {
-      writePrompt("instructions/_core.prompt", "Partial 1");
-      writePrompt("instructions/_utils.prompt", "Partial 2");
-
-      const dirs = discoverPartialDirs({ includes: [`${TMP_DIR_REL}/**`] });
-
-      expect(dirs).toHaveLength(1);
+      expect(dirs).toContain(TMP_DIR);
+      expect(dirs).toContain(otherDir);
     });
   });
 });
