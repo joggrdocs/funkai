@@ -14,7 +14,7 @@ import { parseFrontmatter } from "./frontmatter.js";
 import type { SchemaVariable } from "./frontmatter.js";
 import { lintPrompt } from "./lint.js";
 import type { LintResult } from "./lint.js";
-import { discoverPrompts } from "./paths.js";
+import { discoverPartialDirs, discoverPrompts } from "./paths.js";
 
 /**
  * Validate that no two prompts share the same group+name combination.
@@ -69,16 +69,25 @@ function resolveGroupFromConfig(
 /**
  * Resolve the list of partial directories to search.
  *
+ * Order: custom partials dir → co-located partial dirs → SDK built-in partials.
+ *
  * @private
  * @param customDir - Custom partials directory path.
+ * @param colocatedDirs - Directories containing co-located `_*.prompt` partials.
  * @returns Array of directories to search for partials.
  */
 // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: checking custom partials directory from CLI config
-function resolvePartialsDirs(customDir: string): readonly string[] {
+function resolvePartialsDirs(
+  customDir: string,
+  colocatedDirs: readonly string[],
+): readonly string[] {
+  const dirs: string[] = [];
   if (existsSync(customDir)) {
-    return [customDir, PARTIALS_DIR];
+    dirs.push(customDir);
   }
-  return [PARTIALS_DIR];
+  dirs.push(...colocatedDirs);
+  dirs.push(PARTIALS_DIR);
+  return dirs;
 }
 
 /**
@@ -113,8 +122,9 @@ export function runLintPipeline(options: LintPipelineOptions): LintPipelineResul
     discoverLintOptions.excludes = [...options.excludes];
   }
   const discovered = discoverPrompts(discoverLintOptions);
+  const colocatedDirs = discoverPartialDirs(discoverLintOptions);
   const customPartialsDir = resolve(options.partials ?? ".prompts/partials");
-  const partialsDirs = resolvePartialsDirs(customPartialsDir);
+  const partialsDirs = resolvePartialsDirs(customPartialsDir, colocatedDirs);
 
   const results = discovered.map((d) => {
     // oxlint-disable-next-line security/detect-non-literal-fs-filename -- safe: reading discovered prompt file
@@ -170,8 +180,9 @@ export function runGeneratePipeline(options: GeneratePipelineOptions): GenerateP
     discoverGenerateOptions.excludes = [...options.excludes];
   }
   const discovered = discoverPrompts(discoverGenerateOptions);
+  const colocatedDirs = discoverPartialDirs(discoverGenerateOptions);
   const customPartialsDir = resolve(options.partials ?? resolve(options.out, "../partials"));
-  const partialsDirs = resolvePartialsDirs(customPartialsDir);
+  const partialsDirs = resolvePartialsDirs(customPartialsDir, colocatedDirs);
   const configGroups = options.groups ?? [];
 
   const processed = discovered.map((d) => {
