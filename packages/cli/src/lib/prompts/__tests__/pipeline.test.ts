@@ -3,6 +3,7 @@ import { join, relative, resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import type { ParsedPrompt } from "@/lib/prompts/codegen.js";
 import { hasLintErrors } from "@/lib/prompts/lint.js";
 import { runGeneratePipeline, runLintPipeline } from "@/lib/prompts/pipeline.js";
 
@@ -17,9 +18,9 @@ function writePrompt(relPath: string, content: string): void {
 }
 
 function findPrompt(
-  prompts: readonly { readonly name: string }[],
+  prompts: readonly ParsedPrompt[],
   name: string,
-): (typeof prompts)[number] | undefined {
+): ParsedPrompt | undefined {
   return prompts.find((p) => p.name === name);
 }
 
