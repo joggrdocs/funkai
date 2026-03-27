@@ -121,14 +121,12 @@ export interface StepStartEvent {
  * through unchanged, plus funkai-specific additions (`stepId`,
  * `stepOperation`, `agentChain`).
  *
- * For **flow orchestration steps**, the AI SDK fields are populated
- * from the last agent step (for `$.agent()` steps) or absent (for
- * non-agent steps like `$.step()`, `$.map()`, etc.). Flow-specific
- * fields (`output`, `duration`) are always present.
- *
- * Fields not relevant to the step type are `undefined`.
+ * For **flow orchestration steps**, the AI SDK fields are stubbed with
+ * sensible defaults (empty arrays, zero usage, etc.) and overridden
+ * with the last agent step's values when available (e.g. `$.agent()`).
+ * Flow-specific fields (`output`, `duration`) are always present.
  */
-export type StepFinishEvent = Partial<AIStepResult> & {
+export type StepFinishEvent = AIStepResult & {
   /**
    * Step ID — always present.
    *
@@ -144,40 +142,6 @@ export type StepFinishEvent = Partial<AIStepResult> & {
    * e.g. `"agent"`, `"step"`, `"map"`, `"each"`, `"reduce"`, etc.
    */
   readonly stepOperation: OperationType;
-
-  /**
-   * The tool calls made during this step.
-   *
-   * Populated from the AI SDK's `StepResult.toolCalls` on agent
-   * tool-loop steps. Empty array on flow orchestration steps.
-   *
-   * @example
-   * ```typescript
-   * onStepFinish(event) {
-   *   for (const call of event.toolCalls) {
-   *     console.log(call.toolName, call.args);
-   *   }
-   * }
-   * ```
-   */
-  readonly toolCalls: AIStepResult["toolCalls"];
-
-  /**
-   * The results of tool calls made during this step.
-   *
-   * Populated from the AI SDK's `StepResult.toolResults` on agent
-   * tool-loop steps. Empty array on flow orchestration steps.
-   *
-   * @example
-   * ```typescript
-   * onStepFinish(event) {
-   *   for (const result of event.toolResults) {
-   *     console.log(result.toolName, result.result);
-   *   }
-   * }
-   * ```
-   */
-  readonly toolResults: AIStepResult["toolResults"];
 
   /**
    * Flow step output value.
@@ -207,6 +171,52 @@ export type StepFinishEvent = Partial<AIStepResult> & {
 };
 
 /**
+ * Default AI SDK step result values for flow orchestration steps.
+ *
+ * Used to populate required `AIStepResult` fields when no real
+ * AI SDK step is available (e.g. `$.step()`, `$.map()`, `$.each()`).
+ */
+const EMPTY_AI_STEP: AIStepResult = {
+  stepNumber: 0,
+  model: { provider: "", modelId: "" },
+  functionId: undefined,
+  metadata: undefined,
+  experimental_context: undefined,
+  content: [],
+  text: "",
+  reasoning: [],
+  reasoningText: undefined,
+  files: [],
+  sources: [],
+  toolCalls: [],
+  staticToolCalls: [],
+  dynamicToolCalls: [],
+  toolResults: [],
+  staticToolResults: [],
+  dynamicToolResults: [],
+  finishReason: "stop",
+  rawFinishReason: undefined,
+  usage: {
+    inputTokens: undefined,
+    inputTokenDetails: {
+      noCacheTokens: undefined,
+      cacheReadTokens: undefined,
+      cacheWriteTokens: undefined,
+    },
+    outputTokens: undefined,
+    outputTokenDetails: {
+      textTokens: undefined,
+      reasoningTokens: undefined,
+    },
+    totalTokens: undefined,
+  },
+  warnings: undefined,
+  request: {},
+  response: { id: "", timestamp: new Date(0), modelId: "", messages: [] },
+  providerMetadata: undefined,
+};
+
+/**
  * Build a `StepFinishEvent` from an AI SDK step result.
  *
  * Used by the agent tool-loop — spreads the full `StepResult` and
@@ -216,7 +226,7 @@ export type StepFinishEvent = Partial<AIStepResult> & {
  * @param extras - funkai-specific fields (`stepId`, `stepOperation`, `agentChain`).
  * @returns A fully populated `StepFinishEvent`.
  */
-export function stepFinishEventFromAIStep(
+export function createAgentStepFinishEvent(
   step: AIStepResult,
   extras: Pick<StepFinishEvent, "stepId" | "stepOperation" | "agentChain">,
 ): StepFinishEvent {
@@ -229,13 +239,14 @@ export function stepFinishEventFromAIStep(
 /**
  * Build a `StepFinishEvent` for a flow orchestration step.
  *
- * Stubs `toolCalls` and `toolResults` as empty arrays since flow
- * steps don't interact with the AI SDK tool loop.
+ * Stubs all AI SDK fields with sensible defaults, then overlays
+ * any real AI SDK values from `extras` (e.g. from the last agent step).
  *
- * @param fields - Flow-specific fields and optional AI SDK overrides from `extras`.
- * @returns A `StepFinishEvent` with empty tool arrays.
+ * @param fields - Flow-specific fields (`stepId`, `stepOperation`, `agentChain`, `output`, `duration`).
+ * @param extras - Optional AI SDK step result fields to overlay on the defaults.
+ * @returns A `StepFinishEvent` with all AI SDK fields populated.
  */
-export function stepFinishEventFromFlow(
+export function createFlowStepFinishEvent(
   fields: Pick<StepFinishEvent, "stepId" | "stepOperation" | "agentChain"> & {
     readonly output?: unknown;
     readonly duration?: number;
@@ -243,8 +254,7 @@ export function stepFinishEventFromFlow(
   extras?: Partial<AIStepResult>,
 ): StepFinishEvent {
   return {
-    toolCalls: [],
-    toolResults: [],
+    ...EMPTY_AI_STEP,
     ...fields,
     ...extras,
   };

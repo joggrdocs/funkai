@@ -36,7 +36,7 @@ import type {
   StepStartEvent,
   StreamPart,
 } from "@/core/types.js";
-import { stepFinishEventFromAIStep } from "@/core/types.js";
+import { createAgentStepFinishEvent } from "@/core/types.js";
 import { fireHooks, wrapHook } from "@/lib/hooks.js";
 import { withModelMiddleware } from "@/lib/middleware.js";
 import { AGENT_CONFIG, RUNNABLE_META } from "@/lib/runnable.js";
@@ -267,7 +267,7 @@ export function agent<
     const stepCounter = { value: 0 };
     const onStepFinish = async (step: AIStepResult) => {
       const stepId = `${config.name}:${stepCounter.value++}`;
-      const event = stepFinishEventFromAIStep(step, {
+      const event = createAgentStepFinishEvent(step, {
         stepId,
         stepOperation: "agent",
         agentChain: currentChain,

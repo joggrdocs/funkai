@@ -2,7 +2,7 @@ import type { StepResult, ToolSet } from "ai";
 import { assertType, describe, expectTypeOf, it } from "vitest";
 
 import type { AIStepResult, StepFinishEvent } from "@/core/types.js";
-import { stepFinishEventFromAIStep, stepFinishEventFromFlow } from "@/core/types.js";
+import { createAgentStepFinishEvent, createFlowStepFinishEvent } from "@/core/types.js";
 
 describe("StepFinishEvent", () => {
   it("has required toolCalls matching AIStepResult", () => {
@@ -27,26 +27,30 @@ describe("StepFinishEvent", () => {
     expectTypeOf<StepFinishEvent["stepId"]>().toBeString();
     expectTypeOf<StepFinishEvent["stepOperation"]>().toBeString();
   });
+
+  it("extends AIStepResult", () => {
+    expectTypeOf<StepFinishEvent>().toMatchTypeOf<AIStepResult>();
+  });
 });
 
-describe("stepFinishEventFromAIStep", () => {
+describe("createAgentStepFinishEvent", () => {
   it("returns StepFinishEvent", () => {
-    expectTypeOf(stepFinishEventFromAIStep).returns.toExtend<StepFinishEvent>();
+    expectTypeOf(createAgentStepFinishEvent).returns.toExtend<StepFinishEvent>();
   });
 
   it("result has non-optional toolCalls", () => {
-    const event = {} as ReturnType<typeof stepFinishEventFromAIStep>;
+    const event = {} as ReturnType<typeof createAgentStepFinishEvent>;
     assertType<AIStepResult["toolCalls"]>(event.toolCalls);
   });
 });
 
-describe("stepFinishEventFromFlow", () => {
+describe("createFlowStepFinishEvent", () => {
   it("returns StepFinishEvent", () => {
-    expectTypeOf(stepFinishEventFromFlow).returns.toExtend<StepFinishEvent>();
+    expectTypeOf(createFlowStepFinishEvent).returns.toExtend<StepFinishEvent>();
   });
 
   it("result has non-optional toolCalls", () => {
-    const event = {} as ReturnType<typeof stepFinishEventFromFlow>;
+    const event = {} as ReturnType<typeof createFlowStepFinishEvent>;
     assertType<AIStepResult["toolCalls"]>(event.toolCalls);
   });
 });
