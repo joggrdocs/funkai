@@ -8,6 +8,7 @@ import { isNil, isNotNil, pickBy } from "es-toolkit";
 
 import { resolveOutput } from "@/core/agents/base/output.js";
 import type { OutputParam, OutputSpec } from "@/core/agents/base/output.js";
+import { resolveTelemetry } from "@/core/agents/base/telemetry.js";
 import {
   buildAITools,
   extractAgentChain,
@@ -235,11 +236,19 @@ export function agent<
     // Would receive the wrong event shape at runtime. Sub-agent activity
     // Is still observable via onStepFinish at the parent's tool-loop level.
     // See packages/agents/docs/core/hooks.md for the full lifecycle.
+    const resolvedTelemetry = resolveTelemetry({
+      config: config.telemetry,
+      override: params.telemetry,
+      agentName: config.name,
+      agentChain: currentChain,
+    });
+
     const parentCtx: ParentAgentContext = {
       log,
       onStepStart: buildMergedHook(log, config.onStepStart, params.onStepStart),
       onStepFinish: buildMergedHook(log, config.onStepFinish, params.onStepFinish),
       agentChain: currentChain,
+      telemetry: resolvedTelemetry,
     };
 
     const aiTools = buildAITools(
@@ -309,6 +318,7 @@ export function agent<
         experimental_download: params.experimental_download ?? config.experimental_download,
         experimental_onToolCallStart: params.onToolCallStart ?? config.onToolCallStart,
         experimental_onToolCallFinish: params.onToolCallFinish ?? config.onToolCallFinish,
+        experimental_telemetry: resolvedTelemetry,
       },
       isNotNil,
     );

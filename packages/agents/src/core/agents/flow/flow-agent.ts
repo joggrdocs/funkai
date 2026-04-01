@@ -357,6 +357,7 @@ export function flowAgent<TInput, TOutput = any>(
       },
       writer,
       agentChain: currentChain,
+      telemetry: config.telemetry,
     });
 
     const $ = augmentStepBuilder(base$, ctx, _internal);
