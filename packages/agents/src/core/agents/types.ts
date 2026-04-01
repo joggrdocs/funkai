@@ -28,8 +28,8 @@ import type { Tool } from "@/core/tool.js";
 import type { Model, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
 
+export type { TelemetrySettings };
 export type { StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
-export type { TelemetrySettings } from "ai";
 
 /**
  * A value that can be static or dynamically resolved from the agent's input.

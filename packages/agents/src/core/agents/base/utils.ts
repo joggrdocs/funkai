@@ -1,7 +1,6 @@
 import { privateField } from "@funkai/utils";
 import { tool } from "ai";
-import type { ModelMessage } from "ai";
-import type { TelemetrySettings } from "ai";
+import type { ModelMessage, TelemetrySettings } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
 import { match } from "ts-pattern";
 import type { ZodType } from "zod";
