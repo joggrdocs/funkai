@@ -190,7 +190,7 @@ Every LLM call span includes these attributes automatically:
 
 Telemetry settings merge across layers with later layers taking precedence:
 
-```
+```text
 FlowEngine.telemetry          (lowest priority)
   -> FlowAgentConfig.telemetry
     -> AgentConfig.telemetry
