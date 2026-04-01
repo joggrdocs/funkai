@@ -9,15 +9,15 @@ funkai is **backend-agnostic**. You configure an OTel exporter once, enable tele
 Set `telemetry: { isEnabled: true }` on any agent to start emitting spans:
 
 ```ts
-import { agent } from '@funkai/agents'
-import { openai } from '@ai-sdk/openai'
+import { agent } from "@funkai/agents";
+import { openai } from "@ai-sdk/openai";
 
 const summarizer = agent({
-  name: 'summarizer',
-  model: openai('gpt-4.1'),
-  system: 'You summarize text concisely.',
+  name: "summarizer",
+  model: openai("gpt-4.1"),
+  system: "You summarize text concisely.",
   telemetry: { isEnabled: true },
-})
+});
 ```
 
 When telemetry is enabled, funkai auto-enriches each span with:
@@ -37,19 +37,19 @@ Set default metadata for all calls from an agent:
 
 ```ts
 const myAgent = agent({
-  name: 'my-agent',
-  model: openai('gpt-4.1'),
+  name: "my-agent",
+  model: openai("gpt-4.1"),
   telemetry: {
     isEnabled: true,
-    functionId: 'custom-name',       // override auto-set name
-    recordInputs: true,              // default: true
-    recordOutputs: true,             // default: true
+    functionId: "custom-name", // override auto-set name
+    recordInputs: true, // default: true
+    recordOutputs: true, // default: true
     metadata: {
-      env: 'production',
-      team: 'platform',
+      env: "production",
+      team: "platform",
     },
   },
-})
+});
 ```
 
 ### Per-Call Metadata
@@ -58,11 +58,11 @@ Override or extend metadata for a single call:
 
 ```ts
 await myAgent.generate({
-  prompt: 'Summarize this document.',
+  prompt: "Summarize this document.",
   telemetry: {
-    metadata: { userId: 'u-456' },   // merged with config metadata
+    metadata: { userId: "u-456" }, // merged with config metadata
   },
-})
+});
 ```
 
 Per-call scalar fields (`functionId`, `recordInputs`, etc.) override config. Metadata is **shallow-merged** — both config and per-call values are preserved.
@@ -84,18 +84,18 @@ telemetry: {
 You can provide a custom OTel `Tracer` instance to control which `TracerProvider` is used:
 
 ```ts
-import { trace } from '@opentelemetry/api'
+import { trace } from "@opentelemetry/api";
 
-const tracer = trace.getTracer('my-custom-tracer')
+const tracer = trace.getTracer("my-custom-tracer");
 
 const myAgent = agent({
-  name: 'my-agent',
-  model: openai('gpt-4.1'),
+  name: "my-agent",
+  model: openai("gpt-4.1"),
   telemetry: {
     isEnabled: true,
     tracer,
   },
-})
+});
 ```
 
 This is useful when you have multiple `TracerProvider` instances and want to route agent spans to a specific one.
@@ -105,24 +105,24 @@ This is useful when you have multiple `TracerProvider` instances and want to rou
 When agents delegate to sub-agents, the full chain is captured automatically:
 
 ```ts
-const researcher = agent({ name: 'researcher', model, telemetry: { isEnabled: true } })
-const writer = agent({ name: 'writer', model, telemetry: { isEnabled: true } })
+const researcher = agent({ name: "researcher", model, telemetry: { isEnabled: true } });
+const writer = agent({ name: "writer", model, telemetry: { isEnabled: true } });
 
 const orchestrator = agent({
-  name: 'orchestrator',
+  name: "orchestrator",
   model,
   agents: { researcher, writer },
   telemetry: { isEnabled: true },
-})
+});
 ```
 
 Each span includes `funkai.agentChain` in metadata:
 
-| Agent        | `funkai.agentChain`              |
-| ------------ | -------------------------------- |
-| orchestrator | `"orchestrator"`                 |
-| researcher   | `"orchestrator > researcher"`    |
-| writer       | `"orchestrator > writer"`        |
+| Agent        | `funkai.agentChain`           |
+| ------------ | ----------------------------- |
+| orchestrator | `"orchestrator"`              |
+| researcher   | `"orchestrator > researcher"` |
+| writer       | `"orchestrator > writer"`     |
 
 Parent telemetry settings propagate to sub-agents automatically — you only need to set `telemetry` on the root agent.
 
@@ -133,16 +133,19 @@ Parent telemetry settings propagate to sub-agents automatically — you only nee
 Telemetry set on a flow agent propagates to all `$.agent()` calls within the flow:
 
 ```ts
-import { flowAgent } from '@funkai/agents'
+import { flowAgent } from "@funkai/agents";
 
-const pipeline = flowAgent({
-  name: 'doc-pipeline',
-  input: DocInput,
-  output: DocOutput,
-  telemetry: { isEnabled: true },    // propagated to all $.agent() calls
-}, async ({ input, $ }) => {
-  await $.agent({ id: 'summarize', agent: summarizer, input: input.text })
-})
+const pipeline = flowAgent(
+  {
+    name: "doc-pipeline",
+    input: DocInput,
+    output: DocOutput,
+    telemetry: { isEnabled: true }, // propagated to all $.agent() calls
+  },
+  async ({ input, $ }) => {
+    await $.agent({ id: "summarize", agent: summarizer, input: input.text });
+  },
+);
 ```
 
 ### Flow Engine
@@ -150,11 +153,11 @@ const pipeline = flowAgent({
 Set telemetry defaults for all flows created by an engine:
 
 ```ts
-import { createFlowEngine } from '@funkai/agents'
+import { createFlowEngine } from "@funkai/agents";
 
 const engine = createFlowEngine({
-  telemetry: { isEnabled: true },    // default for all flows from this engine
-})
+  telemetry: { isEnabled: true }, // default for all flows from this engine
+});
 ```
 
 Engine-level telemetry is merged with flow-agent-level (flow wins for scalars, metadata shallow-merged).
@@ -165,23 +168,23 @@ Every LLM call span includes these attributes automatically:
 
 ### Span Attributes
 
-| Attribute                          | Description               |
-| ---------------------------------- | ------------------------- |
-| `gen_ai.system`                    | Provider name             |
-| `gen_ai.request.model`             | Requested model ID        |
-| `gen_ai.response.model`            | Actual model used         |
-| `gen_ai.usage.input_tokens`        | Prompt tokens used        |
-| `gen_ai.usage.output_tokens`       | Completion tokens used    |
-| `gen_ai.request.temperature`       | Temperature setting       |
-| `gen_ai.response.finish_reasons`   | Why generation stopped    |
-| `ai.telemetry.functionId`          | Agent name (auto-set)     |
-| `ai.telemetry.metadata.*`          | Your custom metadata      |
+| Attribute                        | Description            |
+| -------------------------------- | ---------------------- |
+| `gen_ai.system`                  | Provider name          |
+| `gen_ai.request.model`           | Requested model ID     |
+| `gen_ai.response.model`          | Actual model used      |
+| `gen_ai.usage.input_tokens`      | Prompt tokens used     |
+| `gen_ai.usage.output_tokens`     | Completion tokens used |
+| `gen_ai.request.temperature`     | Temperature setting    |
+| `gen_ai.response.finish_reasons` | Why generation stopped |
+| `ai.telemetry.functionId`        | Agent name (auto-set)  |
+| `ai.telemetry.metadata.*`        | Your custom metadata   |
 
 ### funkai-Specific Metadata
 
-| Key                    | Description                                              |
-| ---------------------- | -------------------------------------------------------- |
-| `funkai.agentChain`    | Serialized agent ancestry (e.g., `"pipeline > writer"`)  |
+| Key                 | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| `funkai.agentChain` | Serialized agent ancestry (e.g., `"pipeline > writer"`) |
 
 ## Precedence
 
@@ -209,19 +212,19 @@ npm install braintrust @opentelemetry/sdk-node
 ```
 
 ```ts
-import { NodeSDK } from '@opentelemetry/sdk-node'
-import { BraintrustSpanProcessor } from 'braintrust'
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { BraintrustSpanProcessor } from "braintrust";
 
 const sdk = new NodeSDK({
   spanProcessors: [
     new BraintrustSpanProcessor({
-      parent: 'project_name:my-project',
+      parent: "project_name:my-project",
       filterAISpans: true,
     }),
   ],
-})
+});
 
-sdk.start()
+sdk.start();
 
 // Your agents run after this -- spans flow to Braintrust automatically.
 // Call sdk.shutdown() on process exit to flush pending spans.
@@ -240,18 +243,18 @@ npm install @voltagent/vercel-ai-exporter @opentelemetry/sdk-node
 ```
 
 ```ts
-import { VoltAgentExporter } from '@voltagent/vercel-ai-exporter'
-import { NodeSDK } from '@opentelemetry/sdk-node'
+import { VoltAgentExporter } from "@voltagent/vercel-ai-exporter";
+import { NodeSDK } from "@opentelemetry/sdk-node";
 
 const sdk = new NodeSDK({
   traceExporter: new VoltAgentExporter({
     publicKey: process.env.VOLTAGENT_PUBLIC_KEY,
     secretKey: process.env.VOLTAGENT_SECRET_KEY,
-    baseUrl: 'https://api.voltagent.dev',
+    baseUrl: "https://api.voltagent.dev",
   }),
-})
+});
 
-sdk.start()
+sdk.start();
 ```
 
 Set `VOLTAGENT_PUBLIC_KEY` and `VOLTAGENT_SECRET_KEY` in your environment. Traces appear in the VoltAgent dashboard with full agent chain visibility.
@@ -265,14 +268,14 @@ npm install @langfuse/otel @opentelemetry/sdk-trace-node
 ```
 
 ```ts
-import { LangfuseSpanProcessor } from '@langfuse/otel'
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
+import { LangfuseSpanProcessor } from "@langfuse/otel";
+import { NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
 
 const tracerProvider = new NodeTracerProvider({
   spanProcessors: [new LangfuseSpanProcessor()],
-})
+});
 
-tracerProvider.register()
+tracerProvider.register();
 ```
 
 Set `LANGFUSE_SECRET_KEY`, `LANGFUSE_PUBLIC_KEY`, and `LANGFUSE_BASEURL` in your environment.
@@ -286,9 +289,9 @@ npm install @lmnr-ai/lmnr
 ```
 
 ```ts
-import { Laminar } from '@lmnr-ai/lmnr'
+import { Laminar } from "@lmnr-ai/lmnr";
 
-Laminar.initialize({ projectApiKey: process.env.LMNR_PROJECT_API_KEY })
+Laminar.initialize({ projectApiKey: process.env.LMNR_PROJECT_API_KEY });
 ```
 
 Laminar patches the global `TracerProvider` -- no additional OTel setup needed.
@@ -302,17 +305,17 @@ npm install @posthog/ai @opentelemetry/sdk-node
 ```
 
 ```ts
-import { PostHogTraceExporter } from '@posthog/ai'
-import { NodeSDK } from '@opentelemetry/sdk-node'
+import { PostHogTraceExporter } from "@posthog/ai";
+import { NodeSDK } from "@opentelemetry/sdk-node";
 
 const sdk = new NodeSDK({
   traceExporter: new PostHogTraceExporter({
     apiKey: process.env.POSTHOG_API_KEY,
-    host: 'https://us.i.posthog.com',
+    host: "https://us.i.posthog.com",
   }),
-})
+});
 
-sdk.start()
+sdk.start();
 ```
 
 ### SigNoz / Jaeger / Generic OTLP
@@ -324,16 +327,16 @@ npm install @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-http
 ```
 
 ```ts
-import { NodeSDK } from '@opentelemetry/sdk-node'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { NodeSDK } from "@opentelemetry/sdk-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 
 const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter({
     url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
   }),
-})
+});
 
-sdk.start()
+sdk.start();
 ```
 
 This works with SigNoz, Jaeger, Grafana Tempo, Datadog, Honeycomb, Axiom, and any OTLP-compatible backend.
@@ -342,18 +345,18 @@ This works with SigNoz, Jaeger, Grafana Tempo, Datadog, Honeycomb, Axiom, and an
 
 The `telemetry` field on `AgentConfig`, `FlowAgentConfigBase`, and `FlowEngineConfig` accepts a `TelemetrySettings` object:
 
-| Field            | Type                                        | Description                                     |
-| ---------------- | ------------------------------------------- | ----------------------------------------------- |
-| `isEnabled`      | `boolean`                                   | Enable/disable telemetry (default: `false`)     |
-| `recordInputs`   | `boolean`                                   | Record input values (default: `true`)           |
-| `recordOutputs`  | `boolean`                                   | Record output values (default: `true`)          |
-| `functionId`     | `string`                                    | Identifier for the span (auto-set to agent name) |
-| `metadata`       | `Record<string, AttributeValue>`            | Custom key-value pairs                          |
-| `tracer`         | `Tracer`                                    | Custom OTel tracer instance                     |
-| `integrations`   | `TelemetryIntegration \| TelemetryIntegration[]` | Per-call lifecycle hooks                        |
+| Field           | Type                                             | Description                                      |
+| --------------- | ------------------------------------------------ | ------------------------------------------------ |
+| `isEnabled`     | `boolean`                                        | Enable/disable telemetry (default: `false`)      |
+| `recordInputs`  | `boolean`                                        | Record input values (default: `true`)            |
+| `recordOutputs` | `boolean`                                        | Record output values (default: `true`)           |
+| `functionId`    | `string`                                         | Identifier for the span (auto-set to agent name) |
+| `metadata`      | `Record<string, AttributeValue>`                 | Custom key-value pairs                           |
+| `tracer`        | `Tracer`                                         | Custom OTel tracer instance                      |
+| `integrations`  | `TelemetryIntegration \| TelemetryIntegration[]` | Per-call lifecycle hooks                         |
 
 `TelemetrySettings` is re-exported from `@funkai/agents` for convenience:
 
 ```ts
-import type { TelemetrySettings } from '@funkai/agents'
+import type { TelemetrySettings } from "@funkai/agents";
 ```
