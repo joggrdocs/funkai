@@ -65,7 +65,7 @@ await myAgent.generate({
 });
 ```
 
-Per-call scalar fields (`functionId`, `recordInputs`, etc.) override config. Metadata is **shallow-merged** — both config and per-call values are preserved.
+Per-call scalar fields (`functionId`, `recordInputs`, etc.) override config. Metadata is **shallow-merged** — config and per-call keys are preserved, except reserved system keys like `funkai.agentChain`, which are auto-injected and take precedence.
 
 ### Disabling Input/Output Recording
 
@@ -197,7 +197,7 @@ FlowEngine.telemetry          (lowest priority)
       -> GenerateParams.telemetry  (highest priority -- per-call override)
 ```
 
-For scalar fields (`isEnabled`, `functionId`, `recordInputs`, etc.), the later value replaces the earlier. For `metadata`, records are shallow-merged so both levels are preserved.
+For scalar fields (`isEnabled`, `functionId`, `recordInputs`, etc.), the later value replaces the earlier. For `metadata`, records are shallow-merged; reserved system keys (for example, `funkai.agentChain`) are then enforced by funkai.
 
 ## Provider Setup
 
