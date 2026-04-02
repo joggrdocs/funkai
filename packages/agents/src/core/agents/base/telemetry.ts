@@ -3,6 +3,9 @@ import { isNil } from "es-toolkit";
 
 import type { AgentChainEntry } from "@/core/types.js";
 
+/** Metadata key for the serialized agent ancestry chain. */
+const AGENT_CHAIN_METADATA_KEY = "funkai.agentChain";
+
 /**
  * Merge config-level and per-call telemetry settings, then auto-enrich
  * with agent identity and chain metadata.
@@ -45,19 +48,14 @@ export function resolveTelemetry(params: {
     return undefined;
   }
 
-  const merged: TelemetrySettings = {
+  return {
     ...config,
     ...override,
+    functionId: override?.functionId ?? config?.functionId ?? agentName,
     metadata: {
       ...config?.metadata,
       ...override?.metadata,
-      "funkai.agentChain": agentChain.map((e) => e.id).join(" > "),
+      [AGENT_CHAIN_METADATA_KEY]: agentChain.map((e) => e.id).join(" > "),
     },
   };
-
-  if (isNil(merged.functionId)) {
-    merged.functionId = agentName;
-  }
-
-  return merged;
 }
