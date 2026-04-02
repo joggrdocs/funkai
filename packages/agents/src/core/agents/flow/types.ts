@@ -1,3 +1,4 @@
+import type { TelemetrySettings } from "ai";
 import type { ZodType } from "zod";
 
 import type { StepBuilder } from "@/core/agents/flow/steps/builder.js";
@@ -138,6 +139,20 @@ export interface FlowAgentConfigBase<TInput> {
    * @param event - Event containing the input and error.
    */
   onError?: (event: { input: TInput; error: Error }) => void | Promise<void>;
+
+  /**
+   * OpenTelemetry settings for this flow agent.
+   *
+   * Propagated to all `$.agent()` calls within the flow.
+   * Sub-agents inherit these settings unless they override them
+   * via their own config-level telemetry or per-call overrides.
+   *
+   * Mapped internally to `experimental_telemetry` when calling
+   * sub-agents via the AI SDK.
+   *
+   * @see {@link TelemetrySettings}
+   */
+  telemetry?: TelemetrySettings;
 
   /**
    * Hook: fires when any tracked `$` step starts.

@@ -1,4 +1,5 @@
-import { isFunction, isPlainObject } from "es-toolkit";
+import type { TelemetrySettings } from "ai";
+import { isFunction, isNil, isPlainObject } from "es-toolkit";
 import { match } from "ts-pattern";
 
 import { flowAgent } from "@/core/agents/flow/flow-agent.js";
@@ -96,6 +97,15 @@ export interface FlowEngineConfig<TCustomSteps extends CustomStepDefinitions> {
    * Default hook: fires when any step finishes.
    */
   onStepFinish?: (event: StepFinishEvent) => void | Promise<void>;
+
+  /**
+   * Default telemetry settings for all flow agents created by this engine.
+   *
+   * Merged with flow-agent-level telemetry. Engine-level provides
+   * defaults; flow-agent-level overrides per-field. Metadata records
+   * are shallow-merged.
+   */
+  telemetry?: TelemetrySettings;
 }
 
 /**
@@ -354,6 +364,7 @@ export function createFlowEngine<
       onError: buildMergedHook(hookLog, engineOnError, flowOnError),
       onStepStart: buildMergedHook(hookLog, engineOnStepStart, flowOnStepStart),
       onStepFinish: buildMergedHook(hookLog, engineOnStepFinish, flowOnStepFinish),
+      telemetry: mergeTelemetry(engineConfig.telemetry, flowConfig.telemetry),
       // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- widened to merge both config variants
     } as FlowAgentConfig<TInput, any>;
 
@@ -401,4 +412,29 @@ export function createFlowEngine<
       },
     );
   } as FlowFactory<TCustomSteps>;
+}
+
+/**
+ * Merge engine-level and flow-level telemetry settings.
+ *
+ * Flow-level scalars take precedence over engine-level.
+ * Metadata records are shallow-merged (both levels preserved).
+ *
+ * @private
+ */
+function mergeTelemetry(
+  engine: TelemetrySettings | undefined,
+  flow: TelemetrySettings | undefined,
+): TelemetrySettings | undefined {
+  if (isNil(engine) && isNil(flow)) {
+    return undefined;
+  }
+  return {
+    ...engine,
+    ...flow,
+    metadata: {
+      ...engine?.metadata,
+      ...flow?.metadata,
+    },
+  };
 }

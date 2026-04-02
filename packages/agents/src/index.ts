@@ -17,6 +17,7 @@ export type {
   StreamPart,
 } from "@/core/types.js";
 export type {
+  TelemetrySettings,
   TextStreamPart,
   AsyncIterableStream,
   ModelMessage,

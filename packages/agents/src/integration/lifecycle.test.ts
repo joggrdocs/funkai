@@ -1967,4 +1967,90 @@ describe("Agent chain propagation (integration)", () => {
     expect(parentEvents.length).toBeGreaterThan(0);
     expect(parentEvents[0]?.chain).toEqual([{ id: "parent-agent" }]);
   });
+
+  it("flowAgent → agent → sub-agent propagates full 3-level chain", async () => {
+    const stepEvents: {
+      stepId: string | undefined;
+      chain: readonly { id: string }[] | undefined;
+    }[] = [];
+
+    const subAgent = agent({
+      name: "sub-agent",
+      model: createMockModel("sub response"),
+      input: z.object({ task: z.string() }),
+      prompt: ({ input }) => input.task,
+    });
+
+    const toolCallModel = new MockLanguageModelV3({
+      // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues sync/async mismatch
+      doGenerate: mockValues(
+        {
+          content: [
+            {
+              type: "tool-call" as const,
+              toolCallId: "tc1",
+              toolName: "agent_sub",
+              input: JSON.stringify({ task: "do it" }),
+            },
+          ],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        {
+          content: [{ type: "text" as const, text: "done" }],
+          finishReason: MOCK_FINISH,
+          usage: MOCK_USAGE,
+          warnings: [],
+        },
+        // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- mockValues returns sync fn, MockLanguageModelV3 expects PromiseLike
+      ) as any,
+    });
+
+    const middleAgent = agent({
+      name: "middle-agent",
+      model: toolCallModel,
+      system: "Delegate.",
+      agents: { sub: subAgent },
+    });
+
+    const fa = flowAgent<{ topic: string }, { summary: string }>(
+      {
+        name: "top-flow",
+        input: Input,
+        output: Output,
+        logger: createMockLogger(),
+        onStepFinish: (event) => {
+          stepEvents.push({ stepId: event.stepId, chain: event.agentChain });
+        },
+      },
+      async ({ input, $ }) => {
+        const r = await $.agent({
+          id: "delegate",
+          agent: middleAgent,
+          input: `Summarize ${input.topic}`,
+        });
+        if (r.ok) {
+          return { summary: String(r.output) };
+        }
+        return { summary: "failed" };
+      },
+    );
+
+    await fa.generate({ input: { topic: "TypeScript" } });
+
+    // Sub-agent internal step: chain = [top-flow, middle-agent, sub-agent]
+    const subEvents = stepEvents.filter((e) => e.stepId?.startsWith("sub-agent"));
+    expect(subEvents.length).toBeGreaterThan(0);
+    expect(subEvents[0]?.chain).toEqual([
+      { id: "top-flow" },
+      { id: "middle-agent" },
+      { id: "sub-agent" },
+    ]);
+
+    // Middle agent's own steps: chain = [top-flow, middle-agent]
+    const middleEvents = stepEvents.filter((e) => e.stepId?.startsWith("middle-agent"));
+    expect(middleEvents.length).toBeGreaterThan(0);
+    expect(middleEvents[0]?.chain).toEqual([{ id: "top-flow" }, { id: "middle-agent" }]);
+  });
 });

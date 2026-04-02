@@ -1,6 +1,6 @@
 import { privateField } from "@funkai/utils";
 import { tool } from "ai";
-import type { ModelMessage } from "ai";
+import type { ModelMessage, TelemetrySettings } from "ai";
 import { isFunction, isNil, isNotNil, isString, omitBy } from "es-toolkit";
 import { match } from "ts-pattern";
 import type { ZodType } from "zod";
@@ -77,6 +77,17 @@ export interface ParentAgentContext {
    * @internal Framework-only — not exposed on public `GenerateParams`.
    */
   agentChain?: readonly AgentChainEntry[] | undefined;
+
+  /**
+   * Parent's resolved telemetry settings.
+   *
+   * Forwarded to sub-agents so child agents inherit the parent's
+   * telemetry configuration. Children can still override via their
+   * own config-level telemetry.
+   *
+   * @internal Framework-only — not exposed on public `GenerateParams`.
+   */
+  telemetry?: TelemetrySettings | undefined;
 }
 
 /**
@@ -454,6 +465,7 @@ function buildParentParams(ctx: ParentAgentContext | undefined): Record<string, 
       logger: ctx.log,
       onStepStart: ctx.onStepStart,
       onStepFinish: ctx.onStepFinish,
+      telemetry: ctx.telemetry,
     },
     isNil,
   );

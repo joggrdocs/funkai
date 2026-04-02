@@ -1,4 +1,4 @@
-import type { LanguageModelUsage } from "ai";
+import type { LanguageModelUsage, TelemetrySettings } from "ai";
 import { isNil, isNotNil } from "es-toolkit";
 import { isObject } from "es-toolkit/compat";
 import { P, match } from "ts-pattern";
@@ -75,6 +75,16 @@ export interface StepBuilderOptions {
    * @internal Framework-only — not exposed to users.
    */
   agentChain?: readonly AgentChainEntry[] | undefined;
+
+  /**
+   * Telemetry settings propagated to sub-agents called via `$.agent()`.
+   *
+   * Acts as a flow-level default. Per-call overrides in `AgentStepConfig.config`
+   * take precedence.
+   *
+   * @internal Framework-only — not exposed to users.
+   */
+  telemetry?: TelemetrySettings | undefined;
 }
 
 /**
@@ -109,7 +119,7 @@ export function createStepBuilder(options: StepBuilderOptions): StepBuilder {
  * the same ref so step indices are globally unique.
  */
 function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexRef): StepBuilder {
-  const { ctx, parentHooks, writer, agentChain } = options;
+  const { ctx, parentHooks, writer, agentChain, telemetry } = options;
 
   /**
    * Core step primitive — every other method delegates here.
@@ -155,7 +165,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
       messages: ctx.messages,
     };
     const child$ = createStepBuilderInternal(
-      { ctx: childCtx, parentHooks, writer, agentChain },
+      { ctx: childCtx, parentHooks, writer, agentChain, telemetry },
       indexRef,
     );
 
@@ -349,6 +359,7 @@ function createStepBuilderInternal(options: StepBuilderOptions, indexRef: IndexR
         };
 
         const agentParams = {
+          telemetry,
           ...config.config,
           input: config.input,
           signal: ctx.signal,

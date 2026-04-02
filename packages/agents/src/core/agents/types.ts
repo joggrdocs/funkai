@@ -7,6 +7,7 @@ import type {
   OnToolCallStartEvent,
   PrepareStepFunction,
   StreamTextResult,
+  TelemetrySettings,
   ToolCallRepairFunction,
   ToolChoice,
   ToolSet,
@@ -27,6 +28,7 @@ import type { Tool } from "@/core/tool.js";
 import type { Model, StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 import type { Result } from "@/utils/result.js";
 
+export type { TelemetrySettings };
 export type { StepFinishEvent, StepStartEvent, StreamPart } from "@/core/types.js";
 
 /**
@@ -407,6 +409,14 @@ interface AgentGenerateOverrides<
   experimental_download?: Experimental_DownloadFunction | undefined;
 
   /**
+   * Override telemetry settings for this call.
+   *
+   * Merged with the agent's config-level telemetry. Per-call values
+   * take precedence for scalars; metadata records are shallow-merged.
+   */
+  telemetry?: TelemetrySettings | undefined;
+
+  /**
    * Override onToolCallStart for this call.
    */
   onToolCallStart?: (event: OnToolCallStartEvent) => void | Promise<void>;
@@ -685,6 +695,23 @@ export interface AgentConfig<
    * Custom download function for URLs.
    */
   experimental_download?: Experimental_DownloadFunction | undefined;
+
+  /**
+   * OpenTelemetry settings for this agent.
+   *
+   * When `isEnabled` is `true`, the AI SDK emits OTel spans for every
+   * `generateText` / `streamText` call. The framework auto-enriches:
+   * - `functionId` defaults to `config.name` if not explicitly set.
+   * - `metadata["funkai.agentChain"]` is injected with the serialized agent ancestry.
+   *
+   * Users configure OTel exporters themselves (Braintrust, Langfuse, etc.)
+   * — funkai has no backend dependency.
+   *
+   * Mapped internally to `experimental_telemetry` when calling the AI SDK.
+   *
+   * @see {@link TelemetrySettings}
+   */
+  telemetry?: TelemetrySettings;
 
   /**
    * Callback invoked before each tool execution begins.
