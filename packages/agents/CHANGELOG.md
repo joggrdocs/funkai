@@ -1,5 +1,12 @@
 # @funkai/agents
 
+## 0.15.0
+
+### Minor Changes
+
+- a7d1e53: Add input parameter parity with the Vercel AI SDK. Surface CallSettings (temperature, maxOutputTokens, topP, topK, presencePenalty, frequencyPenalty, stopSequences, seed, maxRetries), telemetry, granular timeout objects, custom stop conditions (stopWhen), and stream-only callbacks (onChunk, onStreamError, onAbort) on both AgentConfig and per-call overrides.
+- e6a2df8: Add OpenTelemetry telemetry support. Agents, flow agents, and flow engines accept a `telemetry` config that threads through to the AI SDK's `experimental_telemetry` option. Auto-enriches spans with `functionId` (defaults to agent name) and `funkai.agentChain` metadata for multi-agent trace visibility. Telemetry propagates to sub-agents and merges across layers (engine -> flow -> agent -> per-call) with shallow-merged metadata.
+
 ## 0.14.0
 
 ### Minor Changes
