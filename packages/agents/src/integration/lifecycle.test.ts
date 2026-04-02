@@ -2030,7 +2030,10 @@ describe("Agent chain propagation (integration)", () => {
           agent: middleAgent,
           input: `Summarize ${input.topic}`,
         });
-        return { summary: r.ok ? String(r.output) : "failed" };
+        if (r.ok) {
+          return { summary: String(r.output) };
+        }
+        return { summary: "failed" };
       },
     );
 
