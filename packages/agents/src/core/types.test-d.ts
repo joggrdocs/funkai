@@ -4,7 +4,7 @@ import { assertType, describe, expectTypeOf, it } from "vitest";
 import type { AIStepResult, StepFinishEvent } from "@/core/types.js";
 import { createAgentStepFinishEvent, createFlowStepFinishEvent } from "@/core/types.js";
 
-describe("StepFinishEvent", () => {
+describe("stepFinishEvent", () => {
   it("has required toolCalls matching AIStepResult", () => {
     expectTypeOf<StepFinishEvent["toolCalls"]>().toEqualTypeOf<AIStepResult["toolCalls"]>();
   });
@@ -33,7 +33,7 @@ describe("StepFinishEvent", () => {
   });
 });
 
-describe("createAgentStepFinishEvent", () => {
+describe("createAgentStepFinishEvent()", () => {
   it("returns StepFinishEvent", () => {
     expectTypeOf(createAgentStepFinishEvent).returns.toExtend<StepFinishEvent>();
   });
@@ -44,7 +44,7 @@ describe("createAgentStepFinishEvent", () => {
   });
 });
 
-describe("createFlowStepFinishEvent", () => {
+describe("createFlowStepFinishEvent()", () => {
   it("returns StepFinishEvent", () => {
     expectTypeOf(createFlowStepFinishEvent).returns.toExtend<StepFinishEvent>();
   });
