@@ -8,9 +8,9 @@ import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 import { suppressRejection } from "@/utils/promise.js";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible any-typed signature for mockImplementation/mockResolvedValue compatibility
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible signature for mockImplementation compatibility
 const mockGenerateText = vi.fn<(...args: any[]) => any>();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible any-typed signature for mockImplementation/mockReturnValue compatibility
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible signature for mockImplementation compatibility
 const mockStreamText = vi.fn<(...args: any[]) => any>();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
 

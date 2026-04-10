@@ -179,7 +179,7 @@ describe("while()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn<() => void>();
+    const onError = vi.fn<(event: { id: string; error: Error }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -202,7 +202,7 @@ describe("while()", () => {
   });
 
   it("onFinish receives last value and duration", async () => {
-    const onFinish = vi.fn<() => void>();
+    const onFinish = vi.fn<(event: { id: string; result: unknown; duration: number }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -223,7 +223,7 @@ describe("while()", () => {
   });
 
   it("onFinish receives undefined when condition is initially false", async () => {
-    const onFinish = vi.fn<() => void>();
+    const onFinish = vi.fn<(event: { id: string; result: unknown; duration: number }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

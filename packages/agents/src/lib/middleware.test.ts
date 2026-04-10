@@ -51,7 +51,7 @@ describe(withModelMiddleware, () => {
 
   it("wraps the model when custom middleware is provided", async () => {
     const model = createStubModel();
-    const middleware = createStubMiddleware({ wrapGenerate: vi.fn<() => Promise<never>>() });
+    const middleware = createStubMiddleware({ wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>() });
 
     const result = await withModelMiddleware({
       model: model as never,
@@ -67,8 +67,8 @@ describe(withModelMiddleware, () => {
 
   it("applies multiple middleware in order", async () => {
     const model = createStubModel();
-    const mw1 = createStubMiddleware({ wrapGenerate: vi.fn<() => Promise<never>>() });
-    const mw2 = createStubMiddleware({ wrapGenerate: vi.fn<() => Promise<never>>() });
+    const mw1 = createStubMiddleware({ wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>() });
+    const mw2 = createStubMiddleware({ wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>() });
 
     const result = await withModelMiddleware({
       model: model as never,
