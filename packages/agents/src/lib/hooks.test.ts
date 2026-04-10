@@ -26,7 +26,7 @@ describe(fireHooks, () => {
 
   it("skips undefined handlers", async () => {
     const log = createMockLogger();
-    const called = vi.fn();
+    const called = vi.fn<() => void>();
 
     await fireHooks(log, undefined, called, undefined);
 
@@ -35,7 +35,7 @@ describe(fireHooks, () => {
 
   it("swallows errors and logs them at warn level", async () => {
     const log = createMockLogger();
-    const after = vi.fn();
+    const after = vi.fn<() => void>();
 
     await fireHooks(
       log,
@@ -80,7 +80,7 @@ describe(fireHooks, () => {
 
   it("swallows async errors and continues", async () => {
     const log = createMockLogger();
-    const after = vi.fn();
+    const after = vi.fn<() => void>();
 
     await fireHooks(
       log,
@@ -103,7 +103,7 @@ describe(fireHooks, () => {
 
 describe(wrapHook, () => {
   it("returns a thunk that calls the hook with the event", () => {
-    const hook = vi.fn();
+    const hook = vi.fn<(event: { id: string }) => void>();
     const event = { id: "test" };
 
     const thunk = wrapHook(hook, event);
@@ -113,8 +113,7 @@ describe(wrapHook, () => {
 
     thunk?.();
 
-    expect(hook).toHaveBeenCalledOnce();
-    expect(hook).toHaveBeenCalledWith(event);
+    expect(hook).toHaveBeenCalledExactlyOnceWith(event);
   });
 
   it("returns undefined when hookFn is undefined", () => {
@@ -132,7 +131,7 @@ describe(wrapHook, () => {
 
   it("passes the exact event reference to the hook", () => {
     const event = { nested: { value: 42 } };
-    const hook = vi.fn();
+    const hook = vi.fn<(event: { nested: { value: number } }) => void>();
 
     const thunk = wrapHook(hook, event);
     thunk?.();
@@ -141,7 +140,7 @@ describe(wrapHook, () => {
   });
 
   it("works with async hooks", async () => {
-    const hook = vi.fn(async () => {});
+    const hook = vi.fn<(event: { id: string }) => Promise<void>>(async () => {});
     const event = { id: "async-test" };
 
     const thunk = wrapHook(hook, event);

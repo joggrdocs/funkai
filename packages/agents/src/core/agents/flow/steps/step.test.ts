@@ -166,7 +166,7 @@ describe("step()", () => {
   });
 
   it("parentHooks.onStepFinish fires on error with result undefined", async () => {
-    const parentFinish = vi.fn();
+    const parentFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({
       ctx,
@@ -312,7 +312,7 @@ describe("step()", () => {
   });
 
   it("onFinish receives the result and duration", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -333,7 +333,7 @@ describe("step()", () => {
   });
 
   it("onError receives the error and step id", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

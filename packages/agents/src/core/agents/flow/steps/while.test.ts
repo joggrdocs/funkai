@@ -42,7 +42,7 @@ describe("while()", () => {
   it("does not call execute when condition is initially false", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const executeSpy = vi.fn(async () => "value");
+    const executeSpy = vi.fn<() => Promise<string>>(async () => "value");
 
     await $.while({
       id: "while-no-exec",
@@ -179,7 +179,7 @@ describe("while()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -202,7 +202,7 @@ describe("while()", () => {
   });
 
   it("onFinish receives last value and duration", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -223,7 +223,7 @@ describe("while()", () => {
   });
 
   it("onFinish receives undefined when condition is initially false", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

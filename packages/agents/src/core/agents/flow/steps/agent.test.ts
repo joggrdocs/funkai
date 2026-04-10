@@ -26,9 +26,9 @@ function mockAgent(result: Result<Pick<BaseGenerateResult, "output">>): Agent<st
     .with({ ok: true }, (r) => ({ ...r, usage: MOCK_USAGE, finishReason: "stop" as const }))
     .otherwise((r) => r) as Result<GenerateResult>;
   return {
-    generate: vi.fn(async () => resolved),
-    stream: vi.fn(),
-    fn: vi.fn(),
+    generate: vi.fn<() => Promise<typeof resolved>>(async () => resolved),
+    stream: vi.fn<() => Promise<never>>(),
+    fn: vi.fn<() => void>(),
   } as unknown as Agent<string>;
 }
 
@@ -192,7 +192,7 @@ describe("agent()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
     const agent = mockAgent({
@@ -217,7 +217,7 @@ describe("agent()", () => {
   });
 
   it("onFinish receives the GenerateResult", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
     const agent = mockAgent({ ok: true, output: "result-text" });

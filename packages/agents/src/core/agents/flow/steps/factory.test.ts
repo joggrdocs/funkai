@@ -130,7 +130,7 @@ describe("step()", () => {
   });
 
   it("parentHooks.onStepFinish fires on error with result undefined", async () => {
-    const parentFinish = vi.fn();
+    const parentFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({
       ctx,
@@ -293,9 +293,9 @@ describe("agent()", () => {
       .with({ ok: true }, (r) => ({ ...r, usage: MOCK_USAGE, finishReason: "stop" as const }))
       .otherwise((r) => r) as Result<GenerateResult>;
     return {
-      generate: vi.fn(async () => resolved),
-      stream: vi.fn(),
-      fn: vi.fn(),
+      generate: vi.fn<() => Promise<Result<GenerateResult>>>(async () => resolved),
+      stream: vi.fn<() => void>(),
+      fn: vi.fn<() => void>(),
     } as unknown as Agent<string>;
   }
 
@@ -784,12 +784,12 @@ describe("agent() streaming with writer", () => {
   } {
     const written: StreamPart[] = [];
     const writer = {
-      write: vi.fn(async (chunk: StreamPart) => {
+      write: vi.fn<(chunk: StreamPart) => Promise<void>>(async (chunk: StreamPart) => {
         written.push(chunk);
       }),
-      close: vi.fn(async () => {}),
-      abort: vi.fn(async () => {}),
-      releaseLock: vi.fn(),
+      close: vi.fn<() => Promise<void>>(async () => {}),
+      abort: vi.fn<() => Promise<void>>(async () => {}),
+      releaseLock: vi.fn<() => void>(),
       ready: Promise.resolve(undefined),
       desiredSize: 1,
       closed: new Promise<undefined>(() => {}),
@@ -834,9 +834,9 @@ describe("agent() streaming with writer", () => {
     };
 
     const agent = {
-      generate: vi.fn(),
-      stream: vi.fn(async () => mockStreamResult),
-      fn: vi.fn(),
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => Promise<typeof mockStreamResult>>(async () => mockStreamResult),
+      fn: vi.fn<() => void>(),
     } as unknown as Agent<string>;
 
     const result = await $.agent({
@@ -868,12 +868,14 @@ describe("agent() streaming with writer", () => {
     const $ = createStepBuilder({ ctx, writer });
 
     const agent = {
-      generate: vi.fn(),
-      stream: vi.fn(async () => ({
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<
+        () => Promise<{ ok: false; error: { code: string; message: string; cause: Error } }>
+      >(async () => ({
         ok: false as const,
         error: { code: "AGENT_ERROR", message: "stream failed", cause: new Error("root cause") },
       })),
-      fn: vi.fn(),
+      fn: vi.fn<() => void>(),
     } as unknown as Agent<string>;
 
     const result = await $.agent({
@@ -897,12 +899,14 @@ describe("agent() streaming with writer", () => {
     const $ = createStepBuilder({ ctx, writer });
 
     const agent = {
-      generate: vi.fn(),
-      stream: vi.fn(async () => ({
-        ok: false as const,
-        error: { code: "AGENT_ERROR", message: "no cause error" },
-      })),
-      fn: vi.fn(),
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => Promise<{ ok: false; error: { code: string; message: string } }>>(
+        async () => ({
+          ok: false as const,
+          error: { code: "AGENT_ERROR", message: "no cause error" },
+        }),
+      ),
+      fn: vi.fn<() => void>(),
     } as unknown as Agent<string>;
 
     const result = await $.agent({
@@ -946,9 +950,9 @@ describe("agent() streaming with writer", () => {
     };
 
     const agent = {
-      generate: vi.fn(),
-      stream: vi.fn(async () => mockStreamResult),
-      fn: vi.fn(),
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => Promise<typeof mockStreamResult>>(async () => mockStreamResult),
+      fn: vi.fn<() => void>(),
     } as unknown as Agent<string>;
 
     await $.agent({

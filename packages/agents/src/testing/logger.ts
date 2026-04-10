@@ -10,10 +10,10 @@ import type { Logger } from "@/core/logger.js";
  */
 export function createMockLogger(): Logger {
   return {
-    debug: vi.fn(),
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    child: vi.fn(() => createMockLogger()),
+    debug: vi.fn<() => void>(),
+    info: vi.fn<() => void>(),
+    warn: vi.fn<() => void>(),
+    error: vi.fn<() => void>(),
+    child: vi.fn<() => Logger>(() => createMockLogger()),
   } as unknown as Logger;
 }

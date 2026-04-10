@@ -11,8 +11,8 @@ import { createMockLogger } from "@/testing/index.js";
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockGenerateText = vi.fn();
-const mockStreamText = vi.fn();
+const mockGenerateText = vi.fn<(...args: unknown[]) => unknown>();
+const mockStreamText = vi.fn<(...args: unknown[]) => unknown>();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
 
 vi.mock(
@@ -23,11 +23,17 @@ vi.mock(
       streamText: (...args: unknown[]) => mockStreamText(...args),
       stepCountIs: (n: number) => mockStepCountIs(n),
       Output: {
-        text: () => ({ parseCompleteOutput: vi.fn() }),
-        object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
-        array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
-        choice: () => ({ parseCompleteOutput: vi.fn() }),
-        json: () => ({ parseCompleteOutput: vi.fn() }),
+        text: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
+        object: ({ schema }: { schema: unknown }) => ({
+          parseCompleteOutput: vi.fn<() => void>(),
+          schema,
+        }),
+        array: ({ element }: { element: unknown }) => ({
+          parseCompleteOutput: vi.fn<() => void>(),
+          element,
+        }),
+        choice: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
+        json: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape
     }) as any,
@@ -37,7 +43,9 @@ vi.mock(
   import("@/lib/middleware.js"),
   () =>
     ({
-      withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
+      withModelMiddleware: vi.fn<(args: { model: unknown }) => Promise<unknown>>(
+        async ({ model }: { model: unknown }) => model,
+      ),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape
     }) as any,
 );
@@ -144,9 +152,9 @@ describe("evolve() with Agent", () => {
   });
 
   it("shallow merges tools — overriding an existing key", () => {
-    const toolA = { execute: vi.fn() } as never;
-    const toolB = { execute: vi.fn() } as never;
-    const toolBReplacement = { execute: vi.fn() } as never;
+    const toolA = { execute: vi.fn<() => void>() } as never;
+    const toolB = { execute: vi.fn<() => void>() } as never;
+    const toolBReplacement = { execute: vi.fn<() => void>() } as never;
 
     const base = agent({
       name: "tooled",
@@ -213,7 +221,7 @@ describe("evolve() with Agent", () => {
   });
 
   it("preserves tools when override has no tools field", () => {
-    const toolA = { execute: vi.fn() } as never;
+    const toolA = { execute: vi.fn<() => void>() } as never;
 
     const base = agent({
       name: "tooled",
@@ -313,7 +321,7 @@ describe("evolve() with FlowAgent", () => {
   });
 
   it("overrides hooks on flow agent", () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<() => void>();
     const base = createTestFlowAgent();
     const evolved = evolve(base, { onStart });
 
@@ -511,7 +519,11 @@ describe("evolve() with FlowAgent mapper function", () => {
 
 describe("evolve() error handling", () => {
   it("throws for a plain object that is not an agent", () => {
-    const fake = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
+    const fake = {
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => void>(),
+      fn: vi.fn<() => void>(),
+    };
 
     expect(() => evolve(fake as never, {})).toThrow("evolve() requires an Agent or FlowAgent");
   });

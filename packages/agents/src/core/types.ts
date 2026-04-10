@@ -70,7 +70,9 @@ export type StreamPart = TextStreamPart<ToolSet>;
  * ```
  */
 export interface AgentChainEntry {
-  /** Agent name (matches `config.name`). */
+  /**
+   * Agent name (matches `config.name`).
+   */
   readonly id: string;
 }
 
