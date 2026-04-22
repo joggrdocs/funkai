@@ -180,7 +180,9 @@ describe("generate() input validation", () => {
   });
 
   it("does not call handler when input validation fails", async () => {
-    const handler = vi.fn(async ({ input }: { input: { x: number } }) => ({ y: input.x }));
+    const handler = vi.fn<(args: { input: { x: number } }) => Promise<{ y: number }>>(
+      async ({ input }: { input: { x: number } }) => ({ y: input.x }),
+    );
     const fa = flowAgent<{ x: number }, { y: number }>(
       {
         name: "test",
@@ -256,7 +258,7 @@ describe("generate() error handling", () => {
 
 describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<(event: unknown) => void>();
     const fa = createSimpleFlowAgent({ onStart });
     await fa.generate({ input: { x: 5 } });
 
@@ -269,8 +271,11 @@ describe("generate() hooks", () => {
   });
 
   it("fires onFinish hook with input, result, and duration", async () => {
-    const onFinish = vi.fn();
-    const fa = createSimpleFlowAgent({ onFinish });
+    const onFinish =
+      vi.fn<
+        (event: { input: { x: number }; result: Record<string, unknown>; duration: number }) => void
+      >();
+    const fa = createSimpleFlowAgent({ onFinish: onFinish as never });
     await fa.generate({ input: { x: 3 } });
 
     expect(onFinish).toHaveBeenCalledTimes(1);
@@ -286,7 +291,7 @@ describe("generate() hooks", () => {
   });
 
   it("fires onError hook when handler throws", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<(event: { input: { x: number }; error: Error }) => void>();
     const fa = createSimpleFlowAgent({ onError }, async () => {
       throw new Error("boom");
     });
@@ -303,8 +308,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onStart hooks", async () => {
-    const configOnStart = vi.fn();
-    const overrideOnStart = vi.fn();
+    const configOnStart = vi.fn<() => void>();
+    const overrideOnStart = vi.fn<() => void>();
 
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
     await fa.generate({ input: { x: 1 }, onStart: overrideOnStart });
@@ -314,8 +319,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onFinish hooks", async () => {
-    const configOnFinish = vi.fn();
-    const overrideOnFinish = vi.fn();
+    const configOnFinish = vi.fn<() => void>();
+    const overrideOnFinish = vi.fn<() => void>();
 
     const fa = createSimpleFlowAgent({ onFinish: configOnFinish });
     await fa.generate({ input: { x: 1 }, onFinish: overrideOnFinish });
@@ -325,8 +330,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onError hooks", async () => {
-    const configOnError = vi.fn();
-    const overrideOnError = vi.fn();
+    const configOnError = vi.fn<() => void>();
+    const overrideOnError = vi.fn<() => void>();
 
     const fa = createSimpleFlowAgent({ onError: configOnError }, async () => {
       throw new Error("fail");
@@ -338,8 +343,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onStepFinish hooks", async () => {
-    const configOnStepFinish = vi.fn();
-    const overrideOnStepFinish = vi.fn();
+    const configOnStepFinish = vi.fn<(event: unknown) => void>();
+    const overrideOnStepFinish = vi.fn<(event: unknown) => void>();
 
     const fa = flowAgent<{ x: number }, { y: number }>(
       {
@@ -381,10 +386,10 @@ describe("generate() hooks", () => {
 
   it("fires config onStepFinish before override onStepFinish", async () => {
     const order: string[] = [];
-    const configOnStepFinish = vi.fn(() => {
+    const configOnStepFinish = vi.fn<() => void>(() => {
       order.push("config");
     });
-    const overrideOnStepFinish = vi.fn(() => {
+    const overrideOnStepFinish = vi.fn<() => void>(() => {
       order.push("override");
     });
 
@@ -411,7 +416,7 @@ describe("generate() hooks", () => {
   });
 
   it("does not fire onFinish when handler throws", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
 
     const fa = createSimpleFlowAgent({ onFinish }, async () => {
       throw new Error("fail");
@@ -422,7 +427,7 @@ describe("generate() hooks", () => {
   });
 
   it("does not fire onError on input validation failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const fa = createSimpleFlowAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
@@ -845,7 +850,7 @@ describe("stream() output validation", () => {
 
 describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<(event: unknown) => void>();
     const fa = createSimpleFlowAgent({ onStart });
     await fa.stream({ input: { x: 5 } });
 
@@ -858,7 +863,7 @@ describe("stream() hooks", () => {
   });
 
   it("fires onFinish hook after stream completes", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const fa = createSimpleFlowAgent({ onFinish });
     const result = await fa.stream({ input: { x: 3 } });
 
@@ -883,8 +888,8 @@ describe("stream() hooks", () => {
   });
 
   it("fires both config and override onStart hooks during stream", async () => {
-    const configOnStart = vi.fn();
-    const overrideOnStart = vi.fn();
+    const configOnStart = vi.fn<(event: unknown) => void>();
+    const overrideOnStart = vi.fn<(event: unknown) => void>();
 
     const fa = createSimpleFlowAgent({ onStart: configOnStart });
     const result = await fa.stream({ input: { x: 7 }, onStart: overrideOnStart });
@@ -920,7 +925,7 @@ describe("stream() hooks", () => {
   });
 
   it("fires onError hook when handler throws during stream", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const fa = createSimpleFlowAgent({ onError }, async () => {
       throw new Error("stream boom");
     });
@@ -1003,7 +1008,7 @@ describe("fn()", () => {
   });
 
   it("fn() passes overrides through to generate", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<() => void>();
     const fa = createSimpleFlowAgent();
     const fn = fa.fn();
 
@@ -1030,7 +1035,11 @@ describe("fn()", () => {
 describe("generate() with agents dependency", () => {
   it("handler receives agents from config", async () => {
     let receivedAgents: Record<string, unknown> | undefined;
-    const mockAgent = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
+    const mockAgent = {
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => void>(),
+      fn: vi.fn<() => void>(),
+    };
 
     const fa = flowAgent<{ x: number }, { y: number }>(
       {
@@ -1078,7 +1087,11 @@ describe("generate() with agents dependency", () => {
 describe("stream() with agents dependency", () => {
   it("handler receives agents from config during streaming", async () => {
     let receivedAgents: Record<string, unknown> | undefined;
-    const mockAgent = { generate: vi.fn(), stream: vi.fn(), fn: vi.fn() };
+    const mockAgent = {
+      generate: vi.fn<() => void>(),
+      stream: vi.fn<() => void>(),
+      fn: vi.fn<() => void>(),
+    };
 
     const fa = flowAgent<{ x: number }, { y: number }>(
       {

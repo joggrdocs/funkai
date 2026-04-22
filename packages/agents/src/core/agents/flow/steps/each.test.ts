@@ -83,7 +83,7 @@ describe("each()", () => {
   it("handles empty input array", async () => {
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
-    const executeSpy = vi.fn();
+    const executeSpy = vi.fn<() => Promise<void>>();
 
     const result = await $.each({
       id: "each-empty",
@@ -174,7 +174,7 @@ describe("each()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -197,7 +197,7 @@ describe("each()", () => {
   });
 
   it("onFinish receives duration but no result", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

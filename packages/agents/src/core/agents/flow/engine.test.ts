@@ -61,19 +61,16 @@ describe(createFlowEngine, () => {
     });
 
     it("custom step factories receive correct ctx and config", async () => {
-      const factorySpy = vi.fn(
-        async ({
-          ctx,
-          config,
-        }: {
+      const factorySpy = vi.fn<
+        (params: {
           ctx: { signal: AbortSignal; log: unknown };
           config: { value: number };
-        }) => {
-          expect(ctx.signal).toBeDefined();
-          expect(ctx.log).toBeDefined();
-          return config.value + 1;
-        },
-      );
+        }) => Promise<number>
+      >(async ({ ctx, config }) => {
+        expect(ctx.signal).toBeDefined();
+        expect(ctx.log).toBeDefined();
+        return config.value + 1;
+      });
 
       const engine = createFlowEngine({
         $: {
@@ -262,8 +259,8 @@ describe(createFlowEngine, () => {
     });
 
     it("if only engine has a hook (flow does not), it fires", async () => {
-      const engineOnStart = vi.fn();
-      const engineOnFinish = vi.fn();
+      const engineOnStart = vi.fn<() => void>();
+      const engineOnFinish = vi.fn<() => void>();
 
       const engine = createFlowEngine({
         onStart: engineOnStart,
@@ -279,8 +276,8 @@ describe(createFlowEngine, () => {
     });
 
     it("if only flow has a hook (engine does not), it fires", async () => {
-      const flowOnStart = vi.fn();
-      const flowOnFinish = vi.fn();
+      const flowOnStart = vi.fn<() => void>();
+      const flowOnFinish = vi.fn<() => void>();
 
       const engine = createFlowEngine({});
 

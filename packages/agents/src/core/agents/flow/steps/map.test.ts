@@ -187,7 +187,7 @@ describe("map()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<(event: { id: string; error: Error }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -210,7 +210,7 @@ describe("map()", () => {
   });
 
   it("onFinish receives the result array", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<(event: { id: string; result: number[]; duration: number }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

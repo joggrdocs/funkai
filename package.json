@@ -26,8 +26,8 @@
     "eslint-plugin-jsdoc": "^62.8.0",
     "eslint-plugin-security": "^4.0.0",
     "laufen": "^1.2.1",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
     "turbo": "^2.8.20",
     "vitest": "catalog:"
   },

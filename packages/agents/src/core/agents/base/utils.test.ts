@@ -30,7 +30,7 @@ describe(resolveValue, () => {
   });
 
   it("does not call a LanguageModel object as a function", async () => {
-    const model = { doGenerate: vi.fn(), specificationVersion: "v1" };
+    const model = { doGenerate: vi.fn<() => void>(), specificationVersion: "v1" };
     const result = await resolveValue(model, "input");
     expect(result).toBe(model);
     expect(model.doGenerate).not.toHaveBeenCalled();
@@ -135,7 +135,9 @@ describe(buildAITools, () => {
 
   it("wraps agents without inputSchema into prompt-based tools", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     const result = buildAITools(undefined, { sub: mockAgent as never });
 
@@ -148,7 +150,9 @@ describe(buildAITools, () => {
 
   it("wraps agents with inputSchema using the schema", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
       [RUNNABLE_META]: {
         name: "custom-name",
         inputSchema: z.object({ query: z.string() }),
@@ -169,7 +173,9 @@ describe(buildAITools, () => {
 
   it("uses fallback name when agent has no RUNNABLE_META name", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     const result = buildAITools(undefined, { fallbackKey: mockAgent as never });
 
@@ -183,7 +189,9 @@ describe(buildAITools, () => {
 
   it("throws on agent key with dashes", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     expect(() => buildAITools(undefined, { "my-agent": mockAgent as never })).toThrow(
       /Invalid sub-agent key "my-agent"/,
@@ -192,7 +200,9 @@ describe(buildAITools, () => {
 
   it("throws on agent key with dots", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     expect(() => buildAITools(undefined, { "my.agent": mockAgent as never })).toThrow(
       /Invalid sub-agent key "my\.agent"/,
@@ -201,7 +211,9 @@ describe(buildAITools, () => {
 
   it("throws on agent key with colons", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     expect(() => buildAITools(undefined, { "my:agent": mockAgent as never })).toThrow(
       /Invalid sub-agent key "my:agent"/,
@@ -210,7 +222,9 @@ describe(buildAITools, () => {
 
   it("accepts camelCase agent keys", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     const result = buildAITools(undefined, { myAgent: mockAgent as never });
 
@@ -220,7 +234,9 @@ describe(buildAITools, () => {
 
   it("accepts snake_case agent keys", () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     const result = buildAITools(undefined, { my_agent: mockAgent as never });
 
@@ -231,7 +247,9 @@ describe(buildAITools, () => {
   it("merges tools and agents together", () => {
     const tools = { myTool: { description: "test" } as never };
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "result" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "result" }),
     };
     const result = buildAITools(tools, { sub: mockAgent as never });
 
@@ -242,7 +260,9 @@ describe(buildAITools, () => {
 
   it("execute calls generate on prompt-based agent and returns output", async () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "agent-output" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "agent-output" }),
     };
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
@@ -265,7 +285,9 @@ describe(buildAITools, () => {
 
   it("execute throws when prompt-based agent returns error", async () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: false, error: { message: "agent failed" } }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; error: { message: string } }>>()
+        .mockResolvedValue({ ok: false, error: { message: "agent failed" } }),
     };
     const result = buildAITools(undefined, { sub: mockAgent as never });
     expect(result).toBeDefined();
@@ -281,7 +303,9 @@ describe(buildAITools, () => {
 
   it("execute calls generate on typed agent with inputSchema and returns output", async () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: true, output: "typed-output" }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; output: string }>>()
+        .mockResolvedValue({ ok: true, output: "typed-output" }),
       [RUNNABLE_META]: {
         name: "typed-agent",
         inputSchema: z.object({ query: z.string() }),
@@ -308,7 +332,9 @@ describe(buildAITools, () => {
 
   it("execute throws when typed agent returns error", async () => {
     const mockAgent = {
-      generate: vi.fn().mockResolvedValue({ ok: false, error: { message: "typed failed" } }),
+      generate: vi
+        .fn<() => Promise<{ ok: boolean; error: { message: string } }>>()
+        .mockResolvedValue({ ok: false, error: { message: "typed failed" } }),
       [RUNNABLE_META]: {
         name: "typed-agent",
         inputSchema: z.object({ query: z.string() }),

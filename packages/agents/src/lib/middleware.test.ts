@@ -10,8 +10,8 @@ function createStubModel() {
     modelId: "test-model",
     defaultObjectGenerationMode: "json" as const,
     supportsImageUrls: false,
-    doGenerate: vi.fn(),
-    doStream: vi.fn(),
+    doGenerate: vi.fn<() => Promise<never>>(),
+    doStream: vi.fn<() => Promise<never>>(),
   };
 }
 
@@ -51,7 +51,9 @@ describe(withModelMiddleware, () => {
 
   it("wraps the model when custom middleware is provided", async () => {
     const model = createStubModel();
-    const middleware = createStubMiddleware({ wrapGenerate: vi.fn() });
+    const middleware = createStubMiddleware({
+      wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>(),
+    });
 
     const result = await withModelMiddleware({
       model: model as never,
@@ -67,8 +69,12 @@ describe(withModelMiddleware, () => {
 
   it("applies multiple middleware in order", async () => {
     const model = createStubModel();
-    const mw1 = createStubMiddleware({ wrapGenerate: vi.fn() });
-    const mw2 = createStubMiddleware({ wrapGenerate: vi.fn() });
+    const mw1 = createStubMiddleware({
+      wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>(),
+    });
+    const mw2 = createStubMiddleware({
+      wrapGenerate: vi.fn<NonNullable<LanguageModelMiddleware["wrapGenerate"]>>(),
+    });
 
     const result = await withModelMiddleware({
       model: model as never,

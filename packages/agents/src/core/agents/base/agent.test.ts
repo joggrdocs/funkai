@@ -2,13 +2,16 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { z } from "zod";
 
 import { agent } from "@/core/agents/base/agent.js";
+import type { StepFinishEvent } from "@/core/types.js";
 import { RUNNABLE_META } from "@/lib/runnable.js";
 import type { RunnableMeta } from "@/lib/runnable.js";
 import { createMockLogger } from "@/testing/index.js";
 import { suppressRejection } from "@/utils/promise.js";
 
-const mockGenerateText = vi.fn();
-const mockStreamText = vi.fn();
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible signature for mockImplementation compatibility
+const mockGenerateText = vi.fn<(...args: any[]) => any>();
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any -- top-level mock needs flexible signature for mockImplementation compatibility
+const mockStreamText = vi.fn<(...args: any[]) => any>();
 const mockStepCountIs = vi.fn<(n: number) => string>().mockReturnValue("mock-stop-condition");
 
 vi.mock(
@@ -19,11 +22,17 @@ vi.mock(
       streamText: (...args: unknown[]) => mockStreamText(...args),
       stepCountIs: (n: number) => mockStepCountIs(n),
       Output: {
-        text: () => ({ parseCompleteOutput: vi.fn() }),
-        object: ({ schema }: { schema: unknown }) => ({ parseCompleteOutput: vi.fn(), schema }),
-        array: ({ element }: { element: unknown }) => ({ parseCompleteOutput: vi.fn(), element }),
-        choice: () => ({ parseCompleteOutput: vi.fn() }),
-        json: () => ({ parseCompleteOutput: vi.fn() }),
+        text: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
+        object: ({ schema }: { schema: unknown }) => ({
+          parseCompleteOutput: vi.fn<() => void>(),
+          schema,
+        }),
+        array: ({ element }: { element: unknown }) => ({
+          parseCompleteOutput: vi.fn<() => void>(),
+          element,
+        }),
+        choice: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
+        json: () => ({ parseCompleteOutput: vi.fn<() => void>() }),
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
     }) as any,
@@ -33,7 +42,9 @@ vi.mock(
   import("@/lib/middleware.js"),
   () =>
     ({
-      withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
+      withModelMiddleware: vi.fn<({ model }: { model: unknown }) => Promise<unknown>>(
+        async ({ model }: { model: unknown }) => model,
+      ),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape; full module type is too broad
     }) as any,
 );
@@ -118,8 +129,8 @@ function createMockStreamResult(overrides?: {
     usage: Promise.resolve(merged.usage),
     steps: Promise.resolve([mockStep]),
     finishReason: Promise.resolve(merged.finishReason),
-    toTextStreamResponse: vi.fn(() => new Response("mock text stream")),
-    toUIMessageStreamResponse: vi.fn(() => new Response("mock ui stream")),
+    toTextStreamResponse: vi.fn<() => Response>(() => new Response("mock text stream")),
+    toUIMessageStreamResponse: vi.fn<() => Response>(() => new Response("mock ui stream")),
   };
 }
 
@@ -339,7 +350,7 @@ describe("generate() output resolution", () => {
     );
 
     const a = createSimpleAgent({
-      output: { parseCompleteOutput: vi.fn() } as never,
+      output: { parseCompleteOutput: vi.fn<() => void>() } as never,
     });
     const result = await a.generate({ prompt: "test" });
 
@@ -401,7 +412,7 @@ describe("generate() system prompt", () => {
 
 describe("generate() hooks", () => {
   it("fires onStart hook with input", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<(event: { input: unknown }) => void>();
     const a = createSimpleAgent({ onStart });
     await a.generate({ prompt: "hello" });
 
@@ -414,7 +425,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires onFinish hook with input, result (including usage), and duration", async () => {
-    const onFinish = vi.fn();
+    const onFinish =
+      vi.fn<(event: { input: unknown; result: unknown; duration: number }) => void>();
     const a = createSimpleAgent({ onFinish });
     await a.generate({ prompt: "hello" });
 
@@ -433,7 +445,7 @@ describe("generate() hooks", () => {
   });
 
   it("fires onStepFinish hook during tool loop", async () => {
-    const onStepFinish = vi.fn();
+    const onStepFinish = vi.fn<(event: StepFinishEvent) => void>();
 
     mockGenerateText.mockImplementation(
       async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
@@ -471,7 +483,7 @@ describe("generate() hooks", () => {
   });
 
   it("passes through all AI SDK StepResult fields in onStepFinish", async () => {
-    const onStepFinish = vi.fn();
+    const onStepFinish = vi.fn<(event: StepFinishEvent) => void>();
 
     const mockStepData = {
       stepNumber: 0,
@@ -560,7 +572,7 @@ describe("generate() hooks", () => {
   });
 
   it("preserves tool call args and results without stripping", async () => {
-    const onStepFinish = vi.fn();
+    const onStepFinish = vi.fn<(event: StepFinishEvent) => void>();
 
     const mockStepData = {
       stepNumber: 0,
@@ -613,13 +625,17 @@ describe("generate() hooks", () => {
 
     // Full tool call objects preserved (not stripped to toolName + argsTextLength)
     expect(event.toolCalls).toEqual(mockStepData.toolCalls);
-    expect(event.toolCalls[0].input).toEqual({ query: "typescript", limit: 10 });
-    expect(event.toolCalls[1].input).toEqual({ url: "https://example.com" });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted via toEqual above
+    expect(event.toolCalls[0]!.input).toEqual({ query: "typescript", limit: 10 });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted via toEqual above
+    expect(event.toolCalls[1]!.input).toEqual({ url: "https://example.com" });
 
     // Full tool result objects preserved (not stripped to toolName + resultTextLength)
     expect(event.toolResults).toEqual(mockStepData.toolResults);
-    expect(event.toolResults[0].output).toEqual({ items: [1, 2, 3] });
-    expect(event.toolResults[1].output).toEqual({ body: "<html>" });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted via toEqual above
+    expect(event.toolResults[0]!.output).toEqual({ items: [1, 2, 3] });
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- asserted via toEqual above
+    expect(event.toolResults[1]!.output).toEqual({ body: "<html>" });
 
     // Usage passed through as-is
     expect(event.usage).toEqual(mockStepData.usage);
@@ -629,8 +645,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onStart hooks", async () => {
-    const configOnStart = vi.fn();
-    const overrideOnStart = vi.fn();
+    const configOnStart = vi.fn<() => void>();
+    const overrideOnStart = vi.fn<() => void>();
 
     const a = createSimpleAgent({ onStart: configOnStart });
     await a.generate({ prompt: "test", onStart: overrideOnStart });
@@ -640,8 +656,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onFinish hooks", async () => {
-    const configOnFinish = vi.fn();
-    const overrideOnFinish = vi.fn();
+    const configOnFinish = vi.fn<() => void>();
+    const overrideOnFinish = vi.fn<() => void>();
 
     const a = createSimpleAgent({ onFinish: configOnFinish });
     await a.generate({ prompt: "test", onFinish: overrideOnFinish });
@@ -651,8 +667,8 @@ describe("generate() hooks", () => {
   });
 
   it("fires both config and override onStepFinish hooks", async () => {
-    const configOnStepFinish = vi.fn();
-    const overrideOnStepFinish = vi.fn();
+    const configOnStepFinish = vi.fn<() => void>();
+    const overrideOnStepFinish = vi.fn<() => void>();
 
     mockGenerateText.mockImplementation(
       async (opts: { onStepFinish?: (step: Record<string, unknown>) => Promise<void> }) => {
@@ -708,7 +724,7 @@ describe("generate() error handling", () => {
 
   it("fires onError hook when generateText throws", async () => {
     mockGenerateText.mockRejectedValue(new Error("boom"));
-    const onError = vi.fn();
+    const onError = vi.fn<(event: { input: unknown; error: Error }) => void>();
 
     const a = createSimpleAgent({ onError });
     await a.generate({ prompt: "test" });
@@ -725,8 +741,8 @@ describe("generate() error handling", () => {
 
   it("fires both config and override onError hooks", async () => {
     mockGenerateText.mockRejectedValue(new Error("fail"));
-    const configOnError = vi.fn();
-    const overrideOnError = vi.fn();
+    const configOnError = vi.fn<() => void>();
+    const overrideOnError = vi.fn<() => void>();
 
     const a = createSimpleAgent({ onError: configOnError });
     await a.generate({ prompt: "test", onError: overrideOnError });
@@ -737,7 +753,7 @@ describe("generate() error handling", () => {
 
   it("does not fire onFinish when generateText throws", async () => {
     mockGenerateText.mockRejectedValue(new Error("fail"));
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
 
     const a = createSimpleAgent({ onFinish });
     await a.generate({ prompt: "test" });
@@ -746,7 +762,7 @@ describe("generate() error handling", () => {
   });
 
   it("does not fire onError on input validation failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const a = createTypedAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
@@ -976,7 +992,7 @@ describe("stream() input validation", () => {
 
 describe("stream() hooks", () => {
   it("fires onStart hook with input", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<(event: { input: unknown }) => void>();
     const a = createSimpleAgent({ onStart });
     await a.stream({ prompt: "hello" });
 
@@ -989,7 +1005,8 @@ describe("stream() hooks", () => {
   });
 
   it("fires onFinish hook after stream completes", async () => {
-    const onFinish = vi.fn();
+    const onFinish =
+      vi.fn<(event: { input: unknown; result: unknown; duration: number }) => void>();
     const a = createSimpleAgent({ onFinish });
     const result = await a.stream({ prompt: "hello" });
 
@@ -1022,7 +1039,7 @@ describe("stream() hooks", () => {
   });
 
   it("fires onStepFinish hook during stream tool loop", async () => {
-    const onStepFinish = vi.fn();
+    const onStepFinish = vi.fn<() => void>();
 
     const streamResult = createMockStreamResult();
     mockStreamText.mockImplementation(
@@ -1066,7 +1083,7 @@ describe("stream() hooks", () => {
   });
 
   it("passes through AI SDK StepResult fields in stream onStepFinish", async () => {
-    const onStepFinish = vi.fn();
+    const onStepFinish = vi.fn<(event: StepFinishEvent) => void>();
 
     const mockStepData = {
       stepNumber: 0,
@@ -1159,7 +1176,7 @@ describe("stream() error handling", () => {
       throw new Error("setup fail");
     });
 
-    const onError = vi.fn();
+    const onError = vi.fn<(event: { input: unknown; error: Error }) => void>();
     const a = createSimpleAgent({ onError });
     await a.stream({ prompt: "test" });
 
@@ -1189,7 +1206,7 @@ describe("stream() error handling", () => {
   });
 
   it("does not fire onError on input validation failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const a = createTypedAgent({ onError });
 
     // @ts-expect-error - intentionally invalid input
@@ -1203,7 +1220,7 @@ describe("stream() error handling", () => {
       throw new Error("setup fail");
     });
 
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const a = createSimpleAgent({ onFinish });
     await a.stream({ prompt: "test" });
 
@@ -1267,7 +1284,7 @@ describe("fn()", () => {
   });
 
   it("fn() passes overrides through to generate", async () => {
-    const onStart = vi.fn();
+    const onStart = vi.fn<() => void>();
     const a = createSimpleAgent();
     const fn = a.fn();
 
@@ -1296,7 +1313,7 @@ describe("tool integration", () => {
     const mockTool = {
       description: "mock tool",
       inputSchema: { jsonSchema: {} },
-      execute: vi.fn(),
+      execute: vi.fn<() => void>(),
     };
 
     const a = createSimpleAgent({ tools: { myTool: mockTool as never } });
@@ -1321,11 +1338,15 @@ describe("tool integration", () => {
   });
 
   it("merges override tools with config tools", async () => {
-    const configTool = { description: "config", inputSchema: { jsonSchema: {} }, execute: vi.fn() };
+    const configTool = {
+      description: "config",
+      inputSchema: { jsonSchema: {} },
+      execute: vi.fn<() => void>(),
+    };
     const overrideTool = {
       description: "override",
       inputSchema: { jsonSchema: {} },
-      execute: vi.fn(),
+      execute: vi.fn<() => void>(),
     };
 
     const a = createSimpleAgent({ tools: { configTool: configTool as never } });
@@ -1442,8 +1463,8 @@ describe("stream() async error during consumption", () => {
     const streamError = new Error("async hook error");
     mockStreamText.mockReturnValue(createErrorStreamResult(streamError));
 
-    const onError = vi.fn();
-    const onFinish = vi.fn();
+    const onError = vi.fn<(event: { input: unknown; error: Error }) => void>();
+    const onFinish = vi.fn<() => void>();
     const a = createSimpleAgent({ onError, onFinish });
     const result = await a.stream({ prompt: "test" });
 
@@ -1507,8 +1528,8 @@ describe("stream() unhandled rejection safety", () => {
       response: makeSuppressedRejection<{ messages: unknown[] }>(streamError),
       totalUsage: makeSuppressedRejection<typeof MOCK_TOTAL_USAGE>(streamError),
       finishReason: makeSuppressedRejection<string>(streamError),
-      toTextStreamResponse: vi.fn(() => new Response("")),
-      toUIMessageStreamResponse: vi.fn(() => new Response("")),
+      toTextStreamResponse: vi.fn<() => Response>(() => new Response("")),
+      toUIMessageStreamResponse: vi.fn<() => Response>(() => new Response("")),
     });
 
     const unhandledRejections: unknown[] = [];
@@ -1562,7 +1583,7 @@ describe("stream() unhandled rejection safety", () => {
 describe("stream() response methods", () => {
   it("toTextStreamResponse delegates to the AI SDK result", async () => {
     const mockResponse = new Response("mock text");
-    const mockToText = vi.fn(() => mockResponse);
+    const mockToText = vi.fn<() => Response>(() => mockResponse);
     mockStreamText.mockReturnValue({
       ...createMockStreamResult(),
       toTextStreamResponse: mockToText,
@@ -1583,7 +1604,7 @@ describe("stream() response methods", () => {
 
   it("toUIMessageStreamResponse delegates to the AI SDK result", async () => {
     const mockResponse = new Response("mock ui");
-    const mockToUI = vi.fn(() => mockResponse);
+    const mockToUI = vi.fn<() => Response>(() => mockResponse);
     mockStreamText.mockReturnValue({
       ...createMockStreamResult(),
       toUIMessageStreamResponse: mockToUI,
@@ -1603,7 +1624,7 @@ describe("stream() response methods", () => {
 
   it("toTextStreamResponse works with no arguments", async () => {
     const mockResponse = new Response("text");
-    const mockToText = vi.fn(() => mockResponse);
+    const mockToText = vi.fn<() => Response>(() => mockResponse);
     mockStreamText.mockReturnValue({
       ...createMockStreamResult(),
       toTextStreamResponse: mockToText,

@@ -26,7 +26,9 @@ vi.mock(
   import("@/lib/middleware.js"),
   () =>
     ({
-      withModelMiddleware: vi.fn(async ({ model }: { model: unknown }) => model),
+      withModelMiddleware: vi.fn<({ model }: { model: unknown }) => Promise<unknown>>(
+        async ({ model }) => model,
+      ),
       // oxlint-disable-next-line @typescript-eslint/no-explicit-any -- Mock factory must return partial shape
     }) as any,
 );
@@ -81,19 +83,21 @@ function createLifecycleTracker() {
 
   return {
     events,
-    onStart: vi.fn((_event: { input: unknown }) => {
+    onStart: vi.fn<(event: { input: unknown }) => void>((_event) => {
       events.push({ type: "onStart" });
     }),
-    onFinish: vi.fn((_event: { input: unknown; result: unknown; duration: number }) => {
-      events.push({ type: "onFinish" });
-    }),
-    onError: vi.fn((_event: { input: unknown; error: Error }) => {
+    onFinish: vi.fn<(event: { input: unknown; result: unknown; duration: number }) => void>(
+      (_event) => {
+        events.push({ type: "onFinish" });
+      },
+    ),
+    onError: vi.fn<(event: { input: unknown; error: Error }) => void>((_event) => {
       events.push({ type: "onError" });
     }),
-    onStepStart: vi.fn((event: StepStartEvent) => {
+    onStepStart: vi.fn<(event: StepStartEvent) => void>((event) => {
       events.push({ type: "onStepStart", detail: event.stepId });
     }),
-    onStepFinish: vi.fn((event: StepFinishEvent) => {
+    onStepFinish: vi.fn<(event: StepFinishEvent) => void>((event) => {
       const id = event.stepId;
       events.push({ type: "onStepFinish", detail: id });
     }),

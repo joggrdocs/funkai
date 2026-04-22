@@ -199,7 +199,7 @@ describe("all()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<(event: { id: string; error: Error }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -219,7 +219,7 @@ describe("all()", () => {
   });
 
   it("onFinish receives the results array", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<(event: { id: string; result: unknown[]; duration: number }) => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 

@@ -1,5 +1,4 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 /** Absolute path to the SDK's built-in partials directory. */
-export const PARTIALS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "../prompts");
+export const PARTIALS_DIR = resolve(import.meta.dirname, "../prompts");

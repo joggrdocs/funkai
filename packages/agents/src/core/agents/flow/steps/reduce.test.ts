@@ -215,7 +215,7 @@ describe("reduce()", () => {
   });
 
   it("fires onError hook on failure", async () => {
-    const onError = vi.fn();
+    const onError = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
@@ -239,7 +239,7 @@ describe("reduce()", () => {
   });
 
   it("onFinish receives the final accumulated result", async () => {
-    const onFinish = vi.fn();
+    const onFinish = vi.fn<() => void>();
     const ctx = createMockCtx();
     const $ = createStepBuilder({ ctx });
 
