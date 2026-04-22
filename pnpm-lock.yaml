@@ -342,8 +342,8 @@ importers:
         specifier: 'catalog:'
         version: 1.45.1
       liquidjs:
-        specifier: ^10.25.2
-        version: 10.25.2
+        specifier: ^10.25.5
+        version: 10.25.6
       picomatch:
         specifier: ^4.0.4
         version: 4.0.4
@@ -429,8 +429,8 @@ importers:
         specifier: 'catalog:'
         version: 1.45.1
       liquidjs:
-        specifier: ^10.25.2
-        version: 10.25.2
+        specifier: ^10.25.5
+        version: 10.25.6
       zod:
         specifier: 'catalog:'
         version: 4.3.6
@@ -3828,8 +3828,8 @@ packages:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
 
-  liquidjs@10.25.2:
-    resolution: {integrity: sha512-ZbgcjEjGNlAIjqhuMzymO3lCpHgmVMftKfrq4/YLLxmKaFFeQMXRGrJTqKX7OXX1hKVPUDpTIrvL7lxt3X/hmw==}
+  liquidjs@10.25.6:
+    resolution: {integrity: sha512-h5ki5HS1PiL9/NmLw3iUcTF1jQswKJd8KLEXNrtSf8XHF0v3c5+d+8llz3N9I5IUdc5rsOuVLb9AVnqvqqscPg==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -5772,7 +5772,7 @@ snapshots:
       '@kidd-cli/core': 0.11.0(chokidar@5.0.0)(ink@6.8.0(@types/react@19.2.14)(react@19.2.4))(jiti@2.6.1)(magicast@0.5.2)(react@19.2.4)(vitest@4.1.1(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))
       '@kidd-cli/utils': 0.1.5
       fs-extra: 11.3.4
-      liquidjs: 10.25.2
+      liquidjs: 10.25.6
       picocolors: 1.1.1
       yaml: 2.8.3
       zod: 4.3.6
@@ -5823,7 +5823,7 @@ snapshots:
       dotenv: 17.3.1
       es-toolkit: 1.45.1
       jsonc-parser: 3.3.1
-      liquidjs: 10.25.2
+      liquidjs: 10.25.6
       picocolors: 1.1.1
       ts-pattern: 5.9.0
       yaml: 2.8.3
@@ -5847,7 +5847,7 @@ snapshots:
       dotenv: 17.3.1
       es-toolkit: 1.45.1
       jsonc-parser: 3.3.1
-      liquidjs: 10.25.2
+      liquidjs: 10.25.6
       picocolors: 1.1.1
       ts-pattern: 5.9.0
       yaml: 2.8.3
@@ -5873,7 +5873,7 @@ snapshots:
       dotenv: 17.3.1
       es-toolkit: 1.45.1
       jsonc-parser: 3.3.1
-      liquidjs: 10.25.2
+      liquidjs: 10.25.6
       picocolors: 1.1.1
       ts-pattern: 5.9.0
       yaml: 2.8.3
@@ -7802,7 +7802,7 @@ snapshots:
       gray-matter: 4.0.3
       jiti: 2.6.1
       js-yaml: 4.1.1
-      liquidjs: 10.25.2
+      liquidjs: 10.25.6
       ts-pattern: 5.9.0
     transitivePeerDependencies:
       - chokidar
@@ -9085,7 +9085,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  liquidjs@10.25.2:
+  liquidjs@10.25.6:
     dependencies:
       commander: 10.0.1
 

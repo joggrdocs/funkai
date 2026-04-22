@@ -39,7 +39,7 @@
     "@funkai/prompts": "workspace:*",
     "@kidd-cli/core": "^0.10.0",
     "es-toolkit": "catalog:",
-    "liquidjs": "^10.25.2",
+    "liquidjs": "^10.25.5",
     "picomatch": "^4.0.4",
     "ts-pattern": "catalog:",
     "yaml": "^2.8.3",
