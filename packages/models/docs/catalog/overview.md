@@ -75,6 +75,7 @@ Each model has the following fields:
 | `output`     | `number`              | Cost per output token               |
 | `cacheRead`  | `number \| undefined` | Cost per cached input token (read)  |
 | `cacheWrite` | `number \| undefined` | Cost per cached input token (write) |
+| `reasoning`  | `number \| undefined` | Cost per reasoning token            |
 
 ### ModelCapabilities
 
@@ -99,7 +100,7 @@ Each model has the following fields:
 `model(id)` returns the matching `ModelDefinition` or `null`:
 
 ```ts
-const m = model("openai/gpt-4.1");
+const m = model("gpt-4.1");
 if (m) {
   console.log(m.name);
   console.log(m.pricing.input);
@@ -131,7 +132,7 @@ const providers = new Set(MODELS.map((m) => m.provider));
 ```ts
 import type { ModelId } from "@funkai/models";
 
-const id: ModelId = "openai/gpt-4.1";
+const id: ModelId = "gpt-4.1";
 ```
 
 ### Per-Provider Subpath Exports

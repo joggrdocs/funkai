@@ -42,7 +42,7 @@ sequenceDiagram
     end
 
     C->>C: await result.output
-    C->>C: await result.messages
+    C->>C: await result.response
 ```
 
 ## Key Concepts
@@ -53,21 +53,23 @@ Returned by `.stream()` inside a `Result` wrapper. The `fullStream` is available
 
 ```ts
 interface StreamResult<TOutput = string> {
-  output: Promise<TOutput>;
-  messages: Promise<Message[]>;
-  usage: Promise<TokenUsage>;
-  finishReason: Promise<string>;
-  fullStream: AsyncIterableStream<StreamPart>;
+  output: PromiseLike<TOutput>;          // resolves after stream completes
+  usage: Promise<LanguageModelUsage>;    // resolves after stream completes
+  finishReason: Promise<string>;         // resolves after stream completes
+  textStream: AsyncIterableStream<string>; // live text deltas
+  fullStream: AsyncIterableStream<StreamPart>; // all stream parts (text, tool calls, etc.)
+  response: Promise<Response>;           // resolves after stream completes (includes messages)
 }
 ```
 
 | Field          | Type                              | When Available         |
 | -------------- | --------------------------------- | ---------------------- |
+| `textStream`   | `AsyncIterableStream<string>`     | Immediately            |
 | `fullStream`   | `AsyncIterableStream<StreamPart>` | Immediately            |
-| `output`       | `Promise<TOutput>`                | After stream completes |
-| `messages`     | `Promise<Message[]>`              | After stream completes |
-| `usage`        | `Promise<TokenUsage>`             | After stream completes |
+| `output`       | `PromiseLike<TOutput>`            | After stream completes |
+| `usage`        | `Promise<LanguageModelUsage>`     | After stream completes |
 | `finishReason` | `Promise<string>`                 | After stream completes |
+| `response`     | `Promise<Response>`               | After stream completes |
 
 ### StreamPart Events
 

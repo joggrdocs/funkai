@@ -104,7 +104,7 @@ const registry = createProviderRegistry({
 });
 
 const lm1 = registry("openai/gpt-4.1");
-const lm2 = registry("anthropic/claude-sonnet-4");
+const lm2 = registry("anthropic/claude-sonnet-4-20250514");
 ```
 
 `lm1` routes through `@ai-sdk/openai`. `lm2` routes through `@ai-sdk/anthropic`.

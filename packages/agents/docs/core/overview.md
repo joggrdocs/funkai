@@ -20,7 +20,7 @@ if (!result.ok) {
 
 // Success -- all fields from T are directly on result
 console.log(result.output);
-console.log(result.messages);
+console.log(result.response.messages);
 ```
 
 `ResultError` has `code` (machine-readable), `message` (human-readable), and optional `cause` (original thrown error).

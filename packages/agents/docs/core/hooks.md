@@ -20,7 +20,7 @@ Set on `FlowAgentConfig`:
 | Hook           | Event fields                                                | When                                                  |
 | -------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
 | `onStart`      | `{ input }`                                                 | After input validation, before handler runs           |
-| `onFinish`     | `{ input, output, duration }`                               | After successful completion                           |
+| `onFinish`     | `{ input, result, duration }`                               | After successful completion                           |
 | `onError`      | `{ input, error }`                                          | On error, before Result is returned                   |
 | `onStepStart`  | `StepStartEvent` (`{ stepId, stepOperation, agentChain? }`) | Before any `$` operation executes                     |
 | `onStepFinish` | `StepFinishEvent`                                           | After any `$` operation completes (success AND error) |

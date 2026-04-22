@@ -406,9 +406,9 @@ The aggregated output type. All fields are resolved `number` (0 when the raw rec
 
 Not all providers report all token fields. Check `result.usage` directly. Unreported fields default to `0`.
 
-### `model()` throws for unknown model ID
+### `model()` returns `null` for unknown model ID
 
-Use the provider-native ID without the provider prefix (e.g. `"gpt-4.1"` not `"openai/gpt-4.1"`). Run `pnpm --filter=@funkai/models generate:models` to refresh the catalog if the model was recently added.
+`model()` returns `null` when the ID is not in the catalog. Use the provider-native ID without the provider prefix (e.g. `"gpt-4.1"` not `"openai/gpt-4.1"`). Run `pnpm --filter=@funkai/models generate:models` to refresh the catalog if the model was recently added.
 
 ### Budget hook does not prevent the next call
 

@@ -132,7 +132,7 @@ const tagger = agent({
 
 ### 6. Stream output
 
-Use `.stream()` for incremental text delivery. The result contains a `ReadableStream<string>` for live chunks, plus `output` and `messages` as promises that resolve after the stream completes.
+Use `.stream()` for incremental text delivery. The result contains a `ReadableStream<string>` for live chunks, plus `output` as a promise and `response` (which includes `messages`) that resolve after the stream completes.
 
 ```ts
 const result = await helper.stream({ prompt: "Explain async/await in detail" });
@@ -148,7 +148,8 @@ if (result.ok) {
 
   // Await final output and messages after stream completes
   const finalOutput = await result.output;
-  const messages = await result.messages;
+  const response = await result.response;
+  const messages = response.messages;
 }
 ```
 
@@ -194,7 +195,7 @@ const result = await helper.generate({
   system: "You explain concepts using simple analogies.",
   maxSteps: 5,
   onStart: ({ input }) => console.log("Starting with:", input),
-  onFinish: ({ result, duration }) => console.log(`Done in ${duration}ms`),
+  onFinish: ({ input, result, duration }) => console.log(`Done in ${duration}ms`),
 });
 ```
 
@@ -202,7 +203,7 @@ const result = await helper.generate({
 
 - `result.ok` is `true` on success
 - `result.output` contains the agent's response (string or typed object)
-- `result.messages` contains the full message history including tool calls
+- `result.response.messages` contains the full message history including tool calls
 
 ## Troubleshooting
 

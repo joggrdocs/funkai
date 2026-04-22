@@ -51,11 +51,12 @@ Generate typed TypeScript modules from `.prompt` files.
 
 **Alias:** `gen`
 
-| Flag         | Alias | Required | Description                               |
-| ------------ | ----- | -------- | ----------------------------------------- |
-| `--out`      | `-o`  | Yes      | Output directory for generated files      |
-| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files |
-| `--silent`   | ---   | No       | Suppress output except errors             |
+| Flag         | Required | Description                               |
+| ------------ | -------- | ----------------------------------------- |
+| `--out`      | Yes      | Output directory for generated files      |
+| `--includes` | Yes      | Glob patterns to scan for `.prompt` files |
+| `--partials` | No       | Custom partials directory                 |
+| `--silent`   | No       | Suppress output except errors             |
 
 ```bash
 prompts generate --out .prompts/client --includes "prompts/**" "src/agents/**" "src/workflows/**"
@@ -69,11 +70,11 @@ Runs lint validation automatically before generating. Exits with code 1 on lint 
 
 Validate `.prompt` files without generating output.
 
-| Flag         | Alias | Required | Description                                              |
-| ------------ | ----- | -------- | -------------------------------------------------------- |
-| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files                |
-| `--partials` | `-p`  | No       | Custom partials directory (default: `.prompts/partials`) |
-| `--silent`   | ---   | No       | Suppress output except errors                            |
+| Flag         | Required | Description                                              |
+| ------------ | -------- | -------------------------------------------------------- |
+| `--includes` | Yes      | Glob patterns to scan for `.prompt` files                |
+| `--partials` | No       | Custom partials directory (default: `.prompts/partials`) |
+| `--silent`   | No       | Suppress output except errors                            |
 
 **Diagnostics:**
 
@@ -111,6 +112,54 @@ Configures:
 2. VSCode Liquid extension recommendation
 3. `.gitignore` entry for generated `.prompts/client/` directory
 4. `tsconfig.json` path alias (`~prompts` -> `./.prompts/client/index.ts`)
+
+## Configuration
+
+Instead of passing flags on every invocation, you can define defaults in a `funkai.config.ts` file at your project root. CLI flags always take precedence over config values.
+
+```ts
+import { defineConfig } from "@funkai/config";
+
+export default defineConfig({
+  prompts: {
+    out: ".prompts/client",
+    includes: ["src/prompts/**", "src/agents/**"],
+    excludes: ["**/*.partial.prompt"],
+    partials: ".prompts/partials",
+    groups: [
+      {
+        name: "agents/core",
+        includes: ["src/prompts/agents/core/**"],
+        excludes: ["src/prompts/agents/core/internal/**"],
+      },
+    ],
+  },
+});
+```
+
+### Config Fields
+
+| Field      | Type                | Description                                                                                                        |
+| ---------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `out`      | `string`            | Output directory for generated prompt modules. Same as `--out`.                                                    |
+| `includes` | `string[]`          | Glob patterns to scan for `.prompt` files (defaults to `["./**"]`). Same as `--includes`.                          |
+| `excludes` | `string[]`          | Glob patterns to exclude from discovery.                                                                           |
+| `partials` | `string`            | Custom partials directory. Same as `--partials`.                                                                   |
+| `groups`   | `PromptGroup[]`     | Pattern-based group assignments. Prompts matched by a group's `includes` (and not its `excludes`) get the group's `name` assigned unless frontmatter already defines a `group`. |
+
+### Group Schema
+
+Each entry in `groups` has:
+
+| Field      | Required | Type       | Description                                   |
+| ---------- | -------- | ---------- | --------------------------------------------- |
+| `name`     | Yes      | `string`   | Group path (e.g. `"agents/core"`)             |
+| `includes` | Yes      | `string[]` | Glob patterns to match prompt file paths      |
+| `excludes` | No       | `string[]` | Glob patterns to exclude from this group      |
+
+### Precedence
+
+CLI flags override config values. For example, `prompts generate --out dist` uses `dist` even if `funkai.config.ts` sets `out: ".prompts/client"`. When neither a CLI flag nor a config value is provided, defaults apply (`includes` defaults to `["./**"]`).
 
 ## Integration
 

@@ -259,7 +259,7 @@ const wf = flowAgent(
     input: InputSchema,
     output: OutputSchema,
     onStart: ({ input }) => console.log("Flow agent started"),
-    onFinish: ({ input, output, duration }) => console.log(`Done in ${duration}ms`),
+    onFinish: ({ input, result, duration }) => console.log(`Done in ${duration}ms`),
     onError: ({ input, error }) => console.error("Failed:", error.message),
     onStepStart: ({ stepId }) => console.log(`Step ${stepId} started`),
     onStepFinish: ({ stepId, output, duration }) =>

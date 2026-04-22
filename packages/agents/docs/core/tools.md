@@ -32,7 +32,7 @@ type Tool<TInput = unknown, TOutput = unknown> = ReturnType<typeof aiTool<TInput
 ## Example
 
 ```ts
-import { tool, agent } from "@joggr/agent-sdk";
+import { tool, agent } from "@funkai/agents";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 

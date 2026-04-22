@@ -57,7 +57,7 @@ const registry = createProviderRegistry({
   },
 });
 
-const lm = registry("openrouter/anthropic/claude-sonnet-4");
+const lm = registry("openrouter/anthropic/claude-sonnet-4-20250514");
 ```
 
 ## Error Handling
@@ -67,7 +67,7 @@ const lm = registry("openrouter/anthropic/claude-sonnet-4");
 | Condition       | Error Message                                                    |
 | --------------- | ---------------------------------------------------------------- |
 | Empty model ID  | `Cannot resolve model: model ID is empty`                        |
-| No prefix       | `Cannot resolve model "<id>": no provider prefix`                |
+| No prefix       | `Invalid model ID "<id>": expected "provider/model" format (e.g. "openai/gpt-4.1")` |
 | Unmapped prefix | `Cannot resolve model "<id>": no provider mapped for "<prefix>"` |
 
 ## References

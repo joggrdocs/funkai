@@ -184,7 +184,7 @@ const result = await myFlowAgent.generate(input);
 
 if (result.ok) {
   const usages = collectUsages(result.trace);
-  const m = model("openai/gpt-4.1");
+  const m = model("gpt-4.1");
   if (!m) throw new Error("Model not found in catalog");
   const totalCost = usages.reduce((sum, usage) => {
     const cost = calculateCost(usage, m.pricing);

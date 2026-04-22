@@ -18,11 +18,13 @@ Demonstrates streaming for both regular agents and flow agents using the typed `
 
 ## Prerequisites
 
-Set your OpenAI API key (or configure OpenRouter):
+Set your OpenAI API key:
 
 ```bash
 export OPENAI_API_KEY="sk-..."
 ```
+
+Or create a `.env` file in the example directory with `OPENAI_API_KEY=sk-...`.
 
 ## Usage
 

@@ -55,6 +55,10 @@ const result = await summarizer.generate({ prompt: "Summarize the history of Typ
 
 if (result.ok) {
   const modelDef = model("gpt-4.1");
+  if (!modelDef) {
+    return;
+  }
+
   const cost = calculateCost(result.usage, modelDef.pricing);
 
   console.log("Input cost:", `$${cost.input.toFixed(6)}`);
@@ -75,6 +79,10 @@ import { openai } from "@ai-sdk/openai";
 import { calculateCost, model } from "@funkai/models";
 
 const modelDef = model("gpt-4.1");
+
+if (!modelDef) {
+  throw new Error("Unknown model: gpt-4.1");
+}
 
 let cumulativeCost = 0;
 const budgetLimit = 0.5; // $0.50
@@ -181,8 +189,10 @@ const result = await pipeline.generate({ texts: ["Text A", "Text B", "Text C"] }
 
 if (result.ok) {
   const modelDef = model("gpt-4.1");
-  const cost = calculateCost(result.usage, modelDef.pricing);
-  console.log(`Flow agent total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
+  if (modelDef) {
+    const cost = calculateCost(result.usage, modelDef.pricing);
+    console.log(`Flow agent total: ${result.usage.totalTokens} tokens, $${cost.total.toFixed(6)}`);
+  }
 }
 ```
 
@@ -214,6 +224,10 @@ import { calculateCost, model } from "@funkai/models";
 import { z } from "zod";
 
 const modelDef = model("gpt-4.1");
+
+if (!modelDef) {
+  throw new Error("Unknown model: gpt-4.1");
+}
 
 const writer = agent({
   name: "writer",
@@ -262,7 +276,7 @@ const traced = flowAgent(
 - `calculateCost()` returns a `UsageCost` with `input`, `output`, `cacheRead`, `cacheWrite`, and `total` fields
 - Budget hooks fire after each successful generation
 - Flow agent `result.usage` aggregates all `$.agent()` calls
-- `model()` throws for unknown IDs; use `models()` to list available models
+- `model()` returns `null` for unknown IDs; use `models()` to list available models
 
 ## Troubleshooting
 
@@ -272,11 +286,11 @@ const traced = flowAgent(
 
 **Fix:** Not all providers report all token fields. Check `result.usage` directly. Unreported fields default to `0`.
 
-### `model()` throws for unknown model ID
+### `model()` returns `null` for unknown model ID
 
 **Issue:** The model ID is not in the catalog.
 
-**Fix:** Use the provider-native ID without the provider prefix (e.g. `"gpt-4.1"` not `"openai/gpt-4.1"`). Run `pnpm --filter=@funkai/models generate:models` to refresh the catalog if the model was recently added.
+**Fix:** `model()` returns `null` when the ID is not found. Use the provider-native ID without the provider prefix (e.g. `"gpt-4.1"` not `"openai/gpt-4.1"`). Run `pnpm --filter=@funkai/models generate:models` to refresh the catalog if the model was recently added.
 
 ### Budget hook does not prevent the next call
 

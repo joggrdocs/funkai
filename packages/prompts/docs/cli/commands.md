@@ -6,11 +6,12 @@ Generate typed TypeScript modules from `.prompt` files.
 
 **Alias:** `gen`
 
-| Flag         | Alias | Required | Description                               |
-| ------------ | ----- | -------- | ----------------------------------------- |
-| `--out`      | `-o`  | Yes      | Output directory for generated files      |
-| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files |
-| `--silent`   | ---   | No       | Suppress output except errors             |
+| Flag         | Required | Description                               |
+| ------------ | -------- | ----------------------------------------- |
+| `--out`      | Yes      | Output directory for generated files      |
+| `--includes` | Yes      | Glob patterns to scan for `.prompt` files |
+| `--partials` | No       | Custom partials directory                 |
+| `--silent`   | No       | Suppress output except errors             |
 
 ```bash
 prompts generate --out .prompts/client --includes "prompts/**" "src/agents/**" "src/workflows/**"
@@ -24,11 +25,11 @@ Runs lint validation automatically before generating. Exits with code 1 on lint 
 
 Validate `.prompt` files without generating output.
 
-| Flag         | Alias | Required | Description                                              |
-| ------------ | ----- | -------- | -------------------------------------------------------- |
-| `--includes` | `-r`  | Yes      | Glob patterns to scan for `.prompt` files                |
-| `--partials` | `-p`  | No       | Custom partials directory (default: `.prompts/partials`) |
-| `--silent`   | ---   | No       | Suppress output except errors                            |
+| Flag         | Required | Description                                              |
+| ------------ | -------- | -------------------------------------------------------- |
+| `--includes` | Yes      | Glob patterns to scan for `.prompt` files                |
+| `--partials` | No       | Custom partials directory (default: `.prompts/partials`) |
+| `--silent`   | No       | Suppress output except errors                            |
 
 **Diagnostics:**
 

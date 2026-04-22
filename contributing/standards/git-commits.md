@@ -63,7 +63,7 @@ Scopes identify what part of the codebase changed. Use directory-style paths for
 
 ```bash
 git commit -m "feat(packages/agents): add parallel step execution"
-git commit -m "chore(deps): update typescript to 5.9.3"
+git commit -m "chore(deps): update typescript to 6.0.3"
 git commit -m "chore(ci): add release workflow"
 git commit -m "chore(tooling): update turbo.json pipeline"
 ```

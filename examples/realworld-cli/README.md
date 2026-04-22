@@ -22,13 +22,16 @@ A realistic CLI application that uses an AI agent pipeline to scan a codebase fo
 
 ## Prerequisites
 
-Set your OpenAI API key (or configure OpenRouter):
+Set your OpenAI API key:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+Or copy the `.env.example` file and fill in your key:
 
 ```bash
 # From the monorepo root
-pnpm install
-
-# Copy and fill in your API key
 cp examples/realworld-cli/.env.example examples/realworld-cli/.env
 ```
 
@@ -73,7 +76,7 @@ CLI (@clack/prompts) ───────────────────�
                      ←── SSE: done ──────────┘
 ```
 
-- **API server** (`api/`) — Hosts the agent pipeline (scanner + analyzer) and makes LLM calls via OpenRouter. When an agent decides to call a tool (`ls`, `grep`, `read-file`), the API sends a `tool-execute` SSE event to the CLI and waits for the result.
+- **API server** (`api/`) — Hosts the agent pipeline (scanner + analyzer) and makes LLM calls via OpenAI. When an agent decides to call a tool (`ls`, `grep`, `read-file`), the API sends a `tool-execute` SSE event to the CLI and waits for the result.
 - **CLI client** (`cli/`) — Owns the filesystem. Receives `tool-execute` events, runs the tool locally against the user's codebase, and POSTs the result back to `/tool-result`. Streams all agent activity to the terminal using `@clack/prompts`. Writes a markdown report to `./reports/` when complete.
 - **Fixtures** (`fixtures/`) — Sample source code and intentionally bad tests so the demo works out of the box.
 - **Shared** (`shared/`) — SSE event types and tool result payload shared between API and CLI.

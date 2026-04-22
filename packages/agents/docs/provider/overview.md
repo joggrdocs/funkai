@@ -53,8 +53,8 @@ For model metadata and pricing, use `@funkai/models`:
 ```ts
 import { model, models } from "@funkai/models";
 
-const gpt4 = model("openai/gpt-4.1");
-console.log(gpt4?.pricing.prompt); // cost per input token
+const gpt4 = model("gpt-4.1");
+console.log(gpt4?.pricing.input); // cost per input token
 
 const reasoning = models((m) => m.capabilities.reasoning);
 ```

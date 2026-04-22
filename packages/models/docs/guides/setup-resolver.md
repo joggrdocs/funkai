@@ -36,11 +36,11 @@ const registry = createProviderRegistry({
 
 ```ts
 const gpt = registry("openai/gpt-4.1");
-const claude = registry("anthropic/claude-sonnet-4");
+const claude = registry("anthropic/claude-sonnet-4-20250514");
 ```
 
 - `"openai/gpt-4.1"` routes through `@ai-sdk/openai` directly
-- `"anthropic/claude-sonnet-4"` routes through `@ai-sdk/anthropic` directly
+- `"anthropic/claude-sonnet-4-20250514"` routes through `@ai-sdk/anthropic` directly
 
 ### 4. Use with Agents
 
@@ -62,7 +62,7 @@ Verify the registry works by resolving each configured provider:
 
 ```ts
 const gpt = registry("openai/gpt-4.1");
-const claude = registry("anthropic/claude-sonnet-4");
+const claude = registry("anthropic/claude-sonnet-4-20250514");
 
 console.log(gpt.modelId);
 console.log(claude.modelId);

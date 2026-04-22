@@ -13,6 +13,8 @@ The codebase follows a functional, immutable, composition-first design. There ar
 ```
 packages/
 ├── agents/          # @funkai/agents -- Workflow and agent orchestration
+├── cli/             # @funkai/cli -- CLI for the funkai framework
+├── config/          # @funkai/config -- Configuration schema and defineConfig helper
 ├── models/          # @funkai/models -- Model catalog, provider resolution, cost calculation
 └── prompts/         # @funkai/prompts -- Prompt SDK with templating and validation
 ```
@@ -20,6 +22,8 @@ packages/
 | Package           | Purpose                                                                                      |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | `@funkai/agents`  | Agent and workflow orchestration: agents, workflows, steps, tools, hooks, provider           |
+| `@funkai/cli`     | CLI for the funkai framework: setup, codegen, prompt management, and validation              |
+| `@funkai/config`  | Configuration schema and `defineConfig()` helper for typed `funkai.config.ts` files          |
 | `@funkai/models`  | Model catalog, provider resolution, cost calculation, and nightly model data synchronization |
 | `@funkai/prompts` | Prompt authoring SDK: LiquidJS templating, Zod validation, CLI, codegen                      |
 
@@ -134,6 +138,44 @@ The prompts package provides a prompt authoring SDK with two surfaces:
 | Partial     | Reusable template fragment included via `{% partial %}` |
 | Codegen     | Generate TypeScript types from prompt files             |
 
+## Config Package
+
+The config package provides the Zod-validated configuration schema for funkai projects. Users author a `funkai.config.ts` file and use `defineConfig()` for type-safe editor autocompletion.
+
+### Core Exports
+
+| Export              | Purpose                                                                   |
+| ------------------- | ------------------------------------------------------------------------- |
+| `defineConfig()`    | Identity function that provides type inference for `funkai.config.ts`     |
+| `configSchema`      | Root Zod schema covering all funkai configuration sections                |
+| `promptsConfigSchema` | Schema for prompt discovery, output directory, partials, and groups     |
+| `agentsConfigSchema`  | Schema for agent configuration (placeholder for future expansion)       |
+
+### Dependency Direction
+
+`@funkai/cli` depends on `@funkai/config` to load and validate the configuration file at runtime. Other packages do not depend on config directly — they receive resolved configuration values from the CLI.
+
+## CLI Package
+
+The CLI package (`funkai` binary) is the primary developer-facing tool for working with funkai projects. It loads configuration via `@funkai/config`, then exposes commands for setup, codegen, validation, and prompt management.
+
+### Commands
+
+| Command              | Purpose                                            |
+| -------------------- | -------------------------------------------------- |
+| `funkai setup`       | Project-level setup and initialization             |
+| `funkai generate`    | Run codegen across the project                     |
+| `funkai validate`    | Validate project configuration and artifacts       |
+| `funkai prompts create`   | Scaffold a new prompt file                    |
+| `funkai prompts generate` | Generate TypeScript modules from prompt files |
+| `funkai prompts lint`     | Lint prompt files for errors                  |
+| `funkai prompts setup`    | Initialize prompts workspace                  |
+| `funkai agents validate`  | Validate agent configuration                  |
+
+### Dependency Direction
+
+`@funkai/cli` depends on `@funkai/config` (schema and validation) and `@funkai/prompts` (prompt rendering and codegen). It does not depend on `@funkai/agents` or `@funkai/models` at runtime.
+
 ## Design Decisions
 
 1. **Functional by default** -- Factory functions, closures, and plain objects instead of classes
@@ -171,7 +213,7 @@ All packages in this monorepo follow strict conventions to ensure consistency, t
 
 - `strict: true` -- All strict checks enabled
 - `moduleResolution: bundler` -- Optimized for bundlers (tsdown)
-- TypeScript 5.9 with latest type features
+- TypeScript 6.0 with latest type features
 
 ### Test Structure
 
@@ -205,6 +247,7 @@ packages/{name}/
 
 ## References
 
+- [Why funkai](../../docs/why-funkai.md)
 - [Tech Stack](./tech-stack.md)
 - [Coding Style](../standards/typescript/coding-style.md)
 - [Design Patterns](../standards/typescript/design-patterns.md)

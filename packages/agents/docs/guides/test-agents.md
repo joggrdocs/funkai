@@ -73,7 +73,7 @@ describe("helper", () => {
 
     if (result.ok) {
       expect(result.output).toBeDefined();
-      expect(result.messages.length).toBeGreaterThan(0);
+      expect(result.response.messages.length).toBeGreaterThan(0);
       expect(result.usage.totalTokens).toBeGreaterThanOrEqual(0);
     }
   });

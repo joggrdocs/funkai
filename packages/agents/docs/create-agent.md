@@ -22,7 +22,7 @@ if (result.ok) {
 }
 ```
 
-On success, `result.ok` is `true` and `result.output`, `result.messages`, and `result.usage` are available. On failure, `result.ok` is `false` and `result.error` contains a `ResultError`.
+On success, `result.ok` is `true` and `result.output`, `result.response.messages`, and `result.usage` are available. On failure, `result.ok` is `false` and `result.error` contains a `ResultError`.
 
 ## Typed I/O
 
@@ -144,7 +144,7 @@ Accepted output values:
 
 ## Streaming
 
-Use `.stream()` for incremental text delivery. The result contains `fullStream` (an `AsyncIterableStream<StreamPart>`) for live events, plus `output` and `messages` as promises that resolve after the stream completes.
+Use `.stream()` for incremental text delivery. The result contains `fullStream` (an `AsyncIterableStream<StreamPart>`) for live events, plus `output` as a promise and `response` (which includes `messages`) that resolve after the stream completes.
 
 ```ts
 import { agent } from "@funkai/agents";
@@ -168,7 +168,8 @@ if (result.ok) {
 
   // Await final output and messages after stream completes
   const finalOutput = await result.output;
-  const messages = await result.messages;
+  const response = await result.response;
+  const messages = response.messages;
 }
 ```
 
@@ -185,7 +186,7 @@ const result = await helper.generate({
   system: "You explain concepts using simple analogies.",
   maxSteps: 5,
   onStart: ({ input }) => console.log("Starting with:", input),
-  onFinish: ({ result, duration }) => console.log(`Done in ${duration}ms`),
+  onFinish: ({ input, result, duration }) => console.log(`Done in ${duration}ms`),
 });
 ```
 
@@ -278,9 +279,9 @@ interface Agent<TInput, TOutput, TTools, TSubAgents, TModel> {
 ```ts
 interface GenerateResult<TOutput = string> {
   output: TOutput; // the generation output
-  messages: Message[]; // full message history including tool calls
   usage: TokenUsage; // aggregated token usage across all tool-loop steps
   finishReason: string; // why the model stopped ('stop', 'length', 'tool-calls', etc.)
+  response: Response; // includes messages via response.messages
 }
 ```
 
@@ -289,10 +290,10 @@ interface GenerateResult<TOutput = string> {
 ```ts
 interface StreamResult<TOutput = string> {
   output: Promise<TOutput>; // resolves after stream completes
-  messages: Promise<Message[]>; // resolves after stream completes
   usage: Promise<TokenUsage>; // resolves after stream completes
   finishReason: Promise<string>; // resolves after stream completes
   fullStream: AsyncIterableStream<StreamPart>; // live stream events
+  response: Promise<Response>; // resolves after stream completes (includes messages)
   toTextStreamResponse(init?: ResponseInit): Response; // SSE text stream
   toUIMessageStreamResponse(options?: unknown): Response; // UI message stream
 }
