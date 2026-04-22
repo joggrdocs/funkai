@@ -17,9 +17,9 @@
     "@clack/prompts": "^1.1.0",
     "@funkai/agents": "workspace:*",
     "@funkai/prompts": "workspace:*",
-    "@hono/node-server": "^1.19.11",
+    "@hono/node-server": "^1.19.13",
     "dotenv": "^17.3.1",
-    "hono": "^4.12.9",
+    "hono": "^4.12.14",
     "zod": "catalog:"
   },
   "devDependencies": {
