@@ -19,7 +19,7 @@
     "@funkai/prompts": "workspace:*",
     "@hono/node-server": "^1.19.13",
     "dotenv": "^17.3.1",
-    "hono": "^4.12.14",
+    "hono": "^4.12.16",
     "zod": "catalog:"
   },
   "devDependencies": {
