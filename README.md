@@ -1,4 +1,10 @@
-<div align="center">
+> [!CAUTION]
+> **Joggr is shut down.** This repository is archived and unmaintained.
+> Do not depend on it for production use.
+>
+> The published npm package remains available but will receive no further updates.
+
+---<div align="center">
   <img src="assets/banner.svg" alt="funkai" width="100%" />
   <p><strong>A composable AI microframework built on <a href="https://github.com/vercel/ai">ai-sdk</a>, curried with funk-tional programming flair.</strong></p>
 
