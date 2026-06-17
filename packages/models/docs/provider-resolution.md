@@ -120,7 +120,7 @@ const registry = createProviderRegistry({
 });
 
 const gpt = registry("openai/gpt-4.1");
-const claude = registry("anthropic/claude-sonnet-4");
+const claude = registry("anthropic/claude-sonnet-4-20250514");
 ```
 
 ### Use with Agents
@@ -172,7 +172,7 @@ const registry = createProviderRegistry({
   },
 });
 
-const lm = registry("openrouter/anthropic/claude-sonnet-4");
+const lm = registry("openrouter/anthropic/claude-sonnet-4-20250514");
 ```
 
 Models with an `"openai"` prefix route through `@ai-sdk/openai`. Models with an `"openrouter"` prefix route through OpenRouter.
@@ -200,7 +200,7 @@ const lm = openrouter("openai/gpt-4.1");
 | Condition       | Error Message                                                    |
 | --------------- | ---------------------------------------------------------------- |
 | Empty model ID  | `Cannot resolve model: model ID is empty`                        |
-| No prefix       | `Cannot resolve model "<id>": no provider prefix`                |
+| No prefix       | `Invalid model ID "<id>": expected "provider/model" format (e.g. "openai/gpt-4.1")` |
 | Unmapped prefix | `Cannot resolve model "<id>": no provider mapped for "<prefix>"` |
 
 ## References

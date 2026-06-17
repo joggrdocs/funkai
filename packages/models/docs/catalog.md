@@ -73,6 +73,7 @@ Each model has the following fields:
 | `output`     | `number`              | Cost per output token               |
 | `cacheRead`  | `number \| undefined` | Cost per cached input token (read)  |
 | `cacheWrite` | `number \| undefined` | Cost per cached input token (write) |
+| `reasoning`  | `number \| undefined` | Cost per reasoning token            |
 
 ### ModelCapabilities
 
@@ -99,7 +100,7 @@ Each model has the following fields:
 ```ts
 import { model } from "@funkai/models";
 
-const m = model("openai/gpt-4.1");
+const m = model("gpt-4.1");
 if (m) {
   console.log(m.name);
   console.log(m.pricing.input);
@@ -130,13 +131,15 @@ const providers = new Set(MODELS.map((m) => m.provider));
 
 ## ModelId Type
 
-`ModelId` provides autocomplete for known model IDs while accepting arbitrary strings for new or custom models:
+`ModelId` provides autocomplete for known model IDs while accepting arbitrary strings for new or custom models. Values use the **provider-native name** (e.g. `"gpt-4.1"`, `"claude-sonnet-4-20250514"`), which is the same format accepted by the `model()` lookup function:
 
 ```ts
 import type { ModelId } from "@funkai/models";
 
-const id: ModelId = "openai/gpt-4.1";
+const id: ModelId = "gpt-4.1";
 ```
+
+> **Note:** The `provider/model` format (e.g. `"openai/gpt-4.1"`) is only used with `createProviderRegistry()` for routing to the correct AI SDK provider. The `ModelId` type and `model()` function always use the native model name without a provider prefix.
 
 ## Filtering Patterns
 

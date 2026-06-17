@@ -79,6 +79,7 @@ $.agent<TInput>(config: AgentStepConfig<TInput>): Promise<FlowAgentStepResult>
 | `agent`    | Yes      | `Runnable<TInput>` | The agent (or flow agent) to invoke  |
 | `input`    | Yes      | `TInput`           | Input to pass to the agent           |
 | `config`   | No       | `AgentOverrides`   | Inline overrides for this agent call |
+| `stream`   | No       | `boolean`          | Use `agent.stream()` instead of `agent.generate()` (default: `false`) |
 | `onStart`  | No       | hook               | Hook: fires when step starts         |
 | `onFinish` | No       | hook               | Hook: fires on success               |
 | `onError`  | No       | hook               | Hook: fires on error                 |
@@ -94,7 +95,7 @@ const result = await $.agent({
 
 if (result.ok) {
   console.log(result.output); // the agent's output
-  console.log(result.messages); // full message history
+  console.log(result.response.messages); // full message history
 }
 ```
 

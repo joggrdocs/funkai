@@ -442,10 +442,9 @@ function flowAgent<TInput>(
 ```ts
 interface FlowAgentGenerateResult<TOutput> {
   output: TOutput; // validated output
-  messages: Message[]; // full message history
   finishReason: string; // why the model stopped
+  usage: LanguageModelUsage; // aggregated token usage from all $.agent() calls
   trace: readonly TraceEntry[]; // frozen execution trace tree
-  usage: TokenUsage; // aggregated token usage from all $.agent() calls
   duration: number; // wall-clock time in ms
 }
 ```

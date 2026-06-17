@@ -24,6 +24,15 @@
 - :lock: **Closures are state** — Flow agent state is just variables in your handler.
 - :triangular_ruler: **Type-driven design** — Zod schemas, discriminated unions, exhaustive matching.
 
+## Why funkai
+
+The [Vercel AI SDK](https://sdk.vercel.ai) is an excellent foundation for working with LLMs. funkai doesn't replace it — it's a thin, opinionated layer on top that adds functional agent composition, a prompt SDK with templating and codegen, model cost tracking, and Result-based error handling. If you're already using `ai` and want structured workflows without leaving the ecosystem, funkai fills those gaps.
+
+> [!TIP]
+> Looking for a batteries-included agent framework? Check out **[VoltAgent](https://voltagent.dev)** — a full-featured runtime with built-in observability, tool ecosystem, and everything you need out of the box. We recommend it highly, and funkai may build on top of it in the future.
+
+For a deeper comparison with alternatives, see [Why funkai](docs/why-funkai.md).
+
 ## Install
 
 ```bash

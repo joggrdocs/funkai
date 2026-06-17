@@ -8,7 +8,7 @@ Each model entry has:
 
 | Field          | Type                | Description                                   |
 | -------------- | ------------------- | --------------------------------------------- |
-| `id`           | `string`            | Model ID (e.g. `'openai/gpt-4.1'`)            |
+| `id`           | `string`            | Model ID (e.g. `'gpt-4.1'`)                   |
 | `capabilities` | `ModelCapabilities` | Boolean flags (reasoning, tools, vision, etc) |
 | `pricing`      | `ModelPricing`      | Per-token rates in USD                        |
 | `modalities`   | `ModelModalities`   | Input/output modality descriptors             |
@@ -31,9 +31,9 @@ Each model entry has:
 import { model, models } from "@funkai/models";
 
 // Look up a single model (returns null if not found)
-const gpt4 = model("openai/gpt-4.1");
+const gpt4 = model("gpt-4.1");
 if (gpt4) {
-  console.log(gpt4.pricing.prompt); // cost per input token
+  console.log(gpt4.pricing.input); // cost per input token
 }
 
 // List all models, optionally filtered
@@ -58,7 +58,7 @@ const helper = agent({
 
 const result = await helper.generate({ prompt: "Hello" });
 if (result.ok) {
-  const pricing = model("openai/gpt-4.1")?.pricing;
+  const pricing = model("gpt-4.1")?.pricing;
   if (pricing) {
     const cost = calculateCost(result.usage, pricing);
     console.log(`Cost: $${cost.total.toFixed(6)}`);

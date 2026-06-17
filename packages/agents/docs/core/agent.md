@@ -54,16 +54,13 @@ The `output` field accepts an AI SDK `Output` strategy or a raw Zod schema:
 ```ts
 interface Agent<TInput, TOutput, TTools, TSubAgents> {
   generate(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<GenerateResult<TOutput>>>;
   stream(
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ): Promise<Result<StreamResult<TOutput>>>;
   fn(): (
-    input: TInput,
-    config?: AgentOverrides<TTools, TSubAgents>,
+    params: GenerateParams<TInput, TTools, TSubAgents, TOutput>,
   ) => Promise<Result<GenerateResult<TOutput>>>;
 }
 ```
@@ -75,13 +72,12 @@ Runs the agent to completion. Returns `Result<GenerateResult<TOutput>>`.
 ```ts
 interface GenerateResult<TOutput = string> {
   output: TOutput; // the generation output
-  messages: Message[]; // full message history including tool calls
-  usage: TokenUsage; // aggregated token usage across all tool-loop steps
+  usage: LanguageModelUsage; // aggregated token usage across all tool-loop steps
   finishReason: string; // why the model stopped ('stop', 'length', 'tool-calls', etc.)
 }
 ```
 
-On success, `result.ok` is `true` and `output`/`messages` are flat on the result object. On failure, `result.ok` is `false` and `result.error` contains a `ResultError`.
+On success, `result.ok` is `true` and `output` is flat on the result object. Access messages via `result.response.messages`. On failure, `result.ok` is `false` and `result.error` contains a `ResultError`.
 
 ### stream()
 
@@ -89,15 +85,16 @@ Runs the agent with streaming output. Returns `Result<StreamResult<TOutput>>`.
 
 ```ts
 interface StreamResult<TOutput = string> {
-  output: Promise<TOutput>; // resolves after stream completes
-  messages: Promise<Message[]>; // resolves after stream completes
-  usage: Promise<TokenUsage>; // resolves after stream completes
+  output: PromiseLike<TOutput>; // resolves after stream completes
+  usage: Promise<LanguageModelUsage>; // resolves after stream completes
   finishReason: Promise<string>; // resolves after stream completes
-  stream: ReadableStream<string>; // live text deltas
+  textStream: AsyncIterableStream<string>; // live text deltas
+  fullStream: AsyncIterableStream<StreamPart>; // all stream parts (text, tool calls, etc.)
+  response: Promise<Response>; // resolves after stream completes (includes messages)
 }
 ```
 
-The `stream` is available immediately. Consume it for incremental output. Await `output` and `messages` after the stream ends.
+The `fullStream` and `textStream` are available immediately. Consume them for incremental output. Await `output`, `usage`, and `response` after the stream ends.
 
 ### fn()
 

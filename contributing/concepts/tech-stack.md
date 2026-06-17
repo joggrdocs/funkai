@@ -8,7 +8,7 @@ Complete reference of tools and libraries used in the funkai AI SDK framework.
 
 | Tool                                         | Purpose                | Version | Documentation                                                                                |
 | -------------------------------------------- | ---------------------- | ------- | -------------------------------------------------------------------------------------------- |
-| [TypeScript](https://www.typescriptlang.org) | Type system            | ^5.9    | [Handbook](https://www.typescriptlang.org/docs/)                                             |
+| [TypeScript](https://www.typescriptlang.org) | Type system            | ^6.0.3  | [Handbook](https://www.typescriptlang.org/docs/)                                             |
 | [tsdown](https://tsdown.dev)                 | Bundler                | ^0.x    | [llms.txt](https://tsdown.dev/llms.txt) \| [llms-full.txt](https://tsdown.dev/llms-full.txt) |
 | [pnpm](https://pnpm.io)                      | Package manager        | ^9.x    | [Docs](https://pnpm.io/motivation)                                                           |
 | [Turbo](https://turbo.build)                 | Monorepo orchestration | ^2.x    | [Docs](https://turbo.build/repo/docs)                                                        |
@@ -138,7 +138,7 @@ LiquidJS provides a safe, sandboxed template engine for prompt authoring:
 | ----------- | --------------- | ----------------------------------------------------- |
 | Node.js     | 24.x            | Latest LTS, native ESM, modern JavaScript features    |
 | pnpm        | 9.x             | Workspace protocol, catalog protocol, better lockfile |
-| TypeScript  | 5.9.x           | Latest type features, improved inference              |
+| TypeScript  | 6.0.x           | Latest type features, improved inference              |
 
 ## Excluded Technologies
 
@@ -149,7 +149,7 @@ These technologies are **not used** in this codebase:
 | Classes    | Violates functional programming persona. Use factory functions. |
 | Lodash     | Imperative, mutable. Use es-toolkit.                            |
 | Ramda      | Overly complex for this use case. Use es-toolkit.               |
-| ESLint     | Use oxfmt for formatting.                                       |
+| ESLint     | Not used as a standalone runner. oxlint natively supports ESLint plugin configs (`eslint-plugin-functional`, `eslint-plugin-jsdoc`, `eslint-plugin-security`), so the plugin ecosystem is leveraged without running ESLint itself. |
 | Prettier   | Use oxfmt (faster, Rust-based).                                 |
 | Jest       | Too slow, poor ESM support. Use Vitest.                         |
 | Babel      | Not needed with modern TypeScript + tsdown.                     |

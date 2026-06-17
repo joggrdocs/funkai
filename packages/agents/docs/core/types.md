@@ -68,7 +68,7 @@ Chat message type re-exported from the Vercel AI SDK (`ModelMessage`). Used for 
 type Message = ModelMessage;
 ```
 
-Messages appear in `GenerateResult.messages` and `StreamResult.messages`. They include system messages, user prompts, assistant responses, and tool call/result pairs.
+Messages appear in `GenerateResult.response.messages` and (for streams) via `(await result.response).messages`. They include system messages, user prompts, assistant responses, and tool call/result pairs.
 
 ## GenerateResult\<TOutput\>
 
@@ -77,18 +77,18 @@ Result of a completed agent generation. Returned by `agent.generate()` inside a 
 ```ts
 interface GenerateResult<TOutput = string> {
   output: TOutput;
-  messages: Message[];
   usage: TokenUsage;
   finishReason: string;
+  response: Response; // includes messages via response.messages
 }
 ```
 
 | Field          | Type         | Description                                                        |
 | -------------- | ------------ | ------------------------------------------------------------------ |
 | `output`       | `TOutput`    | The generation output (typed based on `Output` strategy)           |
-| `messages`     | `Message[]`  | Full message history including tool calls                          |
 | `usage`        | `TokenUsage` | Aggregated token usage across all tool-loop steps                  |
 | `finishReason` | `string`     | Why the model stopped (`"stop"`, `"length"`, `"tool-calls"`, etc.) |
+| `response`     | `Response`   | Full response including `messages` (message history with tool calls) |
 
 ### Output Typing
 
@@ -107,23 +107,25 @@ Result of a streaming agent generation. Returned by `agent.stream()` inside a `R
 
 ```ts
 interface StreamResult<TOutput = string> {
-  output: Promise<TOutput>;
-  messages: Promise<Message[]>;
-  usage: Promise<TokenUsage>;
-  finishReason: Promise<string>;
-  fullStream: AsyncIterableStream<StreamPart>;
+  output: PromiseLike<TOutput>;          // resolves after stream completes
+  usage: Promise<LanguageModelUsage>;    // resolves after stream completes
+  finishReason: Promise<string>;         // resolves after stream completes
+  textStream: AsyncIterableStream<string>; // live text deltas
+  fullStream: AsyncIterableStream<StreamPart>; // all stream parts (text, tool calls, etc.)
+  response: Promise<Response>;           // resolves after stream completes (includes messages)
 }
 ```
 
-| Field          | Type                              | Description                         |
-| -------------- | --------------------------------- | ----------------------------------- |
-| `output`       | `Promise<TOutput>`                | Resolves after the stream completes |
-| `messages`     | `Promise<Message[]>`              | Resolves after the stream completes |
-| `usage`        | `Promise<TokenUsage>`             | Resolves after the stream completes |
-| `finishReason` | `Promise<string>`                 | Resolves after the stream completes |
-| `fullStream`   | `AsyncIterableStream<StreamPart>` | Live stream of typed events         |
+| Field          | Type                              | Description                                          |
+| -------------- | --------------------------------- | ---------------------------------------------------- |
+| `output`       | `PromiseLike<TOutput>`            | Resolves after the stream completes                  |
+| `usage`        | `Promise<LanguageModelUsage>`     | Resolves after the stream completes                  |
+| `finishReason` | `Promise<string>`                 | Resolves after the stream completes                  |
+| `textStream`   | `AsyncIterableStream<string>`     | Live stream of text deltas                           |
+| `fullStream`   | `AsyncIterableStream<StreamPart>` | Live stream of typed events                          |
+| `response`     | `Promise<Response>`               | Resolves after the stream completes (has `messages`) |
 
-The `fullStream` is available immediately. Consume it for incremental output, then await `output`/`messages` after the stream ends.
+The `fullStream` and `textStream` are available immediately. Consume them for incremental output. Await `output`, `usage`, and `response` after the stream ends. Access messages via `response.messages`.
 
 ## StreamPart
 
@@ -195,7 +197,7 @@ type FlowAgentStepResult<TOutput = string> =
     };
 ```
 
-On success, `result.output` is the agent's `TOutput` directly, and `result.messages`, `result.usage`, `result.finishReason` are available alongside it.
+On success, `result.output` is the agent's `TOutput` directly, and `result.response.messages`, `result.usage`, `result.finishReason` are available alongside it.
 
 ### StepError
 

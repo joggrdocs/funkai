@@ -94,7 +94,7 @@ Use `{% render 'name', key: 'value' %}` to include shared partials. Partials res
 
 ## Documentation
 
-For comprehensive documentation, see the [Prompts concept](/concepts/prompts) and [Prompts CLI reference](/reference/prompts/cli).
+For comprehensive documentation, see the [Prompts SDK overview](docs/overview.md) and [CLI reference](docs/cli.md).
 
 ## License
 

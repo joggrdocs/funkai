@@ -20,7 +20,7 @@ function flowAgent<TInput, TOutput>(
 | `output`       | Yes      | `ZodType<TOutput>`                                              | Zod schema for validating output              |
 | `logger`       | No       | `Logger`                                                        | Pino-compatible logger                        |
 | `onStart`      | No       | `(event: { input }) => void \| Promise<void>`                   | Hook: fires when the flow agent starts        |
-| `onFinish`     | No       | `(event: { input, output, duration }) => void \| Promise<void>` | Hook: fires on success                        |
+| `onFinish`     | No       | `(event: { input, result, duration }) => void \| Promise<void>` | Hook: fires on success                        |
 | `onError`      | No       | `(event: { input, error }) => void \| Promise<void>`            | Hook: fires on error                          |
 | `onStepStart`  | No       | `(event: StepStartEvent) => void \| Promise<void>`              | Hook: fires when any `$` step starts          |
 | `onStepFinish` | No       | `(event: StepFinishEvent) => void \| Promise<void>`             | Hook: fires when any `$` step finishes        |
@@ -31,10 +31,12 @@ function flowAgent<TInput, TOutput>(
 type FlowAgentHandler<TInput, TOutput> = (params: FlowAgentParams<TInput>) => Promise<TOutput>;
 ```
 
-The handler receives `{ input, $ }`:
+The handler receives `{ input, $, log, agents }`:
 
 - `input` -- the validated input after Zod parsing.
 - `$` -- the `StepBuilder` for tracked operations (`$.step`, `$.agent`, `$.map`, etc.).
+- `log` -- scoped `Logger` for the current flow execution.
+- `agents` -- named agent dependencies declared in the flow agent config (`FlowSubAgents`). Use these references (instead of module-level imports) so that `evolve()` can swap them out. Defaults to an empty record when `agents` is not configured.
 
 The handler returns `TOutput`, which is validated against the `output` Zod schema before being returned to the caller.
 
@@ -43,16 +45,13 @@ The handler returns `TOutput`, which is validated against the `output` Zod schem
 ```ts
 interface FlowAgent<TInput, TOutput> {
   generate(
-    input: TInput,
-    config?: FlowAgentOverrides,
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
   ): Promise<Result<FlowAgentGenerateResult<TOutput>>>;
   stream(
-    input: TInput,
-    config?: FlowAgentOverrides,
-  ): Promise<Result<FlowAgentStreamResult<TOutput>>>;
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
+  ): Promise<Result<BaseStreamResult<TOutput>>>;
   fn(): (
-    input: TInput,
-    config?: FlowAgentOverrides,
+    params: GenerateParams<TInput, Record<string, Tool>, Record<string, never>, TOutput>,
   ) => Promise<Result<FlowAgentGenerateResult<TOutput>>>;
 }
 ```
@@ -74,30 +73,30 @@ On success, `result.ok` is `true` and `output`, `trace`, `duration` are flat on 
 
 ### stream()
 
-Runs the flow agent with streaming step progress. Returns `Result<FlowAgentStreamResult<TOutput>>`.
+Runs the flow agent with streaming step progress. Returns `Result<BaseStreamResult<TOutput>>`.
 
 ```ts
-interface FlowAgentStreamResult<TOutput> {
-  output: TOutput; // available after stream completes
-  trace: readonly TraceEntry[]; // available after stream completes
-  usage: TokenUsage; // aggregated token usage (available after stream completes)
-  duration: number; // available after stream completes
-  stream: ReadableStream<StepEvent>;
+interface BaseStreamResult<TOutput> {
+  output: PromiseLike<TOutput>; // resolves after stream completes
+  usage: PromiseLike<LanguageModelUsage>; // resolves after stream completes
+  finishReason: PromiseLike<FinishReason>; // resolves after stream completes
+  fullStream: AsyncIterableStream<StreamPart>;
 }
 ```
 
-Subscribe to `stream` for real-time step progress events.
+Subscribe to `fullStream` for real-time streaming events.
 
-### StepEvent
+### StreamPart
 
-Events emitted on the flow agent stream:
+`StreamPart` is `TextStreamPart<ToolSet>` from the Vercel AI SDK -- a discriminated union of all possible stream events. Use `part.type` to discriminate:
 
-| Type          | Fields                                   | Description                                                                          |
-| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------ |
-| `step:start`  | `stepId`, `stepOperation`, `agentChain?` | A `$` operation started                                                              |
-| `step:finish` | `StepFinishEvent`                        | A `$` operation completed; `$.agent()` steps also include AI SDK `StepResult` fields |
-| `step:error`  | `stepId`, `stepOperation`, `error`       | A `$` operation failed                                                               |
-| `flow:finish` | `output`, `duration`                     | The flow agent completed                                                             |
+| Type            | Description                          |
+| --------------- | ------------------------------------ |
+| `text-delta`    | Incremental text chunk               |
+| `tool-call`     | The model invoked a tool             |
+| `tool-result`   | A tool returned its result           |
+| `finish`        | The stream completed                 |
+| `error`         | An error occurred                    |
 
 ### fn()
 
@@ -165,7 +164,7 @@ const engine = createFlowEngine({
     },
   },
   onStart: ({ input }) => telemetry.trackStart(input),
-  onFinish: ({ output, duration }) => telemetry.trackFinish(output, duration),
+  onFinish: ({ result, duration }) => telemetry.trackFinish(result.output, duration),
 });
 
 const myFlowAgent = engine(

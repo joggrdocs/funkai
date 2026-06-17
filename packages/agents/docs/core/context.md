@@ -80,7 +80,7 @@ interface Context extends ExecutionContext {
 | `trace`    | `TraceEntry[]` | Execution trace -- every tracked `$` operation recorded |
 | `messages` | `Message[]`    | Synthetic tool-call messages in execution order         |
 
-The `trace` array builds the execution graph. The `messages` array collects synthetic tool-call/tool-result message pairs that the framework uses to populate `FlowAgentGenerateResult.messages`.
+The `trace` array builds the execution graph. The `messages` array collects synthetic tool-call/tool-result message pairs that the framework uses to populate `FlowAgentGenerateResult.response.messages`.
 
 ### Signal Propagation
 

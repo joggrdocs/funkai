@@ -24,6 +24,9 @@ coverage/
 # GG
 .gg/
 
+# Scratchpad
+scratchpad/
+
 # OS files
 .DS_Store
 Thumbs.db

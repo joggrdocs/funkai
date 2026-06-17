@@ -9,10 +9,10 @@ The model ID passed to the registry is an empty string or whitespace.
 **Fix:** Ensure the model ID is a non-empty string:
 
 ```ts
-const lm = resolve("openai/gpt-4.1");
+const lm = registry("openai/gpt-4.1");
 ```
 
-## Cannot resolve model: no provider prefix
+## Invalid model ID: expected "provider/model" format
 
 A model ID without a `/` (e.g. `"gpt-4.1"`) was passed to the registry.
 
@@ -86,7 +86,7 @@ The subpath import does not match an available export.
 ```ts
 import type { ModelId } from "@funkai/models";
 
-const id: ModelId = "openai/gpt-4.1";
+const id: ModelId = "gpt-4.1";
 ```
 
 ## References

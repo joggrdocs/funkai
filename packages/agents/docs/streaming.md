@@ -42,7 +42,7 @@ sequenceDiagram
     end
 
     C->>C: await result.output
-    C->>C: await result.messages
+    C->>C: await result.response (includes messages)
 ```
 
 ## Key Concepts
@@ -54,10 +54,10 @@ Returned by `.stream()` inside a `Result` wrapper. The `fullStream` is available
 ```ts
 interface StreamResult<TOutput = string> {
   output: Promise<TOutput>;
-  messages: Promise<Message[]>;
   usage: Promise<TokenUsage>;
   finishReason: Promise<string>;
   fullStream: AsyncIterableStream<StreamPart>;
+  response: Promise<Response>; // includes messages via response.messages
 }
 ```
 
@@ -65,9 +65,9 @@ interface StreamResult<TOutput = string> {
 | -------------- | --------------------------------- | ---------------------- |
 | `fullStream`   | `AsyncIterableStream<StreamPart>` | Immediately            |
 | `output`       | `Promise<TOutput>`                | After stream completes |
-| `messages`     | `Promise<Message[]>`              | After stream completes |
 | `usage`        | `Promise<TokenUsage>`             | After stream completes |
 | `finishReason` | `Promise<string>`                 | After stream completes |
+| `response`     | `Promise<Response>`               | After stream completes |
 
 ### StreamPart Events
 

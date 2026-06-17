@@ -82,7 +82,7 @@ flowchart LR
 | --------------------------------------------------------- | -------------------------------------------------------------------- |
 | [Create an Agent](create-agent.md)                        | Build agents with typed I/O, tools, output strategies, and streaming |
 | [Create a Flow Agent](create-flow-agent.md)               | Build multi-step flows with `$` operations and execution traces      |
-| [Step Builder ($)](step-builder.md)                       | Reference for all 8 `$` methods                                      |
+| [Step Builder ($)](core/step.md)                          | Reference for all 8 `$` methods                                      |
 | [Tools](tools.md)                                         | Create and register tools for function calling                       |
 | [Hooks](hooks.md)                                         | Lifecycle callbacks for agents and flow agents                       |
 | [Streaming](streaming.md)                                 | Stream consumption patterns and StreamPart events                    |

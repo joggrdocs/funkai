@@ -41,7 +41,7 @@ flowchart LR
   subgraph cost [" "]
     direction TB
     calcCost["calculateCost()"]:::agent
-    usage["TokenUsage"]:::agent
+    usage["LanguageModelUsage"]:::agent
     pricing["ModelPricing"]:::agent
   end
 

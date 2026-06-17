@@ -114,7 +114,7 @@ const createFile = tool({
 ## Verification
 
 - The agent calls the tool during `.generate()` when the model decides to use it
-- Check that `result.messages` contains tool call and tool result entries
+- Check that `result.response.messages` contains tool call and tool result entries
 - Tool return values appear in the model's context for subsequent reasoning
 
 ## Troubleshooting

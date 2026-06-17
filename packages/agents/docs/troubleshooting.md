@@ -26,7 +26,7 @@
 
 ## StreamResult output and messages are promises
 
-**Fix:** `StreamResult.output` and `StreamResult.messages` are promises -- `await` them after the stream completes.
+**Fix:** `StreamResult.output` is a promise -- `await` it after the stream completes. Messages are accessed via `(await result.response).messages`.
 
 ## `$.all` and `$.race` entries must be factory functions
 
